@@ -10,14 +10,13 @@ const nextId = () => String(++_rowCounter);
 function mapDocToRow(doc: JobApiDocument): JobRow {
   return {
     id: nextId(),
-    jobTitle: (doc.title as string | undefined) ?? "",
-    company: (doc.employer as string | undefined) ?? "",
-    category: (doc.category as string | undefined) ?? "",
-    employmentType: (doc.employment_type as string | undefined) ?? "",
-    location: (doc.location as string | undefined) ?? "",
-    posted: (doc.posted_date as string | undefined) ?? "",
-    jobUrl: (doc.application_url as string | undefined) ?? undefined,
-    skills: Array.isArray(doc.skills) ? (doc.skills as string[]) : undefined,
+    jobTitle: doc.opportunity_title ?? "",
+    company: doc.employer ?? "",
+    category: doc.category ?? "",
+    employmentType: doc.contract_type ?? "",
+    location: doc.location ?? "",
+    posted: doc.posted_date ?? "",
+    jobUrl: doc.URL ?? undefined,
   };
 }
 

@@ -7,24 +7,15 @@ const PAGE_SIZE = 20;
 let _counter = 0;
 const nextId = () => String(++_counter);
 
-function mapToRow(doc: {
-  title?: string;
-  category?: string;
-  location?: string;
-  application_url?: string;
-  source_platform?: string;
-  skills?: string[];
-}): JobPostingRow {
+function mapToRow(doc: import("src/analytics/AnalyticsService.types").JobApiItem): JobPostingRow {
   return {
     id: nextId(),
-    jobTitle: doc.title ?? "",
+    jobTitle: doc.opportunity_title ?? "",
     sector: doc.category ?? "",
+    contractType: doc.contract_type ?? "",
     location: doc.location ?? "",
-    zqfLevel: "",
     platform: doc.source_platform ?? "",
-    skills: Array.isArray(doc.skills) ? doc.skills : [],
-    candidatePool: 0,
-    jobUrl: doc.application_url ?? "",
+    jobUrl: doc.URL ?? "",
   };
 }
 

@@ -17,6 +17,42 @@ class JobStats(BaseModel):
     platforms: int
 
 
+class JobDocument(BaseModel):
+    model_config = {"extra": "ignore"}
+
+    uuid: Optional[str] = None
+    opportunity_title: Optional[str] = None
+    employer: Optional[str] = None
+    category: Optional[str] = None
+    contract_type: Optional[str] = None
+    location: Optional[str] = None
+    city: Optional[str] = None
+    province: Optional[str] = None
+    posted_date: Optional[str] = None
+    closing_date: Optional[str] = None
+    URL: Optional[str] = None
+    source_platform: Optional[str] = None
+    attributes: Optional[dict] = None
+
+
+class MatchedJobDocument(BaseModel):
+    """Job document returned by the matching service, optionally enriched from the jobs collection."""
+    model_config = {"extra": "ignore"}
+
+    uuid: Optional[str] = None
+    opportunity_title: Optional[str] = None
+    location: Optional[str] = None
+    contract_type: Optional[str] = None
+    URL: Optional[str] = None
+    final_score: Optional[float] = None
+    justification: Optional[str] = None
+    rank: Optional[int] = None
+    # Enriched from the jobs collection
+    employer: Optional[str] = None
+    category: Optional[str] = None
+    posted_date: Optional[str] = None
+
+
 class IJobService(ABC):
     """
     Interface for the Job Service.
@@ -37,23 +73,12 @@ class IJobService(ABC):
         cursor: Optional[str],
         limit: int,
         include: Optional[str],
-    ) -> PaginatedListResponse["JobDocument"]:
+    ) -> PaginatedListResponse[JobDocument]:
         pass
 
-
-class JobDocument(BaseModel):
-    model_config = {"extra": "ignore"}
-
-    title: Optional[str] = None
-    employer: Optional[str] = None
-    category: Optional[str] = None
-    employment_type: Optional[str] = None
-    location: Optional[str] = None
-    posted_date: Optional[str] = None
-    closing_date: Optional[str] = None
-    application_url: Optional[str] = None
-    source_platform: Optional[str] = None
-    skills: Optional[list[str]] = None
+    @abstractmethod
+    async def get_jobs_by_uuids(self, uuids: list[str]) -> dict[str, JobDocument]:
+        pass
 
 
 class JobService(IJobService):
@@ -76,7 +101,7 @@ class JobService(IJobService):
         if category:
             fquery["category"] = category
         if employment_type:
-            fquery["employment_type"] = employment_type
+            fquery["contract_type"] = employment_type
         if location:
             fquery["location"] = location
         if days is not None:
@@ -105,25 +130,6 @@ class JobService(IJobService):
         )
         return JobStats(total=total, sectors=len(sectors), platforms=len(platforms))
 
-    @staticmethod
-    def _extract_skills(doc: Dict[str, Any]) -> Optional[list[str]]:
-        """Extract unique skill labels from classification.entities."""
-        try:
-            entities = doc.get("classification", {}).get("entities", [])
-            seen: set[str] = set()
-            skills: list[str] = []
-            for entity in entities:
-                if entity.get("entity_type") != "skill":
-                    continue
-                linked = entity.get("linked_entities", [])
-                label = linked[0]["label"] if linked else entity.get("surface_form", "")
-                if label and label not in seen:
-                    seen.add(label)
-                    skills.append(label)
-            return skills if skills else None
-        except Exception:
-            return None
-
     async def list_jobs(
         self,
         category: Optional[str],
@@ -144,12 +150,7 @@ class JobService(IJobService):
         page_docs = docs[:limit]
         next_cursor = str(offset + limit) if has_more else None
 
-        job_documents = []
-        for doc in page_docs:
-            job_doc = JobDocument.model_validate(doc)
-            if job_doc.skills is None:
-                job_doc.skills = self._extract_skills(doc)
-            job_documents.append(job_doc)
+        job_documents = [JobDocument.model_validate(doc) for doc in page_docs]
 
         total = await self._repository.count_jobs(filter_query) if include_count else None
         meta = PaginatedListMeta(
@@ -159,3 +160,7 @@ class JobService(IJobService):
             total=total if include_count else None,
         )
         return PaginatedListResponse(data=job_documents, meta=meta)
+
+    async def get_jobs_by_uuids(self, uuids: list[str]) -> dict[str, JobDocument]:
+        docs = await self._repository.find_by_uuids(uuids)
+        return {doc["uuid"]: JobDocument.model_validate(doc) for doc in docs if "uuid" in doc}

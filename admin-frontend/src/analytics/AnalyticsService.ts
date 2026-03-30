@@ -302,7 +302,7 @@ export default class AnalyticsService {
   async listJobs(
     params: {
       category?: string;
-      employment_type?: string;
+      contract_type?: string;
       location?: string;
       cursor?: string;
       limit?: number;
@@ -310,7 +310,7 @@ export default class AnalyticsService {
   ): Promise<PaginatedResponse<JobApiItem>> {
     const query = new URLSearchParams();
     if (params.category) query.set("category", params.category);
-    if (params.employment_type) query.set("employment_type", params.employment_type);
+    if (params.contract_type) query.set("employment_type", params.contract_type);
     if (params.location) query.set("location", params.location);
     if (params.cursor) query.set("cursor", params.cursor);
     query.set("limit", String(params.limit ?? 20));

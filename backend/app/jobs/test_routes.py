@@ -26,7 +26,7 @@ class _MockJobService(IJobService):
         include: Optional[str],
     ) -> PaginatedListResponse[JobDocument]:
         return PaginatedListResponse(
-            data=[{"title": "Engineer"}],
+            data=[{"opportunity_title": "Engineer"}],
             meta=PaginatedListMeta(limit=limit, next_cursor=None, has_more=False, total=None),
         )
 
@@ -56,7 +56,7 @@ class TestJobsRoutes:
         # THEN response is 200 and returns data/meta shape
         assert response.status_code == HTTPStatus.OK
         body = response.json()
-        assert body["data"][0]["title"] == "Engineer"
+        assert body["data"][0]["opportunity_title"] == "Engineer"
         assert body["meta"]["limit"] == 20
         assert body["meta"]["has_more"] is False
 

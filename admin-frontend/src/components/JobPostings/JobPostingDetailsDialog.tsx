@@ -1,7 +1,7 @@
 import React from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
-import { Box, Chip, Dialog, DialogContent, Grid, Typography, useTheme } from "@mui/material";
+import { Box, Dialog, DialogContent, Grid, Typography, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import PrimaryButton from "src/theme/PrimaryButton/PrimaryButton";
 import PrimaryIconButton from "src/theme/PrimaryIconButton/PrimaryIconButton";
@@ -19,6 +19,12 @@ const JobPostingDetailsDialog: React.FC<JobPostingDetailsDialogProps> = ({ job, 
 
   if (!job) return null;
 
+  const translateContractType = (val: string) => {
+    const key = `dashboard.jobPostings.contractTypes.${val}`;
+    const translated = t(key);
+    return translated !== key ? translated : val;
+  };
+
   return (
     <Dialog
       open={isOpen}
@@ -34,7 +40,8 @@ const JobPostingDetailsDialog: React.FC<JobPostingDetailsDialogProps> = ({ job, 
               {job.jobTitle}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {job.sector} - {job.location} - {job.zqfLevel}
+              {job.sector} - {job.location}
+              {job.contractType ? ` - ${translateContractType(job.contractType)}` : ""}
             </Typography>
           </Box>
           <PrimaryIconButton
@@ -74,33 +81,14 @@ const JobPostingDetailsDialog: React.FC<JobPostingDetailsDialogProps> = ({ job, 
               }}
             >
               <Typography variant="overline" color="text.secondary">
-                {t("dashboard.jobPostings.modal.candidatePool")}
+                {t("dashboard.jobPostings.table.contractType")}
               </Typography>
               <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                {t("dashboard.jobPostings.modal.candidatePoolValue", { count: job.candidatePool })}
+                {translateContractType(job.contractType)}
               </Typography>
             </Box>
           </Grid>
         </Grid>
-
-        <Typography variant="overline" color="text.secondary">
-          {t("dashboard.jobPostings.modal.skillsExtracted", { count: job.skills.length })}
-        </Typography>
-        <Box display="flex" flexWrap="wrap" gap={1} mb={3} mt={0.5}>
-          {job.skills.map((skill) => (
-            <Chip
-              key={skill}
-              label={skill}
-              sx={{
-                backgroundColor: theme.palette.grey[100],
-                border: `1px solid ${theme.palette.divider}`,
-                "& .MuiChip-label": {
-                  color: theme.palette.text.secondary,
-                },
-              }}
-            />
-          ))}
-        </Box>
 
         <PrimaryButton
           component="a"

@@ -231,13 +231,18 @@
       "table": {
         "jobTitle": "Titulo del empleo",
         "sector": "Sector",
+        "contractType": "Tipo de contrato",
         "location": "Ubicacion",
-        "zqf": "ZQF",
         "platform": "Plataforma",
-        "skillsExtracted": "Habilidades extraidas",
-        "candidatePool": "Grupo de candidatos",
-        "candidatePoolSubheader": "50%+ coincidencia de habilidades",
         "link": "Enlace"
+      },
+      "contractTypes": {
+        "full_time": "Tiempo completo",
+        "part_time": "Medio tiempo",
+        "contract": "Contrato",
+        "internship": "Pasantia",
+        "temporary": "Temporal",
+        "volunteer": "Voluntario"
       },
       "aria": {
         "search": "Buscar titulos de empleo",

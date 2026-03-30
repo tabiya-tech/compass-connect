@@ -130,16 +130,19 @@ export interface SkillsDiscoveryStatsResponse {
 }
 
 export interface JobApiItem {
-  title?: string;
-  employer?: string;
-  category?: string;
-  employment_type?: string;
-  location?: string;
-  posted_date?: string;
-  closing_date?: string;
-  application_url?: string;
-  source_platform?: string;
-  skills?: string[];
+  uuid: string;
+  opportunity_title: string;
+  employer: string;
+  category: string;
+  contract_type: string;
+  location: string;
+  city: string;
+  province: string;
+  posted_date: string;
+  closing_date: string;
+  URL: string;
+  source_platform: string;
+  attributes: Record<string, string>;
 }
 
 export interface JobStatsResponse {

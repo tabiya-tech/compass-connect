@@ -124,6 +124,7 @@ class UserProfileService(IUserProfileService):
             summaries.append(
                 ExperienceSummary(
                     title=exp.get("experience_title", ""),
+                    normalized_title=exp.get("normalized_experience_title"),
                     company=exp.get("company"),
                     work_type=exp.get("work_type"),
                     skills=skill_labels,

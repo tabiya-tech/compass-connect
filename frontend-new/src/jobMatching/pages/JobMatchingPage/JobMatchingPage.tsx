@@ -5,6 +5,7 @@ import DataTable from "src/jobMatching/components/DataTable/DataTable";
 import type { ColumnDef } from "src/jobMatching/components/DataTable/DataTable";
 import JobDetailModal from "src/jobMatching/components/JobDetailModal/JobDetailModal";
 import { useJobs } from "src/jobMatching/hooks/useJobs";
+import { useMatchedJobs } from "src/jobMatching/hooks/useMatchedJobs";
 import type { JobFilters, JobRow } from "src/jobMatching/types";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -41,6 +42,16 @@ const JobMatchingPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   const { jobs, loading, error, hasNextPage, hasPrevPage, page, goToNextPage, goToPrevPage } = useJobs(browseFilters);
+  const {
+    jobs: matchedJobs,
+    loading: matchedLoading,
+    error: matchedError,
+    hasNextPage: matchedHasNext,
+    hasPrevPage: matchedHasPrev,
+    page: matchedPage,
+    goToNextPage: matchedNext,
+    goToPrevPage: matchedPrev,
+  } = useMatchedJobs(activeTab === 1);
 
   // Client-side search filter (applied on top of server-side category/type/location filters)
   const displayedJobs = useMemo(() => {
@@ -267,14 +278,29 @@ const JobMatchingPage: React.FC = () => {
 
         {/* Matched for You tab */}
         {activeTab === 1 && (
-          <DataTable<JobRow>
-            rows={[]}
-            columns={matchedColumns}
-            loading={false}
-            tableMinWidth={750}
-            ariaLabel="matched jobs table"
-            emptyMessage="Matched jobs are not available yet. Complete your skills profile to unlock personalised recommendations."
-          />
+          <>
+            {matchedError && (
+              <Alert severity="error" sx={{ mb: theme.fixedSpacing(theme.tabiyaSpacing.sm) }}>
+                {matchedError}
+              </Alert>
+            )}
+            <DataTable<JobRow>
+              rows={matchedJobs}
+              columns={matchedColumns}
+              loading={matchedLoading}
+              initialSortKey="matchScore"
+              initialSortDir="desc"
+              tableMinWidth={750}
+              ariaLabel="matched jobs table"
+              emptyMessage="No matched jobs found. Complete your Skills & Interests to unlock personalised recommendations."
+              onRowClick={handleRowClick}
+              hasNextPage={matchedHasNext}
+              hasPrevPage={matchedHasPrev}
+              onNextPage={matchedNext}
+              onPrevPage={matchedPrev}
+              pageLabel={`Page ${matchedPage}`}
+            />
+          </>
         )}
       </Box>
 

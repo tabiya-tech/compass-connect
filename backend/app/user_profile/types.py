@@ -16,6 +16,7 @@ class ExperienceSummary(BaseModel):
     """
 
     title: str = Field(description="Experience title as the user described it")
+    normalized_title: Optional[str] = Field(default=None, description="Taxonomy-normalised occupation title (e.g. 'Pastry Chef')")
     company: Optional[str] = Field(default=None, description="Company or organization name")
     work_type: Optional[str] = Field(default=None, description="Type of work (e.g. paid_work, volunteer)")
     skills: list[str] = Field(default_factory=list, description="Skill preferred labels (top skills)")

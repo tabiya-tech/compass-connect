@@ -231,13 +231,18 @@
       "table": {
         "jobTitle": "Job Title",
         "sector": "Sector",
+        "contractType": "Contract Type",
         "location": "Location",
-        "zqf": "ZQF",
         "platform": "Platform",
-        "skillsExtracted": "Skills Extracted",
-        "candidatePool": "Candidate Pool",
-        "candidatePoolSubheader": "50%+ skills match",
         "link": "Link"
+      },
+      "contractTypes": {
+        "full_time": "Full Time",
+        "part_time": "Part Time",
+        "contract": "Contract",
+        "internship": "Internship",
+        "temporary": "Temporary",
+        "volunteer": "Volunteer"
       },
       "aria": {
         "search": "Search job titles",

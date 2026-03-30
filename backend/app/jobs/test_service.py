@@ -53,7 +53,7 @@ class TestJobService:
         # THEN filter, paging, and count metadata are correct
         assert repo.last_filter_query is not None
         assert repo.last_filter_query["category"] == "Engineering"
-        assert repo.last_filter_query["employment_type"] == "Full-time"
+        assert repo.last_filter_query["contract_type"] == "Full-time"
         assert repo.last_filter_query["location"] == "Lusaka"
         assert "posted_date" in repo.last_filter_query
         assert repo.last_offset == 3

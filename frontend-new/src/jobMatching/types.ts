@@ -2,16 +2,19 @@
 
 /** Raw document returned by GET /jobs. Fields match the Zambia jobs DB. */
 export interface JobApiDocument {
-  title?: string;
+  uuid?: string;
+  opportunity_title?: string;
   employer?: string;
   category?: string;
-  employment_type?: string;
+  contract_type?: string;
   location?: string;
+  city?: string;
+  province?: string;
   posted_date?: string;
   closing_date?: string;
-  application_url?: string;
+  URL?: string;
   source_platform?: string;
-  skills?: string[];
+  attributes?: Record<string, string>;
 }
 
 export interface JobsApiMeta {
@@ -27,6 +30,22 @@ export interface JobsApiResponse {
 }
 
 // ─── UI row shape ─────────────────────────────────────────────────────────────
+
+/** Raw document returned by GET /jobs/matched. Fields match the matching service response, enriched with job details. */
+export interface MatchedJobApiDocument {
+  uuid?: string;
+  opportunity_title?: string;
+  location?: string;
+  contract_type?: string;
+  URL?: string;
+  final_score?: number;
+  justification?: string;
+  rank?: number;
+  // Enriched from the jobs collection
+  employer?: string;
+  category?: string;
+  posted_date?: string;
+}
 
 /** Normalised row used by the table and detail modal. */
 export interface JobRow {

@@ -16,11 +16,9 @@ const storyJobPostingFixture: JobPostingRow = {
   id: "job-1",
   jobTitle: "Junior Software Developer",
   sector: "ICT",
+  contractType: "full_time",
   location: "Lusaka",
-  zqfLevel: "Level 6",
   platform: "BrighterMonday",
-  skills: ["JavaScript", "React", "Git", "Communication"],
-  candidatePool: 34,
   jobUrl: "https://example.com/jobs/junior-software-developer",
 };
 

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import OpenInNewOutlinedIcon from "@mui/icons-material/OpenInNewOutlined";
-import { Box, Button, Chip, Grid, useTheme } from "@mui/material";
+import { Box, Button, Grid, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import JobPostingDetailsDialog from "src/components/JobPostings/JobPostingDetailsDialog";
 import StatCard from "src/components/StatCard/StatCard";
@@ -9,10 +9,8 @@ import type { ColumnDef } from "src/components/DataTable/DataTable";
 import type { JobPostingRow } from "src/types";
 import { useJobPostings } from "src/hooks/useJobPostings";
 
-const MAX_VISIBLE_SKILLS = 2;
-
 const capitalize = (s: string) =>
-  s
+  (s ?? "")
     .toLowerCase()
     .split(" ")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -62,7 +60,7 @@ const JobPostings: React.FC = () => {
         label: t("dashboard.jobPostings.table.jobTitle"),
         align: "left",
         minWidth: 180,
-        render: (val) => <span style={{ fontWeight: 700 }}>{capitalize(val as string)}</span>,
+        render: (val) => <span style={{ fontWeight: 700 }}>{capitalize(val)}</span>,
       },
       {
         key: "sector",
@@ -74,7 +72,18 @@ const JobPostings: React.FC = () => {
           value: sectorFilter,
           onChange: setSectorFilter,
         },
-        render: (val) => capitalize(val as string),
+        render: (val) => capitalize(val),
+      },
+      {
+        key: "contractType",
+        label: t("dashboard.jobPostings.table.contractType"),
+        align: "left",
+        minWidth: 110,
+        render: (val) => {
+          const key = `dashboard.jobPostings.contractTypes.${val}`;
+          const translated = t(key);
+          return translated !== key ? translated : capitalize(val);
+        },
       },
       {
         key: "location",
@@ -86,7 +95,7 @@ const JobPostings: React.FC = () => {
           value: locationFilter,
           onChange: setLocationFilter,
         },
-        render: (val) => capitalize(val as string),
+        render: (val) => capitalize(val),
       },
       {
         key: "platform",
@@ -98,51 +107,7 @@ const JobPostings: React.FC = () => {
           value: platformFilter,
           onChange: setPlatformFilter,
         },
-        render: (val) => capitalize(val as string),
-      },
-      {
-        key: "skills",
-        label: t("dashboard.jobPostings.table.skillsExtracted"),
-        align: "left",
-        minWidth: 160,
-        sortable: false,
-        render: (val, row) => {
-          const skills = val as string[];
-          if (!skills || skills.length === 0) return null;
-          const visible = skills.slice(0, MAX_VISIBLE_SKILLS);
-          const extra = skills.length - MAX_VISIBLE_SKILLS;
-          return (
-            <Box display="flex" flexWrap="wrap" gap={0.5} alignItems="center">
-              {visible.map((s) => (
-                <Chip
-                  key={s}
-                  label={capitalize(s)}
-                  size="small"
-                  sx={{
-                    backgroundColor: theme.palette.grey[100],
-                    border: `1px solid ${theme.palette.divider}`,
-                    fontSize: "0.72rem",
-                    height: 20,
-                  }}
-                />
-              ))}
-              {extra > 0 && (
-                <Box
-                  component="span"
-                  onClick={() => setSelectedJob(row)}
-                  sx={{
-                    fontSize: "0.72rem",
-                    color: "primary.main",
-                    cursor: "pointer",
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  {t("dashboard.jobPostings.moreSkills", { count: extra })}
-                </Box>
-              )}
-            </Box>
-          );
-        },
+        render: (val) => capitalize(val),
       },
       {
         key: "jobUrl",
@@ -154,7 +119,7 @@ const JobPostings: React.FC = () => {
           val ? (
             <Button
               component="a"
-              href={val as string}
+              href={val}
               target="_blank"
               rel="noopener noreferrer"
               color="primary"
@@ -168,7 +133,7 @@ const JobPostings: React.FC = () => {
           ) : null,
       },
     ],
-    [jobPostings, sectorFilter, locationFilter, platformFilter, theme, t]
+    [jobPostings, sectorFilter, locationFilter, platformFilter, t]
   );
 
   return (

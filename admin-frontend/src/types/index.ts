@@ -90,17 +90,14 @@ export interface JobPostingFilters {
   sector: string;
   location: string;
   platform: string;
-  zqfLevel: string;
 }
 
 export interface JobPostingRow {
   id: string;
   jobTitle: string;
   sector: string;
+  contractType: string;
   location: string;
-  zqfLevel: string;
   platform: string;
-  skills: string[];
-  candidatePool: number;
   jobUrl: string;
 }
