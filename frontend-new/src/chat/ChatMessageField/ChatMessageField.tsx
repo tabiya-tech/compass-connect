@@ -1,5 +1,14 @@
 import React, { KeyboardEvent, MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Box, CircularProgress, IconButton, InputAdornment, styled, TextField, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  styled,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowUpwardSharpIcon from "@mui/icons-material/ArrowUpwardSharp";
 import MicIcon from "@mui/icons-material/Mic";
@@ -154,8 +163,11 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
 
   const handleTranscriptionComplete = useCallback(
     (text: string) => {
+      // Filter disallowed characters from transcription (same filter as typed input)
+      const filteredText = text.replace(DISALLOWED_CHARACTERS, "");
+      if (!filteredText.trim()) return;
       // Append to existing message or set as new message
-      const newMessage = message.trim().length > 0 ? `${message} ${text}` : text;
+      const newMessage = message.trim().length > 0 ? `${message} ${filteredText}` : filteredText;
       setMessage(newMessage);
       if (newMessage.trim().length > CHAT_MESSAGE_MAX_LENGTH) {
         setErrorMessage(t(CHARACTER_LIMIT_ERROR_MESSAGES.MESSAGE_LIMIT, { max: CHAT_MESSAGE_MAX_LENGTH }));
@@ -528,11 +540,26 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
       message.trim().length === 0 ||
       message.trim().length > CHAT_MESSAGE_MAX_LENGTH // Only disable the send button when over the limit
     );
-  }, [props.isChatFinished, props.aiIsTyping, props.isInputDisabled, props.isUploadingCv, isOnline, message, sttStatus]);
+  }, [
+    props.isChatFinished,
+    props.aiIsTyping,
+    props.isInputDisabled,
+    props.isUploadingCv,
+    isOnline,
+    message,
+    sttStatus,
+  ]);
 
   // Check if the input field should be disabled
   const inputIsDisabled = useCallback(() => {
-    return props.isChatFinished || props.aiIsTyping || props.isInputDisabled || props.isUploadingCv || !isOnline || sttStatus === "transcribing";
+    return (
+      props.isChatFinished ||
+      props.aiIsTyping ||
+      props.isInputDisabled ||
+      props.isUploadingCv ||
+      !isOnline ||
+      sttStatus === "transcribing"
+    );
   }, [props.isChatFinished, props.aiIsTyping, props.isInputDisabled, props.isUploadingCv, isOnline, sttStatus]);
 
   const contextMenuItems: MenuItemConfig[] =
@@ -662,8 +689,7 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
                         : t("chat.chatMessageField.startRecordingTooltip")
                     }
                     sx={{
-                      backgroundColor:
-                        sttStatus === "recording" ? theme.palette.error.main : "transparent",
+                      backgroundColor: sttStatus === "recording" ? theme.palette.error.main : "transparent",
                       "&:hover": {
                         backgroundColor:
                           sttStatus === "recording" ? theme.palette.error.dark : theme.palette.action.hover,

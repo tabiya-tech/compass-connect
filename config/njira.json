@@ -84,6 +84,9 @@
       ]
     }
   },
+  "speechToText": {
+    "enabled": true
+  },
   "modules": {
     "enabled": true,
     "list": [

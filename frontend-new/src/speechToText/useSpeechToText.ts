@@ -39,8 +39,8 @@ export interface UseSpeechToTextReturn {
   status: SpeechToTextStatus;
   interimText: string;
   error: string | null;
-  startRecording: () => void;
-  stopRecording: () => void;
+  startRecording: () => Promise<void>;
+  stopRecording: () => Promise<void>;
   cancelRecording: () => void;
   elapsedSeconds: number;
   isSupported: boolean;
@@ -59,6 +59,7 @@ export function useSpeechToText({ onTranscriptionComplete }: UseSpeechToTextOpti
   const streamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cancelledRef = useRef(false);
   const onTranscriptionCompleteRef = useRef(onTranscriptionComplete);
 
   // Keep the callback ref up to date
@@ -66,7 +67,8 @@ export function useSpeechToText({ onTranscriptionComplete }: UseSpeechToTextOpti
     onTranscriptionCompleteRef.current = onTranscriptionComplete;
   }, [onTranscriptionComplete]);
 
-  const isSupported = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
+  const isSupported =
+    typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== "undefined";
 
   const cleanup = useCallback(() => {
     // Stop timer
@@ -180,8 +182,7 @@ export function useSpeechToText({ onTranscriptionComplete }: UseSpeechToTextOpti
     } catch (err) {
       cleanup();
       const isPermissionDenied =
-        err instanceof DOMException &&
-        (err.name === "NotAllowedError" || err.name === "PermissionDeniedError");
+        err instanceof DOMException && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError");
       setError(
         isPermissionDenied
           ? t("chat.chatMessageField.voiceErrors.micPermissionDenied")
@@ -191,16 +192,10 @@ export function useSpeechToText({ onTranscriptionComplete }: UseSpeechToTextOpti
     }
   }, [status, i18n.language, t, cleanup]);
 
-  // Auto-stop at max duration
-  useEffect(() => {
-    if (status === "recording" && elapsedSeconds >= MAX_DURATION_SECONDS) {
-      stopRecording();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elapsedSeconds, status]);
-
   const stopRecording = useCallback(async () => {
     if (status !== "recording") return;
+
+    cancelledRef.current = false;
 
     // Stop speech recognition
     if (recognitionRef.current) {
@@ -233,6 +228,11 @@ export function useSpeechToText({ onTranscriptionComplete }: UseSpeechToTextOpti
       recorder.stop();
     });
 
+    // Check if cancelled during the await
+    if (cancelledRef.current) {
+      return;
+    }
+
     // Stop media stream tracks
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -255,17 +255,33 @@ export function useSpeechToText({ onTranscriptionComplete }: UseSpeechToTextOpti
     try {
       const service = SpeechToTextService.getInstance();
       const result = await service.transcribe(audioBlob, i18n.language);
+      if (cancelledRef.current) return;
+      // Guard against empty transcription from backend
+      if (!result.text?.trim()) {
+        setInterimText("");
+        setStatus("idle");
+        return;
+      }
       onTranscriptionCompleteRef.current(result.text);
       setInterimText("");
       setStatus("idle");
     } catch {
+      if (cancelledRef.current) return;
       setError(t("chat.chatMessageField.voiceErrors.transcriptionFailed"));
       setStatus("error");
       setInterimText("");
     }
   }, [status, i18n.language, t]);
 
+  // Auto-stop at max duration
+  useEffect(() => {
+    if (status === "recording" && elapsedSeconds >= MAX_DURATION_SECONDS) {
+      stopRecording();
+    }
+  }, [elapsedSeconds, status, stopRecording]);
+
   const cancelRecording = useCallback(() => {
+    cancelledRef.current = true;
     cleanup();
     setStatus("idle");
     setInterimText("");
