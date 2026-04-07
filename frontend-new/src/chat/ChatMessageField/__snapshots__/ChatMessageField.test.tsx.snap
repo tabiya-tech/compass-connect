@@ -73,7 +73,7 @@ exports[`ChatMessageField should render correctly 1`] = `
           tabindex="-1"
         />
         <div
-          class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-1t5wmfw-MuiInputAdornment-root"
+          class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-5kfisb-MuiInputAdornment-root"
         >
           <button
             class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeMedium css-1ihmtav-MuiButtonBase-root-MuiIconButton-root"

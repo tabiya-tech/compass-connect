@@ -105,7 +105,7 @@
     "enabled": true
   },
   "speechToText": {
-    "enabled": false
+    "enabled": true
   },
   "sensitiveData": {
     "fields": {

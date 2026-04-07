@@ -110,13 +110,21 @@
         "aiTyping": "AI is typing..., wait for it to finish.",
         "offline": "You are offline. Please connect to the internet to send a message.",
         "default": "Type your message...",
-        "uploading": "Uploading CV..."
+        "uploading": "Uploading CV...",
+        "transcribing": "Transcribing your message...",
+        "recording": "Recording... tap stop when done"
       },
       "uploadCvIntro": "You can upload your CV as soon as we start exploring your experiences",
       "uploadCvCollectExperiences": "PDF, DOCX, TXT • Max {{MAX_FILE_SIZE_MB}} MB • {{MAX_MARKDOWN_CHARS}} chars max",
       "uploadCvOtherPhase": "CV upload is only available during experience collection",
       "uploadCvLabel": "Upload CV",
-      "viewUploadedLabel": "Previously uploaded CVs"
+      "viewUploadedLabel": "Previously uploaded CVs",
+      "startRecordingTooltip": "Start voice input",
+      "stopRecordingTooltip": "Stop recording",
+      "voiceErrors": {
+        "micPermissionDenied": "Microphone access denied. Allow in browser settings.",
+        "transcriptionFailed": "Could not transcribe audio. Please try typing instead."
+      }
     },
     "chatMessage": {
       "typingChatMessage": {

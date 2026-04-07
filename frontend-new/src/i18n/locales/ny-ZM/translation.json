@@ -152,12 +152,20 @@
       "uploadCvOtherPhase": "Kukena CV kulipo pokha pamene tikukusanyira zochitika",
       "uploadCvLabel": "Kenani CV",
       "viewUploadedLabel": "CV zidakenedwa kale",
+      "startRecordingTooltip": "Yambani kulankhula",
+      "stopRecordingTooltip": "Imitsani kulemba",
+      "voiceErrors": {
+        "micPermissionDenied": "Kuletsedwa kugwiritsa ntchito maikolofoni. Lolesani mu zokonda za msakatuli.",
+        "transcriptionFailed": "Sikunatheka kusintha mawu kukhala malemba. Chonde yesani kulemba m'malo mwake."
+      },
       "placeholders": {
         "chatFinished": "Nkhani yatha. Simungatume uthenga wina.",
         "aiTyping": "AI ikulemba..., dikirani imalize.",
         "offline": "Simuli pa intaneti. Chonde lumikizani pa intaneti kuti mutume uthenga.",
         "default": "Lembani uthenga wanu...",
-        "uploading": "Kukena CV..."
+        "uploading": "Kukena CV...",
+        "transcribing": "Ikusintha mawu anu kukhala malemba...",
+        "recording": "Ikutenga... dinani imitsani mukatha"
       }
     },
     "chatMessage": {
