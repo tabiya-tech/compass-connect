@@ -104,6 +104,9 @@
     "gtmContainerNumericId": "246009778",
     "enabled": true
   },
+  "speechToText": {
+    "enabled": false
+  },
   "sensitiveData": {
     "fields": {
       "name": {
