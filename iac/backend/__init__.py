@@ -13,4 +13,6 @@ REQUIRED_SERVICES = [
     "run.googleapis.com",
     # GCP Cloud Storage (for CV uploads bucket)
     "storage.googleapis.com",
+    # Google Cloud Speech-to-Text (for voice input transcription)
+    "speech.googleapis.com",
 ]

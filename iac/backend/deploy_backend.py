@@ -318,6 +318,15 @@ def _deploy_cloud_run_service(
         opts=pulumi.ResourceOptions(depends_on=dependencies + [service_account], provider=basic_config.provider),
     )
 
+    # Assign the necessary roles to the service account for Speech-to-Text access.
+    speech_iam_member = gcp.projects.IAMMember(
+        get_resource_name(resource="backend-sa", resource_type="speech-client-binding"),
+        member=service_account.email.apply(lambda email: f"serviceAccount:{email}"),
+        role="roles/speech.client",
+        project=basic_config.project,
+        opts=pulumi.ResourceOptions(depends_on=dependencies + [service_account], provider=basic_config.provider),
+    )
+
     # Deploy cloud run service
     service = gcp.cloudrunv2.Service(
         get_resource_name(resource="cloudrun", resource_type="service"),
@@ -389,6 +398,9 @@ def _deploy_cloud_run_service(
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="VERTEX_API_REGION",
                             value=backend_service_cfg.vertex_api_region),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="GOOGLE_CLOUD_PROJECT",
+                            value=basic_config.project),
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="EMBEDDINGS_SERVICE_NAME",
                             value=backend_service_cfg.embeddings_service_name),
@@ -484,7 +496,7 @@ def _deploy_cloud_run_service(
                 egress="ALL_TRAFFIC",
             )
         ),
-        opts=pulumi.ResourceOptions(depends_on=dependencies + nat_dependencies + [iam_member], provider=basic_config.provider),
+        opts=pulumi.ResourceOptions(depends_on=dependencies + nat_dependencies + [iam_member, speech_iam_member], provider=basic_config.provider),
     )
     pulumi.export("cloud_run_url", service.uri)
     return service, service_account
