@@ -13,7 +13,7 @@ function mapMatchedDocToRow(doc: MatchedJobApiDocument): JobRow {
     jobTitle: doc.opportunity_title ?? "",
     company: doc.employer ?? "",
     category: doc.category ?? "",
-    employmentType: doc.contract_type ?? "",
+    contractType: doc.contract_type ?? "",
     location: doc.location ?? "",
     posted: doc.posted_date ?? "",
     jobUrl: doc.URL ?? undefined,

@@ -53,7 +53,7 @@ export interface JobRow {
   jobTitle: string;
   company: string;
   category: string;
-  employmentType: string;
+  contractType: string;
   location: string;
   posted: string;
   jobUrl?: string;
@@ -67,6 +67,6 @@ export interface JobRow {
 export interface JobFilters {
   search: string;
   category: string;
-  employmentType: string;
+  contractType: string;
   location: string;
 }

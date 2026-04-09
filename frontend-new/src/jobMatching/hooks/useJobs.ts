@@ -13,7 +13,7 @@ function mapDocToRow(doc: JobApiDocument): JobRow {
     jobTitle: doc.opportunity_title ?? "",
     company: doc.employer ?? "",
     category: doc.category ?? "",
-    employmentType: doc.contract_type ?? "",
+    contractType: doc.contract_type ?? "",
     location: doc.location ?? "",
     posted: doc.posted_date ?? "",
     jobUrl: doc.URL ?? undefined,
@@ -45,7 +45,7 @@ export function useJobs(filters: JobFilters): UseJobsResult {
   useEffect(() => {
     setCursorStack([undefined]);
     setPageIndex(0);
-  }, [filters.category, filters.employmentType, filters.location]);
+  }, [filters.category, filters.contractType, filters.location]);
 
   useEffect(() => {
     const cursor = cursorStack[pageIndex];
@@ -57,7 +57,7 @@ export function useJobs(filters: JobFilters): UseJobsResult {
       try {
         const result = await JobService.getInstance().listJobs({
           category: filters.category !== "all" ? filters.category : undefined,
-          employment_type: filters.employmentType !== "all" ? filters.employmentType : undefined,
+          employment_type: filters.contractType !== "all" ? filters.contractType : undefined,
           location: filters.location !== "all" ? filters.location : undefined,
           cursor,
           limit: PAGE_SIZE,
@@ -81,7 +81,7 @@ export function useJobs(filters: JobFilters): UseJobsResult {
     return () => {
       cancelled = true;
     };
-  }, [cursorStack, pageIndex, filters.category, filters.employmentType, filters.location]);
+  }, [cursorStack, pageIndex, filters.category, filters.contractType, filters.location]);
 
   const goToNextPage = useCallback(() => {
     if (!nextCursor) return;

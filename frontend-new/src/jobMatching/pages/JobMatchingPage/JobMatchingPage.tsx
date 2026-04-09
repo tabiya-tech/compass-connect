@@ -22,7 +22,7 @@ const uniqueFilterOptions = (jobs: JobRow[], key: keyof JobRow) => {
   return [{ value: "all", label: "All" }, ...values.map((v) => ({ value: v, label: capitalize(v) }))];
 };
 
-const EMPTY_FILTERS: JobFilters = { search: "", category: "all", employmentType: "all", location: "all" };
+const EMPTY_FILTERS: JobFilters = { search: "", category: "all", contractType: "all", location: "all" };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -109,14 +109,14 @@ const JobMatchingPage: React.FC = () => {
         ),
       },
       {
-        key: "employmentType",
+        key: "contractType",
         label: "Type",
         align: "left",
         minWidth: 100,
         filter: {
-          options: uniqueFilterOptions(jobs, "employmentType"),
-          value: browseFilters.employmentType,
-          onChange: (v) => setBrowseFilters((f) => ({ ...f, employmentType: v })),
+          options: uniqueFilterOptions(jobs, "contractType"),
+          value: browseFilters.contractType,
+          onChange: (v) => setBrowseFilters((f) => ({ ...f, contractType: v })),
         },
         render: (val) => {
           const palette = [
@@ -162,7 +162,7 @@ const JobMatchingPage: React.FC = () => {
         align: "left",
         minWidth: 100,
         render: (val) => (
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" noWrap>
             {val as string}
           </Typography>
         ),

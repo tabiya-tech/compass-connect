@@ -90,9 +90,9 @@ const JobDetailModal: React.FC<JobDetailModalProps> = ({ job, open, onClose }) =
           gap={theme.fixedSpacing(theme.tabiyaSpacing.xs)}
           mb={theme.fixedSpacing(theme.tabiyaSpacing.sm)}
         >
-          {job.employmentType && (
+          {job.contractType && (
             <Chip
-              label={capitalize(job.employmentType)}
+              label={capitalize(job.contractType)}
               size="small"
               sx={{
                 backgroundColor: theme.palette.primary.light,
