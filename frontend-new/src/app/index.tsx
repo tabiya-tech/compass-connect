@@ -321,12 +321,7 @@ const App = () => {
             },
             {
               path: routerPaths.KNOWLEDGE_HUB_DOCUMENT,
-              handle: {
-                title: "knowledgeHub.careerPathwaysTitle",
-                subtitle: "home.modules.knowledgeHubDesc",
-                backLabelKey: "knowledgeHub.backToKnowledgeHub",
-                backTo: routerPaths.KNOWLEDGE_HUB,
-              },
+              handle: {},
               element: (
                 <ProtectedRoute key={ProtectedRouteKeys.KNOWLEDGE_HUB_DOCUMENT}>
                   <LazyLoadedKnowledgeHubDocument />
@@ -368,8 +363,6 @@ const App = () => {
             {
               path: routerPaths.PROFILE,
               handle: {
-                title: "home.profile.title",
-                subtitle: "home.profile.subtitle",
                 headerColor: "primary",
               },
               element: (
@@ -380,10 +373,7 @@ const App = () => {
             },
             {
               path: routerPaths.JOB_MATCHING,
-              handle: {
-                title: "jobMatching.pageTitle",
-                subtitle: "jobMatching.pageDescription",
-              },
+              handle: {},
               element: (
                 <ProtectedRoute key={ProtectedRouteKeys.JOB_MATCHING}>
                   <LazyLoadedJobMatching />
