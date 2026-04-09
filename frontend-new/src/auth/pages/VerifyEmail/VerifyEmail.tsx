@@ -45,6 +45,7 @@ const VerifyEmail: React.FC = () => {
         <PrimaryButton
           fullWidth
           variant="contained"
+          showCircle
           color="primary"
           style={{ marginTop: 16 }}
           data-testid={DATA_TEST_ID.BACK_TO_LOGIN_BUTTON}
