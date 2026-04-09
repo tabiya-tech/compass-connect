@@ -1,7 +1,7 @@
 {
   "common": {
     "buttons": {
-      "login": "Sign In",
+      "login": "Let's go",
       "logout": "Logout",
       "submit": "Submit",
       "register": "Sign Up",

@@ -45,7 +45,7 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
         gap: showCircle ? 1.5 : 1,
         justifyContent: showCircle ? "space-between" : "center",
         ...(isOutlined && { border: `2px solid ${paletteColor.main}` }),
-        padding: showCircle ? "6px 16px 6px 16px" : "12px 24px",
+        padding: showCircle ? "6px 6px 6px 22px" : "12px 24px",
         "&:focus-visible": {
           outline: `3px solid ${theme.palette.brandAccent.main}`,
           outlineOffset: "2px",
