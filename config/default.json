@@ -107,6 +107,9 @@
   "speechToText": {
     "enabled": false
   },
+  "textToSpeech": {
+    "enabled": false
+  },
   "sensitiveData": {
     "fields": {
       "name": {

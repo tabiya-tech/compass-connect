@@ -126,6 +126,11 @@
         "transcriptionFailed": "Could not transcribe audio. Please try typing instead."
       }
     },
+    "textToSpeech": {
+      "readAloudTooltip": "Read aloud",
+      "stopReadingTooltip": "Stop reading",
+      "loadingTooltip": "Loading audio..."
+    },
     "chatMessage": {
       "typingChatMessage": {
         "typing": "Typing",

@@ -168,6 +168,11 @@
         "recording": "Recording... tap stop when done"
       }
     },
+    "textToSpeech": {
+      "readAloudTooltip": "Read aloud",
+      "stopReadingTooltip": "Stop reading",
+      "loadingTooltip": "Loading audio..."
+    },
     "chatMessage": {
       "typingChatMessage": {
         "typing": "Typing",

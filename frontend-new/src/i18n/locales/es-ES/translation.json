@@ -126,6 +126,11 @@
         "transcriptionFailed": "No se pudo transcribir el audio. Intenta escribir en su lugar."
       }
     },
+    "textToSpeech": {
+      "readAloudTooltip": "Leer en voz alta",
+      "stopReadingTooltip": "Detener lectura",
+      "loadingTooltip": "Cargando audio..."
+    },
     "chatMessage": {
       "typingChatMessage": {
         "typing": "Escribiendo",

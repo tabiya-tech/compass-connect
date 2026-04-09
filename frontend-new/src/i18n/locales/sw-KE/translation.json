@@ -168,6 +168,11 @@
         "recording": "Inaendelea kurekodi... gusa kusimama ukimaliza"
       }
     },
+    "textToSpeech": {
+      "readAloudTooltip": "Soma kwa sauti",
+      "stopReadingTooltip": "Simamisha kusoma",
+      "loadingTooltip": "Inapakia sauti..."
+    },
     "chatMessage": {
       "typingChatMessage": {
         "typing": "Inaandika",

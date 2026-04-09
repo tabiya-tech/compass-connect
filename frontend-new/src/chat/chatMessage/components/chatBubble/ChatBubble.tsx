@@ -1,6 +1,7 @@
 import React from "react";
 import { ConversationMessageSender } from "src/chat/ChatService/ChatService.types";
 import { Box, Typography, styled } from "@mui/material";
+import ReadAloudButton from "src/chat/chatMessage/components/readAloudButton/ReadAloudButton";
 
 export interface ChatBubbleProps {
   message: string | React.ReactNode;
@@ -49,7 +50,12 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message, sender, children, fill
       >
         {message}
       </Typography>
-      <Box data-testid={DATA_TEST_ID.CHAT_MESSAGE_BUBBLE_MESSAGE_FOOTER_CONTAINER}>{children}</Box>
+      <Box data-testid={DATA_TEST_ID.CHAT_MESSAGE_BUBBLE_MESSAGE_FOOTER_CONTAINER}>
+        {sender === ConversationMessageSender.COMPASS && typeof message === "string" && (
+          <ReadAloudButton messageText={message} />
+        )}
+        {children}
+      </Box>
     </MessageBubble>
   );
 };

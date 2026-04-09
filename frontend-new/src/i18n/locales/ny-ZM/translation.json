@@ -168,6 +168,11 @@
         "recording": "Ikutenga... dinani imitsani mukatha"
       }
     },
+    "textToSpeech": {
+      "readAloudTooltip": "Werengani mokweza",
+      "stopReadingTooltip": "Imitsani kuwerenga",
+      "loadingTooltip": "Kukweza mawu..."
+    },
     "chatMessage": {
       "typingChatMessage": {
         "typing": "Kulemba",

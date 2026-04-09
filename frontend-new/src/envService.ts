@@ -20,6 +20,7 @@ export enum EnvVariables {
   FRONTEND_METRICS_CONFIG = "FRONTEND_METRICS_CONFIG",
   GLOBAL_ENABLE_CV_UPLOAD = "GLOBAL_ENABLE_CV_UPLOAD",
   GLOBAL_ENABLE_SPEECH_TO_TEXT = "GLOBAL_ENABLE_SPEECH_TO_TEXT",
+  GLOBAL_ENABLE_TEXT_TO_SPEECH = "GLOBAL_ENABLE_TEXT_TO_SPEECH",
   FRONTEND_ENABLE_NEW_SESSION = "FRONTEND_ENABLE_NEW_SESSION",
   FRONTEND_FEATURES = "FRONTEND_FEATURES",
   FRONTEND_DISABLE_SOCIAL_AUTH = "FRONTEND_DISABLE_SOCIAL_AUTH",
@@ -196,6 +197,10 @@ export const getCvUploadEnabled = () => {
 
 export const getSpeechToTextEnabled = () => {
   return getEnv(EnvVariables.GLOBAL_ENABLE_SPEECH_TO_TEXT);
+};
+
+export const getTextToSpeechEnabled = () => {
+  return getEnv(EnvVariables.GLOBAL_ENABLE_TEXT_TO_SPEECH);
 };
 
 export const getNewSessionEnabled = () => {

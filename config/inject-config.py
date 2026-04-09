@@ -25,6 +25,9 @@ BACKEND_ENV_MAP: Dict[str, str] = {
     # Speech-to-Text
     "GLOBAL_ENABLE_SPEECH_TO_TEXT": "speechToText.enabled",
 
+    # Text-to-Speech
+    "GLOBAL_ENABLE_TEXT_TO_SPEECH": "textToSpeech.enabled",
+
     # Add more backend env vars here
 }
 
@@ -52,6 +55,9 @@ FRONTEND_ENV_MAP: Dict[str, str] = {
 
     # Speech-to-Text
     "GLOBAL_ENABLE_SPEECH_TO_TEXT": "speechToText.enabled",
+
+    # Text-to-Speech
+    "GLOBAL_ENABLE_TEXT_TO_SPEECH": "textToSpeech.enabled",
 
     # i18n
     "FRONTEND_DEFAULT_LOCALE": "i18n.ui.defaultLocale",
