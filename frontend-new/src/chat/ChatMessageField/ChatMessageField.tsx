@@ -1,7 +1,18 @@
 import React, { KeyboardEvent, MouseEvent, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Box, IconButton, InputAdornment, styled, TextField, Typography, useTheme } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  styled,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowUpwardSharpIcon from "@mui/icons-material/ArrowUpwardSharp";
+import MicIcon from "@mui/icons-material/Mic";
+import StopIcon from "@mui/icons-material/Stop";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { AnimatePresence, motion } from "framer-motion";
 import { CV_UPLOAD_ERROR_I18N_KEYS, getCvUploadErrorMessageFromHttpStatus } from "../CVUploadErrorHandling";
@@ -10,7 +21,8 @@ import { MenuItemConfig } from "src/theme/ContextMenu/menuItemConfig.types";
 import { IsOnlineContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import { ConversationPhase } from "src/chat/chatProgressbar/types";
 import AnimatedDotBadge from "src/theme/AnimatedDotBadge/AnimatedDotBadge";
-import { getCvUploadEnabled } from "src/envService";
+import { getCvUploadEnabled, getSpeechToTextEnabled } from "src/envService";
+import { useSpeechToText } from "src/speechToText/useSpeechToText";
 import CVService from "src/CV/CVService/CVService";
 import { CVListItem } from "src/CV/CVService/CVService.types";
 import authenticationStateService from "src/auth/services/AuthenticationState.service";
@@ -52,6 +64,9 @@ export const DATA_TEST_ID = {
   CHAT_MESSAGE_FIELD_PLUS_BUTTON: `chat-message-field-plus-button-${uniqueId}`,
   CHAT_MESSAGE_FIELD_PLUS_ICON: `chat-message-field-plus-icon-${uniqueId}`,
   CHAT_MESSAGE_FIELD_HIDDEN_FILE_INPUT: `chat-message-field-hidden-file-input-${uniqueId}`,
+  CHAT_MESSAGE_FIELD_MIC_BUTTON: `chat-message-field-mic-button-${uniqueId}`,
+  CHAT_MESSAGE_FIELD_MIC_ICON: `chat-message-field-mic-icon-${uniqueId}`,
+  CHAT_MESSAGE_FIELD_STOP_ICON: `chat-message-field-stop-icon-${uniqueId}`,
 };
 
 export const MENU_ITEM_ID = {
@@ -73,6 +88,8 @@ export const PLACEHOLDER_TEXTS = {
   OFFLINE: "chat.chatMessageField.placeholders.offline",
   DEFAULT: "chat.chatMessageField.placeholders.default",
   UPLOADING: "chat.chatMessageField.placeholders.uploading",
+  TRANSCRIBING: "chat.chatMessageField.placeholders.transcribing",
+  RECORDING: "chat.chatMessageField.placeholders.recording",
 } as const;
 
 export const CHARACTER_LIMIT_ERROR_MESSAGES = {
@@ -142,6 +159,35 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
 
   const isCvUploadEnabled = getCvUploadEnabled().toLowerCase() === "true";
   const showCvUpload = props.showCvUpload !== false;
+  const isSttEnabled = getSpeechToTextEnabled().toLowerCase() === "true";
+
+  const handleTranscriptionComplete = useCallback(
+    (text: string) => {
+      // Filter disallowed characters from transcription (same filter as typed input)
+      const filteredText = text.replace(DISALLOWED_CHARACTERS, "");
+      if (!filteredText.trim()) return;
+      // Append to existing message or set as new message
+      const newMessage = message.trim().length > 0 ? `${message} ${filteredText}` : filteredText;
+      setMessage(newMessage);
+      if (newMessage.trim().length > CHAT_MESSAGE_MAX_LENGTH) {
+        setErrorMessage(t(CHARACTER_LIMIT_ERROR_MESSAGES.MESSAGE_LIMIT, { max: CHAT_MESSAGE_MAX_LENGTH }));
+      } else {
+        setErrorMessage("");
+      }
+    },
+    [message, t]
+  );
+
+  const {
+    status: sttStatus,
+    interimText,
+    error: sttError,
+    startRecording,
+    stopRecording,
+    isSupported: isSttSupported,
+  } = useSpeechToText({
+    onTranscriptionComplete: handleTranscriptionComplete,
+  });
 
   // Show the dot badge whenever in COLLECT_EXPERIENCES and not yet seen
   useEffect(() => {
@@ -436,7 +482,20 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
     return theme.palette.text.secondary;
   }, [message, theme.palette.error.main, theme.palette.warning.main, theme.palette.text.secondary]);
 
+  // Show STT errors in the error message area
+  useEffect(() => {
+    if (sttError) {
+      setErrorMessage(sttError);
+    }
+  }, [sttError]);
+
   const placeHolder = useMemo(() => {
+    if (sttStatus === "transcribing") {
+      return t(PLACEHOLDER_TEXTS.TRANSCRIBING);
+    }
+    if (sttStatus === "recording" && !interimText) {
+      return t(PLACEHOLDER_TEXTS.RECORDING);
+    }
     if (props.isChatFinished) {
       return t(PLACEHOLDER_TEXTS.CHAT_FINISHED);
     }
@@ -457,6 +516,8 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
     }
     return t(PLACEHOLDER_TEXTS.DEFAULT);
   }, [
+    sttStatus,
+    interimText,
     props.aiIsTyping,
     props.isChatFinished,
     props.isUploadingCv,
@@ -474,15 +535,32 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
       props.isInputDisabled ||
       props.isUploadingCv ||
       !isOnline ||
+      sttStatus === "recording" ||
+      sttStatus === "transcribing" ||
       message.trim().length === 0 ||
       message.trim().length > CHAT_MESSAGE_MAX_LENGTH // Only disable the send button when over the limit
     );
-  }, [props.isChatFinished, props.aiIsTyping, props.isInputDisabled, props.isUploadingCv, isOnline, message]);
+  }, [
+    props.isChatFinished,
+    props.aiIsTyping,
+    props.isInputDisabled,
+    props.isUploadingCv,
+    isOnline,
+    message,
+    sttStatus,
+  ]);
 
   // Check if the input field should be disabled
   const inputIsDisabled = useCallback(() => {
-    return props.isChatFinished || props.aiIsTyping || props.isInputDisabled || props.isUploadingCv || !isOnline;
-  }, [props.isChatFinished, props.aiIsTyping, props.isInputDisabled, props.isUploadingCv, isOnline]);
+    return (
+      props.isChatFinished ||
+      props.aiIsTyping ||
+      props.isInputDisabled ||
+      props.isUploadingCv ||
+      !isOnline ||
+      sttStatus === "transcribing"
+    );
+  }, [props.isChatFinished, props.aiIsTyping, props.isInputDisabled, props.isUploadingCv, isOnline, sttStatus]);
 
   const contextMenuItems: MenuItemConfig[] =
     menuView === "main"
@@ -557,7 +635,7 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
           fullWidth
           multiline
           maxRows={maxRows}
-          value={message}
+          value={sttStatus === "recording" ? (message ? `${message} ${interimText}` : interimText) : message}
           disabled={inputIsDisabled()}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
@@ -566,6 +644,7 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
           helperText={errorMessage}
           fillColor={props.fillColor}
           InputProps={{
+            readOnly: sttStatus === "recording",
             startAdornment: (
               <InputAdornment position="start">
                 <AnimatePresence initial={false}>
@@ -597,7 +676,41 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
               </InputAdornment>
             ),
             endAdornment: (
-              <InputAdornment position="end">
+              <InputAdornment position="end" sx={{ gap: 0.5 }}>
+                {isSttEnabled && isSttSupported && (
+                  <IconButton
+                    data-testid={DATA_TEST_ID.CHAT_MESSAGE_FIELD_MIC_BUTTON}
+                    onClick={sttStatus === "recording" ? stopRecording : startRecording}
+                    disabled={inputIsDisabled() || sttStatus === "transcribing"}
+                    onKeyDown={(event) => event.stopPropagation()}
+                    title={
+                      sttStatus === "recording"
+                        ? t("chat.chatMessageField.stopRecordingTooltip")
+                        : t("chat.chatMessageField.startRecordingTooltip")
+                    }
+                    sx={{
+                      backgroundColor: sttStatus === "recording" ? theme.palette.error.main : "transparent",
+                      "&:hover": {
+                        backgroundColor:
+                          sttStatus === "recording" ? theme.palette.error.dark : theme.palette.action.hover,
+                      },
+                    }}
+                  >
+                    {sttStatus === "transcribing" ? (
+                      <CircularProgress size={20} />
+                    ) : sttStatus === "recording" ? (
+                      <StopIcon
+                        data-testid={DATA_TEST_ID.CHAT_MESSAGE_FIELD_STOP_ICON}
+                        sx={{ color: theme.palette.common.white }}
+                      />
+                    ) : (
+                      <MicIcon
+                        data-testid={DATA_TEST_ID.CHAT_MESSAGE_FIELD_MIC_ICON}
+                        sx={{ color: props.fillColor || theme.palette.primary.dark }}
+                      />
+                    )}
+                  </IconButton>
+                )}
                 <IconButton
                   data-testid={DATA_TEST_ID.CHAT_MESSAGE_FIELD_SEND_BUTTON}
                   onClick={handleButtonClick}

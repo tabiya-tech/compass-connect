@@ -69,6 +69,8 @@ class BackendServiceConfig:
     career_explorer_config: Optional[str]
     plain_personal_data_fields: Optional[str]
     extra_allowed_origins: Optional[str]
+    enable_speech_to_text: Optional[str]
+    enable_text_to_speech: Optional[str]
 
 
 """
@@ -318,6 +320,24 @@ def _deploy_cloud_run_service(
         opts=pulumi.ResourceOptions(depends_on=dependencies + [service_account], provider=basic_config.provider),
     )
 
+    # Assign the necessary roles to the service account for Speech-to-Text access.
+    speech_iam_member = gcp.projects.IAMMember(
+        get_resource_name(resource="backend-sa", resource_type="speech-client-binding"),
+        member=service_account.email.apply(lambda email: f"serviceAccount:{email}"),
+        role="roles/speech.client",
+        project=basic_config.project,
+        opts=pulumi.ResourceOptions(depends_on=dependencies + [service_account], provider=basic_config.provider),
+    )
+
+    # Assign the necessary roles to the service account for Text-to-Speech access.
+    tts_iam_member = gcp.projects.IAMMember(
+        get_resource_name(resource="backend-sa", resource_type="tts-client-binding"),
+        member=service_account.email.apply(lambda email: f"serviceAccount:{email}"),
+        role="roles/texttospeech.client",
+        project=basic_config.project,
+        opts=pulumi.ResourceOptions(depends_on=dependencies + [service_account], provider=basic_config.provider),
+    )
+
     # Deploy cloud run service
     service = gcp.cloudrunv2.Service(
         get_resource_name(resource="cloudrun", resource_type="service"),
@@ -390,6 +410,9 @@ def _deploy_cloud_run_service(
                             name="VERTEX_API_REGION",
                             value=backend_service_cfg.vertex_api_region),
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="GOOGLE_CLOUD_PROJECT",
+                            value=basic_config.project),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="EMBEDDINGS_SERVICE_NAME",
                             value=backend_service_cfg.embeddings_service_name),
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
@@ -454,6 +477,12 @@ def _deploy_cloud_run_service(
                             name="GLOBAL_ENABLE_CV_UPLOAD",
                             value=backend_service_cfg.enable_cv_upload or "false"),
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="GLOBAL_ENABLE_SPEECH_TO_TEXT",
+                            value=backend_service_cfg.enable_speech_to_text or "false"),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="GLOBAL_ENABLE_TEXT_TO_SPEECH",
+                            value=backend_service_cfg.enable_text_to_speech or "false"),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="MATCHING_SERVICE_URL",
                             value=backend_service_cfg.matching_service_url),
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
@@ -484,7 +513,7 @@ def _deploy_cloud_run_service(
                 egress="ALL_TRAFFIC",
             )
         ),
-        opts=pulumi.ResourceOptions(depends_on=dependencies + nat_dependencies + [iam_member], provider=basic_config.provider),
+        opts=pulumi.ResourceOptions(depends_on=dependencies + nat_dependencies + [iam_member, speech_iam_member, tts_iam_member], provider=basic_config.provider),
     )
     pulumi.export("cloud_run_url", service.uri)
     return service, service_account

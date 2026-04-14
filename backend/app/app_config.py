@@ -73,6 +73,18 @@ class ApplicationConfig(BaseModel):
     When disabled, CV upload routes will not be registered and CV indexes will not be created.
     """
 
+    enable_speech_to_text: bool = False
+    """
+    A flag to enable or disable the Speech-to-Text (voice input) feature.
+    When disabled, speech-to-text routes will not be registered.
+    """
+
+    enable_text_to_speech: bool = False
+    """
+    A flag to enable or disable the Text-to-Speech (read-aloud) feature.
+    When disabled, text-to-speech routes will not be registered.
+    """
+
     # CV storage and upload limits
     cv_storage_bucket: Optional[str] = ""
     cv_max_uploads_per_user: Optional[int] = Field(default=DEFAULT_MAX_UPLOADS_PER_USER, gt=0)

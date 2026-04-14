@@ -112,13 +112,26 @@
         "aiTyping": "La IA está escribiendo..., espera a que termine.",
         "offline": "Estás desconectado. Conéctate a Internet para enviar un mensaje.",
         "default": "Escribe tu mensaje...",
-        "uploading": "Subiendo CV..."
+        "uploading": "Subiendo CV...",
+        "transcribing": "Transcribiendo tu mensaje...",
+        "recording": "Grabando... toca detener cuando termines"
       },
       "uploadCvIntro": "Podés subir tu CV tan pronto como empecemos a explorar tus experiencias",
       "uploadCvCollectExperiences": "PDF, DOCX, TXT • Máximo {{MAX_FILE_SIZE_MB}} MB • {{MAX_MARKDOWN_CHARS}} caracteres como límite",
       "uploadCvOtherPhase": "La subida de CV solo está disponible durante la recopilación de experiencias",
       "uploadCvLabel": "Subir CV",
-      "viewUploadedLabel": "CVs subidos anteriormente"
+      "viewUploadedLabel": "CVs subidos anteriormente",
+      "startRecordingTooltip": "Iniciar entrada de voz",
+      "stopRecordingTooltip": "Detener grabación",
+      "voiceErrors": {
+        "micPermissionDenied": "Acceso al micrófono denegado. Permítelo en la configuración del navegador.",
+        "transcriptionFailed": "No se pudo transcribir el audio. Intenta escribir en su lugar."
+      }
+    },
+    "textToSpeech": {
+      "readAloudTooltip": "Leer en voz alta",
+      "stopReadingTooltip": "Detener lectura",
+      "loadingTooltip": "Cargando audio..."
     },
     "chatMessage": {
       "typingChatMessage": {

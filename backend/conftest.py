@@ -29,6 +29,7 @@ _mocked_application_config = ApplicationConfig(
     cv_storage_bucket="foo-bucket",
     features={},
     enable_cv_upload=True,
+    enable_speech_to_text=False,
     language_config=LanguageConfig(
         default_locale=Locale.EN_US,
         available_locales=[LocaleDateFormatEntry(locale=Locale.EN_US, date_format="MM/DD/YYYY")]

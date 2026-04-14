@@ -21,6 +21,8 @@ from app.career_explorer.config import parse_career_explorer_config
 from app.metrics.routes.routes import add_metrics_routes
 from app.analytics.routes import add_analytics_routes
 from app.teveta.routes import add_teveta_routes
+from app.speech_to_text.routes import add_speech_to_text_routes
+from app.text_to_speech.routes import add_text_to_speech_routes
 from app.sentry_init import init_sentry, set_sentry_contexts
 from app.server_dependencies.db_dependencies import CompassDBProvider
 from app.users.auth import Authentication, ApiKeyAuth
@@ -226,6 +228,16 @@ _enable_cv_upload_str = os.getenv("GLOBAL_ENABLE_CV_UPLOAD", "false")
 _enable_cv_upload = _enable_cv_upload_str.lower() == "true"
 logger.info(f"GLOBAL_ENABLE_CV_UPLOAD: {_enable_cv_upload}")
 
+# Speech-to-text feature flag - defaults to False if not set
+_enable_speech_to_text_str = os.getenv("GLOBAL_ENABLE_SPEECH_TO_TEXT", "false")
+_enable_speech_to_text = _enable_speech_to_text_str.lower() == "true"
+logger.info(f"GLOBAL_ENABLE_SPEECH_TO_TEXT: {_enable_speech_to_text}")
+
+# Text-to-speech feature flag - defaults to False if not set
+_enable_text_to_speech_str = os.getenv("GLOBAL_ENABLE_TEXT_TO_SPEECH", "false")
+_enable_text_to_speech = _enable_text_to_speech_str.lower() == "true"
+logger.info(f"GLOBAL_ENABLE_TEXT_TO_SPEECH: {_enable_text_to_speech}")
+
 application_config = ApplicationConfig(
     environment_name=os.getenv("TARGET_ENVIRONMENT_NAME"),
     version_info=load_version_info(),
@@ -237,6 +249,8 @@ application_config = ApplicationConfig(
     features=backend_features_config,
     experience_pipeline_config=experience_pipeline_config,
     enable_cv_upload=_enable_cv_upload,
+    enable_speech_to_text=_enable_speech_to_text,
+    enable_text_to_speech=_enable_text_to_speech,
     cv_storage_bucket=os.getenv("BACKEND_CV_STORAGE_BUCKET", ""),
     cv_max_uploads_per_user=os.getenv("BACKEND_CV_MAX_UPLOADS_PER_USER") or DEFAULT_MAX_UPLOADS_PER_USER,
     cv_rate_limit_per_minute=os.getenv("BACKEND_CV_RATE_LIMIT_PER_MINUTE") or DEFAULT_RATE_LIMIT_PER_MINUTE,
@@ -472,6 +486,24 @@ add_teveta_routes(app)
 # Add POC chat routes
 ############################################
 add_poc_routes(app, auth)
+
+############################################
+# Add speech-to-text routes (conditionally)
+############################################
+if _enable_speech_to_text:
+    add_speech_to_text_routes(app, auth)
+    logger.info("Speech-to-text routes registered")
+else:
+    logger.info("Speech-to-text routes skipped (GLOBAL_ENABLE_SPEECH_TO_TEXT is not enabled)")
+
+############################################
+# Add text-to-speech routes (conditionally)
+############################################
+if _enable_text_to_speech:
+    add_text_to_speech_routes(app, auth)
+    logger.info("Text-to-speech routes registered")
+else:
+    logger.info("Text-to-speech routes skipped (GLOBAL_ENABLE_TEXT_TO_SPEECH is not enabled)")
 
 ############################################
 # Add other features routes

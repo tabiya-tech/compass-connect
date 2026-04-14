@@ -105,6 +105,10 @@ def main():
         career_explorer_config=getenv("CAREER_EXPLORER_CONFIG", False, False),
         plain_personal_data_fields=getenv("PLAIN_PERSONAL_DATA_FIELDS", False, False),
         extra_allowed_origins=getenv("EXTRA_ALLOWED_ORIGINS", False, False),
+
+        # Voice-assisted features (STT and TTS)
+        enable_speech_to_text=getenv("GLOBAL_ENABLE_SPEECH_TO_TEXT", False, False),
+        enable_text_to_speech=getenv("GLOBAL_ENABLE_TEXT_TO_SPEECH", False, False),
     )
 
     # version of the artifacts to deploy
