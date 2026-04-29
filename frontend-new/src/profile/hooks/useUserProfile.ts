@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ReconnectVersionContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import { fetchSkills } from "./utils/fetchSkills";
 import { Skill } from "src/experiences/experienceService/experiences.types";
@@ -20,6 +20,8 @@ export interface UserProfileData {
   skills: Skill[];
   educationSkills: Skill[];
   programmeSkills: string[];
+  totalExperiences: number;
+  exploredExperiences: number;
   modules: ModuleSummary[];
   skillsInterestsProgress: number;
   careerExplorerSectors: UserSectorEngagementItem[];
@@ -27,6 +29,7 @@ export interface UserProfileData {
 
 export interface UseUserProfileResult {
   profileData: UserProfileData;
+  refreshProfileData: () => void;
   isLoading: boolean;
   isLoadingSecurity: boolean;
   isLoadingPreferences: boolean;
@@ -56,6 +59,7 @@ export interface UseUserProfileResult {
  */
 export const useUserProfile = (): UseUserProfileResult => {
   const reconnectVersion = useContext(ReconnectVersionContext);
+  const [profileRefreshVersion, setProfileRefreshVersion] = useState(0);
   // Individual loading states
   const [isLoadingSecurity, setIsLoadingSecurity] = useState(true);
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
@@ -88,6 +92,8 @@ export const useUserProfile = (): UseUserProfileResult => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [educationSkills, setEducationSkills] = useState<Skill[]>([]);
   const [programmeSkills, setProgrammeSkills] = useState<string[]>([]);
+  const [totalExperiences, setTotalExperiences] = useState<number>(0);
+  const [exploredExperiences, setExploredExperiences] = useState<number>(0);
   const [modules, setModules] = useState<ModuleSummary[]>([]);
   const [skillsInterestsProgress, setSkillsInterestsProgress] = useState<number>(0);
   const [careerExplorerSectors, setCareerExplorerSectors] = useState<UserSectorEngagementItem[]>([]);
@@ -111,6 +117,10 @@ export const useUserProfile = (): UseUserProfileResult => {
     careerExplorer: null,
   });
 
+  const refreshProfileData = useCallback(() => {
+    setProfileRefreshVersion((version) => version + 1);
+  }, []);
+
   // Effect 1: Read security data (email) from auth state — no API call
   useEffect(() => {
     try {
@@ -129,7 +139,7 @@ export const useUserProfile = (): UseUserProfileResult => {
     } finally {
       setIsLoadingSecurity(false);
     }
-  }, []);
+  }, [profileRefreshVersion]);
 
   // Effect 2: Read user preferences (terms date, language) from client-side cache — no API call
   useEffect(() => {
@@ -194,7 +204,7 @@ export const useUserProfile = (): UseUserProfileResult => {
         });
         setProgrammeSkills(profileResponse.programme_skills);
 
-        // Also merge programme skills into education skills now that we have both
+        // Education Skills should be only programme skills from profile data.
         const resolvedProgrammeSkills = profileResponse.programme_skills;
         const programmeSkillObjects: Skill[] = resolvedProgrammeSkills.map((label, i) => ({
           UUID: `programme-skill-${i}`,
@@ -203,10 +213,12 @@ export const useUserProfile = (): UseUserProfileResult => {
           description: "",
           orderIndex: i,
         }));
+        setEducationSkills(programmeSkillObjects);
 
         if (skillsResult.status === "fulfilled") {
           setSkills(skillsResult.value.workSkills);
-          setEducationSkills([...skillsResult.value.educationSkills, ...programmeSkillObjects]);
+          setTotalExperiences(skillsResult.value.totalExperiences ?? 0);
+          setExploredExperiences(skillsResult.value.exploredExperiences ?? 0);
         }
       } else {
         const error = profileResult.reason as any;
@@ -221,7 +233,9 @@ export const useUserProfile = (): UseUserProfileResult => {
         // Skills still usable without programme skills
         if (skillsResult.status === "fulfilled") {
           setSkills(skillsResult.value.workSkills);
-          setEducationSkills(skillsResult.value.educationSkills);
+          setTotalExperiences(skillsResult.value.totalExperiences ?? 0);
+          setExploredExperiences(skillsResult.value.exploredExperiences ?? 0);
+          setEducationSkills([]);
         }
       }
 
@@ -236,7 +250,7 @@ export const useUserProfile = (): UseUserProfileResult => {
     };
 
     fetchProfileAndSkills();
-  }, []);
+  }, [profileRefreshVersion, reconnectVersion]);
 
   // Effect 5: GET /users/me/progress — chat progress % + modules + sector engagement (3 old calls → 1)
   useEffect(() => {
@@ -283,6 +297,8 @@ export const useUserProfile = (): UseUserProfileResult => {
     skills,
     educationSkills,
     programmeSkills,
+    totalExperiences,
+    exploredExperiences,
     modules,
     skillsInterestsProgress,
     careerExplorerSectors,
@@ -298,6 +314,7 @@ export const useUserProfile = (): UseUserProfileResult => {
 
   return {
     profileData,
+    refreshProfileData,
     isLoading,
     isLoadingSecurity,
     isLoadingPreferences,
