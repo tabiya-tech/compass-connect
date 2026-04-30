@@ -34,7 +34,8 @@ export interface InstructorStudentRow {
   gender: string;
   modulesExplored: number;
   careerReady: string;
-  skillsInterestsExplored: number;
+  skillsDiscoveryStatus: "not_started" | "in_progress" | "completed";
+  careerExplorerMessagesSent: number | null;
   lastLogin: string;
   lastActiveModuleId: string;
 }
