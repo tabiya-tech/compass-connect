@@ -13,4 +13,6 @@ REQUIRED_SERVICES = [
     "run.googleapis.com",
     # GCP Cloud Storage (for CV uploads bucket)
     "storage.googleapis.com",
+    # Cloud Firestore - Required for admin user access roles
+    "firestore.googleapis.com",
 ]

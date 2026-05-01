@@ -324,6 +324,24 @@ def _deploy_cloud_run_service(
         opts=pulumi.ResourceOptions(depends_on=dependencies + [service_account], provider=basic_config.provider),
     )
 
+    # Assign Firebase Authentication Admin role for tenant user management (list/create/delete users)
+    firebase_auth_iam_member = gcp.projects.IAMMember(
+        get_resource_name(resource="backend-sa", resource_type="firebase-auth-admin-binding"),
+        member=service_account.email.apply(lambda email: f"serviceAccount:{email}"),
+        role="roles/firebaseauth.admin",
+        project=basic_config.project,
+        opts=pulumi.ResourceOptions(depends_on=dependencies + [service_account], provider=basic_config.provider),
+    )
+
+    # Assign Datastore User role for Firestore access (admin user access roles collection)
+    firestore_iam_member = gcp.projects.IAMMember(
+        get_resource_name(resource="backend-sa", resource_type="firestore-user-binding"),
+        member=service_account.email.apply(lambda email: f"serviceAccount:{email}"),
+        role="roles/datastore.user",
+        project=basic_config.project,
+        opts=pulumi.ResourceOptions(depends_on=dependencies + [service_account], provider=basic_config.provider),
+    )
+
     # Deploy cloud run service
     service = gcp.cloudrunv2.Service(
         get_resource_name(resource="cloudrun", resource_type="service"),
@@ -496,7 +514,7 @@ def _deploy_cloud_run_service(
                 egress="ALL_TRAFFIC",
             )
         ),
-        opts=pulumi.ResourceOptions(depends_on=dependencies + nat_dependencies + [iam_member], provider=basic_config.provider),
+        opts=pulumi.ResourceOptions(depends_on=dependencies + nat_dependencies + [iam_member, firebase_auth_iam_member, firestore_iam_member], provider=basic_config.provider),
     )
     pulumi.export("cloud_run_url", service.uri)
     return service, service_account
