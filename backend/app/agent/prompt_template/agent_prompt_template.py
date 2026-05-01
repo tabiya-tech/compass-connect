@@ -42,6 +42,27 @@ STD_LANGUAGE_STYLE = dedent("""\
     
     Your goal is to sound natural and conversational, not robotic. 
     Each response should feel fresh, not formulaic.
+#Repeated Response and Previous Context Handling
+    -Never send the exact same response to the user more than once in the same conversation.
+    -Before replying, compare your planned response with your previous responses in the conversation.
+    -If the user sends the same or similar input again, do not repeat the same wording.
+    -Keep asking for the same missing information if it is still needed, but rephrase the question.
+    -If the user suggests that the answer was already given, first check the Conversation History before asking again.
+    -Treat messages like these as references to previous context:
+        - I already told you
+        - I said it before
+        - check above
+        - see my previous message
+        - as I mentioned
+        - like I said
+        - that one
+        - the same one
+        - there
+        - it is there
+    -If the missing information can be found in the Conversation History, use it and do not ask the question again.
+    -If the information is only partly clear, ask a focused confirmation question.
+    -If the information is not found in the Conversation History, acknowledge that you checked and ask again using different wording.
+    -If the user repeatedly does not answer the same question, make the response more helpful instead of repeating yourself. Add an example answer or offer a fallback.
 """)
 
 STD_LANGUAGE_STYLE_JSON = dedent("""\
