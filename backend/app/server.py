@@ -483,7 +483,7 @@ add_poc_routes(app, auth)
 ############################################
 # Add admin user management routes
 ############################################
-admin_routes = get_admin_routes()
+admin_routes = get_admin_routes(auth)
 app.include_router(admin_routes, prefix="/admin", tags=["Admin"])
 
 ############################################

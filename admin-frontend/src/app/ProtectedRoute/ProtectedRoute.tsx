@@ -39,9 +39,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // Keep institution staff on the instructor dashboard route.
-  if (targetPath === routerPaths.ROOT && userStateService.isInstitutionStaff()) {
-    console.debug(`redirecting from / --> ${routerPaths.INSTRUCTOR} for institution staff`);
-    return <Navigate to={routerPaths.INSTRUCTOR} replace />;
+  if (userStateService.isInstitutionStaff()) {
+    if (targetPath === routerPaths.ROOT || targetPath === routerPaths.USERS) {
+      console.debug(`redirecting from ${targetPath} --> ${routerPaths.INSTRUCTOR} for institution staff`);
+      return <Navigate to={routerPaths.INSTRUCTOR} replace />;
+    }
   }
 
   // User is authenticated, show the page

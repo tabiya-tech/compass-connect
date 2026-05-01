@@ -81,29 +81,44 @@ class FirebaseService:
         page = auth_client.list_users(max_results=max_results, page_token=page_token)
         return list(page.users), page.next_page_token
 
+    @staticmethod
+    def _plain_uid(uid: str) -> str:
+        """
+        Strip the tenant prefix from a Firebase UID if present.
+
+        Tenant-scoped UIDs returned by the tenant auth client are in the format
+        "TENANT_ID/plain_uid". Firestore access role documents are stored using
+        only the plain UID portion.
+        """
+        return uid.split("/")[-1]
+
     async def fetch_access_roles_batch(self, user_ids: list[str]) -> dict[str, dict]:
         """
         Fetch access roles for multiple users in a single Firestore request.
 
         :param user_ids: List of user IDs to fetch access roles for.
-        :return: Dictionary mapping user_id to access role data.
+        :return: Dictionary mapping user_id to access role data, keyed by the original user_id.
         """
         if not user_ids:
             return {}
 
         access_roles_collection = self._db.collection("access_roles")
 
-        # Create document references for all user IDs
-        doc_refs = [access_roles_collection.document(uid) for uid in user_ids]
+        # Strip tenant prefix for Firestore lookups, but keep a mapping back to the original uid
+        plain_to_original = {self._plain_uid(uid): uid for uid in user_ids}
+
+        # Create document references using plain UIDs
+        doc_refs = [access_roles_collection.document(plain_uid) for plain_uid in plain_to_original]
 
         # Fetch all documents in a single batch request
         docs = self._db.get_all(doc_refs)
 
-        # Build a dictionary mapping user_id to access role data
+        # Build a dictionary mapping original user_id to access role data
         access_roles = {}
         async for doc in docs:
             if doc.exists:
-                access_roles[doc.id] = doc.to_dict()
+                original_uid = plain_to_original.get(doc.id, doc.id)
+                access_roles[original_uid] = doc.to_dict()
 
         self._logger.debug("Fetched access roles for %d/%d users", len(access_roles), len(user_ids))
 
@@ -128,7 +143,6 @@ class FirebaseService:
 
         user = auth_client.create_user(
             email=email,
-            email_verified=True,
             password=password,
             display_name=display_name,
             disabled=False,
