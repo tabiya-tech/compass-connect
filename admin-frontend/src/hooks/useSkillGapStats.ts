@@ -8,7 +8,12 @@ export interface UseSkillGapStatsResult {
   error: Error | null;
 }
 
-export function useSkillGapStats(limit = 10, institution?: string): UseSkillGapStatsResult {
+export function useSkillGapStats(
+  limit = 10,
+  institution?: string,
+  province?: string,
+  sector?: string
+): UseSkillGapStatsResult {
   const [data, setData] = useState<SkillGapStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -17,7 +22,7 @@ export function useSkillGapStats(limit = 10, institution?: string): UseSkillGapS
     let isMounted = true;
     setLoading(true);
     AnalyticsService.getInstance()
-      .getSkillGapStats(limit, institution)
+      .getSkillGapStats(limit, institution, province, sector)
       .then((result) => {
         if (!isMounted) return;
         setData(result);
@@ -32,7 +37,7 @@ export function useSkillGapStats(limit = 10, institution?: string): UseSkillGapS
     return () => {
       isMounted = false;
     };
-  }, [limit, institution]);
+  }, [limit, institution, province, sector]);
 
   return { data, loading, error };
 }

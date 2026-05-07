@@ -148,9 +148,16 @@ export default class AnalyticsService {
     }
   }
 
-  async getSkillGapStats(limit = 10, institution?: string): Promise<SkillGapStatsResponse> {
+  async getSkillGapStats(
+    limit = 10,
+    institution?: string,
+    province?: string,
+    sector?: string
+  ): Promise<SkillGapStatsResponse> {
     const params = new URLSearchParams({ limit: String(limit) });
     if (institution) params.set("institution", institution);
+    if (province) params.set("province", province);
+    if (sector) params.set("sector", sector);
     const url = `${this.baseUrl}/analytics/skill-gap-stats?${params}`;
     const errorFactory = getRestAPIErrorFactory(SERVICE_NAME, "getSkillGapStats", "GET", url);
     const response = await customFetch(url, {
@@ -203,9 +210,16 @@ export default class AnalyticsService {
     }
   }
 
-  async getSkillsSupplyStats(limit = 10, institution?: string): Promise<SkillsSupplyStatsResponse> {
+  async getSkillsSupplyStats(
+    limit = 10,
+    institution?: string,
+    province?: string,
+    sector?: string
+  ): Promise<SkillsSupplyStatsResponse> {
     const params = new URLSearchParams({ limit: String(limit) });
     if (institution) params.set("institution", institution);
+    if (province) params.set("province", province);
+    if (sector) params.set("sector", sector);
     const url = `${this.baseUrl}/analytics/skills-supply-stats?${params}`;
     const errorFactory = getRestAPIErrorFactory(SERVICE_NAME, "getSkillsSupplyStats", "GET", url);
     const response = await customFetch(url, {

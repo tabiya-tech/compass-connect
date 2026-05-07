@@ -13,9 +13,14 @@ from app.analytics.skill_gap.repository import (
     SkillGapAnalyticsRepository,
 )
 from app.analytics.skill_gap.types import SkillGapStatsResponse
+from app.analytics.user_filter import (
+    resolve_user_ids_for_institution,
+    resolve_user_ids_for_province,
+    resolve_user_ids_for_sector,
+    intersect_user_id_sets,
+)
 from app.constants.errors import HTTPErrorResponse
 from app.server_dependencies.db_dependencies import CompassDBProvider
-from app.server_dependencies.database_collections import Collections
 from app.users.auth import Authentication
 from app.users.access_role import AccessRole, get_access_role_dependency, decode_institution_id
 
@@ -26,17 +31,6 @@ async def _get_skill_gap_analytics_repository(
     application_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_application_db),
 ) -> ISkillGapAnalyticsRepository:
     return SkillGapAnalyticsRepository(application_db)
-
-
-async def _resolve_user_ids_for_institution(
-    institution_name: str,
-    userdata_db: AsyncIOMotorDatabase,
-) -> Optional[list[str]]:
-    """Return user_ids belonging to a given institution, or None if no filter."""
-    docs = await userdata_db.get_collection(Collections.PLAIN_PERSONAL_DATA).find(
-        {"data.institution_name": institution_name}, {"user_id": 1}
-    ).to_list(length=None)
-    return [d["user_id"] for d in docs if d.get("user_id")]
 
 
 def add_skill_gap_analytics_routes(router: APIRouter, auth: Authentication) -> None:
@@ -50,20 +44,32 @@ def add_skill_gap_analytics_routes(router: APIRouter, auth: Authentication) -> N
         },
         description=(
             "Aggregate skill gap statistics across students with pre-computed recommendations. "
-            "Institution staff are automatically scoped to their own institution."
+            "Institution staff are automatically scoped to their own institution. "
+            "Province filter is admin-only. Sector filter applies to all roles."
         ),
     )
     async def _skill_gap_stats(
         limit: Annotated[int, Query(ge=1, le=100, description="Maximum number of top skill gaps to return.")] = 10,
+        province: Optional[str] = Query(None, description="Filter by student province (admin only)."),
+        sector: Optional[str] = Query(None, description="Filter by programme sector (e.g. Agriculture, Energy)."),
         access_role: AccessRole = Depends(get_access_role_dependency(auth)),
         repo: ISkillGapAnalyticsRepository = Depends(_get_skill_gap_analytics_repository),
         userdata_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_userdata_db),
     ) -> SkillGapStatsResponse:
         try:
-            user_ids: Optional[list[str]] = None
+            user_id_sets: list[list[str]] = []
+
             if access_role.is_institution_staff and access_role.institution_id:
                 institution_name = decode_institution_id(access_role.institution_id)
-                user_ids = await _resolve_user_ids_for_institution(institution_name, userdata_db)
+                user_id_sets.append(await resolve_user_ids_for_institution(institution_name, userdata_db))
+
+            if province and not access_role.is_institution_staff:
+                user_id_sets.append(await resolve_user_ids_for_province(province, userdata_db))
+
+            if sector:
+                user_id_sets.append(await resolve_user_ids_for_sector(sector, userdata_db))
+
+            user_ids = intersect_user_id_sets(user_id_sets)
             return await repo.get_skill_gap_stats(limit, user_ids=user_ids)
         except Exception as e:
             logger.exception(e)
