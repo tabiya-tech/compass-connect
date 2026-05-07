@@ -8,7 +8,7 @@ export interface UseSkillsSupplyStatsResult {
   error: Error | null;
 }
 
-export function useSkillsSupplyStats(limit = 10, institution?: string): UseSkillsSupplyStatsResult {
+export function useSkillsSupplyStats(limit = 10, institution?: string, province?: string, sector?: string): UseSkillsSupplyStatsResult {
   const [data, setData] = useState<SkillsSupplyStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -17,7 +17,7 @@ export function useSkillsSupplyStats(limit = 10, institution?: string): UseSkill
     let isMounted = true;
     setLoading(true);
     AnalyticsService.getInstance()
-      .getSkillsSupplyStats(limit, institution)
+      .getSkillsSupplyStats(limit, institution, province, sector)
       .then((result) => {
         if (!isMounted) return;
         setData(result);
@@ -32,7 +32,7 @@ export function useSkillsSupplyStats(limit = 10, institution?: string): UseSkill
     return () => {
       isMounted = false;
     };
-  }, [limit, institution]);
+  }, [limit, institution, province, sector]);
 
   return { data, loading, error };
 }

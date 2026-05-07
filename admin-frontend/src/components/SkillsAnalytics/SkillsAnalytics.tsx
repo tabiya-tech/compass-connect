@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, Skeleton, Typography, useTheme, Select, MenuItem, LinearProgress } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import type { SkillsGapSectorData } from "src/types";
 import { useSkillGapStats } from "src/hooks/useSkillGapStats";
 import { useSkillsSupplyStats } from "src/hooks/useSkillsSupplyStats";
 import MetricInfoIcon from "src/components/MetricInfoIcon/MetricInfoIcon";
+import { MODULE_FILTER_LOCATIONS, MODULE_FILTER_SECTORS } from "src/data/moduleFilterOptions";
 
 interface SkillsAnalyticsProps {
   institution?: string;
@@ -13,8 +14,10 @@ interface SkillsAnalyticsProps {
 const SkillsAnalytics: React.FC<SkillsAnalyticsProps> = ({ institution }) => {
   const theme = useTheme();
   const { t } = useTranslation();
-  const { data: skillGapData, loading: skillGapLoading } = useSkillGapStats(5, institution);
-  const { data: skillSupplyData, loading: skillSupplyLoading } = useSkillsSupplyStats(5, institution);
+  const [province, setProvince] = useState("");
+  const [sector, setSector] = useState("");
+  const { data: skillGapData, loading: skillGapLoading } = useSkillGapStats(5, institution, province || undefined, sector || undefined);
+  const { data: skillSupplyData, loading: skillSupplyLoading } = useSkillsSupplyStats(5, institution, province || undefined, sector || undefined);
 
   // Supply: top skills students actually have, as % of students with that skill vs total with any skill
   const supplyTotal = skillSupplyData?.total_students_with_skills ?? 0;
@@ -85,19 +88,27 @@ const SkillsAnalytics: React.FC<SkillsAnalyticsProps> = ({ institution }) => {
           <Box display="flex" gap={2}>
             <Select
               size="small"
-              value=""
+              value={province}
+              onChange={(e) => setProvince(e.target.value)}
               displayEmpty
               sx={{ backgroundColor: theme.palette.background.paper, minWidth: 140 }}
             >
               <MenuItem value="">{t("dashboard.skillsAnalytics.filters.allProvinces")}</MenuItem>
+              {MODULE_FILTER_LOCATIONS.map((p) => (
+                <MenuItem key={p} value={p}>{p}</MenuItem>
+              ))}
             </Select>
             <Select
               size="small"
-              value=""
+              value={sector}
+              onChange={(e) => setSector(e.target.value)}
               displayEmpty
               sx={{ backgroundColor: theme.palette.background.paper, minWidth: 140 }}
             >
               <MenuItem value="">{t("dashboard.skillsAnalytics.filters.allSectors")}</MenuItem>
+              {MODULE_FILTER_SECTORS.map((s) => (
+                <MenuItem key={s} value={s}>{s}</MenuItem>
+              ))}
             </Select>
           </Box>
         </Box>

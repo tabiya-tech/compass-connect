@@ -85,6 +85,14 @@ export const MODULE_FILTER_INSTITUTIONS: string[] = [
 
 export const MODULE_FILTER_YEARS: string[] = ["Year 1", "Year 2", "Year 3"];
 
+export const MODULE_FILTER_SECTORS: string[] = [
+  "Agriculture",
+  "Energy",
+  "Hospitality",
+  "Mining",
+  "Water",
+];
+
 export const MODULE_FILTER_PROGRAMMES: string[] = [
   "Accountancy",
   "Accounting and Finance",
