@@ -16,8 +16,18 @@ const SkillsAnalytics: React.FC<SkillsAnalyticsProps> = ({ institution }) => {
   const { t } = useTranslation();
   const [province, setProvince] = useState("");
   const [sector, setSector] = useState("");
-  const { data: skillGapData, loading: skillGapLoading } = useSkillGapStats(5, institution, province || undefined, sector || undefined);
-  const { data: skillSupplyData, loading: skillSupplyLoading } = useSkillsSupplyStats(5, institution, province || undefined, sector || undefined);
+  const { data: skillGapData, loading: skillGapLoading } = useSkillGapStats(
+    5,
+    institution,
+    province || undefined,
+    sector || undefined
+  );
+  const { data: skillSupplyData, loading: skillSupplyLoading } = useSkillsSupplyStats(
+    5,
+    institution,
+    province || undefined,
+    sector || undefined
+  );
 
   // Supply: top skills students actually have, as % of students with that skill vs total with any skill
   const supplyTotal = skillSupplyData?.total_students_with_skills ?? 0;
@@ -95,7 +105,9 @@ const SkillsAnalytics: React.FC<SkillsAnalyticsProps> = ({ institution }) => {
             >
               <MenuItem value="">{t("dashboard.skillsAnalytics.filters.allProvinces")}</MenuItem>
               {MODULE_FILTER_LOCATIONS.map((p) => (
-                <MenuItem key={p} value={p}>{p}</MenuItem>
+                <MenuItem key={p} value={p}>
+                  {p}
+                </MenuItem>
               ))}
             </Select>
             <Select
@@ -107,7 +119,9 @@ const SkillsAnalytics: React.FC<SkillsAnalyticsProps> = ({ institution }) => {
             >
               <MenuItem value="">{t("dashboard.skillsAnalytics.filters.allSectors")}</MenuItem>
               {MODULE_FILTER_SECTORS.map((s) => (
-                <MenuItem key={s} value={s}>{s}</MenuItem>
+                <MenuItem key={s} value={s}>
+                  {s}
+                </MenuItem>
               ))}
             </Select>
           </Box>

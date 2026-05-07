@@ -8,7 +8,12 @@ export interface UseSkillGapStatsResult {
   error: Error | null;
 }
 
-export function useSkillGapStats(limit = 10, institution?: string, province?: string, sector?: string): UseSkillGapStatsResult {
+export function useSkillGapStats(
+  limit = 10,
+  institution?: string,
+  province?: string,
+  sector?: string
+): UseSkillGapStatsResult {
   const [data, setData] = useState<SkillGapStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

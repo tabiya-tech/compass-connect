@@ -148,7 +148,12 @@ export default class AnalyticsService {
     }
   }
 
-  async getSkillGapStats(limit = 10, institution?: string, province?: string, sector?: string): Promise<SkillGapStatsResponse> {
+  async getSkillGapStats(
+    limit = 10,
+    institution?: string,
+    province?: string,
+    sector?: string
+  ): Promise<SkillGapStatsResponse> {
     const params = new URLSearchParams({ limit: String(limit) });
     if (institution) params.set("institution", institution);
     if (province) params.set("province", province);
@@ -205,7 +210,12 @@ export default class AnalyticsService {
     }
   }
 
-  async getSkillsSupplyStats(limit = 10, institution?: string, province?: string, sector?: string): Promise<SkillsSupplyStatsResponse> {
+  async getSkillsSupplyStats(
+    limit = 10,
+    institution?: string,
+    province?: string,
+    sector?: string
+  ): Promise<SkillsSupplyStatsResponse> {
     const params = new URLSearchParams({ limit: String(limit) });
     if (institution) params.set("institution", institution);
     if (province) params.set("province", province);
