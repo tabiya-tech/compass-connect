@@ -782,7 +782,12 @@
       "cancel": "Cancelar",
       "send": "Enviar",
       "successMessage": "¡Gracias por tus comentarios!",
-      "errorMessage": "No hemos podido enviar tus comentarios. Inténtalo de nuevo."
+      "errorMessage": "No hemos podido enviar tus comentarios. Inténtalo de nuevo.",
+      "screenshotAlt": "Captura de pantalla de la página",
+      "screenshotAttached": "Captura de pantalla adjunta",
+      "clickToPreview": "Haz clic para ver",
+      "viewScreenshot": "Ver captura",
+      "removeScreenshot": "Quitar"
     }
   },
   "error": {

@@ -782,7 +782,12 @@
       "cancel": "Cancel",
       "send": "Send",
       "successMessage": "Thank you for your feedback!",
-      "errorMessage": "We couldn't send your feedback. Please try again."
+      "errorMessage": "We couldn't send your feedback. Please try again.",
+      "screenshotAlt": "Screenshot of the page",
+      "screenshotAttached": "Screenshot attached",
+      "clickToPreview": "Click to preview",
+      "viewScreenshot": "View screenshot",
+      "removeScreenshot": "Remove"
     }
   },
   "error": {

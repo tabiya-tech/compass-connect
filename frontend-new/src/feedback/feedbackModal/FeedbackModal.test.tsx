@@ -63,6 +63,7 @@ describe("FeedbackModal", () => {
         type: "idea",
         priority: "high",
         message: "My feedback",
+        screenshot: null,
       });
     });
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -75,5 +76,76 @@ describe("FeedbackModal", () => {
     fireEvent.click(screen.getByTestId(DATA_TEST_ID.FEEDBACK_MODAL_CANCEL));
 
     expect(onClose).toHaveBeenCalled();
+  });
+
+  test("should render screenshot preview and forward bytes on submit when provided", async () => {
+    const onSubmit = jest.fn();
+    const onRemoveScreenshot = jest.fn();
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    render(
+      <FeedbackModal
+        isOpen={true}
+        onClose={jest.fn()}
+        onSubmit={onSubmit}
+        screenshotDataUrl="data:image/png;base64,AAA="
+        screenshotBytes={bytes}
+        onRemoveScreenshot={onRemoveScreenshot}
+      />
+    );
+
+    expect(screen.getByTestId(DATA_TEST_ID.FEEDBACK_MODAL_SCREENSHOT_PREVIEW)).toBeInTheDocument();
+
+    const textarea = screen.getByTestId(DATA_TEST_ID.FEEDBACK_MODAL_MESSAGE).querySelector("textarea");
+    fireEvent.change(textarea!, { target: { value: "with shot" } });
+    fireEvent.click(screen.getByTestId(DATA_TEST_ID.FEEDBACK_MODAL_SEND));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith({
+        type: "bug",
+        priority: "medium",
+        message: "with shot",
+        screenshot: bytes,
+      });
+    });
+  });
+
+  test("should call onRemoveScreenshot when Remove is clicked", () => {
+    const onRemoveScreenshot = jest.fn();
+    render(
+      <FeedbackModal
+        isOpen={true}
+        onClose={jest.fn()}
+        onSubmit={jest.fn()}
+        screenshotDataUrl="data:image/png;base64,AAA="
+        screenshotBytes={new Uint8Array([1])}
+        onRemoveScreenshot={onRemoveScreenshot}
+      />
+    );
+
+    fireEvent.click(screen.getByTestId(DATA_TEST_ID.FEEDBACK_MODAL_SCREENSHOT_REMOVE));
+    expect(onRemoveScreenshot).toHaveBeenCalled();
+  });
+
+  test("should render skeleton placeholder while capturing", () => {
+    render(<FeedbackModal isOpen={true} onClose={jest.fn()} onSubmit={jest.fn()} isCapturingScreenshot={true} />);
+
+    expect(screen.getByTestId(DATA_TEST_ID.FEEDBACK_MODAL_SCREENSHOT_SKELETON)).toBeInTheDocument();
+    expect(screen.queryByTestId(DATA_TEST_ID.FEEDBACK_MODAL_SCREENSHOT_PREVIEW)).not.toBeInTheDocument();
+  });
+
+  test("should open the lightbox when the screenshot thumbnail is clicked", async () => {
+    render(
+      <FeedbackModal
+        isOpen={true}
+        onClose={jest.fn()}
+        onSubmit={jest.fn()}
+        screenshotDataUrl="data:image/png;base64,AAA="
+        screenshotBytes={new Uint8Array([1])}
+      />
+    );
+
+    expect(screen.queryByTestId(DATA_TEST_ID.FEEDBACK_MODAL_SCREENSHOT_LIGHTBOX)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId(DATA_TEST_ID.FEEDBACK_MODAL_SCREENSHOT_PREVIEW));
+    expect(await screen.findByTestId(DATA_TEST_ID.FEEDBACK_MODAL_SCREENSHOT_LIGHTBOX)).toBeInTheDocument();
   });
 });

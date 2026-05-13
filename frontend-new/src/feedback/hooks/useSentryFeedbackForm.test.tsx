@@ -9,6 +9,11 @@ import { PersistentStorageService } from "src/app/PersistentStorageService/Persi
 
 jest.mock("src/app/PersistentStorageService/PersistentStorageService");
 
+jest.mock("html-to-image", () => ({
+  __esModule: true,
+  toPng: jest.fn().mockResolvedValue("data:image/png;base64,AAAA"),
+}));
+
 jest.mock("src/theme/SnackbarProvider/SnackbarProvider", () => {
   const actual = jest.requireActual("src/theme/SnackbarProvider/SnackbarProvider");
   return {

@@ -782,7 +782,12 @@
       "cancel": "Letsani",
       "send": "Tumizani",
       "successMessage": "Zikomo chifukwa cha ndemanga zanu!",
-      "errorMessage": "Sitinathe kutumiza ndemanga zanu. Yesaninso."
+      "errorMessage": "Sitinathe kutumiza ndemanga zanu. Yesaninso.",
+      "screenshotAlt": "Chithunzi cha tsamba",
+      "screenshotAttached": "Chithunzi chalumikizidwa",
+      "clickToPreview": "Dinani kuti muwone",
+      "viewScreenshot": "Onani chithunzi",
+      "removeScreenshot": "Chotsani"
     }
   },
   "error": {

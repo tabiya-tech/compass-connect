@@ -25,3 +25,27 @@ export const Closed: Story = {
     onSubmit: () => {},
   },
 };
+
+// Tiny 1x1 transparent PNG used purely so the preview thumbnail has something to render.
+const STORYBOOK_PIXEL_PNG =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+
+export const WithScreenshot: Story = {
+  args: {
+    isOpen: true,
+    onClose: () => {},
+    onSubmit: () => {},
+    screenshotDataUrl: STORYBOOK_PIXEL_PNG,
+    screenshotBytes: new Uint8Array([1, 2, 3]),
+    onRemoveScreenshot: () => {},
+  },
+};
+
+export const CapturingScreenshot: Story = {
+  args: {
+    isOpen: true,
+    onClose: () => {},
+    onSubmit: () => {},
+    isCapturingScreenshot: true,
+  },
+};

@@ -764,7 +764,12 @@
       "cancel": "Ghairi",
       "send": "Tuma",
       "successMessage": "Asante kwa maoni yako!",
-      "errorMessage": "Hatukuweza kutuma maoni yako. Tafadhali jaribu tena."
+      "errorMessage": "Hatukuweza kutuma maoni yako. Tafadhali jaribu tena.",
+      "screenshotAlt": "Picha ya ukurasa",
+      "screenshotAttached": "Picha imeambatishwa",
+      "clickToPreview": "Bofya kuona",
+      "viewScreenshot": "Tazama picha",
+      "removeScreenshot": "Ondoa"
     }
   },
   "error": {
