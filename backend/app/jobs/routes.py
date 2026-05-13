@@ -106,7 +106,7 @@ def _build_skills_vector(programme_skills_doc) -> dict:
             {
                 "skill_id": skill.UUID,
                 "uuid": skill.UUID,
-                "originUUID": skill.originUUID,
+                "origin_uuid": skill.originUUID,
                 "preferred_label": skill.preferredLabel,
                 "skill_type": skill.skillType,
                 "proficiency": 0.8,

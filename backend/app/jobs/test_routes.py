@@ -231,6 +231,20 @@ def _given_programme_skills_doc():
     return type("ProgrammeSkillsDoc", (), {"skills": [skill]})()
 
 
+def test_build_skills_vector_emits_origin_uuid_in_snake_case():
+    # GIVEN a programme_skills doc with a skill that has a non-empty originUUID
+    doc = _given_programme_skills_doc()
+
+    # WHEN _build_skills_vector transforms it for the matching service
+    actual = jobs_routes_module._build_skills_vector(doc)
+
+    # THEN the per-skill key is "origin_uuid" (snake_case), matching what
+    # MatchingServiceClient._transform_skills_vector reads — without this the
+    # matching service receives originUUID=null and returns HTTP 422.
+    assert actual["skills"][0]["origin_uuid"] == "skill-origin-1"
+    assert "originUUID" not in actual["skills"][0]
+
+
 class TestMatchedJobsRoute:
     def test_returns_empty_with_skills_source_none_when_matching_client_not_configured(
         self, matched_client: tuple[TestClient, _MatchedFixtureMocks], monkeypatch
