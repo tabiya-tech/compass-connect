@@ -1,6 +1,7 @@
 import "src/_test_utilities/consoleMock";
 import "src/_test_utilities/envServiceMock";
 import "src/_test_utilities/sentryMock";
+import "src/_test_utilities/htmlToImageMock";
 
 import ChatHeader, { DATA_TEST_ID } from "./ChatHeader";
 import { fireEvent, render, screen, waitFor } from "src/_test_utilities/test-utils";

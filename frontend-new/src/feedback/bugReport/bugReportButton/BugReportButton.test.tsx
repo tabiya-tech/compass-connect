@@ -2,6 +2,8 @@
 import "src/_test_utilities/sentryMock";
 // mute the console
 import "src/_test_utilities/consoleMock";
+// stub html-to-image so the modal's background capture is a no-op
+import "src/_test_utilities/htmlToImageMock";
 
 import { fireEvent, render, screen, waitFor } from "src/_test_utilities/test-utils";
 import BugReportButton, { DATA_TEST_ID } from "src/feedback/bugReport/bugReportButton/BugReportButton";
