@@ -1029,12 +1029,16 @@
           "description": "Farming, food processing, agribusiness"
         },
         "hospitality": {
-          "title": "Hospitality",
+          "title": "Hospitality & Tourism",
           "description": "Tourism, hotels, catering, customer service"
         },
         "water": {
-          "title": "Water",
+          "title": "Water & Sanitation",
           "description": "Water management, sanitation, infrastructure"
+        },
+        "health": {
+          "title": "Health Sciences",
+          "description": "Allied health, diagnostics, pharmacy, physiotherapy"
         }
       }
     },
@@ -1092,6 +1096,9 @@
       },
       "water": {
         "title": "Water & Sanitation"
+      },
+      "health": {
+        "title": "Health Sciences"
       }
     },
     "noDocumentsAvailable": "No documents available yet.",
