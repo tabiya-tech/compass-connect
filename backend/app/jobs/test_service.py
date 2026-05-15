@@ -55,6 +55,7 @@ class TestJobService:
             category="Engineering",
             employment_type="Full-time",
             location="Lusaka",
+            skills=None,
             days=7,
             page=None,
             cursor="3",
@@ -93,6 +94,7 @@ class TestJobService:
             category=None,
             employment_type=None,
             location=None,
+            skills=None,
             days=None,
             page=None,
             cursor=None,
@@ -120,6 +122,7 @@ class TestJobService:
             category="accounting   auditing",
             employment_type=None,
             location="ka fue",
+            skills=None,
             days=None,
             page=None,
             cursor=None,
@@ -135,6 +138,35 @@ class TestJobService:
         assert repo.last_filter_query["location"] == {"$regex": "ka.*fue", "$options": "i"}
 
     @pytest.mark.asyncio
+    async def test_list_jobs_skills_filter_targets_source_skill_labels_with_case_insensitive_regex(self):
+        # GIVEN a skills query containing regex metacharacters
+        repo = _FakeJobRepository(docs=[], total=0)
+        service = JobService(repository=repo)
+
+        # WHEN list_jobs is called with skills filter
+        await service.list_jobs(
+            search=None,
+            category=None,
+            employment_type=None,
+            location=None,
+            skills="welding (mig)",
+            days=None,
+            page=None,
+            cursor=None,
+            limit=20,
+            sort_by=None,
+            sort_dir="asc",
+            include=None,
+        )
+
+        # THEN the filter targets _source_skill_labels with an escaped, case-insensitive regex
+        assert repo.last_filter_query is not None
+        assert repo.last_filter_query["_source_skill_labels"] == {
+            "$regex": r"welding\ \(mig\)",
+            "$options": "i",
+        }
+
+    @pytest.mark.asyncio
     async def test_list_jobs_with_invalid_cursor_raises_400(self):
         # GIVEN a non-numeric cursor
         repo = _FakeJobRepository(docs=[], total=0)
@@ -147,6 +179,7 @@ class TestJobService:
                 category=None,
                 employment_type=None,
                 location=None,
+                skills=None,
                 days=None,
                 page=None,
                 cursor="not-a-number",
@@ -173,6 +206,7 @@ class TestJobService:
             category=None,
             employment_type=None,
             location=None,
+            skills=None,
             days=None,
             page=3,
             cursor=None,
@@ -200,6 +234,7 @@ class TestJobService:
                 category=None,
                 employment_type=None,
                 location=None,
+                skills=None,
                 days=None,
                 page=0,
                 cursor=None,
