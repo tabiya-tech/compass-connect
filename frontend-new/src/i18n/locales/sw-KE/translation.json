@@ -1307,5 +1307,8 @@
     "tutorialIframeTitle": "Video ya mafunzo ya Njila",
     "tutorialUnavailableOffline": "Hauko mtandaoni. Unganisha kwenye mtandao ili kutazama video hii.",
     "scrollProgressLabel": "Maendeleo ya kusoma"
+  },
+  "legal": {
+    "documentUnavailable": "Hati hii haipatikani kwa sasa. Tafadhali jaribu tena."
   }
 }

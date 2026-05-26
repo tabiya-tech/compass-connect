@@ -150,6 +150,9 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
     frontend_gtm_enabled: Optional[str] = getenv("FRONTEND_GTM_ENABLED", False, False)
     custom_backend_url: Optional[str] = getenv("CUSTOM_BACKEND_URL", False, False)
 
+    # legal documents (Terms of Use, Privacy Policy)
+    frontend_legal_documents: Optional[str] = getenv("FRONTEND_LEGAL_DOCUMENTS", False, False)
+
     # validations, apart from the keys are required, some values also need to be validated
     # the sensitive encryption key should be a valid RSA public key.
     _validate_rsa_public_key(sensitive_personal_data_rsa_encryption_key.encode("utf-8"))
@@ -201,6 +204,7 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
         "FRONTEND_GTM_CONTAINER_ID": base64_encode(frontend_gtm_container_id or ""),
         "FRONTEND_GTM_ENABLED": base64_encode(frontend_gtm_enabled or ""),
         "FRONTEND_FAQ_TUTORIAL_VIDEO_URL": base64_encode(frontend_faq_tutorial_video_url or ""),
+        "FRONTEND_LEGAL_DOCUMENTS": base64_encode(frontend_legal_documents or ""),
     }
 
     env_json_content = f"""window.tabiyaConfig = {json.dumps(frontend_env_json, indent=4)};"""

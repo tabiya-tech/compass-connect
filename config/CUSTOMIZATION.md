@@ -170,6 +170,51 @@ This allows customization of:
 
 For the complete schema documentation and examples, see the [Sensitive Data Fields Configuration Guide](../frontend-new/sensitive-data-fields-config.md).
 
+## Legal Documents Configuration
+
+Partners can customise the Terms of Use and Privacy Policy documents shown on
+`/terms-of-use` and `/privacy-policy`.
+
+- **legal.documents.termsOfUse**: URL (site-relative or absolute) of the Terms of Use markdown document
+- **legal.documents.privacyPolicy**: URL (site-relative or absolute) of the Privacy Policy markdown document
+
+There are two ways to provide each document. Pick whichever is more convenient
+per document — both keys are optional and can be mixed.
+
+**Path A (recommended): replace the bundled markdown files in your fork.**
+Replace the markdown files at `frontend-new/public/legal/terms-of-use.md` and
+`frontend-new/public/legal/privacy-policy.md`. Each file may begin with a
+YAML frontmatter block to set the page title:
+
+```markdown
+---
+title: "Terms of Use"
+---
+
+# Terms of Use
+
+Body content...
+```
+
+If the `title` frontmatter is omitted, the page title falls back to a sensible
+default (`Terms of Use` for `termsOfUse`, `Privacy Policy` for `privacyPolicy`).
+
+**Path B (alternative): host the document elsewhere.**
+Set `legal.documents.termsOfUse` (and/or `legal.documents.privacyPolicy`) to an
+absolute URL pointing to your own host. Make sure your host serves the markdown
+with CORS that allows the deployment origin to fetch it.
+
+> **Updates affect only new consents.** Updating a legal document changes what
+> users see on the consent screen going forward. Users who previously accepted
+> the previous version continue without re-prompts; there is no automated
+> re-consent flow.
+
+> **Per-locale documents (planned, not yet supported).** In a future release,
+> each value will be extendable to `Record<Locale, string>` so partners can
+> ship per-language documents (e.g.
+> `"termsOfUse": { "en-US": "/legal/terms-en.md", "es-ES": "/legal/terms-es.md" }`).
+> The current `string`-shape config will continue to work unchanged.
+
 ## Analytics Configuration
 
 Compass supports Google Analytics 4 (GA4) event tracking via Google Tag Manager (GTM).

@@ -58,6 +58,9 @@ FRONTEND_ENV_MAP: Dict[str, str] = {
     # Analytics
     "FRONTEND_GTM_CONTAINER_ID": "analytics.gtmContainerId",
     "FRONTEND_GTM_ENABLED": "analytics.enabled",
+
+    # Legal documents
+    "FRONTEND_LEGAL_DOCUMENTS": "legal.documents",
 }
 
 FRONTEND_JSON_FIELDS = {
@@ -66,6 +69,7 @@ FRONTEND_JSON_FIELDS = {
     'FRONTEND_SKILLS_REPORT_OUTPUT_CONFIG',
     'FRONTEND_SUPPORTED_LOCALES',
     'FRONTEND_SENSITIVE_DATA_FIELDS',
+    'FRONTEND_LEGAL_DOCUMENTS',
     # Add more JSON.stringify fields here
 }
 

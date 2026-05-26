@@ -1307,5 +1307,8 @@
     "tutorialIframeTitle": "Vidiyo yophunzitsira za Njila",
     "tutorialUnavailableOffline": "Simuli pa intaneti. Lumikizani pa intaneti kuti muone video iyi.",
     "scrollProgressLabel": "Kupita patsogolo powerenga"
+  },
+  "legal": {
+    "documentUnavailable": "Chikalata ichi sichipezeka pakali pano. Chonde yesaninso."
   }
 }

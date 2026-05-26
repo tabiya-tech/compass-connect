@@ -1307,5 +1307,8 @@
     "tutorialIframeTitle": "Video tutorial de Njila",
     "tutorialUnavailableOffline": "Estás sin conexión. Conectate a internet para ver este video.",
     "scrollProgressLabel": "Progreso de lectura"
+  },
+  "legal": {
+    "documentUnavailable": "Este documento no está disponible en este momento. Por favor, intentá de nuevo."
   }
 }
