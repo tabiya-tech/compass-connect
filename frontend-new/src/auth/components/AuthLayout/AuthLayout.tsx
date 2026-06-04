@@ -5,7 +5,13 @@ import { useTranslation } from "react-i18next";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import AuthPageShell, { layoutContentColumnSx } from "src/auth/components/AuthPageShell/AuthPageShell";
 import Footer from "src/home/components/Footer/Footer";
-import { getDarkLogoUrl, getLogoUrl, getProductName, getRegistrationDisabled } from "src/envService";
+import {
+  getDarkLogoUrl,
+  getIllustrationUrls,
+  getLogoUrl,
+  getProductName,
+  getRegistrationDisabled,
+} from "src/envService";
 import { AuthPageProvider } from "src/auth/components/AuthLayout/AuthPageContext";
 import { Backdrop } from "src/theme/Backdrop/Backdrop";
 import { routerPaths } from "src/app/routerPaths";
@@ -15,8 +21,7 @@ const FeatureColumn: React.FC<{
   imageSrc: string;
   title: string;
   body: string;
-  imageMaxWidth?: { xs: number; md: number };
-}> = ({ imageSrc, title, body, imageMaxWidth = { xs: 220, md: 260 } }) => (
+}> = ({ imageSrc, title, body }) => (
   <Box
     sx={{
       width: "100%",
@@ -31,6 +36,7 @@ const FeatureColumn: React.FC<{
     <Box
       sx={{
         width: "100%",
+        height: { xs: 200, md: 240 },
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
@@ -41,10 +47,10 @@ const FeatureColumn: React.FC<{
         src={imageSrc}
         alt=""
         sx={{
-          width: "auto",
-          maxWidth: imageMaxWidth,
-          maxHeight: "100%",
+          width: "100%",
+          height: "100%",
           objectFit: "contain",
+          objectPosition: "bottom center",
         }}
       />
     </Box>
@@ -99,6 +105,7 @@ const AuthLayout: React.FC = () => {
 
   const logoSrc = getDarkLogoUrl() || getLogoUrl() || `${process.env.PUBLIC_URL}/njila-logo-dark.svg`;
   const appName = getProductName();
+  const illustrations = getIllustrationUrls();
 
   const whiteBandContent = (
     <Box
@@ -177,25 +184,30 @@ const AuthLayout: React.FC = () => {
         }}
       >
         <Box
-          component="img"
-          src={`${process.env.PUBLIC_URL}/climber.svg`}
-          alt=""
           sx={{
-            display: "block",
             position: { xs: "static", md: "absolute" },
             right: { md: "100%" },
             bottom: { md: -84, lg: -94 },
-            width: { xs: "min(100%, 320px)", md: 320, lg: 360 },
-            maxWidth: "100%",
-            height: "auto",
-            maxHeight: { md: 420, lg: 540 },
-            objectFit: "contain",
+            width: "100%",
+            height: "100%",
+            maxHeight: { xs: "auto", md: 420, lg: 480 },
+            maxWidth: { xs: 320, md: 380 },
             zIndex: 3,
             mx: { xs: "auto", md: 0 },
-            mr: { md: -4.5, lg: -3.5 },
+            mr: { md: -7, lg: -5 },
             my: { xs: theme.fixedSpacing(2), md: 0 },
           }}
-        />
+        >
+          <Box
+            component="img"
+            src={illustrations.loginHero}
+            alt=""
+            sx={{
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        </Box>
         <Box
           sx={{
             backgroundColor: isRegisterRoute ? theme.palette.secondary.main : theme.palette.primary.main,
@@ -285,21 +297,19 @@ const AuthLayout: React.FC = () => {
             }}
           >
             <FeatureColumn
-              imageSrc={`${process.env.PUBLIC_URL}/conversation.svg`}
+              imageSrc={illustrations.loginFeature1}
               title={t("auth.pages.login.appHero.feature1Title")}
               body={t("auth.pages.login.appHero.feature1Body")}
-              imageMaxWidth={{ xs: 220, md: 350 }}
             />
             <FeatureColumn
-              imageSrc={`${process.env.PUBLIC_URL}/resume.svg`}
+              imageSrc={illustrations.loginFeature2}
               title={t("auth.pages.login.appHero.feature2Title")}
               body={t("auth.pages.login.appHero.feature2Body")}
             />
             <FeatureColumn
-              imageSrc={`${process.env.PUBLIC_URL}/runner.svg`}
+              imageSrc={illustrations.loginFeature3}
               title={t("auth.pages.login.appHero.feature3Title")}
               body={t("auth.pages.login.appHero.feature3Body")}
-              imageMaxWidth={{ xs: 220, md: 240 }}
             />
           </Box>
         </Box>

@@ -30,4 +30,13 @@ jest.mock("src/envService", () => ({
   getGtmContainerId: jest.fn(() => ""),
   getGtmEnabled: jest.fn(() => "false"),
   getChatAvatarUrl: jest.fn(() => ""),
+  getFaqTutorialVideoUrl: jest.fn(() => ""),
+  getIllustrationUrls: jest.fn(() => ({
+    loginHero: "/climber.svg",
+    loginFeature1: "/conversation.svg",
+    loginFeature2: "/resume.svg",
+    loginFeature3: "/runner.svg",
+    homeHero: "/path.svg",
+    careerReadinessHero: "/thinkers.svg",
+  })),
 }));

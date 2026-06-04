@@ -115,6 +115,16 @@ window.tabiyaConfig = {
   FRONTEND_APP_ICON_URL: btoa("/compass.svg"),
   FRONTEND_CHAT_AVATAR_URL: btoa("/njila-logo-dark.svg"),
   FRONTEND_FAQ_TUTORIAL_VIDEO_URL: btoa("https://player.vimeo.com/video/1193881841?h=8ee6f6190d&title=0&byline=0&portrait=0"),
+  FRONTEND_ILLUSTRATIONS: btoa(
+    JSON.stringify({
+      loginHero: "/climber.svg",
+      loginFeature1: "/conversation.svg",
+      loginFeature2: "/resume.svg",
+      loginFeature3: "/runner.svg",
+      homeHero: "/path.svg",
+      careerReadinessHero: "/thinkers.svg",
+    })
+  ),
   // Override platform colours — see src/styles/variables.css for all available keys. Values are RGB triplets, e.g. "10 92 74".
   FRONTEND_THEME_CSS_VARIABLES: btoa(
     JSON.stringify({
