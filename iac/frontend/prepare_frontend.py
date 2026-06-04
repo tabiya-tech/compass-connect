@@ -177,6 +177,7 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
     frontend_chat_avatar_url: Optional[str] = getenv("FRONTEND_CHAT_AVATAR_URL", False, False)
     frontend_theme_css_variables: Optional[str] = getenv("FRONTEND_THEME_CSS_VARIABLES", False, False)
     frontend_seo: Optional[str] = getenv("FRONTEND_SEO", False, False)
+    frontend_illustrations: Optional[str] = getenv("FRONTEND_ILLUSTRATIONS", False, False)
     skills_report_config: Optional[str] = getenv("FRONTEND_SKILLS_REPORT_OUTPUT_CONFIG", False, False)
     frontend_faq_tutorial_video_url: Optional[str] = getenv("FRONTEND_FAQ_TUTORIAL_VIDEO_URL", False, False)
 
@@ -241,6 +242,7 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
         "FRONTEND_GTM_CONTAINER_ID": base64_encode(frontend_gtm_container_id or ""),
         "FRONTEND_GTM_ENABLED": base64_encode(frontend_gtm_enabled or ""),
         "FRONTEND_FAQ_TUTORIAL_VIDEO_URL": base64_encode(frontend_faq_tutorial_video_url or ""),
+        "FRONTEND_ILLUSTRATIONS": base64_encode(frontend_illustrations or ""),
     }
 
     env_json_content = f"""window.tabiyaConfig = {json.dumps(frontend_env_json, indent=4)};"""

@@ -5,11 +5,15 @@ exports[`Testing Verify Email component it should show verification page 1`] = `
   class="MuiContainer-root MuiContainer-maxWidthSm MuiContainer-disableGutters css-1m56onv-MuiContainer-root"
   data-testid="verification-container-f1228c6a-e447-4946-b810-0c7ddc8ca833"
 >
-  <img
-    alt=""
-    class="MuiBox-root css-1rh8jvd"
-    src="/runner.svg"
-  />
+  <div
+    class="MuiBox-root css-18l4l3y"
+  >
+    <img
+      alt=""
+      class="MuiBox-root css-11ag2fq"
+      src="/runner.svg"
+    />
+  </div>
   <div
     class="MuiBox-root css-79irh3"
   >

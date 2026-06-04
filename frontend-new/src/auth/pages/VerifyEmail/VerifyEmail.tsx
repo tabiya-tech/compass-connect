@@ -8,7 +8,7 @@ import { routerPaths } from "src/app/routerPaths";
 import { useNavigate } from "react-router-dom";
 import MetricsService from "src/metrics/metricsService";
 import { EventType } from "src/metrics/types";
-import { getDarkLogoUrl, getProductName } from "src/envService";
+import { getDarkLogoUrl, getIllustrationUrls, getProductName } from "src/envService";
 
 const uniqueId = "f1228c6a-e447-4946-b810-0c7ddc8ca833";
 
@@ -50,18 +50,33 @@ const VerifyEmail: React.FC = () => {
       data-testid={DATA_TEST_ID.VERIFY_EMAIL_CONTAINER}
     >
       <Box
-        component="img"
-        src={`${process.env.PUBLIC_URL}/runner.svg`}
-        alt=""
         sx={{
-          display: "block",
           width: { xs: 180, md: 240 },
           maxWidth: "100%",
-          height: "auto",
+          height: { xs: 180, md: 220 },
+          maxHeight: { xs: 180, md: 220 },
+          aspectRatio: "12 / 11",
           margin: "0 auto",
           mb: theme.fixedSpacing(2),
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
-      />
+      >
+        <Box
+          component="img"
+          src={getIllustrationUrls().loginFeature3}
+          alt=""
+          sx={{
+            display: "block",
+            width: "100%",
+            height: "100%",
+            maxWidth: "100%",
+            maxHeight: "100%",
+            objectFit: "contain",
+          }}
+        />
+      </Box>
       <Box
         sx={{
           backgroundColor: "common.white",

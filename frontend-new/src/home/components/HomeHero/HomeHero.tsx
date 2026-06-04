@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import { getProductName } from "src/envService";
+import { getIllustrationUrls, getProductName } from "src/envService";
 
 const uniqueId = "5cbaec73-1f15-4a92-9189-ff57c0202545";
 
@@ -84,22 +84,35 @@ const HomeHero: React.FC = () => {
         }}
       >
         <Box
-          component="img"
-          src="/path.svg"
-          alt={t("home.hero.illustrationAlt")}
-          data-testid={DATA_TEST_ID.HOME_HERO_ILLUSTRATION}
           sx={{
             width: "100%",
             maxWidth: { xs: 320, sm: 480, md: 560 },
-            height: "auto",
+            height: { xs: 240, sm: 320, md: 380 },
             maxHeight: { xs: 240, sm: 320, md: 380 },
-            display: "block",
-            objectFit: "contain",
-            objectPosition: "bottom center",
-            pointerEvents: "none",
+            aspectRatio: "14 / 9",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
             marginBottom: { xs: theme.fixedSpacing(theme.tabiyaSpacing.md), sm: 0 },
           }}
-        />
+        >
+          <Box
+            component="img"
+            src={getIllustrationUrls().homeHero}
+            alt={t("home.hero.illustrationAlt")}
+            data-testid={DATA_TEST_ID.HOME_HERO_ILLUSTRATION}
+            sx={{
+              width: "100%",
+              height: "100%",
+              maxWidth: "100%",
+              maxHeight: "100%",
+              display: "block",
+              objectFit: "contain",
+              objectPosition: "bottom center",
+              pointerEvents: "none",
+            }}
+          />
+        </Box>
       </Box>
     </Box>
   );

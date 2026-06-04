@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { IsOnlineContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import { getSectorsForApp } from "src/knowledgeHub/components/SectorProfile/sectorStaticData";
-import { getProductName } from "src/envService";
+import { getIllustrationUrls, getProductName } from "src/envService";
 import { routerPaths } from "src/app/routerPaths";
 import Footer from "src/home/components/Footer/Footer";
 import BackLink from "src/navigation/BackLink/BackLink";
@@ -107,17 +107,32 @@ const KnowledgeHubList: React.FC = () => {
               }}
             >
               <Box
-                component="img"
-                src={`${process.env.PUBLIC_URL}/runner.svg`}
-                alt=""
                 sx={{
-                  display: { xs: "block", md: "none" },
-                  width: "auto",
-                  height: "auto",
+                  display: { xs: "flex", md: "none" },
+                  width: "100%",
                   maxWidth: { xs: 240 },
+                  height: { xs: 240 },
+                  maxHeight: { xs: 240 },
+                  aspectRatio: "1 / 1",
                   mx: "auto",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-              />
+              >
+                <Box
+                  component="img"
+                  src={getIllustrationUrls().loginFeature3}
+                  alt=""
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                />
+              </Box>
               <Box
                 aria-hidden
                 sx={{
@@ -130,21 +145,37 @@ const KnowledgeHubList: React.FC = () => {
                 }}
               >
                 <Box
-                  component="img"
-                  src={`${process.env.PUBLIC_URL}/runner.svg`}
-                  alt=""
                   sx={{
                     position: "absolute",
                     left: { md: 0 },
                     top: { md: -20 },
                     width: { md: 250 },
                     height: { md: 290 },
+                    maxWidth: { md: 250 },
+                    maxHeight: { md: 290 },
+                    aspectRatio: "25 / 29",
                     opacity: 1,
-                    display: "block",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     zIndex: 2,
                     pointerEvents: "none",
                   }}
-                />
+                >
+                  <Box
+                    component="img"
+                    src={getIllustrationUrls().loginFeature3}
+                    alt=""
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      objectFit: "contain",
+                      display: "block",
+                    }}
+                  />
+                </Box>
               </Box>
               <Box sx={{ minWidth: 0, position: "relative", zIndex: 2 }}>
                 <Typography

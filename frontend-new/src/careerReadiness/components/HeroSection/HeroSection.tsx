@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Typography, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import type { ModuleSummary } from "src/careerReadiness/types";
+import { getIllustrationUrls } from "src/envService";
 import UpNextCard from "src/careerReadiness/components/UpNextCard/UpNextCard";
 import UpNextCardSkeleton from "src/careerReadiness/components/UpNextCardSkeleton/UpNextCardSkeleton";
 
@@ -44,21 +45,36 @@ const HeroSection: React.FC<HeroSectionProps> = ({ upNextModule, loading = false
         }}
       >
         <Box
-          component="img"
-          src="/thinkers.svg"
-          alt=""
           sx={{
             width: {
               xs: "100%",
               sm: theme.fixedSpacing(theme.tabiyaSpacing.xl * 8),
             },
             maxWidth: { xs: theme.fixedSpacing(theme.tabiyaSpacing.xl * 8), sm: "none" },
+            height: { xs: 220, sm: 280 },
+            maxHeight: { xs: 220, sm: 280 },
+            aspectRatio: "10 / 7",
             alignSelf: { xs: "center", sm: "auto" },
             flexShrink: 0,
-            display: "block",
-            objectFit: "contain",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
+        >
+          <Box
+            component="img"
+            src={getIllustrationUrls().careerReadinessHero}
+            alt=""
+            sx={{
+              width: "100%",
+              height: "100%",
+              maxWidth: "100%",
+              maxHeight: "100%",
+              display: "block",
+              objectFit: "contain",
+            }}
+          />
+        </Box>
 
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography variant="h3" component="h2" fontWeight="bold" color="text.primary" sx={{ letterSpacing: -0.2 }}>

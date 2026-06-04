@@ -39,6 +39,7 @@ export enum EnvVariables {
   FRONTEND_GTM_CONTAINER_ID = "FRONTEND_GTM_CONTAINER_ID",
   FRONTEND_GTM_ENABLED = "FRONTEND_GTM_ENABLED",
   FRONTEND_FAQ_TUTORIAL_VIDEO_URL = "FRONTEND_FAQ_TUTORIAL_VIDEO_URL",
+  FRONTEND_ILLUSTRATIONS = "FRONTEND_ILLUSTRATIONS",
 }
 
 export const requiredEnvVariables = [
@@ -250,6 +251,38 @@ export const getFaviconUrl = () => getEnv(EnvVariables.FRONTEND_FAVICON_URL);
 export const getAppIconUrl = () => getEnv(EnvVariables.FRONTEND_APP_ICON_URL);
 
 export const getChatAvatarUrl = () => getEnv(EnvVariables.FRONTEND_CHAT_AVATAR_URL);
+
+export interface IllustrationUrls {
+  loginHero: string;
+  loginFeature1: string;
+  loginFeature2: string;
+  loginFeature3: string;
+  homeHero: string;
+  careerReadinessHero: string;
+}
+
+export const DEFAULT_ILLUSTRATION_URLS: IllustrationUrls = {
+  loginHero: "/climber.svg",
+  loginFeature1: "/conversation.svg",
+  loginFeature2: "/resume.svg",
+  loginFeature3: "/runner.svg",
+  homeHero: "/path.svg",
+  careerReadinessHero: "/thinkers.svg",
+};
+
+export const getIllustrationUrls = (): IllustrationUrls => {
+  const jsonString = getEnv(EnvVariables.FRONTEND_ILLUSTRATIONS);
+  if (!jsonString) {
+    return DEFAULT_ILLUSTRATION_URLS;
+  }
+  try {
+    const parsed = JSON.parse(jsonString) as Partial<IllustrationUrls>;
+    return { ...DEFAULT_ILLUSTRATION_URLS, ...parsed };
+  } catch (e) {
+    console.error(new EnvError("Error parsing FRONTEND_ILLUSTRATIONS JSON", e));
+    return DEFAULT_ILLUSTRATION_URLS;
+  }
+};
 
 export interface ThemeCssVariables {
   "brand-primary"?: string;
