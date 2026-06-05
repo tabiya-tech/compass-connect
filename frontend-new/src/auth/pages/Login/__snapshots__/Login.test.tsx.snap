@@ -13,12 +13,12 @@ exports[`Testing Login component Render tests should hide login code related ele
         class="MuiBox-root css-1difu8q"
       >
         <h3
-          class="MuiTypography-root MuiTypography-h3 css-5xirf-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h3 css-poep7i-MuiTypography-root"
         >
           Sign In
         </h3>
         <div
-          class="MuiTypography-root MuiTypography-body2 css-ec8wkj-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body2 css-x7831g-MuiTypography-root"
         >
           If you already have a {{appName}} account, enter your 
           <strong>
@@ -36,7 +36,7 @@ exports[`Testing Login component Render tests should hide login code related ele
           data-testid="reset-password-email-container"
         />
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-1bo7ol6-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-4smq58-MuiButtonBase-root-MuiButton-root"
           data-testid="login-button-7ce9ba1f-bde0-48e2-88df-e4f697945cc4"
           disabled=""
           style="margin-top: 26.4px;"
@@ -84,12 +84,12 @@ exports[`Testing Login component Render tests should hide login code related ele
         class="MuiBox-root css-1difu8q"
       >
         <h3
-          class="MuiTypography-root MuiTypography-h3 css-5xirf-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h3 css-poep7i-MuiTypography-root"
         >
           Sign In
         </h3>
         <div
-          class="MuiTypography-root MuiTypography-body2 css-ec8wkj-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body2 css-x7831g-MuiTypography-root"
         >
           If you already have a {{appName}} account, enter your 
           <strong>
@@ -107,7 +107,7 @@ exports[`Testing Login component Render tests should hide login code related ele
           data-testid="reset-password-email-container"
         />
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-1bo7ol6-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-4smq58-MuiButtonBase-root-MuiButton-root"
           data-testid="login-button-7ce9ba1f-bde0-48e2-88df-e4f697945cc4"
           disabled=""
           style="margin-top: 26.4px;"
@@ -155,12 +155,12 @@ exports[`Testing Login component Render tests should show continue as guest if l
         class="MuiBox-root css-1difu8q"
       >
         <h3
-          class="MuiTypography-root MuiTypography-h3 css-5xirf-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h3 css-poep7i-MuiTypography-root"
         >
           Sign In
         </h3>
         <div
-          class="MuiTypography-root MuiTypography-body2 css-ec8wkj-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body2 css-x7831g-MuiTypography-root"
         >
           If you already have a {{appName}} account, enter your 
           <strong>
@@ -174,7 +174,7 @@ exports[`Testing Login component Render tests should show continue as guest if l
         data-testid="login-form-7ce9ba1f-bde0-48e2-88df-e4f697945cc4"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-1uowg0l-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-as4ua6-MuiButtonBase-root-MuiButton-root"
           data-testid="login-start-new-conversation-button-7ce9ba1f-bde0-48e2-88df-e4f697945cc4"
           tabindex="0"
           type="button"
@@ -191,7 +191,7 @@ exports[`Testing Login component Render tests should show continue as guest if l
             class="MuiDivider-wrapper css-ev540k-MuiDivider-wrapper"
           >
             <h6
-              class="MuiTypography-root MuiTypography-subtitle2 css-1cbttgf-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-subtitle2 css-syjtu1-MuiTypography-root"
             >
               Or sign in to your account to continue
             </h6>
@@ -202,7 +202,7 @@ exports[`Testing Login component Render tests should show continue as guest if l
           data-testid="reset-password-email-container"
         />
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-1bo7ol6-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-4smq58-MuiButtonBase-root-MuiButton-root"
           data-testid="login-button-7ce9ba1f-bde0-48e2-88df-e4f697945cc4"
           disabled=""
           style="margin-top: 26.4px;"
@@ -249,12 +249,12 @@ exports[`Testing Login component it should show login form successfully 1`] = `
       class="MuiBox-root css-1difu8q"
     >
       <h3
-        class="MuiTypography-root MuiTypography-h3 css-5xirf-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h3 css-poep7i-MuiTypography-root"
       >
         Sign In
       </h3>
       <div
-        class="MuiTypography-root MuiTypography-body2 css-ec8wkj-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body2 css-x7831g-MuiTypography-root"
       >
         If you already have a {{appName}} account, enter your 
         <strong>
@@ -280,7 +280,7 @@ exports[`Testing Login component it should show login form successfully 1`] = `
           class="MuiDivider-wrapper css-ev540k-MuiDivider-wrapper"
         >
           <h6
-            class="MuiTypography-root MuiTypography-subtitle2 css-1cbttgf-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-subtitle2 css-syjtu1-MuiTypography-root"
           >
             or
           </h6>
@@ -291,7 +291,7 @@ exports[`Testing Login component it should show login form successfully 1`] = `
         data-testid="reset-password-email-container"
       />
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-1bo7ol6-MuiButtonBase-root-MuiButton-root"
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-4smq58-MuiButtonBase-root-MuiButton-root"
         data-testid="login-button-7ce9ba1f-bde0-48e2-88df-e4f697945cc4"
         disabled=""
         style="margin-top: 26.4px;"
@@ -340,12 +340,12 @@ exports[`Testing Login component should handle application login code 1`] = `
       class="MuiBox-root css-1difu8q"
     >
       <h3
-        class="MuiTypography-root MuiTypography-h3 css-5xirf-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h3 css-poep7i-MuiTypography-root"
       >
         Sign In
       </h3>
       <div
-        class="MuiTypography-root MuiTypography-body2 css-ec8wkj-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body2 css-x7831g-MuiTypography-root"
       >
         If you already have a {{appName}} account, enter your 
         <strong>
@@ -359,7 +359,7 @@ exports[`Testing Login component should handle application login code 1`] = `
       data-testid="login-form-7ce9ba1f-bde0-48e2-88df-e4f697945cc4"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-1uowg0l-MuiButtonBase-root-MuiButton-root"
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-as4ua6-MuiButtonBase-root-MuiButton-root"
         data-testid="login-start-new-conversation-button-7ce9ba1f-bde0-48e2-88df-e4f697945cc4"
         tabindex="0"
         type="button"
@@ -376,7 +376,7 @@ exports[`Testing Login component should handle application login code 1`] = `
           class="MuiDivider-wrapper css-ev540k-MuiDivider-wrapper"
         >
           <h6
-            class="MuiTypography-root MuiTypography-subtitle2 css-1cbttgf-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-subtitle2 css-syjtu1-MuiTypography-root"
           >
             Or sign in to your account to continue
           </h6>
@@ -387,7 +387,7 @@ exports[`Testing Login component should handle application login code 1`] = `
         data-testid="reset-password-email-container"
       />
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-1bo7ol6-MuiButtonBase-root-MuiButton-root"
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-4smq58-MuiButtonBase-root-MuiButton-root"
         data-testid="login-button-7ce9ba1f-bde0-48e2-88df-e4f697945cc4"
         disabled=""
         style="margin-top: 26.4px;"
@@ -434,12 +434,12 @@ exports[`Testing Login component should remove registration link if registration
         class="MuiBox-root css-1difu8q"
       >
         <h3
-          class="MuiTypography-root MuiTypography-h3 css-5xirf-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h3 css-poep7i-MuiTypography-root"
         >
           Sign In
         </h3>
         <div
-          class="MuiTypography-root MuiTypography-body2 css-ec8wkj-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body2 css-x7831g-MuiTypography-root"
         >
           If you already have a {{appName}} account, enter your 
           <strong>
@@ -465,7 +465,7 @@ exports[`Testing Login component should remove registration link if registration
             class="MuiDivider-wrapper css-ev540k-MuiDivider-wrapper"
           >
             <h6
-              class="MuiTypography-root MuiTypography-subtitle2 css-1cbttgf-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-subtitle2 css-syjtu1-MuiTypography-root"
             >
               or
             </h6>
@@ -476,7 +476,7 @@ exports[`Testing Login component should remove registration link if registration
           data-testid="reset-password-email-container"
         />
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-1bo7ol6-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-4smq58-MuiButtonBase-root-MuiButton-root"
           data-testid="login-button-7ce9ba1f-bde0-48e2-88df-e4f697945cc4"
           disabled=""
           style="margin-top: 26.4px;"

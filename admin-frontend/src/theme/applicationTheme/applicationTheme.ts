@@ -223,92 +223,92 @@ export const applicationTheme = (theme: ThemeMode) => {
     },
     typography: {
       htmlFontSize: TabiyaBaseSizes.font, // Set the base font size
-      fontFamily: "Inter, sans-serif", // Set the desired font family
+      fontFamily: "var(--font-body)", // Set the desired font family
       fontSize: TabiyaBaseSizes.font, // Set the base font size
       fontWeightLight: 300,
       fontWeightRegular: 400,
       fontWeightMedium: 500,
       fontWeightBold: 700,
       h1: {
-        fontFamily: "IBM Plex Mono",
+        fontFamily: "var(--font-heading)",
         fontWeight: "700",
         fontSize: clampRem(1.45, 2.125, screenSizeRem),
         color: activePalette.text!!.primary,
       },
       h2: {
-        fontFamily: "IBM Plex Mono",
+        fontFamily: "var(--font-heading)",
         fontWeight: "700",
         fontSize: clampRem(1.4, 1.975, screenSizeRem),
         color: activePalette.text!!.primary,
       },
       h3: {
-        fontFamily: "IBM Plex Mono",
+        fontFamily: "var(--font-heading)",
         fontWeight: "700",
         fontSize: clampRem(1.35, 1.825, screenSizeRem),
         color: activePalette.text!!.primary,
       },
       h4: {
-        fontFamily: "IBM Plex Mono",
+        fontFamily: "var(--font-heading)",
         fontWeight: "700",
         fontSize: clampRem(1.3, 1.675, screenSizeRem),
         color: activePalette.text!!.primary,
       },
       h5: {
-        fontFamily: "IBM Plex Mono",
+        fontFamily: "var(--font-heading)",
         fontWeight: "700",
         fontSize: clampRem(1.25, 1.525, screenSizeRem),
         color: activePalette.text!!.primary,
       },
       h6: {
-        fontFamily: "IBM Plex Mono",
+        fontFamily: "var(--font-heading)",
         fontWeight: "700",
         fontSize: clampRem(1.2, 1.375, screenSizeRem),
         color: activePalette.text!!.primary,
       },
       subtitle1: {
-        fontFamily: "Inter",
+        fontFamily: "var(--font-body)",
         fontWeight: "500",
         fontSize: clampRem(1, 1.125, screenSizeRem),
 
         color: activePalette.text!!.textAccent,
       },
       subtitle2: {
-        fontFamily: "Inter",
+        fontFamily: "var(--font-body)",
         fontWeight: "500",
         fontSize: clampRem(0.75, 1, screenSizeRem),
         color: activePalette.text!!.textAccent,
       },
       body1: {
-        fontFamily: "Inter",
+        fontFamily: "var(--font-body)",
         fontWeight: "400",
         fontSize: clampRem(0.875, 1, screenSizeRem),
         color: activePalette.text!!.secondary,
       },
       body2: {
-        fontFamily: "Inter",
+        fontFamily: "var(--font-body)",
         fontWeight: "400",
         fontSize: clampRem(0.75, 1, screenSizeRem),
         color: activePalette.text!!.secondary,
       },
       button: {
-        fontFamily: "Inter",
+        fontFamily: "var(--font-body)",
         fontWeight: "500",
         fontSize: clampRem(1, 1.125, screenSizeRem),
         color: activePalette.text!!.primary,
         textTransform: "none",
       },
       caption: {
-        fontFamily: "Inter",
+        fontFamily: "var(--font-body)",
         fontWeight: "400",
         fontSize: clampRem(0.75, 0.875, screenSizeRem),
       },
       overline: {
-        fontFamily: "Inter",
+        fontFamily: "var(--font-body)",
         fontWeight: "400",
         fontSize: clampRem(0.75, 0.875, screenSizeRem),
       },
       progressBarText: {
-        fontFamily: "IBM Plex Mono",
+        fontFamily: "var(--font-heading)",
         fontWeight: "700",
         fontSize: clampRem(0.75, 0.875, screenSizeRem),
         color: activePalette.text!!.primary,

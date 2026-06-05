@@ -158,6 +158,8 @@ export interface ThemeCssVariables {
   "text-primary"?: string;
   "text-secondary"?: string;
   "text-accent"?: string;
+  "font-heading"?: string;
+  "font-body"?: string;
 }
 
 export const getThemeCssVariables = (): ThemeCssVariables => {

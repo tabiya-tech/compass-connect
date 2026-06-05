@@ -49,7 +49,7 @@ exports[`SkillsRankingJobSeekerDisclosure snapshot: non-replay initial render 1`
       class="MuiBox-root css-8atqhb"
     >
       <div
-        class="MuiBox-root css-yi28at"
+        class="MuiBox-root css-1scdq1t"
         data-testid="chat-message-bubble-container-6e685eeb-2b54-432a-8b66-8a81633b3981"
       >
         <div
@@ -57,7 +57,7 @@ exports[`SkillsRankingJobSeekerDisclosure snapshot: non-replay initial render 1`
           data-testid="chat-message-bubble-message-text-6e685eeb-2b54-432a-8b66-8a81633b3981"
         >
           <p
-            class="MuiTypography-root MuiTypography-body1 css-12bta19-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 css-eagrnw-MuiTypography-root"
           >
             Moreover, 
             <strong>
@@ -167,37 +167,37 @@ exports[`SkillsRankingJobSeekerDisclosure snapshot: non-replay initial render 1`
               class="MuiBox-root css-12v2rub"
             >
               <span
-                class="MuiTypography-root MuiTypography-caption css-lcelaf-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-caption css-hd7e7l-MuiTypography-root"
               >
                 0
                 %
               </span>
               <span
-                class="MuiTypography-root MuiTypography-caption css-pgkji7-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-caption css-ms8y0t-MuiTypography-root"
               >
                 20
                 %
               </span>
               <span
-                class="MuiTypography-root MuiTypography-caption css-hvv128-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-caption css-1dveiax-MuiTypography-root"
               >
                 40
                 %
               </span>
               <span
-                class="MuiTypography-root MuiTypography-caption css-1kk5ouy-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-caption css-arz3l6-MuiTypography-root"
               >
                 60
                 %
               </span>
               <span
-                class="MuiTypography-root MuiTypography-caption css-18tadm0-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-caption css-dmqxqa-MuiTypography-root"
               >
                 80
                 %
               </span>
               <span
-                class="MuiTypography-root MuiTypography-caption css-gn814p-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-caption css-vusede-MuiTypography-root"
               >
                 100
                 %
@@ -211,7 +211,7 @@ exports[`SkillsRankingJobSeekerDisclosure snapshot: non-replay initial render 1`
         data-testid="chat-message-footer-layout-container-7772f20a-9d0c-4072-b24f-97eca2f43d7b"
       >
         <span
-          class="MuiTypography-root MuiTypography-caption css-1a8rcnj-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-caption css-ol0bls-MuiTypography-root"
           data-testid="chat-message-timestamp-c9253326-05ee-4bff-9d43-7852ca78a033"
         >
           sent 

@@ -29,4 +29,8 @@
   --text-primary: 0 33 71;
   --text-secondary: 65 64 61;
   --text-accent: 38 94 167;
+
+  /* Font families */
+  --font-heading: "IBM Plex Mono", monospace;
+  --font-body: "Inter", sans-serif;
 }

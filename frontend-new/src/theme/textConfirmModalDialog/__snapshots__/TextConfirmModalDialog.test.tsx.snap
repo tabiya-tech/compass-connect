@@ -29,12 +29,12 @@ exports[`TextConfirmModalDialog should render component correctly with expected 
       style="--Paper-shadow: var(--mui-shadows-24);"
     >
       <h2
-        class="MuiTypography-root MuiTypography-h2 MuiDialogTitle-root css-1xe9v7a-MuiTypography-root-MuiDialogTitle-root"
+        class="MuiTypography-root MuiTypography-h2 MuiDialogTitle-root css-1qxbf56-MuiTypography-root-MuiDialogTitle-root"
         data-testid="confirm-modal-title-edc0ac15-67a7-4c1f-9934-94fa65757046"
         id="confirm-modal-title"
       >
         <span
-          class="MuiTypography-root MuiTypography-h6 css-erpy6n-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h6 css-3ly8wt-MuiTypography-root"
         >
           Sample Title?
         </span>
@@ -49,13 +49,13 @@ exports[`TextConfirmModalDialog should render component correctly with expected 
           tabindex="0"
         >
           <p
-            class="MuiTypography-root MuiTypography-body1 css-id7iv4-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 css-1ta2uh2-MuiTypography-root"
             data-testid="text-confirm-modal-paragraph-e2c24e08-1225-4aa0-9fdf-95ac6f0c81c3"
           >
             This is a sample body text for the TextConfirmModalDialog component.
           </p>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-id7iv4-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 css-1ta2uh2-MuiTypography-root"
             data-testid="text-confirm-modal-paragraph-e2c24e08-1225-4aa0-9fdf-95ac6f0c81c3"
           >
             Are you sure you want to proceed?
@@ -66,7 +66,7 @@ exports[`TextConfirmModalDialog should render component correctly with expected 
         class="MuiDialogActions-root MuiDialogActions-spacing css-lvai81-MuiDialogActions-root"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedSecondary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-root MuiButton-outlined MuiButton-outlinedSecondary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-168crfk-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedSecondary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-root MuiButton-outlined MuiButton-outlinedSecondary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-3drodq-MuiButtonBase-root-MuiButton-root"
           data-testid="confirm-modal-cancel-edc0ac15-67a7-4c1f-9934-94fa65757046"
           tabindex="0"
           type="button"
@@ -74,7 +74,7 @@ exports[`TextConfirmModalDialog should render component correctly with expected 
           Cancel
         </button>
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-oc17o8-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-q0kl0n-MuiButtonBase-root-MuiButton-root"
           data-testid="confirm-modal-confirm-edc0ac15-67a7-4c1f-9934-94fa65757046"
           tabindex="0"
           type="button"

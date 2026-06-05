@@ -125,7 +125,8 @@ window.tabiyaConfig = {
       careerReadinessHero: "/thinkers.svg",
     })
   ),
-  // Override platform colours — see src/styles/variables.css for all available keys. Values are RGB triplets, e.g. "10 92 74".
+  // Override platform colours and fonts — see src/styles/variables.css for all available keys.
+  // Colour values are RGB triplets, e.g. "10 92 74". Font values are full CSS font-family strings, e.g. "\"Roboto\", sans-serif".
   FRONTEND_THEME_CSS_VARIABLES: btoa(
     JSON.stringify({
       "brand-primary": "0 255 145",
@@ -139,6 +140,8 @@ window.tabiyaConfig = {
       "text-primary": "0 33 71",
       "text-secondary": "65 64 61",
       "text-accent": "38 94 167",
+      "font-heading": "\"Bricolage Grotesque\", sans-serif",
+      "font-body": "\"Plus Jakarta Sans\", sans-serif",
     })
   ),
   // ################################################################

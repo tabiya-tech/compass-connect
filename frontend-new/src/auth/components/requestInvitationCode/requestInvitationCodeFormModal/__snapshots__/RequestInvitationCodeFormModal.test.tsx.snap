@@ -23,7 +23,7 @@ exports[`RequestInvitationCodeFormModal should render modal correctly when open 
       class="MuiBox-root css-1yb9fns"
     >
       <h4
-        class="MuiTypography-root MuiTypography-h4 MuiTypography-gutterBottom css-k6bshe-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h4 MuiTypography-gutterBottom css-1jftexm-MuiTypography-root"
         data-testid="request-invitation-code-form-modal-title-54e2f585-4c25-47d5-9414-928cb63d30cd"
       >
         Request access to mockProduct
@@ -49,7 +49,7 @@ exports[`RequestInvitationCodeFormModal should render modal correctly when open 
       </button>
     </div>
     <p
-      class="MuiTypography-root MuiTypography-body2 css-1sldguw-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body2 css-1kjd8gp-MuiTypography-root"
       data-testid="request-invitation-code-form-modal-subtitle-54e2f585-4c25-47d5-9414-928cb63d30cd"
     >
       Please let us know how you plan to use mockProduct. We will carefully review your request and contact you shortly.
@@ -61,7 +61,7 @@ exports[`RequestInvitationCodeFormModal should render modal correctly when open 
         class="MuiFormControl-root MuiFormControl-marginNormal MuiFormControl-fullWidth MuiTextField-root css-1x3w0b7-MuiFormControl-root-MuiTextField-root"
       >
         <label
-          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-utjiy8-MuiFormLabel-root-MuiInputLabel-root"
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-qxupq8-MuiFormLabel-root-MuiInputLabel-root"
           data-shrink="false"
           for=":r2:"
           id=":r2:-label"
@@ -76,7 +76,7 @@ exports[`RequestInvitationCodeFormModal should render modal correctly when open 
           </span>
         </label>
         <div
-          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-rdckqg-MuiInputBase-root-MuiOutlinedInput-root"
+          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-8xfsmf-MuiInputBase-root-MuiOutlinedInput-root"
         >
           <input
             aria-invalid="false"
@@ -108,7 +108,7 @@ exports[`RequestInvitationCodeFormModal should render modal correctly when open 
         class="MuiFormControl-root MuiFormControl-marginNormal MuiFormControl-fullWidth MuiTextField-root css-1x3w0b7-MuiFormControl-root-MuiTextField-root"
       >
         <label
-          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-utjiy8-MuiFormLabel-root-MuiInputLabel-root"
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-qxupq8-MuiFormLabel-root-MuiInputLabel-root"
           data-shrink="false"
           for=":r3:"
           id=":r3:-label"
@@ -123,7 +123,7 @@ exports[`RequestInvitationCodeFormModal should render modal correctly when open 
           </span>
         </label>
         <div
-          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-rdckqg-MuiInputBase-root-MuiOutlinedInput-root"
+          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-8xfsmf-MuiInputBase-root-MuiOutlinedInput-root"
         >
           <input
             aria-invalid="false"
@@ -155,7 +155,7 @@ exports[`RequestInvitationCodeFormModal should render modal correctly when open 
         class="MuiFormControl-root MuiFormControl-marginNormal MuiFormControl-fullWidth MuiTextField-root css-1x3w0b7-MuiFormControl-root-MuiTextField-root"
       >
         <label
-          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-utjiy8-MuiFormLabel-root-MuiInputLabel-root"
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-qxupq8-MuiFormLabel-root-MuiInputLabel-root"
           data-shrink="false"
           for=":r4:"
           id=":r4:-label"
@@ -170,7 +170,7 @@ exports[`RequestInvitationCodeFormModal should render modal correctly when open 
           </span>
         </label>
         <div
-          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-11urx56-MuiInputBase-root-MuiOutlinedInput-root"
+          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-qydyph-MuiInputBase-root-MuiOutlinedInput-root"
         >
           <textarea
             aria-invalid="false"
@@ -206,7 +206,7 @@ exports[`RequestInvitationCodeFormModal should render modal correctly when open 
         </div>
       </div>
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-fullWidth Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-fullWidth css-j0x411-MuiButtonBase-root-MuiButton-root"
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-fullWidth Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-fullWidth css-1ucp07z-MuiButtonBase-root-MuiButton-root"
         data-testid="request-invitation-code-form-submit-button-54e2f585-4c25-47d5-9414-928cb63d30cd"
         disabled=""
         tabindex="-1"

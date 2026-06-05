@@ -28,7 +28,7 @@ exports[`AnimatedDotBadge should render the dot when show is true 1`] = `
     />
   </svg>
   <span
-    class="MuiBadge-badge MuiBadge-standard MuiBadge-anchorOriginTopRight MuiBadge-anchorOriginTopRightCircular MuiBadge-overlapCircular css-1wxt7ej-MuiBadge-badge"
+    class="MuiBadge-badge MuiBadge-standard MuiBadge-anchorOriginTopRight MuiBadge-anchorOriginTopRightCircular MuiBadge-overlapCircular css-wceyye-MuiBadge-badge"
   >
     <span
       class="css-h5dq0x"
