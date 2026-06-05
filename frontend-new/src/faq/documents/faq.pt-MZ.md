@@ -2,36 +2,36 @@
 title: "Ajuda & Perguntas Frequentes"
 ---
 
-## 1. Sobre o Njila
+## 1. Sobre o NJIRA
 
-### O que é o Njila?
+### O que é o NJIRA?
 
-O Njila é uma plataforma gratuita de orientação profissional baseada em IA, criada para os jovens da Zâmbia, com o apoio de uma colaboração entre o Ministério de Desenvolvimento de Competências Técnicas e Profissionais (MoTS) da Zâmbia e o Grupo do Banco Mundial. Através de um conjunto de chatbots interativos, o Njila ajuda os usuários a identificar e registar as suas competências, explorar percursos profissionais que correspondam a essas competências e encontrar oportunidades que se adequem aos seus interesses e perfil.
+O NJIRA é uma plataforma gratuita de orientação profissional baseada em IA, criada para os jovens da Zâmbia, com o apoio de uma colaboração entre o Ministério de Desenvolvimento de Competências Técnicas e Profissionais (MoTS) da Zâmbia e o Grupo do Banco Mundial. Através de um conjunto de chatbots interativos, o NJIRA ajuda os usuários a identificar e registar as suas competências, explorar percursos profissionais que correspondam a essas competências e encontrar oportunidades que se adequem aos seus interesses e perfil.
 
-### Quem pode usar o Njila?
+### Quem pode usar o NJIRA?
 
-O Njila foi desenvolvido para estudantes zambianos, licenciados e jovens que procuram emprego, incluindo qualquer pessoa que queira compreender melhor as suas competências e opções de carreira. É gratuito e não exige experiência profissional prévia.
+O NJIRA foi desenvolvido para estudantes zambianos, licenciados e jovens que procuram emprego, incluindo qualquer pessoa que queira compreender melhor as suas competências e opções de carreira. É gratuito e não exige experiência profissional prévia.
 
-Os usuários devem ter pelo menos 16 anos para usar o Njila. Os usuários com menos de 18 anos só podem utilizar o serviço com o consentimento e supervisão ativa de um pai ou tutor legal.
+Os usuários devem ter pelo menos 16 anos para usar o NJIRA. Os usuários com menos de 18 anos só podem utilizar o serviço com o consentimento e supervisão ativa de um pai ou tutor legal.
 
-### O que posso fazer com o Njila?
+### O que posso fazer com o NJIRA?
 
-O Njila é uma plataforma que pode ajudá-lo a preparar-se para o mercado de trabalho.
+O NJIRA é uma plataforma que pode ajudá-lo a preparar-se para o mercado de trabalho.
 
 - Compreender e articular as suas experiências escolares, de formação, trabalho, vida doméstica ou comunitária em competências que os empregadores valorizam.
 - Aceder a agentes de chat interativos dedicados a preparar os usuários para o trabalho, através de módulos de aprendizagem práticos como redação de CV e carta de apresentação, prontidão para o local de trabalho e preparação para entrevistas.
 - Explorar os percursos de carreira existentes nos diferentes sectores da Zâmbia, em particular nos sectores de crescimento e prioritários a nível nacional, como a agricultura, a mineração, a hospitalidade, a energia e muito mais.
 - Consultar e ser associado a ofertas de emprego reais que se adequam às competências, interesses e formação do utilizador, disponibilizadas através da plataforma.
 
-### O uso do Njila tem algum custo?
+### O uso do NJIRA tem algum custo?
 
-Não. O Njila é completamente gratuito. Não existem taxas para criar uma conta, conversar com o coach de IA ou baixar um relatório de competências.
+Não. O NJIRA é completamente gratuito. Não existem taxas para criar uma conta, conversar com o coach de IA ou baixar um relatório de competências.
 
 ## 2. Primeiros Passos: Registo e Login
 
 ### Diz que a minha conta não está verificada quando tento entrar.
 
-Quando uma conta é registada com e-mail/senha, o Njila exige verificação por e-mail. Abra o e-mail do "Njila" e clique no link de verificação para ativar a conta.
+Quando uma conta é registada com e-mail/senha, o NJIRA exige verificação por e-mail. Abra o e-mail do "NJIRA" e clique no link de verificação para ativar a conta.
 
 ### Não recebi nenhum e-mail de verificação.
 
@@ -48,7 +48,7 @@ Isso significa que já existe uma conta com esse e-mail. Se não se lembra da se
 - Aceda a [https://njila.ai/](https://njila.ai/)
 - Introduza o e-mail com que tentou criar a conta.
 - Clique em "Esqueci a senha" por baixo do campo da senha.
-- Pode também verificar se entrou no Njila anteriormente com o Google. Na página de login, clique em "Entrar com o Google" e selecione o e-mail.
+- Pode também verificar se entrou no NJIRA anteriormente com o Google. Na página de login, clique em "Entrar com o Google" e selecione o e-mail.
 
 ### Esqueci a minha senha.
 
@@ -78,7 +78,7 @@ Se não recebeu o e-mail de redefinição, pode tentar o seguinte:
 
 ### A minha conta foi bloqueada após introduzir a senha errada demasiadas vezes.
 
-Por razões de segurança, o Njila bloqueia temporariamente as tentativas de login a partir de um dispositivo após várias tentativas falhadas. Para resolver isto:
+Por razões de segurança, o NJIRA bloqueia temporariamente as tentativas de login a partir de um dispositivo após várias tentativas falhadas. Para resolver isto:
 
 - Aguarde um breve período antes de tentar novamente.
 - Use o link "Esqueci a senha" na página de login para redefinir a senha — esta é a forma mais rápida de recuperar o acesso.
@@ -150,9 +150,9 @@ Se o histórico de conversas não carregar:
 
 Para usuários registados, o histórico de conversas é armazenado permanentemente e deve recarregar automaticamente.
 
-### Posso usar o Njila no celular ou tablet?
+### Posso usar o NJIRA no celular ou tablet?
 
-Sim. O Njila é totalmente responsivo e funciona em:
+Sim. O NJIRA é totalmente responsivo e funciona em:
 
 - Smartphones (iOS, Android).
 - Tablets (iPad, tablets Android).
@@ -198,11 +198,11 @@ Se informações importantes forem esquecidas, lembre o chatbot na mensagem atua
 
 ## 5. Rede e Conectividade
 
-### O Njila está muito lento na minha ligação à internet. Ainda posso usá-lo?
+### O NJIRA está muito lento na minha ligação à internet. Ainda posso usá-lo?
 
-O Njila foi concebido para funcionar em ligações lentas, embora o desempenho seja afetado.
+O NJIRA foi concebido para funcionar em ligações lentas, embora o desempenho seja afetado.
 
-Dicas para usar o Njila com uma ligação lenta:
+Dicas para usar o NJIRA com uma ligação lenta:
 
 - Feche outras abas ou aplicações que estejam a usar largura de banda.
 - Desative o streaming de vídeo noutras janelas.
@@ -210,11 +210,11 @@ Dicas para usar o Njila com uma ligação lenta:
 - Evite as horas de ponta em redes partilhadas.
 - Seja paciente — aguarde o carregamento completo da página antes de interagir.
 
-### Posso usar o Njila sem ligação à internet?
+### Posso usar o NJIRA sem ligação à internet?
 
-Não. O Njila requer uma ligação à internet ativa. Todo o processamento das conversas ocorre no servidor, não localmente.
+Não. O NJIRA requer uma ligação à internet ativa. Todo o processamento das conversas ocorre no servidor, não localmente.
 
-### O que acontece se perder a ligação à internet enquanto uso o Njila?
+### O que acontece se perder a ligação à internet enquanto uso o NJIRA?
 
 Quando está offline:
 
@@ -227,7 +227,7 @@ Quando está offline:
 
 Isto geralmente significa que o Wi-Fi está ligado, mas a internet não está a chegar ao dispositivo. Tente:
 
-- Abra outro site (por exemplo google.com) numa nova aba — se também falhar, o problema é com a ligação à internet, não com o Njila.
+- Abra outro site (por exemplo google.com) numa nova aba — se também falhar, o problema é com a ligação à internet, não com o NJIRA.
 - Verifique se outros dispositivos na mesma rede Wi-Fi conseguem aceder à internet.
 - Reinicie o router ou o modem Wi-Fi.
 - Mude para dados móveis para verificar se o problema é com a rede Wi-Fi.
@@ -304,9 +304,9 @@ Reveja o histórico da conversa para verificar o que foi efetivamente confirmado
 
 ## 7. Conta e Perfil
 
-### Posso usar o Njila no meu idioma local?
+### Posso usar o NJIRA no meu idioma local?
 
-O Njila está atualmente disponível em inglês e português, com planos para adicionar mais idiomas no futuro. Se um idioma específico seria útil para si, envie o seu feedback para [hi@njila.ai](mailto:hi@njila.ai).
+O NJIRA está atualmente disponível em inglês e português, com planos para adicionar mais idiomas no futuro. Se um idioma específico seria útil para si, envie o seu feedback para [hi@njila.ai](mailto:hi@njila.ai).
 
 ### Como elimino a minha conta?
 
@@ -316,7 +316,7 @@ A eliminação da conta requer um pedido para [hi@njila.ai](mailto:hi@njila.ai).
 
 ### Encontrei um problema. Como o comunico?
 
-A forma mais rápida de comunicar um problema é o botão **Comunicar um erro** no canto inferior direito de qualquer página do Njila. O formulário permite introduzir o seu nome e e-mail, descrever o problema e anexar um screenshot — o seu relatório é enviado diretamente para a equipa do Njila.
+A forma mais rápida de comunicar um problema é o botão **Comunicar um erro** no canto inferior direito de qualquer página do NJIRA. O formulário permite introduzir o seu nome e e-mail, descrever o problema e anexar um screenshot — o seu relatório é enviado diretamente para a equipa do NJIRA.
 
 Em alternativa, envie um e-mail para [hi@njila.ai](mailto:hi@njila.ai). Quanto mais detalhes partilhar, mais rapidamente a equipa poderá resolver o problema. Um bom relatório inclui:
 
@@ -327,29 +327,29 @@ Em alternativa, envie um e-mail para [hi@njila.ai](mailto:hi@njila.ai). Quanto m
 - Um screenshot, se possível.
 - Quando aconteceu (data e hora aproximada).
 
-### Como contacto a equipa do Njila por outros motivos?
+### Como contacto a equipa do NJIRA por outros motivos?
 
 Para questões gerais, feedback, problemas de conta ou pedidos de dados, envie um e-mail para [hi@njila.ai](mailto:hi@njila.ai).
 
 ## 9. Privacidade e Termos
 
-### Que dados o Njila recolhe sobre mim?
+### Que dados o NJIRA recolhe sobre mim?
 
-O Njila recolhe apenas as informações necessárias para operar o serviço:
+O NJIRA recolhe apenas as informações necessárias para operar o serviço:
 
 - **Informações da conta:** nome e endereço de e-mail.
 - **Dados demográficos básicos:** faixa etária, preferência de idioma e localização geral.
 - **Análise de utilização:** como interage com a plataforma, além de informações técnicas como tipo de dispositivo, browser e sistema operativo.
-- **Conteúdo das conversas:** as suas mensagens e as respostas do Njila.
+- **Conteúdo das conversas:** as suas mensagens e as respostas do NJIRA.
 - **Resultados de competências:** resultados de avaliações de competências e recomendações de carreira.
 
-O Njila não recolhe dados pessoais sensíveis, como informações de saúde, identificadores biométricos ou detalhes sobre raça ou etnia. Para a lista completa de dados recolhidos e como são utilizados, consulte a [Política de Privacidade](https://njila.ai/#/privacy-policy).
+O NJIRA não recolhe dados pessoais sensíveis, como informações de saúde, identificadores biométricos ou detalhes sobre raça ou etnia. Para a lista completa de dados recolhidos e como são utilizados, consulte a [Política de Privacidade](https://njila.ai/#/privacy-policy).
 
 ### Os dados das minhas conversas são privados e seguros?
 
-O Njila é operado pela Tabiya, um projeto apoiado financeiramente pelo Global Development Incubator (GDI). Os dados das conversas e as informações pessoais são encriptados em trânsito e em repouso, e armazenados em servidores da Google Cloud. Os detalhes demográficos sensíveis (como nome e idade) são encriptados no seu dispositivo antes de serem enviados. Apenas você pode ver o seu próprio histórico de conversas; os administradores de sistema autorizados podem aceder aos dados para fins de suporte e manutenção.
+O NJIRA é operado pela Tabiya, um projeto apoiado financeiramente pelo Global Development Incubator (GDI). Os dados das conversas e as informações pessoais são encriptados em trânsito e em repouso, e armazenados em servidores da Google Cloud. Os detalhes demográficos sensíveis (como nome e idade) são encriptados no seu dispositivo antes de serem enviados. Apenas você pode ver o seu próprio histórico de conversas; os administradores de sistema autorizados podem aceder aos dados para fins de suporte e manutenção.
 
-O Njila usa ferramentas de análise para compreender como a plataforma é usada e melhorar a experiência. Para detalhes completos sobre os dados recolhidos, como são usados e os seus direitos, consulte a [Política de Privacidade](https://njila.ai/#/privacy-policy).
+O NJIRA usa ferramentas de análise para compreender como a plataforma é usada e melhorar a experiência. Para detalhes completos sobre os dados recolhidos, como são usados e os seus direitos, consulte a [Política de Privacidade](https://njila.ai/#/privacy-policy).
 
 ### Quem pode ver o meu histórico de conversas?
 
@@ -364,16 +364,16 @@ Consulte a política de privacidade para conhecer as políticas específicas de 
 
 ### Como posso aceder, corrigir ou eliminar os meus dados?
 
-Tem o direito de solicitar uma cópia dos dados pessoais que o Njila detém sobre si, de corrigir quaisquer imprecisões ou de solicitar a sua eliminação. Para fazer qualquer um destes pedidos, envie um e-mail para [hi@njila.ai](mailto:hi@njila.ai).
+Tem o direito de solicitar uma cópia dos dados pessoais que o NJIRA detém sobre si, de corrigir quaisquer imprecisões ou de solicitar a sua eliminação. Para fazer qualquer um destes pedidos, envie um e-mail para [hi@njila.ai](mailto:hi@njila.ai).
 
-O Njila responderá dentro do prazo exigido por lei e pode precisar de verificar a sua identidade antes de divulgar ou eliminar dados pessoais. Algumas informações podem ter de ser conservadas para cumprir obrigações legais.
+O NJIRA responderá dentro do prazo exigido por lei e pode precisar de verificar a sua identidade antes de divulgar ou eliminar dados pessoais. Algumas informações podem ter de ser conservadas para cumprir obrigações legais.
 
 ### Onde posso encontrar os Termos de Utilização e a Política de Privacidade?
 
 - [Termos de Utilização](https://njila.ai/#/terms-of-use)
 - [Política de Privacidade](https://njila.ai/#/privacy-policy)
 
-Ambos os documentos estão também disponíveis como links no rodapé do site do Njila. Consulte-os para compreender os direitos dos usuários e as obrigações do serviço.
+Ambos os documentos estão também disponíveis como links no rodapé do site do NJIRA. Consulte-os para compreender os direitos dos usuários e as obrigações do serviço.
 
 ## 10. Lista de Verificação de Resolução Rápida de Problemas
 
