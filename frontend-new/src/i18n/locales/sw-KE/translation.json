@@ -1138,7 +1138,8 @@
       },
       "careerExplorer": {
         "title": "Sekta Zilizochunguzwa",
-        "emptyState": "Sekta zitaonekana hapa unapochunguza kazi na {{appName}}."
+        "emptyState": "Sekta zitaonekana hapa unapochunguza kazi na {{appName}}.",
+        "sectorDescription": "Ilichunguzwa katika mazungumzo {{inquiryCount}}."
       },
       "careerReadiness": {
         "title": "Mada"

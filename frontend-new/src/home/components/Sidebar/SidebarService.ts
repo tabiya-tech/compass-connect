@@ -20,7 +20,7 @@ export interface SectorItem {
   emoji: string;
   name: string;
   salaryRange: string;
-  description: string;
+  inquiryCount: number;
 }
 
 export interface SectorData {
@@ -133,7 +133,7 @@ export default class SidebarService {
           name: s.sector_name,
           emoji: getSectorEmoji(s.sector_name),
           salaryRange: "—",
-          description: `Explored in ${s.inquiry_count} conversation${s.inquiry_count !== 1 ? "s" : ""}.`,
+          inquiryCount: s.inquiry_count,
         }));
       return { sectors };
     } catch {
