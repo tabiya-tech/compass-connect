@@ -12,11 +12,12 @@ export const mapCareerExplorerMessageToChatMessage = (
   msg: CareerExplorerMessage,
   isLastMessage: boolean = false,
   fillColor: string,
+  textColor: string,
   onQuickReplyClick?: (label: string) => void
 ): IChatMessage<CareerExplorerAgentMessageProps> | ReturnType<typeof generateUserMessage> => {
   const sentAt = msg.sent_at;
   if (msg.sender === "USER") {
-    return generateUserMessage(msg.message, sentAt, fillColor, msg.message_id);
+    return generateUserMessage(msg.message, sentAt, fillColor, textColor, msg.message_id);
   }
   const quickReplyOptions = isLastMessage ? msg.metadata?.quick_reply_options ?? null : null;
   const payload: CareerExplorerAgentMessageProps = {
@@ -38,9 +39,10 @@ export const mapCareerExplorerMessageToChatMessage = (
 export const mapCareerExplorerMessagesToChatMessages = (
   messages: CareerExplorerMessage[],
   fillColor: string,
+  textColor: string,
   onQuickReplyClick?: (label: string) => void
 ): IChatMessage<any>[] => {
   return messages.map((msg, idx) =>
-    mapCareerExplorerMessageToChatMessage(msg, idx === messages.length - 1, fillColor, onQuickReplyClick)
+    mapCareerExplorerMessageToChatMessage(msg, idx === messages.length - 1, fillColor, textColor, onQuickReplyClick)
   );
 };
