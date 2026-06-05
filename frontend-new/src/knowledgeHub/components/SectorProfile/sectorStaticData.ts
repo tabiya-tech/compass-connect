@@ -434,4 +434,78 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
   },
 };
 
+/** Locale-specific overrides — keyed by i18n locale code, then by pathway ID. */
+const SECTOR_DATA_BY_LOCALE: Record<string, Record<string, SectorStaticData>> = {
+  "pt-MZ": {
+    "energy-pathway": {
+      sector: "energy",
+      description:
+        "Moçambique é um dos maiores produtores de gás natural de África, com o corredor de GNL de Cabo Delgado a criar um pico de procura de técnicos qualificados. Em paralelo, a expansão da rede eléctrica e das energias renováveis abre oportunidades em todo o país.",
+      displayName: "Energia",
+      sectorApiParam: "Energy",
+      heroColor: "#D44B1A",
+      ladderColors: ["#D44B1A", "#c24316", "#b03a12", "#9e320e", "#8c2a0a"],
+      avgEarnings: "—",
+      heroText:
+        "Moçambique é um dos maiores produtores de gás natural de África, com o corredor de GNL de Cabo Delgado a criar um pico de procura de técnicos qualificados. Em paralelo, a expansão da rede eléctrica e das energias renováveis abre oportunidades em todo o país.",
+      heroHighlight:
+        "Os cursos industriais de ETP oferecem os salários mais elevados de todas as áreas de formação profissional.",
+      geoLabel:
+        "A energia está distribuída por todo o país, com o corredor de GNL concentrado em Cabo Delgado e a rede da EDM a expandir-se para as províncias do norte e do interior.",
+      mapFile: "mz-energy-map.svg",
+      mapAlt: "Mapa de Moçambique com províncias de energia destacadas",
+      employers: [
+        {
+          province: "Nacional",
+          employers: ["EDM – Electricidade de Moçambique (HQ Maputo)", "ENH – Empresa Nacional de Hidrocarbonetos"],
+        },
+        {
+          province: "Cabo Delgado",
+          employers: ["TotalEnergies Mozambique LNG (Palma)", "Eni – Coral FLNG (offshore)"],
+        },
+        {
+          province: "Sul (Inhambane / Maputo)",
+          employers: ["Sasol (gás natural, Temane)", "CMC di Ravenna (infra-estrutura energética)"],
+        },
+        {
+          province: "Vários",
+          employers: [
+            "Empreiteiros de construção civil (energias renováveis)",
+            "Empresas de instalação solar (sector em crescimento)",
+          ],
+        },
+      ],
+      programmeSubtitleSuffix:
+        "Os programas abrangem os campos profissionais de Engenharia e Produção Industrial (EPI) e Indústria Extractiva (EXT).",
+      considerations: [
+        {
+          title: "Corredor de GNL de Cabo Delgado",
+          body: "O GNL cria uma procura pico de técnicos de gás e electricidade industrial em Pemba e arredores. Os trabalhadores com certificados de Operador de Planta de Processamento de Gás têm fortes perspectivas de carreira, mas a oferta formativa é ainda escassa fora de Pemba.",
+        },
+        {
+          title: "Expansão do solar e das renováveis",
+          body: "A Estratégia Nacional de Energia (ENDE 2025–2044) prevê uma expansão significativa das energias renováveis. Os técnicos de instalação fotovoltaica e de energias renováveis estão entre as ocupações emergentes mais procuradas.",
+        },
+        {
+          title: "Progressão na carreira",
+          body: "As carreiras em energia vão de cursos curtos de instalação eléctrica (Nível II) a programas de Técnico Superior de 2,5–3 anos (Nível V). Os cursos industriais de ETP oferecem os salários mais elevados de todas as áreas de formação — com uma taxa de emprego de 70% aos 4–5 anos.",
+        },
+        {
+          title: "Lacuna de género e trabalhadores estrangeiros",
+          body: "A ENDE 2025–2044 estabelece uma meta de 40% de mulheres nas áreas de formação prioritárias. Os trabalhadores estrangeiros no sector extractivo aumentaram 31,8% no T3 2025, o que indica escassez de competências locais que a formação ETP pode colmatar.",
+        },
+      ],
+      sources:
+        "Fontes: Catálogo Nacional de Qualificações Profissionais – CNQP (ANEP, Dezembro 2025) · Boletim Informativo do Mercado do Trabalho – III Trimestre 2025 (MTGAS/DNOMT, 2025) · Decreto n.º 61/2022 – Quadro Nacional de Qualificações (Conselho de Ministros, 2022) · Informação para IA – Contexto do Sistema ETP (ANEP, 2025) · Directora Alexandrina Registry (ANEP, 2025) · Crescimento Inclusivo em Moçambique – Transição da Escola para o Trabalho (2024) · Diagnóstico das Necessidades de Formação Alinhadas à Demanda do Empregador – Draft (Vision Solution, Fevereiro 2026)",
+    },
+  },
+};
+
+/**
+ * Returns the static data for a pathway, preferring a locale-specific override when available.
+ * Falls back to the default (English/Zambia) data.
+ */
+export const getSectorData = (documentId: string, locale: string): SectorStaticData | undefined =>
+  SECTOR_DATA_BY_LOCALE[locale]?.[documentId] ?? SECTOR_DATA[documentId];
+
 export default SECTOR_DATA;

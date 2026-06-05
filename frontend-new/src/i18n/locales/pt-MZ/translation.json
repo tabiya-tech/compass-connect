@@ -310,7 +310,7 @@
           "feature1Title": "Descubra os seus pontos fortes",
           "feature1Body": "Descubra que competências já possui — da sua formação, do seu trabalho e da sua vida.",
           "feature2Title": "Construa um CV que seja notado",
-          "feature2Body": "Crie um CV profissional adaptado ao que os empregadores na Zâmbia procuram.",
+          "feature2Body": "Crie um CV profissional adaptado ao que os empregadores em Moçambique procuram.",
           "feature3Title": "Encontre o seu caminho",
           "feature3Body": "Explore carreiras com grande procura, compreenda de que qualificações necessita e encontre ofertas de emprego reais."
         },
@@ -977,7 +977,7 @@
     "dashboard": "O Seu Centro de Carreira",
     "backToDashboard": "Voltar ao painel principal",
     "welcomeBack": "Bem-vindo de volta, {{name}}",
-    "subtitle": "O {{appName}} é a ponte entre o que aprendeu e para onde se dirige. Converse com a IA para destacar as suas competências, preparar-se para entrevistas e explorar rotas de carreira reais na Zâmbia.",
+    "subtitle": "O {{appName}} é a ponte entre o que aprendeu e para onde se dirige. Converse com a IA para destacar as suas competências, preparar-se para entrevistas e explorar rotas de carreira reais em Moçambique.",
     "profileStrength": "A força atual do seu perfil é de {{progress}}%.",
     "profileStrengthHint": "É um bom começo — experimente Minhas Competências e Interesses para destacar mais sobre o que sabe e de que gosta.",
     "seeProfile": "Ver perfil →",
@@ -986,7 +986,7 @@
     "hero": {
       "headline1": "Vamos descobrir",
       "headline2": "As suas competências e pontos fortes",
-      "body": "O seu caminho guiado das competências para o seu primeiro emprego. Comece por descobrir o que traz consigo — depois explore carreiras, desenvolva a preparação para a carreira e encontre oportunidades reais na Zâmbia.",
+      "body": "O seu caminho guiado das competências para o seu primeiro emprego. Comece por descobrir o que traz consigo — depois explore carreiras, desenvolva a preparação para a carreira e encontre oportunidades reais em Moçambique.",
       "illustrationAlt": "Pessoa num sinal de sinalização num caminho, explorando direções de carreira"
     },
     "cta": {
@@ -997,7 +997,7 @@
       "explorePathsDesc": "Explore os setores e carreiras em que está interessado - salários, percursos de qualificação, programas de formação, principais empregadores.",
       "explorePathsCta": "Explorar Percursos de Carreira",
       "jobMatchesTitle": "Correspondências de Emprego",
-      "jobMatchesDesc": "Ofertas reais em toda a Zâmbia, correspondentes ao que pode fazer agora.",
+      "jobMatchesDesc": "Ofertas reais em todo o Moçambique, correspondentes ao que pode fazer agora.",
       "jobMatchesCta": "Explorar os seus empregos"
     },
     "jobReadySection": {
@@ -1103,9 +1103,9 @@
       "jobMatching": "Correspondência de Empregos",
       "skillsDiscoveryDesc": "Converse com o {{appName}} para descobrir as suas competências e interesses — dos seus estudos, trabalho e vida quotidiana.",
       "jobReadinessDesc": "Desenvolva a preparação para o emprego através de módulos guiados por IA — desde a compreensão da sua identidade profissional e escrita de CV até entrevistas, preparação para o local de trabalho e empreendedorismo.",
-      "careerExplorerDesc": "Explore percursos de carreira em Energia, Mineração, Agricultura e muito mais — com dados salariais e rotas de qualificação.",
-      "knowledgeHubDesc": "Explore perfis setoriais, referências salariais e percursos de qualificação TEVET, tudo num só lugar.",
-      "jobMatchingDesc": "Veja como as suas competências correspondem a ofertas de emprego reais e explore perspetivas do mercado de trabalho na Zâmbia.",
+      "careerExplorerDesc": "Explore o percurso de carreira em Energia em Moçambique — com qualificações CNQP, principais empregadores e oportunidades de formação.",
+      "knowledgeHubDesc": "Explore perfis setoriais, referências salariais e percursos de qualificação CNQP, tudo num só lugar.",
+      "jobMatchingDesc": "Veja como as suas competências correspondem a ofertas de emprego reais e explore perspetivas do mercado de trabalho em Moçambique.",
       "continue": "Continuar",
       "completed": "Concluído",
       "soon": "Em breve",
@@ -1161,13 +1161,13 @@
     "backToKnowledgeHub": "Voltar aos Percursos",
     "documentNotFound": "Documento não encontrado",
     "heroTitlePrefix": "Percursos de Carreira",
-    "heroTitleQuestion": "Onde é que a Zâmbia está a contratar?",
-    "introduction": "Saber no que é bom é apenas metade do caminho. Estes são os percursos de carreira com maior procura na Zâmbia neste momento — explore-os para ver onde as suas competências encontram oportunidades reais.",
+    "heroTitleQuestion": "Onde está Moçambique a recrutar?",
+    "introduction": "Saber no que é bom é apenas metade do caminho. Este é o percurso de carreira com maior procura em Moçambique — explore-o para ver onde as suas competências encontram oportunidades reais.",
     "discoverSectorCta": "Descubra o setor de {{sector}} →",
     "sectors": {
       "energy": {
         "title": "Energia",
-        "description": "O sector da energia na Zâmbia está a passar por uma transformação maciça, mudando para fontes de energia renováveis como a solar e eólica para complementar a sua forte base hidroeléctrica."
+        "description": "Moçambique é um dos maiores produtores de gás natural de África, com o corredor de GNL de Cabo Delgado a criar um pico de procura de técnicos qualificados. Em paralelo, a expansão das renováveis abre oportunidades em todo o país."
       },
       "mining": {
         "title": "Mineração",
@@ -1195,24 +1195,24 @@
     "prioritySector": "Setor Prioritário",
     "avgMonthlyEarnings": "Média de ganhos mensais (setor formal)",
     "criticalOccupations": "Profissões críticas identificadas",
-    "tevetProgrammes": "Programas TEVET oferecidos",
+    "tevetProgrammes": "Qualificações CNQP acreditadas",
     "keyEmployers": "Principais empregadores a ter em conta",
-    "tevetAccreditedProgrammes": "Programas acreditados TEVET relevantes para o setor de {{sector}}",
+    "tevetAccreditedProgrammes": "Programas ETP acreditados relevantes para o setor de {{sector}}",
     "accreditedProgrammesCount": "{{count}} programas acreditados em {{institutions}} instituições. {{suffix}}",
     "loadingProgrammes": "A carregar dados do programa...",
-    "shortCoursesNote": "+ {{count}} cursos de curta duração oferecidos por empregadores do setor e prestadores de formação especializada.",
-    "criticalSkillsLabel": "Especializações de competências críticas relacionadas com {{sector}} identificadas",
+    "shortCoursesNote": "+ {{count}} cursos de curta duração identificados como prioritários para formação alinhada à demanda dos empregadores.",
+    "criticalSkillsLabel": "Especializações críticas identificadas em {{sector}}",
     "filterAll": "Todos ({{count}})",
-    "filterZqf": "ZQF {{level}} ({{count}})",
-    "tableOccupation": "Profissão em procura",
-    "tableZqf": "ZQF",
+    "filterZqf": "QNQP {{level}} ({{count}})",
+    "tableOccupation": "Ocupação em demanda",
+    "tableZqf": "QNQP",
     "tableDuration": "Duração",
-    "tableTevet": "TEVET",
-    "tableCountAll": "A mostrar todas as {{count}} profissões. Onde não está listado nenhum programa, a formação é normalmente fornecida no local de trabalho pelos empregadores ou o currículo está atualmente em desenvolvimento.",
-    "tableCountFiltered": "A mostrar {{count}} profissões no nível ZQF {{level}}. Onde não está listado nenhum programa, a formação é normalmente fornecida no local de trabalho pelos empregadores ou o currículo está atualmente em desenvolvimento.",
+    "tableTevet": "ETP",
+    "tableCountAll": "A mostrar todas as {{count}} ocupações. Moçambique ainda não publicou uma Lista Nacional de Competências Críticas formal; as ocupações acima são identificadas a partir do contexto do mercado de trabalho do ANEP e do Boletim T3 2025.",
+    "tableCountFiltered": "A mostrar {{count}} ocupações (QNQP {{level}}). Moçambique ainda não publicou uma Lista Nacional de Competências Críticas formal; as ocupações acima são identificadas a partir do contexto do mercado de trabalho do ANEP e do Boletim T3 2025.",
     "newProgrammesDev": "Novos programas em desenvolvimento",
-    "newProgrammesDevDesc": "Áreas curriculares prioritárias identificadas através do Programa de Desenvolvimento de Competências para o Aumento da Empregabilidade (SDEP) da OIT/TEVETA e consultas setoriais.",
-    "devOccupationsLabel": "Profissões sem programas TEVET dedicados",
+    "newProgrammesDevDesc": "Áreas curriculares prioritárias identificadas no catálogo CNQP, no plano estratégico ANEP (ENDE 2025–2044) e no estudo de cursos de curta duração da Vision Solution (rascunho, Fevereiro 2026).",
+    "devOccupationsLabel": "Qualificações em desenvolvimento ou entrega não confirmada",
     "keepInMind": "Coisas a ter em conta",
     "navWhereJobs": "Onde estão os empregos",
     "navProgrammes": "Programas",
@@ -1223,30 +1223,35 @@
     "programmeCount": "{{count}} cursos",
     "zqf": {
       "skillsAward": {
-        "label": "Certificado de Competências",
-        "duration": "Curso de curta duração"
+        "label": "Certificado Vocacional / Ocupacional",
+        "duration": "Curso curto",
+        "frameworkLabel": "QNQP II"
       },
       "level3": {
-        "label": "Certificado Nível 3",
-        "duration": "1 ano"
+        "label": "Certificado Vocacional",
+        "duration": "~1 ano",
+        "frameworkLabel": "QNQP III"
       },
       "craftCertificate": {
-        "label": "Certificado de Especialidade",
-        "duration": "2 anos"
+        "label": "Certificado Vocacional / Técnico Médio",
+        "duration": "~2 anos",
+        "frameworkLabel": "QNQP IV"
       },
       "advancedCertificate": {
-        "label": "Certificado Avançado",
-        "duration": "2.5 anos"
+        "label": "Certificado Vocacional / Técnico Superior",
+        "duration": "~2,5–3 anos",
+        "frameworkLabel": "QNQP V"
       },
       "diploma": {
         "label": "Diploma",
-        "duration": "3 anos"
+        "duration": "3 anos",
+        "frameworkLabel": "QNQP V+"
       }
     }
   },
   "jobMatching": {
     "pageTitle": "Correspondência de Empregos",
-    "pageDescription": "Explore ofertas de emprego reais e veja como as suas competências correspondem a oportunidades em toda a Zâmbia.",
+    "pageDescription": "Explore ofertas de emprego reais e veja como as suas competências correspondem a oportunidades em todo o Moçambique.",
     "matched": {
       "programmeBanner": "Obtenha correspondências mais personalizadas ao completar a conversa de Construção do Seu Perfil.",
       "emptyNoSkills": "Os empregos correspondentes ainda não estão disponíveis. Complete a secção \"Construa o Seu Perfil\" para desbloquear recomendações personalizadas.",

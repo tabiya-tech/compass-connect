@@ -1224,23 +1224,28 @@
     "zqf": {
       "skillsAward": {
         "label": "Mphotho ya Luso",
-        "duration": "Maphunziro achifupi"
+        "duration": "Maphunziro achifupi",
+        "frameworkLabel": "ZQF 1–2"
       },
       "level3": {
         "label": "Chiphaso Mlingo 3",
-        "duration": "Chaka 1"
+        "duration": "Chaka 1",
+        "frameworkLabel": "ZQF 3"
       },
       "craftCertificate": {
         "label": "Chiphaso cha Luso",
-        "duration": "Zaka 2"
+        "duration": "Zaka 2",
+        "frameworkLabel": "ZQF 4"
       },
       "advancedCertificate": {
         "label": "Chiphaso cha Padera",
-        "duration": "Zaka 2.5"
+        "duration": "Zaka 2.5",
+        "frameworkLabel": "ZQF 5"
       },
       "diploma": {
         "label": "Diploma",
-        "duration": "Zaka 3"
+        "duration": "Zaka 3",
+        "frameworkLabel": "ZQF 6"
       }
     }
   },

@@ -1224,23 +1224,28 @@
     "zqf": {
       "skillsAward": {
         "label": "Skills Award",
-        "duration": "Short course"
+        "duration": "Short course",
+        "frameworkLabel": "ZQF 1–2"
       },
       "level3": {
         "label": "Certificate Level 3",
-        "duration": "1 year"
+        "duration": "1 year",
+        "frameworkLabel": "ZQF 3"
       },
       "craftCertificate": {
         "label": "Craft Certificate",
-        "duration": "2 years"
+        "duration": "2 years",
+        "frameworkLabel": "ZQF 4"
       },
       "advancedCertificate": {
         "label": "Advanced Certificate",
-        "duration": "2.5 years"
+        "duration": "2.5 years",
+        "frameworkLabel": "ZQF 5"
       },
       "diploma": {
         "label": "Diploma",
-        "duration": "3 years"
+        "duration": "3 years",
+        "frameworkLabel": "ZQF 6"
       }
     }
   },

@@ -994,23 +994,28 @@
     "zqf": {
       "skillsAward": {
         "label": "Premio de Habilidades",
-        "duration": "Curso corto"
+        "duration": "Curso corto",
+        "frameworkLabel": "ZQF 1–2"
       },
       "level3": {
         "label": "Certificado Nivel 3",
-        "duration": "1 año"
+        "duration": "1 año",
+        "frameworkLabel": "ZQF 3"
       },
       "craftCertificate": {
         "label": "Certificado de Oficio",
-        "duration": "2 años"
+        "duration": "2 años",
+        "frameworkLabel": "ZQF 4"
       },
       "advancedCertificate": {
         "label": "Certificado Avanzado",
-        "duration": "2,5 años"
+        "duration": "2,5 años",
+        "frameworkLabel": "ZQF 5"
       },
       "diploma": {
         "label": "Diploma",
-        "duration": "3 años"
+        "duration": "3 años",
+        "frameworkLabel": "ZQF 6"
       }
     }
   },
