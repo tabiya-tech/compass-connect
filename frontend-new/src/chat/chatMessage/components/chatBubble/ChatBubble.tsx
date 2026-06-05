@@ -1,6 +1,6 @@
 import React from "react";
 import { ConversationMessageSender } from "src/chat/ChatService/ChatService.types";
-import { Box, Typography, styled, useTheme } from "@mui/material";
+import { Box, Typography, styled } from "@mui/material";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 

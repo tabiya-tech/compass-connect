@@ -56,7 +56,7 @@ describe("Chat Utils", () => {
           message: givenMessage,
           sent_at: givenSentAt,
           fill_color: givenFillColor,
-          text_color: textColor
+          text_color: textColor,
         },
         component: expect.any(Function),
       });
@@ -92,7 +92,7 @@ describe("Chat Utils", () => {
           message: givenMessage,
           sent_at: givenSentAt,
           fill_color: givenFillColor,
-          text_color: givenFillColor
+          text_color: givenFillColor,
         },
         component: expect.any(Function),
       });
@@ -513,9 +513,9 @@ describe("Chat Utils", () => {
       // THEN expect the result to be a bulleted list message
       expect(result).toBe(
         "These are my experiences:\n" +
-        "• Led a team of 5 engineers to develop a new feature.\n" +
-        "• Improved system performance by 30% through optimization.\n" +
-        "• Collaborated with cross-functional teams to deliver projects on time."
+          "• Led a team of 5 engineers to develop a new feature.\n" +
+          "• Improved system performance by 30% through optimization.\n" +
+          "• Collaborated with cross-functional teams to deliver projects on time."
       );
     });
 

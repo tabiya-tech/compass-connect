@@ -1353,7 +1353,7 @@ describe("Chat", () => {
                       message: message.message,
                       sent_at: message.sent_at,
                       fill_color: expect.any(String),
-                      text_color: expect.any(String), 
+                      text_color: expect.any(String),
                     },
               component: expect.any(Function),
             })),

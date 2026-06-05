@@ -39,7 +39,12 @@ const CareerReadinessUserMessage: React.FC<CareerReadinessUserMessageProps> = ({
           flexDirection: "column",
         }}
       >
-        <ChatBubble message={message} sender={ConversationMessageSender.USER} fillColor={fillColor} textColor={textColor} />
+        <ChatBubble
+          message={message}
+          sender={ConversationMessageSender.USER}
+          fillColor={fillColor}
+          textColor={textColor}
+        />
       </Box>
     </MessageContainer>
   );

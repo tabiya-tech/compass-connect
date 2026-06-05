@@ -141,7 +141,7 @@ export const Chat: React.FC<Readonly<ChatProps>> = ({
   >(new Map());
 
   const initializingRef = useRef(false);
-  const handleQuickReplyRef = useRef<(label: string) => void>(() => { });
+  const handleQuickReplyRef = useRef<(label: string) => void>(() => {});
   const [initialized, setInitialized] = useState<boolean>(false);
   // Stable ref for handleBWSSubmit — avoids a circular dep between sendMessage and handleBWSSubmit
   const handleBWSSubmitRef = useRef<((taskId: string, bestWaId: string, worstWaId: string) => Promise<void>) | null>(
@@ -829,8 +829,15 @@ export const Chat: React.FC<Readonly<ChatProps>> = ({
                 try {
                   const parsed = JSON.parse(message.message);
                   if (parsed.type === "bws_response") return [];
-                } catch { }
-                return [generateUserMessage(message.message, message.sent_at, theme.palette.secondary.main, theme.palette.secondary.contrastText)];
+                } catch {}
+                return [
+                  generateUserMessage(
+                    message.message,
+                    message.sent_at,
+                    theme.palette.secondary.main,
+                    theme.palette.secondary.contrastText
+                  ),
+                ];
               }
               const isLast = idx === arr.length - 1;
               if (message.message_type === "BWS_TASK" && message.metadata) {

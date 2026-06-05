@@ -32,7 +32,7 @@ describe("render tests", () => {
     // GIVEN a user chat message sent at a given time
     const givenDate = new Date(2024, 6, 25).toISOString();
     const givenFillColor = "#FF5733";
-    const textColor = '#FFFFFF';
+    const textColor = "#FFFFFF";
     const messageData = {
       message_id: nanoid(),
       sender: ConversationMessageSender.COMPASS,
