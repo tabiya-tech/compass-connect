@@ -23,14 +23,14 @@ const CareerExplorerChat: React.FC<CareerExplorerChatProps> = ({
 }) => {
   const theme = useTheme();
   const [messages, setMessages] = useState<IChatMessage<any>[]>(() =>
-    mapCareerExplorerMessagesToChatMessages(initialMessages, theme.palette.primary.main)
+    mapCareerExplorerMessagesToChatMessages(initialMessages, theme.palette.primary.main, theme.palette.primary.contrastText)
   );
   const [aiIsTyping, setAiIsTyping] = useState(false);
   const [chatFinished, setChatFinished] = useState(false);
   const [failedSendDraft, setFailedSendDraft] = useState<string | null>(null);
   const [sidebarRefreshToken, setSidebarRefreshToken] = useState(0);
 
-  const handleSendRef = useRef<(msg: string) => void>(() => {});
+  const handleSendRef = useRef<(msg: string) => void>(() => { });
 
   const handleQuickReply = useCallback((label: string) => {
     handleSendRef.current(label);
@@ -46,7 +46,7 @@ const CareerExplorerChat: React.FC<CareerExplorerChatProps> = ({
   }, [messages, aiIsTyping, typingMessage, isLoading]);
 
   useEffect(() => {
-    setMessages(mapCareerExplorerMessagesToChatMessages(initialMessages, theme.palette.primary.main, handleQuickReply));
+    setMessages(mapCareerExplorerMessagesToChatMessages(initialMessages, theme.palette.primary.main, theme.palette.primary.contrastText, handleQuickReply));
   }, [initialMessages, handleQuickReply, theme]);
 
   const handleSend = useCallback(
@@ -73,7 +73,7 @@ const CareerExplorerChat: React.FC<CareerExplorerChatProps> = ({
       try {
         const res = await CareerExplorerService.getInstance().sendMessage(userMessage);
         setMessages(
-          mapCareerExplorerMessagesToChatMessages(res.messages, theme.palette.primary.main, handleQuickReply)
+          mapCareerExplorerMessagesToChatMessages(res.messages, theme.palette.primary.main, theme.palette.primary.contrastText, handleQuickReply)
         );
         setChatFinished(res.finished);
         setSidebarRefreshToken((t) => t + 1);

@@ -23,9 +23,10 @@ export interface UserChatMessageProps {
   message: string;
   sent_at: string;
   fill_color: string;
+  text_color: string;
 }
 
-const UserChatMessage: React.FC<UserChatMessageProps> = ({ message, sent_at, fill_color }) => {
+const UserChatMessage: React.FC<UserChatMessageProps> = ({ message, sent_at, fill_color, text_color }) => {
   const theme = useTheme();
 
   return (
@@ -42,6 +43,7 @@ const UserChatMessage: React.FC<UserChatMessageProps> = ({ message, sent_at, fil
           message={message}
           sender={ConversationMessageSender.USER}
           fillColor={fill_color || theme.palette.secondary.main}
+          textColor={text_color || theme.palette.secondary.contrastText}
         />
       </Box>
     </MessageContainer>

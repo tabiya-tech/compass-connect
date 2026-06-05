@@ -61,12 +61,14 @@ export const generateUserMessage = (
   message: string,
   sent_at: string,
   fill_color: string,
+  textColor: string,
   message_id?: string
 ): IChatMessage<UserChatMessageProps> => {
   const payload: UserChatMessageProps = {
     message: message,
     sent_at: sent_at,
     fill_color: fill_color,
+    text_color: textColor,
   };
   return {
     type: USER_CHAT_MESSAGE_TYPE,
