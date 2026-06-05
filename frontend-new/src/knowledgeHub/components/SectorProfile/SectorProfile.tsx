@@ -38,19 +38,36 @@ interface SectorData {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ZQF_CONFIG = [
-  { zqf: "1-2", labelKey: "knowledgeHub.zqf.skillsAward.label", durKey: "knowledgeHub.zqf.skillsAward.duration" },
-  { zqf: "3", labelKey: "knowledgeHub.zqf.level3.label", durKey: "knowledgeHub.zqf.level3.duration" },
+  {
+    zqf: "1-2",
+    labelKey: "knowledgeHub.zqf.skillsAward.label",
+    durKey: "knowledgeHub.zqf.skillsAward.duration",
+    frameworkLabelKey: "knowledgeHub.zqf.skillsAward.frameworkLabel",
+  },
+  {
+    zqf: "3",
+    labelKey: "knowledgeHub.zqf.level3.label",
+    durKey: "knowledgeHub.zqf.level3.duration",
+    frameworkLabelKey: "knowledgeHub.zqf.level3.frameworkLabel",
+  },
   {
     zqf: "4",
     labelKey: "knowledgeHub.zqf.craftCertificate.label",
     durKey: "knowledgeHub.zqf.craftCertificate.duration",
+    frameworkLabelKey: "knowledgeHub.zqf.craftCertificate.frameworkLabel",
   },
   {
     zqf: "5",
     labelKey: "knowledgeHub.zqf.advancedCertificate.label",
     durKey: "knowledgeHub.zqf.advancedCertificate.duration",
+    frameworkLabelKey: "knowledgeHub.zqf.advancedCertificate.frameworkLabel",
   },
-  { zqf: "6", labelKey: "knowledgeHub.zqf.diploma.label", durKey: "knowledgeHub.zqf.diploma.duration" },
+  {
+    zqf: "6",
+    labelKey: "knowledgeHub.zqf.diploma.label",
+    durKey: "knowledgeHub.zqf.diploma.duration",
+    frameworkLabelKey: "knowledgeHub.zqf.diploma.frameworkLabel",
+  },
 ] as const;
 
 const FILTER_ZQF_LEVELS = ["3", "4", "5", "6"];
@@ -560,7 +577,7 @@ const SectorProfile: React.FC<SectorProfileProps> = ({ staticData, topContent })
                               lineHeight: 1,
                             }}
                           >
-                            ZQF {row.zqf}
+                            {t(row.frameworkLabelKey)}
                           </div>
                           <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4 }}>{t(row.durKey)}</div>
                         </div>

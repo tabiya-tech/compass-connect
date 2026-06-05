@@ -1,0 +1,49 @@
+<svg viewBox="0 0 300 520" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <clipPath id="moz-clip">
+    <path d="M 119.0,45.2 L 138.6,42.8 L 169.9,51.1 L 176.7,47.4 L 194.9,46.6 L 204.2,37.7 L 219.8,38.2 L 248.4,26.7 L 269.1,9.4 L 273.3,22.7 L 272.3,52.3 L 275.5,78.4 L 276.5,124.9 L 281.1,139.4 L 273.3,160.6 L 263.2,181.3 L 246.6,199.7 L 222.7,211.0 L 193.3,225.4 L 163.9,257.3 L 153.8,262.7 L 135.6,283.9 L 124.9,290.7 L 122.7,311.9 L 135.0,334.4 L 140.2,351.8 L 140.5,360.7 L 145.1,359.2 L 144.4,388.4 L 140.1,402.2 L 146.3,407.3 L 142.4,419.6 L 131.5,430.2 L 110.0,440.3 L 78.6,456.3 L 67.2,467.3 L 69.4,479.8 L 76.1,481.8 L 73.8,497.5 L 54.0,497.2 L 51.8,484.1 L 47.9,470.8 L 45.7,460.1 L 50.4,427.0 L 43.6,405.9 L 31.1,364.0 L 58.6,330.3 L 65.4,308.9 L 69.4,306.2 L 72.3,288.7 L 68.1,279.9 L 69.3,257.7 L 74.3,237.1 L 74.3,199.5 L 60.7,189.9 L 48.3,187.8 L 42.7,180.4 L 30.6,174.2 L 8.8,174.7 L 7.2,163.7 L 4.7,142.5 L 83.8,118.0 L 98.9,132.3 L 106.0,129.6 L 116.3,137.1 L 117.9,149.0 L 112.4,162.8 L 114.3,183.7 L 131.3,202.1 L 139.3,181.5 L 150.6,175.2 L 148.4,137.0 L 137.4,115.5 L 128.0,105.9 L 119.0,106.4 L 111.7,67.7 L 119.0,45.2 Z"/>
+  </clipPath>
+</defs>
+<style>
+  .prov { stroke: #fff; stroke-width: 1.5; stroke-linejoin: round; }
+  .prov-default { fill: #E1DFDD; }
+  .prov-hl { fill: #D44B1A; }
+  .prov-hl-light { fill: #f2c9ba; stroke: #D44B1A; stroke-width: 0.8; }
+  .lbl { font-family: 'DM Sans', system-ui, sans-serif; fill: #7D7469; text-anchor: middle; dominant-baseline: central; font-size: 8.5px; }
+  .lbl-dark { fill: #fff; font-weight: 600; }
+  .country-border { fill: none; stroke: #aaa; stroke-width: 1.2; }
+</style>
+<g clip-path="url(#moz-clip)">
+  <polygon class="prov prov-default" points="119,45 173,47 183,134 183,148 157,160 131,202 139,181 150,175 148,137 137,115 128,105 119,106 111,67"/>
+  <polygon class="prov prov-hl" points="173,47 194,46 204,37 219,38 248,26 269,9 273,22 272,52 275,78 276,124 278,134 183,134 183,148 173,47"/>
+  <polygon class="prov prov-default" points="278,134 281,139 273,160 263,181 246,199 222,211 193,225 156,215 183,148 183,134 278,134"/>
+  <polygon class="prov prov-default" points="4,142 83,118 98,132 106,129 116,137 117,149 112,162 114,183 131,202 100,240 74,237 74,199 60,189 48,187 42,180 30,174 8,174 7,163 4,142"/>
+  <polygon class="prov prov-default" points="131,202 157,160 183,148 156,215 193,225 163,257 153,262 135,283 124,290 122,311 104,297 100,253 100,240 131,202"/>
+  <polygon class="prov prov-default" points="74,237 100,240 100,253 104,297 74,297 69,257 74,237"/>
+  <polygon class="prov prov-hl-light" points="100,253 156,215 193,225 163,257 153,262 135,283 124,290 122,311 135,334 104,327 104,297 100,253"/>
+  <polygon class="prov prov-hl-light" points="135,334 140,351 140,360 145,359 144,388 140,402 146,407 142,419 131,430 104,416 104,327 135,334"/>
+  <polygon class="prov prov-default" points="74,297 104,297 104,327 104,416 104,446 47,470 45,460 50,427 43,405 31,364 58,330 65,308 69,306 72,288 68,279 69,257 74,297"/>
+  <polygon class="prov prov-default" points="104,446 131,430 110,440 78,456 67,467 69,479 76,481 73,497 54,497 47,470 104,446"/>
+  <circle cx="88" cy="438" r="12" fill="#D44B1A" opacity="0.9" clip-path="url(#moz-clip)"/>
+</g>
+<path class="country-border" d="M 119.0,45.2 L 138.6,42.8 L 169.9,51.1 L 176.7,47.4 L 194.9,46.6 L 204.2,37.7 L 219.8,38.2 L 248.4,26.7 L 269.1,9.4 L 273.3,22.7 L 272.3,52.3 L 275.5,78.4 L 276.5,124.9 L 281.1,139.4 L 273.3,160.6 L 263.2,181.3 L 246.6,199.7 L 222.7,211.0 L 193.3,225.4 L 163.9,257.3 L 153.8,262.7 L 135.6,283.9 L 124.9,290.7 L 122.7,311.9 L 135.0,334.4 L 140.2,351.8 L 140.5,360.7 L 145.1,359.2 L 144.4,388.4 L 140.1,402.2 L 146.3,407.3 L 142.4,419.6 L 131.5,430.2 L 110.0,440.3 L 78.6,456.3 L 67.2,467.3 L 69.4,479.8 L 76.1,481.8 L 73.8,497.5 L 54.0,497.2 L 51.8,484.1 L 47.9,470.8 L 45.7,460.1 L 50.4,427.0 L 43.6,405.9 L 31.1,364.0 L 58.6,330.3 L 65.4,308.9 L 69.4,306.2 L 72.3,288.7 L 68.1,279.9 L 69.3,257.7 L 74.3,237.1 L 74.3,199.5 L 60.7,189.9 L 48.3,187.8 L 42.7,180.4 L 30.6,174.2 L 8.8,174.7 L 7.2,163.7 L 4.7,142.5 L 83.8,118.0 L 98.9,132.3 L 106.0,129.6 L 116.3,137.1 L 117.9,149.0 L 112.4,162.8 L 114.3,183.7 L 131.3,202.1 L 139.3,181.5 L 150.6,175.2 L 148.4,137.0 L 137.4,115.5 L 128.0,105.9 L 119.0,106.4 L 111.7,67.7 L 119.0,45.2 Z"/>
+<text class="lbl" x="130" y="112">Niassa</text>
+<text class="lbl lbl-dark" x="232" y="75">Cabo Delgado</text>
+<text class="lbl" x="228" y="188">Nampula</text>
+<text class="lbl" x="55" y="182">Tete</text>
+<text class="lbl" x="162" y="256">Zambézia</text>
+<text class="lbl" x="80" y="267">Manica</text>
+<text class="lbl" x="152" y="283">Sofala</text>
+<text class="lbl" x="148" y="382">Inhambane</text>
+<text class="lbl" x="65" y="367">Gaza</text>
+<text class="lbl" x="74" y="463">Maputo</text>
+<text class="lbl" x="74" y="475">Prov.</text>
+<text class="lbl lbl-dark" x="88" y="438" style="font-size:7.5px;">Maputo</text>
+<text transform="rotate(-90,292,310)" x="292" y="310" style="font-family:DM Sans,sans-serif;fill:#9ecae1;font-size:9px;font-style:italic;text-anchor:middle;">Oceano Índico</text>
+<rect x="4" y="445" width="9" height="9" fill="#D44B1A" rx="1.5"/>
+<text x="16" y="450" style="font-family:DM Sans,sans-serif;fill:#7D7469;font-size:7.5px;">Centros-chave de energia</text>
+<rect x="4" y="458" width="9" height="9" fill="#f2c9ba" stroke="#D44B1A" stroke-width="0.6" rx="1.5"/>
+<text x="16" y="463" style="font-family:DM Sans,sans-serif;fill:#7D7469;font-size:7.5px;">Hubs regionais</text>
+<rect x="4" y="471" width="9" height="9" fill="#E1DFDD" rx="1.5"/>
+<text x="16" y="476" style="font-family:DM Sans,sans-serif;fill:#7D7469;font-size:7.5px;">Outras províncias</text>
+</svg>

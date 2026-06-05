@@ -1224,23 +1224,28 @@
     "zqf": {
       "skillsAward": {
         "label": "Tuzo ya Ujuzi",
-        "duration": "Kozi fupi"
+        "duration": "Kozi fupi",
+        "frameworkLabel": "ZQF 1–2"
       },
       "level3": {
         "label": "Cheti Kiwango cha 3",
-        "duration": "Mwaka 1"
+        "duration": "Mwaka 1",
+        "frameworkLabel": "ZQF 3"
       },
       "craftCertificate": {
         "label": "Cheti cha Ufundi",
-        "duration": "Miaka 2"
+        "duration": "Miaka 2",
+        "frameworkLabel": "ZQF 4"
       },
       "advancedCertificate": {
         "label": "Cheti cha Juu",
-        "duration": "Miaka 2.5"
+        "duration": "Miaka 2.5",
+        "frameworkLabel": "ZQF 5"
       },
       "diploma": {
         "label": "Stashahada",
-        "duration": "Miaka 3"
+        "duration": "Miaka 3",
+        "frameworkLabel": "ZQF 6"
       }
     }
   },

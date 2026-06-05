@@ -3,7 +3,7 @@ import { Box, Container, useTheme } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SectorProfile from "src/knowledgeHub/components/SectorProfile";
-import SECTOR_DATA from "src/knowledgeHub/components/SectorProfile/sectorStaticData";
+import { getSectorData } from "src/knowledgeHub/components/SectorProfile/sectorStaticData";
 import ErrorPage from "src/error/errorPage/ErrorPage";
 import BackLink from "src/navigation/BackLink/BackLink";
 import { IsOnlineContext } from "src/app/isOnlineProvider/IsOnlineProvider";
@@ -22,10 +22,10 @@ const KnowledgeHubDocument: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { documentId } = useParams<{ documentId: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isOnline = useContext(IsOnlineContext);
 
-  const sectorStaticData = documentId ? SECTOR_DATA[documentId] : undefined;
+  const sectorStaticData = documentId ? getSectorData(documentId, i18n.language) : undefined;
 
   if (!sectorStaticData) {
     return <ErrorPage errorMessage={t("knowledgeHub.documentNotFound")} />;
