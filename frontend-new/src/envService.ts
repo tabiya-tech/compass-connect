@@ -259,6 +259,8 @@ export interface IllustrationUrls {
   loginFeature3: string;
   homeHero: string;
   careerReadinessHero: string;
+  authShapesBackground: string;
+  dashboardShapesBackground?: string;
 }
 
 export const DEFAULT_ILLUSTRATION_URLS: IllustrationUrls = {
@@ -268,6 +270,7 @@ export const DEFAULT_ILLUSTRATION_URLS: IllustrationUrls = {
   loginFeature3: "/runner.svg",
   homeHero: "/path.svg",
   careerReadinessHero: "/thinkers.svg",
+  authShapesBackground: "/Shapes.svg",
 };
 
 export const getIllustrationUrls = (): IllustrationUrls => {

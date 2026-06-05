@@ -123,6 +123,8 @@ window.tabiyaConfig = {
       loginFeature3: "/runner.svg",
       homeHero: "/path.svg",
       careerReadinessHero: "/thinkers.svg",
+      authShapesBackground: "/Shapes.svg",
+      dashboardShapesBackground: '',
     })
   ),
   // Override platform colours and fonts — see src/styles/variables.css for all available keys.

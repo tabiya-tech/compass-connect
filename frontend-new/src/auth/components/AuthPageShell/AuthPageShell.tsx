@@ -7,8 +7,7 @@ import { useTranslation } from "react-i18next";
 import LanguageContextMenu from "src/i18n/languageContextMenu/LanguageContextMenu";
 import SecondaryButton from "src/theme/SecondaryButton/SecondaryButton";
 import { routerPaths } from "src/app/routerPaths";
-
-export const shapesBackgroundUrl = `${process.env.PUBLIC_URL}/Shapes.svg`;
+import { getIllustrationUrls } from "src/envService";
 
 const uniqueId = "9ad2f1c6-3e08-4b49-9f7d-4c8a1e3d5b27";
 
@@ -51,6 +50,7 @@ const AuthPageShell: React.FC<AuthPageShellProps> = ({
 }) => {
   const theme = useTheme();
   const cream = theme.palette.tertiary.light;
+  const shapesBackgroundUrl = getIllustrationUrls().authShapesBackground;
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -100,7 +100,7 @@ const AuthPageShell: React.FC<AuthPageShellProps> = ({
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center center",
             backgroundSize: "cover",
-            opacity: 0.35,
+            opacity: 1,
             pointerEvents: "none",
             zIndex: 0,
           }}

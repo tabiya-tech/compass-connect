@@ -3,7 +3,7 @@ import React from "react";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
-import { getProductName } from "src/envService";
+import { getIllustrationUrls, getProductName } from "src/envService";
 import { isConnectionError } from "src/error/restAPIError/isConnectionError";
 import Footer from "src/home/components/Footer/Footer";
 import HomeHero from "src/home/components/HomeHero/HomeHero";
@@ -26,6 +26,7 @@ const Home: React.FC = () => {
   const appName = getProductName();
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const { profileData, isLoadingModules, errors } = useUserProfileContext();
+  const shapesBackgroundUrl = getIllustrationUrls().dashboardShapesBackground;
 
   const modulesLoadError = Boolean(errors?.modules);
   const modulesConnectionError = isConnectionError(errors?.modules);
@@ -61,8 +62,26 @@ const Home: React.FC = () => {
             paddingTop: theme.fixedSpacing(6),
             paddingBottom: { xs: theme.fixedSpacing(theme.tabiyaSpacing.sm), md: 0 },
             overflow: "visible",
+            position: "relative",
           }}
         >
+          {shapesBackgroundUrl && (
+            <Box
+              aria-hidden
+              sx={{
+                position: "absolute",
+                inset: 0,
+                overflow: "hidden",
+                backgroundImage: `url(${shapesBackgroundUrl})`,
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center center",
+                backgroundSize: "cover",
+                opacity: 1,
+                pointerEvents: "none",
+                zIndex: 0,
+              }}
+            />
+          )}
           <Box
             sx={{
               width: "100%",
