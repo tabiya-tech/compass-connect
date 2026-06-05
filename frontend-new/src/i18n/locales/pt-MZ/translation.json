@@ -148,10 +148,10 @@
         "createAccount": "Criar uma Conta",
         "verificationReminder": "Um email de verificação foi enviado para o seu endereço de email. Por favor, verifique a sua conta antes de iniciar sessão novamente.",
         "feedbackWelcome": "Gostaríamos de receber mais",
-        "feedbackLinkText": "Feedback",
+        "feedbackLinkText": "Comentários",
         "feedbackFromYouSuffix": "de si. Demora apenas 5 minutos e ajuda-nos a melhorar!",
         "feedbackInProgressPrefix": "Por favor",
-        "feedbackInProgressLinkText": "Complete o seu Feedback",
+        "feedbackInProgressLinkText": "Conclua os seus comentários",
         "feedbackInProgressSuffix": "para nos ajudar a melhorar a sua experiência!"
       },
       "sent": "enviado ",
@@ -205,7 +205,7 @@
       }
     },
     "util": {
-      "feedbackThankYou": "Obrigado por disponibilizar o seu tempo para partilhar o seu valioso feedback.",
+      "feedbackThankYou": "Agradecemos o seu tempo para partilhar os seus valiosos comentários.",
       "ratingThankYou": "Obrigado por avaliar o {{appName}}.",
       "errorSomethingWentWrong": "Lamento, algo parece ter corrido mal do meu lado... Pode, por favor, atualizar a página e tentar novamente?",
       "errorPleaseRepeat": "Lamento, algo parece ter corrido mal do meu lado... Pode, por favor, repetir isso?",
@@ -217,7 +217,7 @@
       "components": {
         "dislikeReasonPopover": {
           "title": "Por favor, diga-nos qual é o problema?",
-          "closeButton": "fechar feedback",
+          "closeButton": "fechar comentários",
           "reasons": {
             "inappropriateTone": "Tom Inapropriado",
             "offensiveLanguage": "Linguagem Ofensiva",
@@ -255,13 +255,13 @@
       "thinkingMessage": "A processar o seu CV, isto pode demorar um pouco..."
     },
     "chatHeader": {
-      "viewExperiences": "Relatório das minhas competências",
-      "feedbackMessage": "Gostaríamos de ouvir o seu feedback sobre a sua experiência até agora!",
-      "giveFeedback": "Dar Feedback",
-      "feedbackMessagePlaceholder": "Gostaríamos de ouvir a sua opinião! Por favor, partilhe qualquer feedback ou sugestões que tenha para melhorar o {{appName}}.",
-      "sendFeedback": "Enviar Feedback",
-      "feedbackSuccessMessage": "Obrigado pelo seu feedback!",
-      "giveGeneralFeedback": "Dar feedback geral",
+      "viewExperiences": "Relatório de competências",
+      "feedbackMessage": "Adoraríamos conhecer os seus comentários sobre a sua experiência até agora!",
+      "giveFeedback": "Dar a sua opinião",
+      "feedbackMessagePlaceholder": "Adoraríamos conhecer a sua opinião! Por favor, partilhe quaisquer comentários ou sugestões que tenha para melhorar o {{appName}}.",
+      "sendFeedback": "Enviar comentários",
+      "feedbackSuccessMessage": "Agradecemos os seus comentários!",
+      "giveGeneralFeedback": "Enviar comentários gerais",
       "userInfo": "Informação do utilizador",
       "viewMyProfile": "Perfil",
       "userIconAlt": "Ícone de Utilizador",
@@ -271,7 +271,7 @@
       "logoutWarningAnonymous": "Se sair, perderá o acesso ao seu histórico de conversas e experiências.",
       "createAccountToSaveProgress": "Crie uma conta para guardar o seu progresso",
       "continueYourJourneyLater": "e continue a sua jornada mais tarde.",
-      "formTitle": "Dar feedback geral",
+      "formTitle": "Enviar comentários gerais",
       "nameLabel": "Nome",
       "namePlaceholder": "O Seu Nome",
       "emailLabel": "Email",
@@ -792,30 +792,30 @@
             "questionText": "Finalmente, gostaríamos de ouvir a sua opinião sobre a sua experiência até agora! Quão satisfeito está com o {{appName}}?",
             "ratingLabelLow": "Insatisfeito",
             "ratingLabelHigh": "Satisfeito",
-            "submitSuccess": "Feedback de classificação submetido com sucesso!",
-            "submitError": "O seu feedback não foi enviado. Por favor, tente novamente daqui a pouco."
+            "submitSuccess": "Avaliação enviada com sucesso!",
+            "submitError": "Não foi possível enviar os seus comentários. Por favor, tente novamente daqui a pouco."
           },
           "feedbackFormContent": {
             "previous": "Anterior",
             "next": "Seguinte"
           }
         },
-        "submitSuccess": "Feedback submetido com sucesso!",
-        "submitError": "O seu feedback não foi enviado. Por favor, tente novamente daqui a pouco. Se isto continuar a acontecer, avise o suporte utilizando a referência mostrada quando ocorrem falhas.",
+        "submitSuccess": "Comentários enviados com sucesso!",
+        "submitError": "Não foi possível enviar os seus comentários. Por favor, tente novamente daqui a pouco. Se o problema persistir, informe o suporte utilizando a referência exibida quando ocorrem falhas.",
         "helpUsImprove": "Ajude-nos a melhorar!",
-        "closeForm": "fechar formulário de feedback",
-        "submittingFeedback": "A submeter feedback..."
+        "closeForm": "Fechar formulário de comentários",
+        "submittingFeedback": "A enviar os comentários..."
       }
     },
     "bugReport": {
-      "reportBug": "Reportar um Erro"
+      "reportBug": "Reportar erro"
     },
     "feedbackModal": {
-      "title": "Reportar um erro ou enviar feedback",
+      "title": "Reportar erro ou enviar comentários",
       "subtitle": "Diga-nos o que aconteceu ou o que ajudaria. Lemos todos os comentários.",
       "type": {
         "bug": "Erro",
-        "feedback": "Feedback",
+        "feedback": "Comentários",
         "idea": "Ideia"
       },
       "priority": {
@@ -823,14 +823,14 @@
         "medium": "Média",
         "high": "Alta"
       },
-      "messagePlaceholder": "Descreva o que aconteceu, o que esperava, ou qualquer feedback...",
+      "messagePlaceholder": "Descreva o que aconteceu, o que esperava ou quaisquer comentários...",
       "addScreenshot": "Adicionar captura de ecrã",
       "removeScreenshot": "Remover captura de ecrã",
       "screenshotAlt": "Captura de ecrã anexada",
       "cancel": "Cancelar",
       "send": "Enviar",
-      "successMessage": "Obrigado pelo seu feedback!",
-      "errorMessage": "Não conseguimos enviar o seu feedback. Por favor, tente novamente."
+      "successMessage": "Agradecemos os seus comentários!",
+      "errorMessage": "Não foi possível enviar os seus comentários. Por favor, tente novamente."
     }
   },
   "error": {
@@ -896,7 +896,7 @@
     "inaccurate": "Impreciso",
     "very_accurate": "Muito preciso",
     "skill_accuracy": "Precisão de Competências",
-    "final_feedback": "Feedback final",
+    "final_feedback": "Comentários finais",
     "difficult": "Difícil",
     "easy": "Fácil",
     "unlikely": "Improvável",
@@ -905,7 +905,7 @@
   "steps": {
     "biasAndExperience": "Precisão de Bias e Experiência",
     "skillAccuracy": "Precisão de Competências",
-    "finalFeedback": "Feedback final"
+    "finalFeedback": "Comentários finais"
   },
   "labels": {
     "inaccurate": "Impreciso",
