@@ -1138,7 +1138,8 @@
       },
       "careerExplorer": {
         "title": "Zigawo Zofufuzidwa",
-        "emptyState": "Zigawo zidzaonekera apa mukafufuza ntchito ndi {{appName}}."
+        "emptyState": "Zigawo zidzaonekera apa mukafufuza ntchito ndi {{appName}}.",
+        "sectorDescription": "Inafufuzidwa mu kucheza {{inquiryCount}}."
       },
       "careerReadiness": {
         "title": "Zitenga"

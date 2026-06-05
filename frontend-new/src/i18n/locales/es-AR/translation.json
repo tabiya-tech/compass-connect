@@ -1231,7 +1231,8 @@
       },
       "careerExplorer": {
         "title": "Sectores Explorados",
-        "emptyState": "Los sectores aparecerán aquí cuando explorés carreras con {{appName}}."
+        "emptyState": "Los sectores aparecerán aquí cuando explorés carreras con {{appName}}.",
+        "sectorDescription": "Explorado en {{inquiryCount}} conversaciones."
       },
       "careerReadiness": {
         "title": "Temas"

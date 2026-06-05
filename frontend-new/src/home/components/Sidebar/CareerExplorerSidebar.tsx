@@ -19,9 +19,10 @@ export const DATA_TEST_ID = {
 interface SectorCardProps {
   sector: SectorItem;
   accentColor: string;
+  description: string;
 }
 
-const SectorCard: React.FC<SectorCardProps> = ({ sector, accentColor }) => {
+const SectorCard: React.FC<SectorCardProps> = ({ sector, accentColor, description }) => {
   const theme = useTheme();
   const salaryRange = sector.salaryRange?.trim();
   const shouldShowSalaryRange = Boolean(salaryRange && salaryRange !== "—");
@@ -81,7 +82,7 @@ const SectorCard: React.FC<SectorCardProps> = ({ sector, accentColor }) => {
           lineHeight: 1.5,
         }}
       >
-        {sector.description}
+        {description}
       </Typography>
     </Box>
   );
@@ -131,7 +132,12 @@ const CareerExplorerSidebar: React.FC<CareerExplorerSidebarProps> = ({ refreshTo
       ) : (
         <Box>
           {sectors.map((sector, i) => (
-            <SectorCard key={sector.id ?? i} sector={sector} accentColor={accentColor} />
+            <SectorCard
+              key={sector.id ?? i}
+              sector={sector}
+              accentColor={accentColor}
+              description={t("home.sidebar.careerExplorer.sectorDescription", { inquiryCount: sector.inquiryCount })}
+            />
           ))}
         </Box>
       )}
