@@ -286,8 +286,8 @@ const JobReadyListRow: React.FC<JobReadyListRowProps> = ({
                   padding: `${theme.fixedSpacing(theme.tabiyaSpacing.xs)} ${theme.fixedSpacing(theme.tabiyaSpacing.md)}`,
                   "&:hover:not(:disabled)": {
                     backgroundColor: theme.palette.accent.main,
-                    color: theme.palette.accent.contrastText
-                  }
+                    color: theme.palette.accent.contrastText,
+                  },
                 }}
               >
                 {isNavigating ? <CircularProgress size={14} color="inherit" /> : t("careerReadiness.chat")}
