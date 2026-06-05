@@ -533,7 +533,8 @@
           "alsoKnownAs": "También conocido como:"
         },
         "experiencesDrawerHeader": {
-          "closeTitle": "Cerrar experiencias"
+          "closeTitle": "Cerrar experiencias",
+          "lastUpdated": "Última actualización: {{date}}"
         },
         "restoreExperiencesDrawer": {
           "title": "Restaurar experiencias",

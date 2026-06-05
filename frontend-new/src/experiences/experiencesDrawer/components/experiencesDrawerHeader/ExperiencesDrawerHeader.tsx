@@ -22,7 +22,7 @@ export const DATA_TEST_ID = {
 
 const ExperiencesDrawerHeader: React.FC<ExperiencesDrawerHeaderProps> = (props) => {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <Box
@@ -56,7 +56,9 @@ const ExperiencesDrawerHeader: React.FC<ExperiencesDrawerHeaderProps> = (props) 
             sx={{ color: theme.palette.text.secondary }}
             data-testid={DATA_TEST_ID.EXPERIENCES_DRAWER_HEADER_SUBTITLE}
           >
-            Last updated: {new Date(props.lastUpdated).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+            {t("experiences.experiencesDrawer.components.experiencesDrawerHeader.lastUpdated", {
+              date: new Date(props.lastUpdated).toLocaleDateString(i18n.language, { month: "short", year: "numeric" }),
+            })}
           </Typography>
         )}
       </Box>
