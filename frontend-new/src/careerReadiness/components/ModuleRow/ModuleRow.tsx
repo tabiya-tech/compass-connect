@@ -115,7 +115,13 @@ const ModuleRow: React.FC<ModuleRowProps> = ({ module, index }) => {
         </PrimaryButton>
       )}
       {!isActive && !isDone && (
-        <PrimaryButton variant="outlined" color="accent" disableWhenOffline disabled={isNavigating} sx={pillSx}>
+        <PrimaryButton variant="outlined" color="accent" disableWhenOffline disabled={isNavigating} sx={{
+          ...pillSx,
+          "&:hover:not(:disabled)": {
+            backgroundColor: theme.palette.accent.main,
+            color: theme.palette.accent.contrastText
+          }
+        }}>
           {isNavigating ? <CircularProgress size={14} color="inherit" /> : t("careerReadiness.chat")}
         </PrimaryButton>
       )}
