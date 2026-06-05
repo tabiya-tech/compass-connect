@@ -168,6 +168,7 @@ const HomeCtaGrid: React.FC = () => {
         sx={{
           flex: 1,
           backgroundColor: profileCardBg,
+          marginRight: -2,
           display: { xs: "none", md: "block" },
         }}
       />
@@ -249,6 +250,7 @@ const HomeCtaGrid: React.FC = () => {
         sx={{
           flex: 1,
           backgroundColor: jobMatchesBg,
+          marginLeft: -2,
           display: { xs: "none", md: "block" },
         }}
       />
