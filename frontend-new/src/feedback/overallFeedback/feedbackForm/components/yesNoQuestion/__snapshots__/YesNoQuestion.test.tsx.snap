@@ -6,11 +6,11 @@ exports[`YesNoQuestion should render component successfully 1`] = `
   data-testid="yes-no-question-form-control-9803f91b-499a-41b3-9348-795de9e399a9"
 >
   <legend
-    class="MuiFormLabel-root MuiFormLabel-colorPrimary css-r4s1mn-MuiFormLabel-root"
+    class="MuiFormLabel-root MuiFormLabel-colorPrimary css-1nu1x3u-MuiFormLabel-root"
     data-testid="yes-no-question-form-label-9803f91b-499a-41b3-9348-795de9e399a9"
   >
     <p
-      class="MuiTypography-root MuiTypography-body1 css-15m3obd-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body1 css-p04nki-MuiTypography-root"
       data-testid="question-text-bf2b8e40-5a77-4eac-a0ea-ba8af97a5d67"
     >
       Do you like the product?
@@ -62,7 +62,7 @@ exports[`YesNoQuestion should render component successfully 1`] = `
         </span>
       </span>
       <span
-        class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-id7iv4-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-1ta2uh2-MuiTypography-root"
       >
         No
       </span>
@@ -109,7 +109,7 @@ exports[`YesNoQuestion should render component successfully 1`] = `
         </span>
       </span>
       <span
-        class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-id7iv4-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-1ta2uh2-MuiTypography-root"
       >
         Yes
       </span>
@@ -119,7 +119,7 @@ exports[`YesNoQuestion should render component successfully 1`] = `
     class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-iqf2tr-MuiFormControl-root-MuiTextField-root"
   >
     <div
-      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-multiline css-11urx56-MuiInputBase-root-MuiOutlinedInput-root"
+      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-multiline css-qydyph-MuiInputBase-root-MuiOutlinedInput-root"
     >
       <textarea
         aria-invalid="false"

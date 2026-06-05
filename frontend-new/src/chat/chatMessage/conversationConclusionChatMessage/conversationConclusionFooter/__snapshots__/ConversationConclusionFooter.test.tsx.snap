@@ -6,7 +6,7 @@ exports[`ConversationConclusionFooter render tests should render component succe
   data-testid="feedback-form-button-container-41675f8b-257c-4a63-9563-3fe9feb6a850"
 >
   <p
-    class="MuiTypography-root MuiTypography-body1 css-id7iv4-MuiTypography-root"
+    class="MuiTypography-root MuiTypography-body1 css-1ta2uh2-MuiTypography-root"
   >
     You can now
      
@@ -44,7 +44,7 @@ exports[`ConversationConclusionFooter render tests should render component succe
     here.
   </p>
   <span
-    class="MuiTypography-root MuiTypography-body1 css-id7iv4-MuiTypography-root"
+    class="MuiTypography-root MuiTypography-body1 css-1ta2uh2-MuiTypography-root"
   >
     <div
       data-testid="customer-satisfaction-rating-container-67447419-12c3-401d-a78f-00b5ea8f8d1f"

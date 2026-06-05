@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Box } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Sidebar from "src/theme/Sidebar/Sidebar";
 import SidebarService from "src/home/components/Sidebar/SidebarService";
@@ -59,6 +59,7 @@ interface SkillsDiscoverySidebarProps {
 
 const SkillsDiscoverySidebar: React.FC<SkillsDiscoverySidebarProps> = ({ currentPhase, refreshToken = 0 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const [data, setData] = useState<SkillsData | null>(null);
   const [programmeSkills, setProgrammeSkills] = useState<string[]>([]);
   const [expanded, setExpanded] = useState(false);
@@ -136,6 +137,8 @@ const SkillsDiscoverySidebar: React.FC<SkillsDiscoverySidebarProps> = ({ current
           <Box
             component="p"
             sx={{
+              ...theme.typography.caption,
+              lineHeight: 1.5,
               overflowWrap: "anywhere",
               wordBreak: "break-word",
             }}

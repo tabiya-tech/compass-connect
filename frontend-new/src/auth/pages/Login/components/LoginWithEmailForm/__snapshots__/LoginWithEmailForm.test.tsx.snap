@@ -9,7 +9,7 @@ exports[`Testing LoginWithEmailForm component it should show login form 1`] = `
     class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-k4p5nu-MuiFormControl-root-MuiTextField-root"
   >
     <div
-      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-rdckqg-MuiInputBase-root-MuiOutlinedInput-root"
+      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-8xfsmf-MuiInputBase-root-MuiOutlinedInput-root"
     >
       <input
         aria-invalid="false"
@@ -42,7 +42,7 @@ exports[`Testing LoginWithEmailForm component it should show login form 1`] = `
     data-testid="b7499b01-8082-4209-8667-c7d559a70cag-text-field"
   >
     <div
-      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd css-tyiq0s-MuiInputBase-root-MuiOutlinedInput-root"
+      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd css-2i5eih-MuiInputBase-root-MuiOutlinedInput-root"
     >
       <input
         aria-invalid="false"

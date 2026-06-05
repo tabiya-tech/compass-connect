@@ -12,12 +12,12 @@ exports[`Testing Register component it should show register form successfully 1`
       class="MuiBox-root css-1difu8q"
     >
       <h3
-        class="MuiTypography-root MuiTypography-h3 css-5xirf-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h3 css-poep7i-MuiTypography-root"
       >
         Create an account
       </h3>
       <div
-        class="MuiTypography-root MuiTypography-body2 css-ec8wkj-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body2 css-x7831g-MuiTypography-root"
       >
         To create a {{appName}} account, enter your 
         <strong>
@@ -27,7 +27,7 @@ exports[`Testing Register component it should show register form successfully 1`
       </div>
     </div>
     <h6
-      class="MuiTypography-root MuiTypography-subtitle2 css-ogiz19-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-subtitle2 css-pgh9h0-MuiTypography-root"
     >
       Enter your registration code
     </h6>
@@ -35,7 +35,7 @@ exports[`Testing Register component it should show register form successfully 1`
       class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-k4p5nu-MuiFormControl-root-MuiTextField-root"
     >
       <label
-        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-pw7yny-MuiFormLabel-root-MuiInputLabel-root"
+        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-vjf3be-MuiFormLabel-root-MuiInputLabel-root"
         data-shrink="true"
         for=":r1:"
         id=":r1:-label"
@@ -50,7 +50,7 @@ exports[`Testing Register component it should show register form successfully 1`
         </span>
       </label>
       <div
-        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-rdckqg-MuiInputBase-root-MuiOutlinedInput-root"
+        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-8xfsmf-MuiInputBase-root-MuiOutlinedInput-root"
       >
         <input
           aria-invalid="false"
@@ -87,7 +87,7 @@ exports[`Testing Register component it should show register form successfully 1`
         class="MuiDivider-wrapper css-ev540k-MuiDivider-wrapper"
       >
         <h6
-          class="MuiTypography-root MuiTypography-subtitle2 css-1cbttgf-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-subtitle2 css-syjtu1-MuiTypography-root"
         >
           and either continue with
         </h6>
@@ -118,12 +118,12 @@ exports[`Testing Register component should handle application registration code 
       class="MuiBox-root css-1difu8q"
     >
       <h3
-        class="MuiTypography-root MuiTypography-h3 css-5xirf-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h3 css-poep7i-MuiTypography-root"
       >
         Create an account
       </h3>
       <div
-        class="MuiTypography-root MuiTypography-body2 css-ec8wkj-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body2 css-x7831g-MuiTypography-root"
       >
         To create a {{appName}} account, enter your 
         <strong>

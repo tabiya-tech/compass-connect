@@ -30,6 +30,7 @@ const MessageBubble = styled(Box, {
   variants: "outlined",
   wordWrap: "break-word",
   wordBreak: "break-word",
+  fontFamily: "var(--font-body)",
   padding: theme.fixedSpacing(theme.tabiyaSpacing.sm),
   border: origin === ConversationMessageSender.USER ? `2px solid ${fillColor}` : "none",
   borderRadius: origin === ConversationMessageSender.USER ? "12px 12px 0 12px" : "0 0 0 0",

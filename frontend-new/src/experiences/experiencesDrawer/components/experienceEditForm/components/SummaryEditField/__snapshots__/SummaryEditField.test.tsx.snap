@@ -6,7 +6,7 @@ exports[`SummaryEditField should render with initial summary and no error 1`] = 
   data-testid="form-summary-b1a6b2cd-cfac-46ff-9c35-0298d87def6b"
 >
   <div
-    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-multiline css-5duo73-MuiInputBase-root-MuiOutlinedInput-root"
+    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-multiline css-2lsc2p-MuiInputBase-root-MuiOutlinedInput-root"
   >
     <textarea
       aria-invalid="false"

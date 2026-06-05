@@ -30,7 +30,7 @@ const HomeHero: React.FC = () => {
         position: "relative",
       }}
     >
-      <Box sx={{ flex: { sm: "1 1 50%" }, minWidth: 0, alignSelf: { sm: "center" } }}>
+      <Box sx={{ flex: { sm: "1 1 60%" }, minWidth: 0, alignSelf: { sm: "center" } }}>
         <Typography
           variant="h1"
           color="text.primary"
@@ -75,7 +75,7 @@ const HomeHero: React.FC = () => {
 
       <Box
         sx={{
-          flex: { sm: "1 1 50%" },
+          flex: { sm: "1 1 40%" },
           display: "flex",
           justifyContent: "center",
           alignItems: "flex-end",

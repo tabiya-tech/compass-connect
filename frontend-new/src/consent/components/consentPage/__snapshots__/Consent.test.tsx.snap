@@ -12,7 +12,7 @@ exports[`Testing Consent Page render tests it should show consent screen with bo
       class="MuiBox-root css-mn60vv"
     >
       <h1
-        class="MuiTypography-root MuiTypography-h1 MuiTypography-gutterBottom css-w2mqgj-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-h1 MuiTypography-gutterBottom css-ygj8m0-MuiTypography-root"
         data-testid="consent-title-1dee3ba4-1853-40c6-aaad-eeeb0e94788d"
       >
         Before we begin...
@@ -21,7 +21,7 @@ exports[`Testing Consent Page render tests it should show consent screen with bo
         class="MuiBox-root css-25rt61"
       >
         <p
-          class="MuiTypography-root MuiTypography-body2 MuiTypography-gutterBottom css-c7ofqp-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body2 MuiTypography-gutterBottom css-1q6xcz-MuiTypography-root"
           data-testid="consent-agreement-body-1dee3ba4-1853-40c6-aaad-eeeb0e94788d"
         >
           We created this AI tool for you with care to help you and other young people like you explore their skills and discover new opportunities.
@@ -71,7 +71,7 @@ exports[`Testing Consent Page render tests it should show consent screen with bo
               </svg>
             </span>
             <p
-              class="MuiTypography-root MuiTypography-body2 css-1sldguw-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body2 css-1kjd8gp-MuiTypography-root"
               data-testid="consent-accept-tc-text-1dee3ba4-1853-40c6-aaad-eeeb0e94788d"
             >
               I have read and accept the 
@@ -110,7 +110,7 @@ exports[`Testing Consent Page render tests it should show consent screen with bo
               </svg>
             </span>
             <p
-              class="MuiTypography-root MuiTypography-body2 css-1sldguw-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body2 css-1kjd8gp-MuiTypography-root"
               data-testid="consent-accept-consent-text-1dee3ba4-1853-40c6-aaad-eeeb0e94788d"
             >
               I have read and accept the 
@@ -125,7 +125,7 @@ exports[`Testing Consent Page render tests it should show consent screen with bo
           </label>
         </div>
         <p
-          class="MuiTypography-root MuiTypography-body1 css-id7iv4-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-1ta2uh2-MuiTypography-root"
         >
           Are you ready to start?
           <br />
@@ -142,7 +142,7 @@ exports[`Testing Consent Page render tests it should show consent screen with bo
           No, thank you
         </a>
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-lguydy-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-6gfnbp-MuiButtonBase-root-MuiButton-root"
           data-testid="consent-accept-button-1dee3ba4-1853-40c6-aaad-eeeb0e94788d"
           disabled=""
           tabindex="-1"

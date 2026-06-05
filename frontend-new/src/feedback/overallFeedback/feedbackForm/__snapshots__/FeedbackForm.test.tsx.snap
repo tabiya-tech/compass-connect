@@ -29,11 +29,11 @@ exports[`FeedbackForm should render component successfully 1`] = `
       style="--Paper-shadow: var(--mui-shadows-24);"
     >
       <div
-        class="MuiTypography-root MuiTypography-h2 MuiDialogTitle-root css-199yf49-MuiTypography-root-MuiDialogTitle-root"
+        class="MuiTypography-root MuiTypography-h2 MuiDialogTitle-root css-3tjbku-MuiTypography-root-MuiDialogTitle-root"
         id=":r1:"
       >
         <h3
-          class="MuiTypography-root MuiTypography-h3 css-qtx0v3-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h3 css-1vhf2t7-MuiTypography-root"
           data-testid="feedback-form-dialog-title-c6ba52ec-c1de-46ac-950b-f5354c6785ac"
         >
           Help us improve!
