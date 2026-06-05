@@ -80,6 +80,10 @@ declare module "@mui/material/styles" {
   interface Palette {
     accent: PaletteColor;
     tertiary: PaletteColor;
+    quaternary: PaletteColor;
+    neutral: PaletteColor;
+    highlight: PaletteColor;
+    navMain: PaletteColor;
     pageBackground: PaletteColor;
     tabiyaBlue: PaletteColor;
     tabiyaYellow: PaletteColor;
@@ -97,6 +101,10 @@ declare module "@mui/material/styles" {
   interface PaletteOptions {
     accent?: PaletteColorOptions;
     tertiary?: PaletteColorOptions;
+    quaternary?: PaletteColorOptions;
+    neutral?: PaletteColorOptions;
+    highlight?: PaletteColorOptions;
+    navMain?: PaletteColorOptions;
     pageBackground?: PaletteColorOptions;
     tabiyaBlue?: PaletteColorOptions;
     tabiyaYellow?: PaletteColorOptions;
@@ -126,6 +134,9 @@ declare module "@mui/material/Button" {
   interface ButtonPropsColorOverrides {
     accent: true;
     tertiary: true;
+    quaternary: true;
+    neutral: true;
+    highlight: true;
   }
 }
 

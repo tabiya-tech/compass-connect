@@ -81,7 +81,7 @@ const UpNextCard: React.FC<UpNextCardProps> = ({ module }) => {
       <PrimaryButton
         data-testid={DATA_TEST_ID.UP_NEXT_CARD_CONTINUE}
         onClick={handleContinue}
-        color="tertiary"
+        color="accent"
         showCircle
         disableWhenOffline
         disabled={isNavigating}

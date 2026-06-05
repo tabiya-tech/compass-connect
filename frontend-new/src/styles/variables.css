@@ -31,6 +31,28 @@
   --brand-accent-dark: 78 162 162; /* teal-dark #4EA2A2 */
   --brand-accent-contrast-text: 26 18 8; /* black */
 
+  /* Quaternary colors */
+  --brand-quaternary: 250 240 216; /* amber-light #FAF0D8 */
+  --brand-quaternary-light: 253 248 235; /* amber-lighter #FDF8EB */
+  --brand-quaternary-dark: 232 160 32; /* amber #E8A020 */
+  --brand-quaternary-contrast-text: 26 18 8; /* black */
+
+  /* Neutral colors */
+  --brand-neutral: 10 92 74; /* emerald #0A5C4A */
+  --brand-neutral-light: 232 244 240; /* emerald-light #E8F4F0 */
+  --brand-neutral-dark: 8 61 49; /* emerald-dark #083D31 */
+  --brand-neutral-contrast-text: 255 255 255;
+
+  /* Highlight colors */
+  --brand-highlight: 10 92 74; /* emerald #0A5C4A */
+  --brand-highlight-light: 232 244 240; /* emerald-light #E8F4F0 */
+  --brand-highlight-dark: 8 61 49; /* emerald-dark #083D31 */
+  --brand-highlight-contrast-text: 255 255 255;
+
+  /* Nav main colors (home page navbar) */
+  --nav-main-background: 212 75 26; /* matches brand-primary */
+  --nav-main-text: 255 255 255;
+
   /* Page background colors */
   --page-background: 249 246 240; /* linen #F9F6F0 */
   --page-background-light: 255 255 255; /* white */

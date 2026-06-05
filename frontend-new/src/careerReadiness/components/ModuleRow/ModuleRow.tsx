@@ -110,17 +110,17 @@ const ModuleRow: React.FC<ModuleRowProps> = ({ module, index }) => {
       </Box>
 
       {isActive && (
-        <PrimaryButton color="tertiary" disableWhenOffline disabled={isNavigating} sx={pillSx}>
+        <PrimaryButton color="accent" disableWhenOffline disabled={isNavigating} sx={pillSx}>
           {isNavigating ? <CircularProgress size={14} color="inherit" /> : `${t("careerReadiness.continue")} →`}
         </PrimaryButton>
       )}
       {!isActive && !isDone && (
-        <PrimaryButton variant="outlined" color="tertiary" disableWhenOffline disabled={isNavigating} sx={pillSx}>
+        <PrimaryButton variant="outlined" color="accent" disableWhenOffline disabled={isNavigating} sx={pillSx}>
           {isNavigating ? <CircularProgress size={14} color="inherit" /> : t("careerReadiness.chat")}
         </PrimaryButton>
       )}
       {isDone && (
-        <PrimaryButton color="tertiary" disableWhenOffline disabled={isNavigating} sx={pillSx}>
+        <PrimaryButton color="accent" disableWhenOffline disabled={isNavigating} sx={pillSx}>
           {isNavigating ? <CircularProgress size={14} color="inherit" /> : t("careerReadiness.statusDone")}
         </PrimaryButton>
       )}

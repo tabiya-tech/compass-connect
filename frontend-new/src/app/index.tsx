@@ -296,6 +296,9 @@ const App = () => {
               children: [
                 {
                   index: true,
+                  handle: {
+                    headerColor: "navMain",
+                  },
                   element: (
                     <ProtectedRoute key={ProtectedRouteKeys.ROOT}>
                       <Home />
@@ -357,7 +360,7 @@ const App = () => {
                 {
                   path: routerPaths.CAREER_READINESS_MODULE,
                   handle: {
-                    headerColor: "tertiary",
+                    headerColor: "accent",
                   },
                   element: (
                     <ProtectedRoute key={ProtectedRouteKeys.CAREER_READINESS_MODULE}>
