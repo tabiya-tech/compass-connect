@@ -517,7 +517,8 @@
           "maxCharsAllowed": "Máximo {{count}} caracteres permitidos."
         },
         "experiencesDrawerHeader": {
-          "closeTitle": "Cerrar experiencias"
+          "closeTitle": "Cerrar experiencias",
+          "lastUpdated": "Última actualización: {{date}}"
         },
         "experiencesDrawerContent": {
           "menu": {

@@ -517,7 +517,8 @@
           "maxCharsAllowed": "Zilembo {{count}} pamwamba zololedwa."
         },
         "experiencesDrawerHeader": {
-          "closeTitle": "Tsekani zochitika"
+          "closeTitle": "Tsekani zochitika",
+          "lastUpdated": "Zasinthidwa komaliza: {{date}}"
         },
         "experiencesDrawerContent": {
           "menu": {

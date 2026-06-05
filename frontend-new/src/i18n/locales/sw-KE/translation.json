@@ -499,7 +499,8 @@
           "maxCharsAllowed": "Upeo wa herufi {{count}} unaruhusiwa."
         },
         "experiencesDrawerHeader": {
-          "closeTitle": "Funga uzoefu"
+          "closeTitle": "Funga uzoefu",
+          "lastUpdated": "Imesasishwa mwisho: {{date}}"
         },
         "experiencesDrawerContent": {
           "menu": {
