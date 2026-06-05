@@ -43,8 +43,10 @@ export interface ObjectivesData {
 
 const SECTOR_EMOJI_MAP: Record<string, string> = {
   construction: "🏗️",
+  "construção civil": "🏗️",
   engineering: "⚙️",
   agriculture: "🌾",
+  agronegócio: "🌾",
   retail: "🛒",
   hospitality: "🏨",
   healthcare: "🏥",
@@ -54,8 +56,10 @@ const SECTOR_EMOJI_MAP: Record<string, string> = {
   technology: "💻",
   manufacturing: "🏭",
   mining: "⛏️",
+  mineração: "⛏️",
   security: "🛡️",
   admin: "📋",
+  energia: "⚙️",
 };
 
 const getSectorEmoji = (sectorName: string): string => {
