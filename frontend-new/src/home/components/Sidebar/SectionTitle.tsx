@@ -11,7 +11,7 @@ const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         fontSize: "1.5rem",
         lineHeight: 0.9,
         letterSpacing: "-0.02em",
-        color: theme.palette.text.secondary,
+        color: theme.palette.text.primary,
         marginBottom: theme.fixedSpacing(theme.tabiyaSpacing.md),
       }}
     >

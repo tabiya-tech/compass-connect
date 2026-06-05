@@ -8,6 +8,7 @@ export interface ChipListProps {
   chips: string[];
   chipBgColor: string;
   chipTextColor: string;
+  chipBorderRadius?: string;
   accentColor: string;
   emptyText: string;
   emptyTestId: string;
@@ -19,6 +20,7 @@ const ChipList: React.FC<ChipListProps> = ({
   chips,
   chipBgColor,
   chipTextColor,
+  chipBorderRadius,
   accentColor,
   emptyText,
   emptyTestId,
@@ -40,7 +42,7 @@ const ChipList: React.FC<ChipListProps> = ({
         sx={{
           ...theme.typography.caption,
           lineHeight: 1.5,
-          color: theme.palette.text.secondary,
+          color: theme.palette.text.primary,
         }}
       >
         {emptyText}
@@ -59,7 +61,7 @@ const ChipList: React.FC<ChipListProps> = ({
               display: "inline-flex",
               alignItems: "center",
               padding: `${theme.fixedSpacing(theme.tabiyaSpacing.xs * 1.25)} ${theme.fixedSpacing(theme.tabiyaSpacing.sm * 1.5)}`,
-              borderRadius: theme.rounding(theme.tabiyaRounding.lg),
+              borderRadius: chipBorderRadius ?? theme.rounding(theme.tabiyaRounding.lg),
               ...theme.typography.body2,
               fontWeight: 400,
               lineHeight: 1.4,
