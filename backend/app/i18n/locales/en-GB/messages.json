@@ -84,5 +84,31 @@
     "quizReady": "Great work! You've covered the key topics. It's time for a short quiz to check your understanding.",
     "quizPassed": "You scored {score}/{total}. Congratulations, you passed! You can now continue to ask me any follow-up questions about this topic.",
     "quizFailed": "You scored {score}/{total}. You need at least {threshold_count} correct answers to pass. Let's review the topics and try again."
+  },
+  "preferenceElicitation": {
+    "experienceQuestionsIntro": "Now I'd like to understand what matters most to you in a job - things like salary, work-life balance, job security, and career growth.",
+    "fallbackQuestionNoExperience": "Tell me about a work task you really enjoyed - what made it satisfying?",
+    "fallbackQuestionWithExperience": "You mentioned working as {experience_title}. What did you enjoy most about that work?",
+    "categoryLabels": {
+      "financial": "salary and compensation",
+      "work_environment": "work environment and commute",
+      "job_security": "job stability",
+      "career_advancement": "career growth",
+      "work_life_balance": "work-life balance",
+      "task_preferences": "the type of day-to-day work",
+      "values_culture": "company culture and values",
+      "mixed": "a mix of trade-offs"
+    },
+    "vignetteTransitionCategoryChanged": "We've covered {previous_label} — now let's look at {current_label}.",
+    "vignetteTransitionSameCategory": "Still on {current_label}, but here's a different angle.",
+    "vignetteChoosePrompt": "Which would you prefer, and why?",
+    "gateFallbackQuestion1": "What's more important to you — high pay with less stability, or moderate pay with strong job security?",
+    "gateFallbackQuestion2": "How do you feel about working in a team versus working independently most of the time?",
+    "gateFallbackQuestion3": "If you had to choose, would you prefer a job that's challenging and fast-paced, or one that's steady and predictable?",
+    "wrapupMessage": "Great! I've learned a lot about your preferences.\n\nHere's what I understand about what matters to you in a job:\n\n{summary}\n\nThank you for sharing your preferences with me.",
+    "alreadyComplete": "I've already recorded your preferences. Let's move on to finding opportunities for you!",
+    "errorRetry": "I'm having some trouble right now. Could you please try again?",
+    "followUpFallback": "Could you tell me more about your choice?",
+    "followUpFallbackNoVignette": "Could you tell me a bit more about why you chose that option?"
   }
 }

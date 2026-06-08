@@ -44,12 +44,14 @@ from app.agent.preference_elicitation_agent.preference_extractor import (
 from app.agent.preference_elicitation_agent.metadata_extractor import MetadataExtractor
 from app.agent.preference_elicitation_agent.user_context_extractor import UserContextExtractor
 from app.agent.preference_elicitation_agent import bws_utils
+from app.agent.prompt_template import get_language_style
 from app.agent.prompt_template.agent_prompt_template import (
-    STD_AGENT_CHARACTER,
-    STD_LANGUAGE_STYLE
+    STD_AGENT_CHARACTER
 )
 from app.agent.prompt_template.quick_reply_prompt import QUICK_REPLY_PROMPT
 from app.countries import Country
+from app.i18n.translation_service import get_i18n_manager, t
+from app.i18n.types import Locale
 
 # Adaptive D-efficiency imports
 try:
@@ -235,13 +237,14 @@ class PreferenceElicitationAgent(Agent):
         llm_config = LLMConfig(
             generation_config=LOW_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
         )
+        # Stored so prompts/instructions can be (re)built on request: the conversation LLM's
+        # system instructions embed the language style, which depends on the per-request locale.
+        self._llm_config = llm_config
 
-        # Conversation LLM for natural dialogue
-        conversation_system_instructions = self._build_conversation_system_instructions()
-        self._conversation_llm = GeminiGenerativeLLM(
-            system_instructions=conversation_system_instructions,
-            config=llm_config
-        )
+        # Conversation LLM for natural dialogue.
+        # The system instructions are language-dependent (resolved from the per-request locale),
+        # so the LLM is constructed lazily on request and memoized per locale rather than at __init__.
+        self._conversation_llm_by_locale: dict["Locale", GeminiGenerativeLLM] = {}
         self._conversation_caller: LLMCaller[ConversationResponse] = LLMCaller[ConversationResponse](
             model_response_type=ConversationResponse
         )
@@ -860,8 +863,9 @@ class PreferenceElicitationAgent(Agent):
             # Add intro context on first question
             intro_prefix = ""
             if not previous_experience_question:
-                intro_prefix = """First, provide a brief intro explaining we're shifting focus to their PREFERENCES:
-                "Now I'd like to understand what matters most to you in a job - things like salary, work-life balance, job security, and career growth."
+                intro_sentence = t("messages", "preferenceElicitation.experienceQuestionsIntro")
+                intro_prefix = f"""First, provide a brief intro explaining we're shifting focus to their PREFERENCES:
+                "{intro_sentence}"
 
                 Then immediately ask the first question."""
 
@@ -903,7 +907,7 @@ class PreferenceElicitationAgent(Agent):
             """
 
             response, llm_stats = await self._conversation_caller.call_llm(
-                llm=self._conversation_llm,
+                llm=self._get_conversation_llm(),
                 llm_input=ConversationHistoryFormatter.format_for_agent_generative_prompt(
                     model_response_instructions=combined_instructions,
                     context=context,
@@ -922,12 +926,16 @@ class PreferenceElicitationAgent(Agent):
             # Fallback question with intro if first question
             intro_text = ""
             if not previous_experience_question:
-                intro_text = "Now I'd like to understand what matters most to you in a job - things like salary, work-life balance, job security, and career growth.\n\n"
+                intro_text = t("messages", "preferenceElicitation.experienceQuestionsIntro") + "\n\n"
 
             fallback_msg = intro_text + (
-                "Tell me about a work task you really enjoyed - what made it satisfying?"
+                t("messages", "preferenceElicitation.fallbackQuestionNoExperience")
                 if not experiences
-                else f"You mentioned working as {experiences[0].experience_title}. What did you enjoy most about that work?"
+                else t(
+                    "messages",
+                    "preferenceElicitation.fallbackQuestionWithExperience",
+                    experience_title=experiences[0].experience_title,
+                )
             )
             response = ConversationResponse(
                 reasoning="Failed to get LLM response, using fallback",
@@ -1243,7 +1251,7 @@ class PreferenceElicitationAgent(Agent):
         vignette = self._vignette_engine.get_vignette_by_id(vignette_response.vignette_id)
 
         if not vignette:
-            return "Could you tell me a bit more about why you chose that option?"
+            return t("messages", "preferenceElicitation.followUpFallbackNoVignette")
 
         # Build prompt for LLM to generate natural follow-up
         prompt = f"""The user just responded to a job choice scenario.
@@ -1267,7 +1275,7 @@ Keep it conversational, not interrogative.
 
         try:
             response, _ = await self._conversation_caller.call_llm(
-                llm=self._conversation_llm,
+                llm=self._get_conversation_llm(),
                 llm_input=prompt,
                 logger=self.logger
             )
@@ -1277,7 +1285,7 @@ Keep it conversational, not interrogative.
         except Exception as e:
             self.logger.warning(f"Failed to generate follow-up: {e}")
 
-        return "Could you tell me more about your choice?"
+        return t("messages", "preferenceElicitation.followUpFallback")
 
     async def _handle_follow_up_phase(
         self,
@@ -1423,7 +1431,7 @@ Keep it conversational, not interrogative.
         question_number = self._state.gate_interventions_completed + 1
 
         gate_prompt = f"""{STD_AGENT_CHARACTER}
-{STD_LANGUAGE_STYLE}
+{get_language_style(with_locale=True)}
 
 You are conducting the GATE (Generative Active Task Elicitation) phase of a career preference interview.
 The user has just completed a series of vignette scenarios. Your job is to ask {MAX_GATE_INTERVENTIONS} targeted
@@ -1466,9 +1474,9 @@ Keep it short (1-3 sentences), conversational, and easy to answer.
         if gate_response is None:
             # Fallback questions by number
             fallbacks = [
-                "What's more important to you — high pay with less stability, or moderate pay with strong job security?",
-                "How do you feel about working in a team versus working independently most of the time?",
-                "If you had to choose, would you prefer a job that's challenging and fast-paced, or one that's steady and predictable?"
+                t("messages", "preferenceElicitation.gateFallbackQuestion1"),
+                t("messages", "preferenceElicitation.gateFallbackQuestion2"),
+                t("messages", "preferenceElicitation.gateFallbackQuestion3"),
             ]
             message = fallbacks[self._state.gate_interventions_completed % len(fallbacks)]
             reasoning = "Fallback GATE question (LLM unavailable)"
@@ -1536,13 +1544,7 @@ Keep it short (1-3 sentences), conversational, and easy to answer.
         summary, summary_stats = await self._generate_preference_summary()
         all_llm_stats.extend(summary_stats)
 
-        wrapup_message = f"""Great! I've learned a lot about your preferences.
-
-        Here's what I understand about what matters to you in a job:
-
-        {summary}
-
-        Thank you for sharing your preferences with me."""
+        wrapup_message = t("messages", "preferenceElicitation.wrapupMessage", summary=summary)
 
         response = ConversationResponse(
         reasoning="Wrapping up preference elicitation with summary",
@@ -1574,7 +1576,7 @@ Keep it short (1-3 sentences), conversational, and easy to answer.
         """
         response = ConversationResponse(
             reasoning="Preference elicitation already complete",
-            message="I've already recorded your preferences. Let's move on to finding opportunities for you!",
+            message=t("messages", "preferenceElicitation.alreadyComplete"),
             finished=True
         )
 
@@ -1651,17 +1653,16 @@ Keep it short (1-3 sentences), conversational, and easy to answer.
             # Don't fail the conversation if extraction fails
             self.logger.warning(f"Failed to extract preferences from experience response: {e}")
 
-    # Maps category IDs to plain-language labels for transition sentences
-    _CATEGORY_LABELS: dict[str, str] = {
-        "financial": "salary and compensation",
-        "work_environment": "work environment and commute",
-        "job_security": "job stability",
-        "career_advancement": "career growth",
-        "work_life_balance": "work-life balance",
-        "task_preferences": "the type of day-to-day work",
-        "values_culture": "company culture and values",
-        "mixed": "a mix of trade-offs",
-    }
+    def _category_label(self, category: Optional[str]) -> Optional[str]:
+        """
+        Resolve a category ID to a localized, plain-language label for transition sentences.
+
+        Reads from the i18n catalogue (preferenceElicitation.categoryLabels.*) using the
+        per-request locale, falling back to the raw category ID for unrecognised categories.
+        """
+        if not category:
+            return None
+        return t("messages", f"preferenceElicitation.categoryLabels.{category}", category)
 
     def _format_vignette_message(self, vignette: Vignette, previous_category: Optional[str] = None) -> str:
         """
@@ -1677,16 +1678,25 @@ Keep it short (1-3 sentences), conversational, and easy to answer.
         message_parts = []
 
         # Transition sentence — only when there's a previous vignette and category changed
-        current_label = self._CATEGORY_LABELS.get(vignette.category, vignette.category)
-        previous_label = self._CATEGORY_LABELS.get(previous_category, previous_category) if previous_category else None
+        current_label = self._category_label(vignette.category)
+        previous_label = self._category_label(previous_category)
 
-        if previous_label and previous_label != current_label:
+        if previous_category and previous_category != vignette.category:
             message_parts.append(
-                f"We've covered {previous_label} — now let's look at {current_label}."
+                t(
+                    "messages",
+                    "preferenceElicitation.vignetteTransitionCategoryChanged",
+                    previous_label=previous_label,
+                    current_label=current_label,
+                )
             )
-        elif previous_label:
+        elif previous_category:
             message_parts.append(
-                f"Still on {current_label}, but here's a different angle."
+                t(
+                    "messages",
+                    "preferenceElicitation.vignetteTransitionSameCategory",
+                    current_label=current_label,
+                )
             )
 
         message_parts.append(vignette.scenario_text)
@@ -1703,7 +1713,7 @@ Keep it short (1-3 sentences), conversational, and easy to answer.
             message_parts.append(vignette.comparison_summary)
             message_parts.append("")
 
-        message_parts.append("Which would you prefer, and why?")
+        message_parts.append(t("messages", "preferenceElicitation.vignetteChoosePrompt"))
 
         return "\n".join(message_parts)
 
@@ -1790,7 +1800,7 @@ Generate a summary that captures what's UNIQUE about this user's preferences.
 
         try:
             response, llm_stats = await caller.call_llm(
-                llm=self._conversation_llm,  # Reuse existing conversation LLM
+                llm=self._get_conversation_llm(),  # Built on request for the current locale
                 llm_input=prompt,
                 logger=self.logger
             )
@@ -1882,6 +1892,28 @@ Vignettes Completed: {pv.n_vignettes_completed}
 
         return "\n".join(summary_parts)
 
+    def _get_conversation_llm(self) -> GeminiGenerativeLLM:
+        """
+        Get the conversation LLM, constructing it on request for the current locale.
+
+        The system instructions embed the language style, which depends on the per-request
+        locale (resolved from the user_language context variable). Constructing the LLM lazily
+        ensures the prompt language matches the user's current locale. The result is memoized
+        per locale so we don't rebuild it on every LLM call within the same conversation.
+
+        Returns:
+            A GeminiGenerativeLLM with system instructions for the current locale.
+        """
+        locale = get_i18n_manager().get_locale()
+        llm = self._conversation_llm_by_locale.get(locale)
+        if llm is None:
+            llm = GeminiGenerativeLLM(
+                system_instructions=self._build_conversation_system_instructions(),
+                config=self._llm_config,
+            )
+            self._conversation_llm_by_locale[locale] = llm
+        return llm
+
     def _build_conversation_system_instructions(self) -> str:
         """
         Build system instructions for the conversation LLM.
@@ -1891,7 +1923,7 @@ Vignettes Completed: {pv.n_vignettes_completed}
         """
         return f"""{STD_AGENT_CHARACTER}
 
-            {STD_LANGUAGE_STYLE}
+            {get_language_style(with_locale=True)}
 
             You are conducting a preference elicitation conversation to understand what the user values in a job.
 
@@ -2214,7 +2246,7 @@ Vignettes Completed: {pv.n_vignettes_completed}
         """
         end_time = time.time()
         return AgentOutput(
-            message_for_user="I'm having some trouble right now. Could you please try again?",
+            message_for_user=t("messages", "preferenceElicitation.errorRetry"),
             finished=False,
             agent_type=self.agent_type,
             agent_response_time_in_sec=round(end_time - start_time, 2),
