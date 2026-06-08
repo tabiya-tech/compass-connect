@@ -258,6 +258,7 @@ export interface IllustrationUrls {
   loginFeature2: string;
   loginFeature3: string;
   homeHero: string;
+  homeHeroIllustrationPosition?: "center" | "edge";
   careerReadinessHero: string;
   authShapesBackground: string;
   dashboardShapesBackground?: string;

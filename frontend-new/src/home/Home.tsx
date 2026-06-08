@@ -26,7 +26,9 @@ const Home: React.FC = () => {
   const appName = getProductName();
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const { profileData, isLoadingModules, errors } = useUserProfileContext();
-  const shapesBackgroundUrl = getIllustrationUrls().dashboardShapesBackground;
+  const illustrationUrls = getIllustrationUrls();
+  const shapesBackgroundUrl = illustrationUrls.dashboardShapesBackground;
+  const isHeroEdge = (illustrationUrls.homeHeroIllustrationPosition ?? "center") === "edge";
 
   const modulesLoadError = Boolean(errors?.modules);
   const modulesConnectionError = isConnectionError(errors?.modules);
@@ -82,16 +84,20 @@ const Home: React.FC = () => {
               }}
             />
           )}
-          <Box
-            sx={{
-              width: "100%",
-              maxWidth: "var(--layout-content-max-width)",
-              mx: "auto",
-              px: "var(--layout-gutter-x)",
-            }}
-          >
+          {isHeroEdge ? (
             <HomeHero />
-          </Box>
+          ) : (
+            <Box
+              sx={{
+                width: "100%",
+                maxWidth: "var(--layout-content-max-width)",
+                mx: "auto",
+                px: "var(--layout-gutter-x)",
+              }}
+            >
+              <HomeHero />
+            </Box>
+          )}
         </Box>
 
         <Box
