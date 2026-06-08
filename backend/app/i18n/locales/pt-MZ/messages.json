@@ -84,5 +84,31 @@
     "quizReady": "Excelente trabalho! Cobriu os tópicos principais. Está na hora de um pequeno questionário para verificar a sua compreensão.",
     "quizPassed": "Obteve {score}/{total}. Parabéns, foi aprovado! Agora pode continuar a fazer-me qualquer pergunta de seguimento sobre este tema.",
     "quizFailed": "Obteve {score}/{total}. Precisa de pelo menos {threshold_count} respostas correctas para passar. Vamos rever os tópicos e tentar novamente."
+  },
+  "preferenceElicitation": {
+    "experienceQuestionsIntro": "Agora gostaria de entender o que mais importa para si num emprego — coisas como o salário, o equilíbrio entre trabalho e vida pessoal, a estabilidade no emprego e o crescimento na carreira.",
+    "fallbackQuestionNoExperience": "Conte-me sobre uma tarefa de trabalho que tenha gostado muito — o que a tornou satisfatória?",
+    "fallbackQuestionWithExperience": "Mencionou que trabalhou como {experience_title}. O que mais gostou nesse trabalho?",
+    "categoryLabels": {
+      "financial": "salário e remuneração",
+      "work_environment": "o ambiente de trabalho e a deslocação",
+      "job_security": "a estabilidade no emprego",
+      "career_advancement": "o crescimento na carreira",
+      "work_life_balance": "o equilíbrio entre trabalho e vida pessoal",
+      "task_preferences": "o tipo de trabalho do dia a dia",
+      "values_culture": "a cultura e os valores da empresa",
+      "mixed": "uma combinação de compromissos"
+    },
+    "vignetteTransitionCategoryChanged": "Já abordámos {previous_label} — agora vamos ver {current_label}.",
+    "vignetteTransitionSameCategory": "Ainda sobre {current_label}, mas aqui está uma perspectiva diferente.",
+    "vignetteChoosePrompt": "Qual preferiria, e porquê?",
+    "gateFallbackQuestion1": "O que é mais importante para si — um salário alto com menos estabilidade, ou um salário moderado com forte estabilidade no emprego?",
+    "gateFallbackQuestion2": "Como se sente a trabalhar em equipa em comparação com trabalhar de forma independente a maior parte do tempo?",
+    "gateFallbackQuestion3": "Se tivesse de escolher, preferiria um trabalho desafiante e de ritmo acelerado, ou um estável e previsível?",
+    "wrapupMessage": "Óptimo! Aprendi muito sobre as suas preferências.\n\nEis o que entendo sobre o que é importante para si num emprego:\n\n{summary}\n\nObrigado por partilhar as suas preferências comigo.",
+    "alreadyComplete": "Já registei as suas preferências. Vamos passar a encontrar oportunidades para si!",
+    "errorRetry": "Estou com alguns problemas neste momento. Pode tentar novamente, por favor?",
+    "followUpFallback": "Pode contar-me mais sobre a sua escolha?",
+    "followUpFallbackNoVignette": "Pode contar-me um pouco mais sobre porque escolheu essa opção?"
   }
 }

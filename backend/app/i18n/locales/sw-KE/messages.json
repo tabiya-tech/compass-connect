@@ -84,5 +84,31 @@
     "quizReady": "Kazi nzuri! Umeshughulikia mada muhimu. Ni wakati wa jaribio fupi ili kupima uelewa wako.",
     "quizPassed": "Umepata {score}/{total}. Hongera, umefaulu! Sasa unaweza kuendelea kuniuliza swali lolote la ufuatiliaji kuhusu mada hii.",
     "quizFailed": "Umepata {score}/{total}. Unahitaji angalau majibu sahihi {threshold_count} ili kufaulu. Hebu tupitie mada tena na ujaribu tena."
+  },
+  "preferenceElicitation": {
+    "experienceQuestionsIntro": "Sasa ningependa kuelewa kinachokuhusu zaidi katika kazi - mambo kama mshahara, uwiano kati ya kazi na maisha, usalama wa kazi, na ukuaji wa kikazi.",
+    "fallbackQuestionNoExperience": "Nieleze kuhusu kazi fulani uliyofurahia sana - ni nini kilichoifanya iwe ya kuridhisha?",
+    "fallbackQuestionWithExperience": "Ulitaja kuwa ulifanya kazi kama {experience_title}. Ni nini ulichofurahia zaidi kuhusu kazi hiyo?",
+    "categoryLabels": {
+      "financial": "mshahara na malipo",
+      "work_environment": "mazingira ya kazi na safari ya kwenda kazini",
+      "job_security": "uthabiti wa kazi",
+      "career_advancement": "ukuaji wa kikazi",
+      "work_life_balance": "uwiano kati ya kazi na maisha",
+      "task_preferences": "aina ya kazi ya kila siku",
+      "values_culture": "utamaduni na maadili ya kampuni",
+      "mixed": "mchanganyiko wa maamuzi"
+    },
+    "vignetteTransitionCategoryChanged": "Tumeshughulikia {previous_label} — sasa tuangalie {current_label}.",
+    "vignetteTransitionSameCategory": "Bado tuko kwenye {current_label}, lakini hapa kuna mtazamo tofauti.",
+    "vignetteChoosePrompt": "Ungependelea ipi, na kwa nini?",
+    "gateFallbackQuestion1": "Ni kipi muhimu zaidi kwako — mshahara mkubwa wenye uthabiti mdogo, au mshahara wa wastani wenye usalama mkubwa wa kazi?",
+    "gateFallbackQuestion2": "Unajisikiaje kufanya kazi katika timu ikilinganishwa na kufanya kazi peke yako kwa muda mwingi?",
+    "gateFallbackQuestion3": "Ungelazimika kuchagua, ungependelea kazi yenye changamoto na kasi, au yenye utulivu na inayotabirika?",
+    "wrapupMessage": "Vizuri! Nimejifunza mengi kuhusu mapendeleo yako.\n\nHaya ndiyo ninayoelewa kuhusu kinachokuhusu katika kazi:\n\n{summary}\n\nAsante kwa kushiriki mapendeleo yako nami.",
+    "alreadyComplete": "Tayari nimerekodi mapendeleo yako. Tuendelee kutafuta fursa kwa ajili yako!",
+    "errorRetry": "Nina matatizo fulani kwa sasa. Tafadhali unaweza kujaribu tena?",
+    "followUpFallback": "Unaweza kunieleza zaidi kuhusu chaguo lako?",
+    "followUpFallbackNoVignette": "Unaweza kunieleza zaidi kwa nini ulichagua chaguo hilo?"
   }
 }
