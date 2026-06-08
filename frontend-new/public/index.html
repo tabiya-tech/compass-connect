@@ -7,7 +7,7 @@
     <script defer src="%PUBLIC_URL%/data/env.js"></script>
     <meta
       name="description"
-      content="Your guided path from skills to your first job — built around what you know, what you've done, and where you want to go."
+      content="%%FRONTEND_META_DESCRIPTION%%"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, interactive-widget=resizes-content" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/njila_icon.svg" />
@@ -26,32 +26,35 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>Njila | Discover your skills & strengths.</title>
+    <title>%%FRONTEND_BROWSER_TAB_TITLE%%</title>
 
     <!-- Pre-connect for faster font loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
     <!--
-    Google Fonts: Plus Jakarta Sans and Bricolage Grotesque
+    Google Fonts: Plus Jakarta Sans, Bricolage Grotesque, and Source Sans 3
      We are loading the fonts with the media="print" attribute and changing it to "all" when the font is loaded.
      We do this to avoid blocking the rendering of the page while the font is being loaded.
      If javascript is disabled, the font will still load, but the page will be blocked until it is loaded.
     -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
       <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     </noscript>
     <!-- JSON-LD Structured Data for SEO -->
     <script id="seo-jsonld" type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "Njila",
-        "url": "https://njila.ai",
-        "image": "https://njila.ai/njila-logo-dark.svg",
-        "description": "Your guided path from skills to your first job — built around what you know, what you've done, and where you want to go.",
+        "name": "%%FRONTEND_SEO_NAME%%",
+        "url": "%%FRONTEND_SEO_URL%%",
+        "image": "%%FRONTEND_SEO_IMAGE%%",
+        "description": "%%FRONTEND_SEO_DESCRIPTION%%",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "All",
         "license": "https://opensource.org/licenses/MIT",

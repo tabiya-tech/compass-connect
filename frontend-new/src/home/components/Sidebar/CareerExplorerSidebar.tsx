@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Typography, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import { getProductName } from "src/envService";
 import Sidebar from "src/theme/Sidebar/Sidebar";
 import SidebarService from "src/home/components/Sidebar/SidebarService";
 import type { SectorData, SectorItem } from "src/home/components/Sidebar/SidebarService";
@@ -18,9 +19,10 @@ export const DATA_TEST_ID = {
 interface SectorCardProps {
   sector: SectorItem;
   accentColor: string;
+  description: string;
 }
 
-const SectorCard: React.FC<SectorCardProps> = ({ sector, accentColor }) => {
+const SectorCard: React.FC<SectorCardProps> = ({ sector, accentColor, description }) => {
   const theme = useTheme();
   const salaryRange = sector.salaryRange?.trim();
   const shouldShowSalaryRange = Boolean(salaryRange && salaryRange !== "—");
@@ -80,7 +82,7 @@ const SectorCard: React.FC<SectorCardProps> = ({ sector, accentColor }) => {
           lineHeight: 1.5,
         }}
       >
-        {sector.description}
+        {description}
       </Typography>
     </Box>
   );
@@ -93,10 +95,11 @@ interface CareerExplorerSidebarProps {
 const CareerExplorerSidebar: React.FC<CareerExplorerSidebarProps> = ({ refreshToken = 0 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const appName = getProductName();
   const [data, setData] = useState<SectorData | null>(null);
   const cancelledRef = useRef(false);
 
-  const accentColor = theme.palette.brandAction.main;
+  const accentColor = theme.palette.primary.main;
 
   const load = useCallback(async () => {
     const result = await SidebarService.getInstance().getSectorData();
@@ -124,12 +127,17 @@ const CareerExplorerSidebar: React.FC<CareerExplorerSidebarProps> = ({ refreshTo
             color: theme.palette.text.secondary,
           }}
         >
-          {t("home.sidebar.careerExplorer.emptyState")}
+          {t("home.sidebar.careerExplorer.emptyState", { appName })}
         </Box>
       ) : (
         <Box>
           {sectors.map((sector, i) => (
-            <SectorCard key={sector.id ?? i} sector={sector} accentColor={accentColor} />
+            <SectorCard
+              key={sector.id ?? i}
+              sector={sector}
+              accentColor={accentColor}
+              description={t("home.sidebar.careerExplorer.sectorDescription", { inquiryCount: sector.inquiryCount })}
+            />
           ))}
         </Box>
       )}

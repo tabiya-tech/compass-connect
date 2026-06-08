@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Container, Divider, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import CustomLink from "src/theme/CustomLink/CustomLink";
-import { getProductName } from "src/envService";
+import { getMinistryUrl, getProductName } from "src/envService";
 import { getLegalDocumentAbsoluteUrl, LEGAL_DOCUMENT_ROUTE_PATHS } from "src/legal/legalDocumentUrls";
 import type { Theme } from "@mui/material/styles";
 
@@ -26,7 +26,7 @@ const Footer: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
   const { t } = useTranslation();
-  const appName = getProductName() || "";
+  const appName = getProductName();
   const privacyHref = getLegalDocumentAbsoluteUrl(LEGAL_DOCUMENT_ROUTE_PATHS.PRIVACY_POLICY);
   const termsHref = getLegalDocumentAbsoluteUrl(LEGAL_DOCUMENT_ROUTE_PATHS.TERMS_OF_USE);
 
@@ -35,7 +35,7 @@ const Footer: React.FC = () => {
       component="footer"
       data-testid={DATA_TEST_ID.FOOTER_CONTAINER}
       sx={{
-        backgroundColor: theme.palette.containerBackground.light,
+        backgroundColor: theme.palette.pageBackground.light,
         marginTop: isMobile
           ? theme.fixedSpacing(theme.tabiyaSpacing.xl * 1.5)
           : theme.fixedSpacing(theme.tabiyaSpacing.xl * 2),
@@ -77,7 +77,7 @@ const Footer: React.FC = () => {
               data-testid={DATA_TEST_ID.FOOTER_WORLD_BANK_LOGO}
             />
             <img
-              src={`${process.env.PUBLIC_URL}/ministry-tech.png`}
+              src={getMinistryUrl()}
               alt={t("footer.ministryTechLogoAlt")}
               style={{
                 height: 36,

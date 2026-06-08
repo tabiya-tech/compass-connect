@@ -1,7 +1,14 @@
 import React from "react";
 import { Box, Card, CardActionArea, Typography, useTheme } from "@mui/material";
-import { DocumentMetadata } from "src/knowledgeHub/types";
 import { getDocumentIcon } from "src/knowledgeHub/iconRegistry";
+
+interface DocumentMetadata {
+  id: string;
+  title: string;
+  description: string;
+  sector?: string;
+  icon?: string;
+}
 
 const uniqueId = "c5e8f7a2-9b3d-4e6f-8a1c-2d5e7f9b3c4a";
 
@@ -33,8 +40,8 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ document, onClick }) => {
         height: "100%",
         position: "relative",
         "&:hover": {
-          borderColor: theme.palette.primary.main,
-          backgroundColor: `color-mix(in srgb, ${theme.palette.primary.light} 16%, transparent)`,
+          borderColor: theme.palette.secondary.main,
+          backgroundColor: `color-mix(in srgb, ${theme.palette.secondary.light} 16%, transparent)`,
         },
       }}
       data-testid={DATA_TEST_ID.DOCUMENT_CARD}

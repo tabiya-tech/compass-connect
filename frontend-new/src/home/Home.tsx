@@ -3,6 +3,7 @@ import React from "react";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
+import { getIllustrationUrls, getProductName } from "src/envService";
 import { isConnectionError } from "src/error/restAPIError/isConnectionError";
 import Footer from "src/home/components/Footer/Footer";
 import HomeHero from "src/home/components/HomeHero/HomeHero";
@@ -22,15 +23,17 @@ export const DATA_TEST_ID = {
 const Home: React.FC = () => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const appName = getProductName();
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const { profileData, isLoadingModules, errors } = useUserProfileContext();
+  const shapesBackgroundUrl = getIllustrationUrls().dashboardShapesBackground;
 
   const modulesLoadError = Boolean(errors?.modules);
   const modulesConnectionError = isConnectionError(errors?.modules);
   const careerReadinessModules = profileData?.modules ?? [];
   const moduleErrorMessage = modulesConnectionError
     ? t("common.errors.api.serverConnectionError")
-    : t("error.errorPage.defaultMessage");
+    : t("error.errorPage.defaultMessage", { appName });
 
   return (
     <Box
@@ -38,7 +41,7 @@ const Home: React.FC = () => {
         display: "flex",
         flexDirection: "column",
         height: "100%",
-        backgroundColor: theme.palette.containerBackground.main,
+        backgroundColor: theme.palette.pageBackground.main,
         overflowX: "hidden",
         overflowY: "auto",
       }}
@@ -59,8 +62,26 @@ const Home: React.FC = () => {
             paddingTop: theme.fixedSpacing(6),
             paddingBottom: { xs: theme.fixedSpacing(theme.tabiyaSpacing.sm), md: 0 },
             overflow: "visible",
+            position: "relative",
           }}
         >
+          {shapesBackgroundUrl && (
+            <Box
+              aria-hidden
+              sx={{
+                position: "absolute",
+                inset: 0,
+                overflow: "hidden",
+                backgroundImage: `url(${shapesBackgroundUrl})`,
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center center",
+                backgroundSize: "cover",
+                opacity: 1,
+                pointerEvents: "none",
+                zIndex: 0,
+              }}
+            />
+          )}
           <Box
             sx={{
               width: "100%",
@@ -93,7 +114,7 @@ const Home: React.FC = () => {
           sx={{
             width: "100%",
             flex: 1,
-            backgroundColor: theme.palette.containerBackground.main,
+            backgroundColor: theme.palette.pageBackground.main,
             paddingTop: theme.fixedSpacing(theme.tabiyaSpacing.xl),
             paddingBottom: theme.fixedSpacing(isMobile ? 8 : 12),
           }}

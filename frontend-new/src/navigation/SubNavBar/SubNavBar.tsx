@@ -1,6 +1,5 @@
 import React, { startTransition, useContext } from "react";
 import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import type { PaletteColor, Theme } from "@mui/material/styles";
 import type { SxProps } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -43,8 +42,8 @@ const SubNavBar: React.FC<SubNavBarProps> = ({
   const isOnline = useContext(IsOnlineContext);
 
   const paletteColor = theme.palette[headerColor as keyof typeof theme.palette] as PaletteColor;
-  const bgColor = paletteColor?.main ?? theme.palette.primary.main;
-  const textColor = paletteColor?.contrastText ?? theme.palette.primary.contrastText;
+  const bgColor = paletteColor?.main ?? theme.palette.secondary.main;
+  const textColor = paletteColor?.contrastText ?? theme.palette.secondary.contrastText;
 
   const backLinkSx = {
     display: "inline-flex",
@@ -53,7 +52,7 @@ const SubNavBar: React.FC<SubNavBarProps> = ({
   };
 
   const headingVariant = isMobile ? "h5" : "h4";
-  const headingSx: SxProps<Theme> = { color: alpha(theme.palette.common.white, 0.8), fontWeight: 700 };
+  const headingSx: SxProps<Theme> = { color: textColor, fontWeight: 700 };
   const labelSx: SxProps<Theme> = { color: textColor, fontWeight: 500 };
   const subtitleSx: SxProps<Theme> = { color: textColor, mt: 0.4, fontWeight: 400 };
 
@@ -105,7 +104,7 @@ const SubNavBar: React.FC<SubNavBarProps> = ({
             });
           }}
           dataTestId={DATA_TEST_ID.SUB_NAVBAR_BACK_LINK}
-          color={theme.palette.common.white}
+          color={textColor}
           sx={{
             ...backLinkSx,
             ...(isMobile && {

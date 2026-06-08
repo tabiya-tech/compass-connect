@@ -2,7 +2,7 @@
   "common": {
     "buttons": {
       "login": "Entrar",
-      "loginLink": "Entrar no Njila",
+      "loginLink": "Entrar no {{appName}}",
       "logout": "Sair",
       "submit": "Submeter",
       "register": "Criar Conta",
@@ -148,10 +148,10 @@
         "createAccount": "Criar uma Conta",
         "verificationReminder": "Um email de verificação foi enviado para o seu endereço de email. Por favor, verifique a sua conta antes de iniciar sessão novamente.",
         "feedbackWelcome": "Gostaríamos de receber mais",
-        "feedbackLinkText": "Feedback",
+        "feedbackLinkText": "Comentários",
         "feedbackFromYouSuffix": "de si. Demora apenas 5 minutos e ajuda-nos a melhorar!",
         "feedbackInProgressPrefix": "Por favor",
-        "feedbackInProgressLinkText": "Complete o seu Feedback",
+        "feedbackInProgressLinkText": "Conclua os seus comentários",
         "feedbackInProgressSuffix": "para nos ajudar a melhorar a sua experiência!"
       },
       "sent": "enviado ",
@@ -205,7 +205,7 @@
       }
     },
     "util": {
-      "feedbackThankYou": "Obrigado por disponibilizar o seu tempo para partilhar o seu valioso feedback.",
+      "feedbackThankYou": "Agradecemos o seu tempo para partilhar os seus valiosos comentários.",
       "ratingThankYou": "Obrigado por avaliar o {{appName}}.",
       "errorSomethingWentWrong": "Lamento, algo parece ter corrido mal do meu lado... Pode, por favor, atualizar a página e tentar novamente?",
       "errorPleaseRepeat": "Lamento, algo parece ter corrido mal do meu lado... Pode, por favor, repetir isso?",
@@ -217,7 +217,7 @@
       "components": {
         "dislikeReasonPopover": {
           "title": "Por favor, diga-nos qual é o problema?",
-          "closeButton": "fechar feedback",
+          "closeButton": "fechar comentários",
           "reasons": {
             "inappropriateTone": "Tom Inapropriado",
             "offensiveLanguage": "Linguagem Ofensiva",
@@ -255,13 +255,13 @@
       "thinkingMessage": "A processar o seu CV, isto pode demorar um pouco..."
     },
     "chatHeader": {
-      "viewExperiences": "Relatório das minhas competências",
-      "feedbackMessage": "Gostaríamos de ouvir o seu feedback sobre a sua experiência até agora!",
-      "giveFeedback": "Dar Feedback",
-      "feedbackMessagePlaceholder": "Gostaríamos de ouvir a sua opinião! Por favor, partilhe qualquer feedback ou sugestões que tenha para melhorar o {{appName}}.",
-      "sendFeedback": "Enviar Feedback",
-      "feedbackSuccessMessage": "Obrigado pelo seu feedback!",
-      "giveGeneralFeedback": "Dar feedback geral",
+      "viewExperiences": "Relatório de competências",
+      "feedbackMessage": "Adoraríamos conhecer os seus comentários sobre a sua experiência até agora!",
+      "giveFeedback": "Dar a sua opinião",
+      "feedbackMessagePlaceholder": "Adoraríamos conhecer a sua opinião! Por favor, partilhe quaisquer comentários ou sugestões que tenha para melhorar o {{appName}}.",
+      "sendFeedback": "Enviar comentários",
+      "feedbackSuccessMessage": "Agradecemos os seus comentários!",
+      "giveGeneralFeedback": "Enviar comentários gerais",
       "userInfo": "Informação do utilizador",
       "viewMyProfile": "Perfil",
       "userIconAlt": "Ícone de Utilizador",
@@ -271,7 +271,7 @@
       "logoutWarningAnonymous": "Se sair, perderá o acesso ao seu histórico de conversas e experiências.",
       "createAccountToSaveProgress": "Crie uma conta para guardar o seu progresso",
       "continueYourJourneyLater": "e continue a sua jornada mais tarde.",
-      "formTitle": "Dar feedback geral",
+      "formTitle": "Enviar comentários gerais",
       "nameLabel": "Nome",
       "namePlaceholder": "O Seu Nome",
       "emailLabel": "Email",
@@ -291,7 +291,7 @@
         "loginUsing": "Entrar através de",
         "loggingYouIn": "A iniciar a sua sessão...",
         "loggingInAria": "A iniciar sessão",
-        "signInDescription": "Se já tem uma conta Njila, insira o seu <0>email</0> e <1>palavra-passe</1> para lhe aceder, ou escolha <2>Google</2> para entrar.",
+        "signInDescription": "Se já tem uma conta {{appName}}, insira o seu <0>email</0> e <1>palavra-passe</1> para lhe aceder, ou escolha <2>Google</2> para entrar.",
         "dontHaveAnAccount": "Ainda não tem conta? Registe-se gratuitamente.",
         "needHelp": "Ajuda",
         "fillInEmailAndPassword": "Por favor, preencha os campos de email e palavra-passe",
@@ -310,7 +310,7 @@
           "feature1Title": "Descubra os seus pontos fortes",
           "feature1Body": "Descubra que competências já possui — da sua formação, do seu trabalho e da sua vida.",
           "feature2Title": "Construa um CV que seja notado",
-          "feature2Body": "Crie um CV profissional adaptado ao que os empregadores na Zâmbia procuram.",
+          "feature2Body": "Crie um CV profissional adaptado ao que os empregadores em Moçambique procuram.",
           "feature3Title": "Encontre o seu caminho",
           "feature3Body": "Explore carreiras com grande procura, compreenda de que qualificações necessita e encontre ofertas de emprego reais."
         },
@@ -322,7 +322,7 @@
       },
       "register": {
         "signUpTitle": "Criar uma conta",
-        "signUpDescription": "Para criar uma conta Njila, insira o seu <0>endereço de email</0> e crie uma <1>palavra-passe</1>. Também pode criar uma conta com a sua conta <2>Google</2>.",
+        "signUpDescription": "Para criar uma conta {{appName}}, insira o seu <0>endereço de email</0> e crie uma <1>palavra-passe</1>. Também pode criar uma conta com a sua conta <2>Google</2>.",
         "emailPlaceholder": "O seu endereço de email",
         "passwordPlaceholder": "Crie uma palavra-passe",
         "confirmPasswordPlaceholder": "Repita a palavra-passe",
@@ -489,6 +489,12 @@
               "summaryPlaceholder": "Resumo da experiência",
               "restoreFailed": "Não conseguimos restaurar esse resumo. O seu resumo anterior ainda está guardado — por favor, tente novamente.",
               "restored": "Resumo restaurado."
+            },
+            "addSkillsDrawer": {
+              "title": "Selecionar Competências",
+              "helpTip": "Toque numa competência para ver mais detalhes. Pode selecionar as competências que pretende adicionar à sua experiência.",
+              "subtitle": "Estas são competências adicionais de topo identificadas pelo {{appName}} com base na sua experiência.",
+              "okButton": "OK"
             }
           },
           "updateSuccess": "Experiência atualizada com sucesso!",
@@ -511,7 +517,8 @@
           "maxCharsAllowed": "Máximo de {{count}} caracteres permitidos."
         },
         "experiencesDrawerHeader": {
-          "closeTitle": "Fechar experiências"
+          "closeTitle": "Fechar experiências",
+          "lastUpdated": "Última atualização: {{date}}"
         },
         "experiencesDrawerContent": {
           "menu": {
@@ -601,7 +608,7 @@
           "timelineMaxLength": "Máximo de {{max}} caracteres permitidos."
         }
       },
-      "reportTitle": "Seu Relatório de Competências Njila",
+      "reportTitle": "Seu Relatório de Competências {{appName}}",
       "educationLabel": "EDUCAÇÃO",
       "experiencesAndSkillsLabel": "EXPERIÊNCIAS E COMPETÊNCIAS"
     },
@@ -786,30 +793,30 @@
             "questionText": "Finalmente, gostaríamos de ouvir a sua opinião sobre a sua experiência até agora! Quão satisfeito está com o {{appName}}?",
             "ratingLabelLow": "Insatisfeito",
             "ratingLabelHigh": "Satisfeito",
-            "submitSuccess": "Feedback de classificação submetido com sucesso!",
-            "submitError": "O seu feedback não foi enviado. Por favor, tente novamente daqui a pouco."
+            "submitSuccess": "Avaliação enviada com sucesso!",
+            "submitError": "Não foi possível enviar os seus comentários. Por favor, tente novamente daqui a pouco."
           },
           "feedbackFormContent": {
             "previous": "Anterior",
             "next": "Seguinte"
           }
         },
-        "submitSuccess": "Feedback submetido com sucesso!",
-        "submitError": "O seu feedback não foi enviado. Por favor, tente novamente daqui a pouco. Se isto continuar a acontecer, avise o suporte utilizando a referência mostrada quando ocorrem falhas.",
+        "submitSuccess": "Comentários enviados com sucesso!",
+        "submitError": "Não foi possível enviar os seus comentários. Por favor, tente novamente daqui a pouco. Se o problema persistir, informe o suporte utilizando a referência exibida quando ocorrem falhas.",
         "helpUsImprove": "Ajude-nos a melhorar!",
-        "closeForm": "fechar formulário de feedback",
-        "submittingFeedback": "A submeter feedback..."
+        "closeForm": "Fechar formulário de comentários",
+        "submittingFeedback": "A enviar os comentários..."
       }
     },
     "bugReport": {
-      "reportBug": "Reportar um Erro"
+      "reportBug": "Reportar erro"
     },
     "feedbackModal": {
-      "title": "Reportar um erro ou enviar feedback",
+      "title": "Reportar erro ou enviar comentários",
       "subtitle": "Diga-nos o que aconteceu ou o que ajudaria. Lemos todos os comentários.",
       "type": {
         "bug": "Erro",
-        "feedback": "Feedback",
+        "feedback": "Comentários",
         "idea": "Ideia"
       },
       "priority": {
@@ -817,14 +824,14 @@
         "medium": "Média",
         "high": "Alta"
       },
-      "messagePlaceholder": "Descreva o que aconteceu, o que esperava, ou qualquer feedback...",
+      "messagePlaceholder": "Descreva o que aconteceu, o que esperava ou quaisquer comentários...",
       "addScreenshot": "Adicionar captura de ecrã",
       "removeScreenshot": "Remover captura de ecrã",
       "screenshotAlt": "Captura de ecrã anexada",
       "cancel": "Cancelar",
       "send": "Enviar",
-      "successMessage": "Obrigado pelo seu feedback!",
-      "errorMessage": "Não conseguimos enviar o seu feedback. Por favor, tente novamente."
+      "successMessage": "Agradecemos os seus comentários!",
+      "errorMessage": "Não foi possível enviar os seus comentários. Por favor, tente novamente."
     }
   },
   "error": {
@@ -890,7 +897,7 @@
     "inaccurate": "Impreciso",
     "very_accurate": "Muito preciso",
     "skill_accuracy": "Precisão de Competências",
-    "final_feedback": "Feedback final",
+    "final_feedback": "Comentários finais",
     "difficult": "Difícil",
     "easy": "Fácil",
     "unlikely": "Improvável",
@@ -899,7 +906,7 @@
   "steps": {
     "biasAndExperience": "Precisão de Bias e Experiência",
     "skillAccuracy": "Precisão de Competências",
-    "finalFeedback": "Feedback final"
+    "finalFeedback": "Comentários finais"
   },
   "labels": {
     "inaccurate": "Impreciso",
@@ -971,7 +978,7 @@
     "dashboard": "O Seu Centro de Carreira",
     "backToDashboard": "Voltar ao painel principal",
     "welcomeBack": "Bem-vindo de volta, {{name}}",
-    "subtitle": "O {{appName}} é a ponte entre o que aprendeu e para onde se dirige. Converse com a IA para destacar as suas competências, preparar-se para entrevistas e explorar rotas de carreira reais na Zâmbia.",
+    "subtitle": "O {{appName}} é a ponte entre o que aprendeu e para onde se dirige. Converse com a IA para destacar as suas competências, preparar-se para entrevistas e explorar rotas de carreira reais em Moçambique.",
     "profileStrength": "A força atual do seu perfil é de {{progress}}%.",
     "profileStrengthHint": "É um bom começo — experimente Minhas Competências e Interesses para destacar mais sobre o que sabe e de que gosta.",
     "seeProfile": "Ver perfil →",
@@ -980,7 +987,7 @@
     "hero": {
       "headline1": "Vamos descobrir",
       "headline2": "As suas competências e pontos fortes",
-      "body": "O seu caminho guiado das competências para o seu primeiro emprego. Comece por descobrir o que traz consigo — depois explore carreiras, desenvolva a preparação para a carreira e encontre oportunidades reais na Zâmbia.",
+      "body": "O seu caminho guiado das competências para o seu primeiro emprego. Comece por descobrir o que traz consigo — depois explore carreiras, desenvolva a preparação para a carreira e encontre oportunidades reais em Moçambique.",
       "illustrationAlt": "Pessoa num sinal de sinalização num caminho, explorando direções de carreira"
     },
     "cta": {
@@ -991,7 +998,7 @@
       "explorePathsDesc": "Explore os setores e carreiras em que está interessado - salários, percursos de qualificação, programas de formação, principais empregadores.",
       "explorePathsCta": "Explorar Percursos de Carreira",
       "jobMatchesTitle": "Correspondências de Emprego",
-      "jobMatchesDesc": "Ofertas reais em toda a Zâmbia, correspondentes ao que pode fazer agora.",
+      "jobMatchesDesc": "Ofertas reais em todo o Moçambique, correspondentes ao que pode fazer agora.",
       "jobMatchesCta": "Explorar os seus empregos"
     },
     "jobReadySection": {
@@ -1097,9 +1104,9 @@
       "jobMatching": "Correspondência de Empregos",
       "skillsDiscoveryDesc": "Converse com o {{appName}} para descobrir as suas competências e interesses — dos seus estudos, trabalho e vida quotidiana.",
       "jobReadinessDesc": "Desenvolva a preparação para o emprego através de módulos guiados por IA — desde a compreensão da sua identidade profissional e escrita de CV até entrevistas, preparação para o local de trabalho e empreendedorismo.",
-      "careerExplorerDesc": "Explore percursos de carreira em Energia, Mineração, Agricultura e muito mais — com dados salariais e rotas de qualificação.",
-      "knowledgeHubDesc": "Explore perfis setoriais, referências salariais e percursos de qualificação TEVET, tudo num só lugar.",
-      "jobMatchingDesc": "Veja como as suas competências correspondem a ofertas de emprego reais e explore perspetivas do mercado de trabalho na Zâmbia.",
+      "careerExplorerDesc": "Explore o percurso de carreira em Energia em Moçambique — com qualificações CNQP, principais empregadores e oportunidades de formação.",
+      "knowledgeHubDesc": "Explore perfis setoriais, referências salariais e percursos de qualificação CNQP, tudo num só lugar.",
+      "jobMatchingDesc": "Veja como as suas competências correspondem a ofertas de emprego reais e explore perspetivas do mercado de trabalho em Moçambique.",
       "continue": "Continuar",
       "completed": "Concluído",
       "soon": "Em breve",
@@ -1110,7 +1117,7 @@
       "termsOfUse": "Termos de Utilização",
       "accessibility": "Acessibilidade",
       "contact": "Contacto",
-      "collaboration": "O {{appName}} é uma ferramenta gratuita de orientação de carreira oferecida pelo Ministério da Tecnologia e Ciência da Zâmbia, construída em parceria com o Grupo Banco Mundial e a Tabiya.",
+      "collaboration": "{{appName}} é uma ferramenta gratuita de orientação profissional oferecida pelo Ministério da Educação e Cultura de Moçambique, desenvolvida em parceria com o Grupo Banco Mundial e a Tabiya.",
       "worldBankLogoAlt": "Logótipo do Grupo Banco Mundial",
       "ministryTechLogoAlt": "Logótipo do Ministério da Tecnologia",
       "tabiyaLogoAlt": "Logótipo da Tabiya"
@@ -1126,7 +1133,8 @@
       },
       "careerExplorer": {
         "title": "Sectores Explorados",
-        "emptyState": "Os sectores aparecerão aqui à medida que explora carreiras com o Njila."
+        "emptyState": "Os sectores aparecerão aqui à medida que explora carreiras com o {{appName}}.",
+        "sectorDescription": "Explorado em {{inquiryCount}} conversas."
       },
       "careerReadiness": {
         "title": "Temas"
@@ -1155,13 +1163,13 @@
     "backToKnowledgeHub": "Voltar aos Percursos",
     "documentNotFound": "Documento não encontrado",
     "heroTitlePrefix": "Percursos de Carreira",
-    "heroTitleQuestion": "Onde é que a Zâmbia está a contratar?",
-    "introduction": "Saber no que é bom é apenas metade do caminho. Estes são os percursos de carreira com maior procura na Zâmbia neste momento — explore-os para ver onde as suas competências encontram oportunidades reais.",
+    "heroTitleQuestion": "Onde está Moçambique a recrutar?",
+    "introduction": "Saber no que é bom é apenas metade do caminho. Este é o percurso de carreira com maior procura em Moçambique — explore-o para ver onde as suas competências encontram oportunidades reais.",
     "discoverSectorCta": "Descubra o setor de {{sector}} →",
     "sectors": {
       "energy": {
         "title": "Energia",
-        "description": "O sector da energia na Zâmbia está a passar por uma transformação maciça, mudando para fontes de energia renováveis como a solar e eólica para complementar a sua forte base hidroeléctrica."
+        "description": "Moçambique é um dos maiores produtores de gás natural de África, com o corredor de GNL de Cabo Delgado a criar um pico de procura de técnicos qualificados. Em paralelo, a expansão das renováveis abre oportunidades em todo o país."
       },
       "mining": {
         "title": "Mineração",
@@ -1189,24 +1197,24 @@
     "prioritySector": "Setor Prioritário",
     "avgMonthlyEarnings": "Média de ganhos mensais (setor formal)",
     "criticalOccupations": "Profissões críticas identificadas",
-    "tevetProgrammes": "Programas TEVET oferecidos",
+    "tevetProgrammes": "Qualificações CNQP acreditadas",
     "keyEmployers": "Principais empregadores a ter em conta",
-    "tevetAccreditedProgrammes": "Programas acreditados TEVET relevantes para o setor de {{sector}}",
+    "tevetAccreditedProgrammes": "Programas ETP acreditados relevantes para o setor de {{sector}}",
     "accreditedProgrammesCount": "{{count}} programas acreditados em {{institutions}} instituições. {{suffix}}",
     "loadingProgrammes": "A carregar dados do programa...",
-    "shortCoursesNote": "+ {{count}} cursos de curta duração oferecidos por empregadores do setor e prestadores de formação especializada.",
-    "criticalSkillsLabel": "Especializações de competências críticas relacionadas com {{sector}} identificadas",
+    "shortCoursesNote": "+ {{count}} cursos de curta duração identificados como prioritários para formação alinhada à demanda dos empregadores.",
+    "criticalSkillsLabel": "Especializações críticas identificadas em {{sector}}",
     "filterAll": "Todos ({{count}})",
-    "filterZqf": "ZQF {{level}} ({{count}})",
-    "tableOccupation": "Profissão em procura",
-    "tableZqf": "ZQF",
+    "filterZqf": "QNQP {{level}} ({{count}})",
+    "tableOccupation": "Ocupação em demanda",
+    "tableZqf": "QNQP",
     "tableDuration": "Duração",
-    "tableTevet": "TEVET",
-    "tableCountAll": "A mostrar todas as {{count}} profissões. Onde não está listado nenhum programa, a formação é normalmente fornecida no local de trabalho pelos empregadores ou o currículo está atualmente em desenvolvimento.",
-    "tableCountFiltered": "A mostrar {{count}} profissões no nível ZQF {{level}}. Onde não está listado nenhum programa, a formação é normalmente fornecida no local de trabalho pelos empregadores ou o currículo está atualmente em desenvolvimento.",
+    "tableTevet": "ETP",
+    "tableCountAll": "A mostrar todas as {{count}} ocupações. Moçambique ainda não publicou uma Lista Nacional de Competências Críticas formal; as ocupações acima são identificadas a partir do contexto do mercado de trabalho do ANEP e do Boletim T3 2025.",
+    "tableCountFiltered": "A mostrar {{count}} ocupações (QNQP {{level}}). Moçambique ainda não publicou uma Lista Nacional de Competências Críticas formal; as ocupações acima são identificadas a partir do contexto do mercado de trabalho do ANEP e do Boletim T3 2025.",
     "newProgrammesDev": "Novos programas em desenvolvimento",
-    "newProgrammesDevDesc": "Áreas curriculares prioritárias identificadas através do Programa de Desenvolvimento de Competências para o Aumento da Empregabilidade (SDEP) da OIT/TEVETA e consultas setoriais.",
-    "devOccupationsLabel": "Profissões sem programas TEVET dedicados",
+    "newProgrammesDevDesc": "Áreas curriculares prioritárias identificadas no catálogo CNQP, no plano estratégico ANEP (ENDE 2025–2044) e no estudo de cursos de curta duração da Vision Solution (rascunho, Fevereiro 2026).",
+    "devOccupationsLabel": "Qualificações em desenvolvimento ou entrega não confirmada",
     "keepInMind": "Coisas a ter em conta",
     "navWhereJobs": "Onde estão os empregos",
     "navProgrammes": "Programas",
@@ -1217,30 +1225,35 @@
     "programmeCount": "{{count}} cursos",
     "zqf": {
       "skillsAward": {
-        "label": "Certificado de Competências",
-        "duration": "Curso de curta duração"
+        "label": "Certificado Vocacional / Ocupacional",
+        "duration": "Curso curto",
+        "frameworkLabel": "QNQP II"
       },
       "level3": {
-        "label": "Certificado Nível 3",
-        "duration": "1 ano"
+        "label": "Certificado Vocacional",
+        "duration": "~1 ano",
+        "frameworkLabel": "QNQP III"
       },
       "craftCertificate": {
-        "label": "Certificado de Especialidade",
-        "duration": "2 anos"
+        "label": "Certificado Vocacional / Técnico Médio",
+        "duration": "~2 anos",
+        "frameworkLabel": "QNQP IV"
       },
       "advancedCertificate": {
-        "label": "Certificado Avançado",
-        "duration": "2.5 anos"
+        "label": "Certificado Vocacional / Técnico Superior",
+        "duration": "~2,5–3 anos",
+        "frameworkLabel": "QNQP V"
       },
       "diploma": {
         "label": "Diploma",
-        "duration": "3 anos"
+        "duration": "3 anos",
+        "frameworkLabel": "QNQP V+"
       }
     }
   },
   "jobMatching": {
     "pageTitle": "Correspondência de Empregos",
-    "pageDescription": "Explore ofertas de emprego reais e veja como as suas competências correspondem a oportunidades em toda a Zâmbia.",
+    "pageDescription": "Explore ofertas de emprego reais e veja como as suas competências correspondem a oportunidades em todo o Moçambique.",
     "matched": {
       "programmeBanner": "Obtenha correspondências mais personalizadas ao completar a conversa de Construção do Seu Perfil.",
       "emptyNoSkills": "Os empregos correspondentes ainda não estão disponíveis. Complete a secção \"Construa o Seu Perfil\" para desbloquear recomendações personalizadas.",
@@ -1296,15 +1309,15 @@
     "faqAriaLabel": "Ajuda e FAQ"
   },
   "faq": {
-    "lede": "Respostas a perguntas comuns sobre o Njila — como funciona, como criar uma conta e como resolver problemas comuns.",
+    "lede": "Respostas a perguntas comuns sobre o {{appName}} — como funciona, como criar uma conta e como resolver problemas comuns.",
     "searchPlaceholder": "Procurar perguntas...",
     "searchAriaLabel": "Procurar FAQ",
     "clearSearch": "Limpar pesquisa",
     "tocLabel": "Nesta página",
     "noResults": "Nenhuma pergunta corresponde a essa pesquisa.",
     "tutorialEyebrow": "Tutorial de 4 min",
-    "tutorialHeading": "Veja como funciona o Njila",
-    "tutorialIframeTitle": "Vídeo tutorial do Njila",
+    "tutorialHeading": "Veja como funciona o {{appName}}",
+    "tutorialIframeTitle": "Vídeo tutorial do {{appName}}",
     "tutorialUnavailableOffline": "Está offline. Ligue-se à internet para ver este vídeo.",
     "scrollProgressLabel": "Progresso da leitura"
   },

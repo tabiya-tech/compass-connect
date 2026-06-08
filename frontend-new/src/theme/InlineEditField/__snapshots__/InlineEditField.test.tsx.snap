@@ -21,7 +21,7 @@ exports[`render tests should show badge when field is edited 1`] = `
     data-testid="foo-testid"
   >
     <div
-      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-4f049d-MuiInputBase-root-MuiOutlinedInput-root"
+      class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-1v0n2g-MuiInputBase-root-MuiOutlinedInput-root"
     >
       <input
         aria-invalid="false"
@@ -49,7 +49,7 @@ exports[`render tests should show badge when field is edited 1`] = `
     </div>
   </div>
   <span
-    class="MuiBadge-badge MuiBadge-dot MuiBadge-anchorOriginTopLeft MuiBadge-anchorOriginTopLeftRectangular MuiBadge-overlapRectangular css-ec07ob-MuiBadge-badge"
+    class="MuiBadge-badge MuiBadge-dot MuiBadge-anchorOriginTopLeft MuiBadge-anchorOriginTopLeftRectangular MuiBadge-overlapRectangular css-19qq7ql-MuiBadge-badge"
   />
 </span>
 `;

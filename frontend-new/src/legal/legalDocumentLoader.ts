@@ -1,4 +1,4 @@
-import { parseYamlFrontmatter } from "src/knowledgeHub/parseYamlFrontmatter";
+import { parseYamlFrontmatter } from "src/utils/parseYamlFrontmatter";
 import { getLegalDocumentsConfig, LegalDocumentVariant } from "src/legal/legalDocumentsConfig";
 
 export type { LegalDocumentVariant };

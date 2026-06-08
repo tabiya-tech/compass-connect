@@ -1,5 +1,6 @@
 // silence chatty console
 import "src/_test_utilities/consoleMock";
+import "src/_test_utilities/envServiceMock";
 
 import { act, render, screen, waitFor } from "src/_test_utilities/test-utils";
 import Chat, {
@@ -1288,6 +1289,7 @@ describe("Chat", () => {
                       message: message.message,
                       sent_at: message.sent_at,
                       fill_color: expect.any(String),
+                      text_color: expect.any(String),
                     },
               component: expect.any(Function),
             })),
@@ -1299,6 +1301,7 @@ describe("Chat", () => {
                 message: givenMessage,
                 sent_at: expect.any(String),
                 fill_color: expect.any(String),
+                text_color: expect.any(String),
               },
               component: expect.any(Function),
             },
@@ -1350,6 +1353,7 @@ describe("Chat", () => {
                       message: message.message,
                       sent_at: message.sent_at,
                       fill_color: expect.any(String),
+                      text_color: expect.any(String),
                     },
               component: expect.any(Function),
             })),
@@ -1361,6 +1365,7 @@ describe("Chat", () => {
                 message: givenMessage,
                 sent_at: expect.any(String),
                 fill_color: expect.any(String),
+                text_color: expect.any(String),
               },
               component: expect.any(Function),
             },
@@ -1386,6 +1391,7 @@ describe("Chat", () => {
                       message: message.message,
                       sent_at: message.sent_at,
                       fill_color: expect.any(String),
+                      text_color: expect.any(String),
                     },
               component: expect.any(Function),
             })),
@@ -1539,6 +1545,7 @@ describe("Chat", () => {
                       message: message.message,
                       sent_at: message.sent_at,
                       fill_color: expect.any(String),
+                      text_color: expect.any(String),
                     },
               component: expect.any(Function),
             })),
@@ -1550,6 +1557,7 @@ describe("Chat", () => {
                 message: givenMessage,
                 sent_at: expect.any(String),
                 fill_color: expect.any(String),
+                text_color: expect.any(String),
               },
               component: expect.any(Function),
             },
@@ -1598,6 +1606,7 @@ describe("Chat", () => {
                       message: message.message,
                       sent_at: message.sent_at,
                       fill_color: expect.any(String),
+                      text_color: expect.any(String),
                     },
               component: expect.any(Function),
             })),
@@ -1609,6 +1618,7 @@ describe("Chat", () => {
                 message: givenMessage,
                 sent_at: expect.any(String),
                 fill_color: expect.any(String),
+                text_color: expect.any(String),
               },
               component: expect.any(Function),
             },
@@ -1756,6 +1766,7 @@ describe("Chat", () => {
                     message: message.message,
                     sent_at: message.sent_at,
                     fill_color: expect.any(String),
+                    text_color: expect.any(String),
                   },
             component: expect.any(Function),
           })),

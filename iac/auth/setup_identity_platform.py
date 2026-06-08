@@ -151,7 +151,36 @@ def _setup_email_templates_dns(basic_config: ProjectBaseConfig,
         ),
     ]
 
-NJILA_AI_APP_NAME = "Njila.ai"
+APPS_WITH_CUSTOM_DOMAINS = [
+    "njila.ai",
+    "njiramoz.ai"
+]
+
+
+class App:
+    def __init__(self, *, app_name: str, frontend_domain: pulumi.Output[str]):
+        self._app_name = app_name
+        self._frontend_domain = frontend_domain
+
+    def has_custom_domain(self):
+        return self._app_name.lower() in APPS_WITH_CUSTOM_DOMAINS
+
+    def get_custom_domain_name(self):
+        return self._app_name.lower()
+
+    def get_firebase_custom_domain(self):
+        if self.has_custom_domain():
+            return self.get_custom_domain_name()
+        else:
+            return self._frontend_domain
+
+    def get_firebase_callback_uri(self):
+        if self.has_custom_domain():
+            return f"https://{self.get_custom_domain_name()}/#/auth-handler"
+        else:
+            return self._frontend_domain.apply(lambda v: f"https://{v}/#/auth-handler")
+
+
 def _setup_identity_platform(
         *,
         basic_config: ProjectBaseConfig,
@@ -173,8 +202,9 @@ def _setup_identity_platform(
         return _authorized_domains
 
     authorized_domains = pulumi.Output.all(frontend_domain, environment_type).apply(_get_authorized_domains)
-    firebase_custom_domain = "njila.ai" if app_name == NJILA_AI_APP_NAME else frontend_domain
-    callback_uri =  "https://njila.ai/#/auth-handler" if app_name == NJILA_AI_APP_NAME else frontend_domain.apply(lambda v: f"https://{v}/#/auth-handler")
+    domain_name = App(app_name=app_name, frontend_domain=frontend_domain)
+    firebase_custom_domain = domain_name.get_firebase_custom_domain()
+    callback_uri = domain_name.get_firebase_callback_uri()
     idp_config = IdentityPlatform(
         get_resource_name(resource="identity-platform", resource_type="default-config"),
         notification_config=NotificationConfigArgs(

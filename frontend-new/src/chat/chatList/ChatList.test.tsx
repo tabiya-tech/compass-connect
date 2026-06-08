@@ -113,6 +113,7 @@ describe("ChatList", () => {
       message: "Hello",
       sent_at: givenDate,
       fill_color: "primary",
+      text_color: "primary",
     };
 
     // AND compass message data with reaction
@@ -226,6 +227,7 @@ describe("ChatList", () => {
         message: "Hello",
         sent_at: givenDate,
         fill_color: "primary",
+        text_color: "primary",
       },
       {}
     );

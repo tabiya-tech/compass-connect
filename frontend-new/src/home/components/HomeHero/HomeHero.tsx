@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import { getProductName } from "src/envService";
+import { getIllustrationUrls, getProductName } from "src/envService";
 
 const uniqueId = "5cbaec73-1f15-4a92-9189-ff57c0202545";
 
@@ -15,7 +15,7 @@ export const DATA_TEST_ID = {
 const HomeHero: React.FC = () => {
   const theme = useTheme();
   const { t } = useTranslation();
-  const appName = getProductName() || "";
+  const appName = getProductName();
 
   return (
     <Box
@@ -30,7 +30,7 @@ const HomeHero: React.FC = () => {
         position: "relative",
       }}
     >
-      <Box sx={{ flex: { sm: "1 1 50%" }, minWidth: 0, alignSelf: { sm: "center" } }}>
+      <Box sx={{ flex: { sm: "1 1 60%" }, minWidth: 0, alignSelf: { sm: "center" } }}>
         <Typography
           variant="h1"
           color="text.primary"
@@ -47,7 +47,7 @@ const HomeHero: React.FC = () => {
         <Typography
           variant="h1"
           sx={{
-            color: theme.palette.primary.main,
+            color: theme.palette.secondary.main,
             marginBottom: theme.fixedSpacing(theme.tabiyaSpacing.sm),
             fontSize: { xs: "48px", lg: "64px" },
             lineHeight: 0.9,
@@ -75,7 +75,7 @@ const HomeHero: React.FC = () => {
 
       <Box
         sx={{
-          flex: { sm: "1 1 50%" },
+          flex: { sm: "1 1 40%" },
           display: "flex",
           justifyContent: "center",
           alignItems: "flex-end",
@@ -84,22 +84,35 @@ const HomeHero: React.FC = () => {
         }}
       >
         <Box
-          component="img"
-          src="/path.svg"
-          alt={t("home.hero.illustrationAlt")}
-          data-testid={DATA_TEST_ID.HOME_HERO_ILLUSTRATION}
           sx={{
             width: "100%",
             maxWidth: { xs: 320, sm: 480, md: 560 },
-            height: "auto",
+            height: { xs: 240, sm: 320, md: 380 },
             maxHeight: { xs: 240, sm: 320, md: 380 },
-            display: "block",
-            objectFit: "contain",
-            objectPosition: "bottom center",
-            pointerEvents: "none",
+            aspectRatio: "14 / 9",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
             marginBottom: { xs: theme.fixedSpacing(theme.tabiyaSpacing.md), sm: 0 },
           }}
-        />
+        >
+          <Box
+            component="img"
+            src={getIllustrationUrls().homeHero}
+            alt={t("home.hero.illustrationAlt")}
+            data-testid={DATA_TEST_ID.HOME_HERO_ILLUSTRATION}
+            sx={{
+              width: "100%",
+              height: "100%",
+              maxWidth: "100%",
+              maxHeight: "100%",
+              display: "block",
+              objectFit: "contain",
+              objectPosition: "bottom center",
+              pointerEvents: "none",
+            }}
+          />
+        </Box>
       </Box>
     </Box>
   );

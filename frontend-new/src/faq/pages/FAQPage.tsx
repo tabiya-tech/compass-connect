@@ -14,7 +14,7 @@ import { IsOnlineContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import { routerPaths } from "src/app/routerPaths";
 import BackLink from "src/navigation/BackLink/BackLink";
 import authenticationStateService from "src/auth/services/AuthenticationState.service";
-import { getFaqTutorialVideoUrl } from "src/envService";
+import { getFaqTutorialVideoUrl, getProductName } from "src/envService";
 
 const uniqueId = "f6b1d3a8-9c47-4e5f-a2d1-7b9e8c4f2a13";
 
@@ -32,19 +32,20 @@ export const DATA_TEST_ID = {
 
 const containsQuery = (haystack: string, needle: string): boolean => haystack.toLowerCase().includes(needle);
 
-const isChecklistSection = (section: FaqSection): boolean => section.isStatic && /checklist/i.test(section.title);
+const isChecklistSection = (section: FaqSection): boolean => section.kind === "checklist";
 
 const FAQ_TUTORIAL_VIDEO_FALLBACK_URL =
   "https://player.vimeo.com/video/1193881841?h=8ee6f6190d&title=0&byline=0&portrait=0";
 
 const FAQPage: React.FC = () => {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const appName = getProductName();
   const navigate = useNavigate();
   const isOnline = useContext(IsOnlineContext);
   const user = authenticationStateService.getInstance().getUser();
 
-  const { title, sections } = useMemo(() => getFaqDocument(), []);
+  const { title, sections } = useMemo(() => getFaqDocument(i18n.language), [i18n.language]);
 
   const [searchInput, setSearchInput] = useState("");
   const normalizedQuery = searchInput.trim().toLowerCase();
@@ -137,7 +138,7 @@ const FAQPage: React.FC = () => {
       data-testid={DATA_TEST_ID.FAQ_PAGE_CONTAINER}
       sx={{
         minHeight: "100vh",
-        backgroundColor: theme.palette.containerBackground.main,
+        backgroundColor: theme.palette.pageBackground.main,
       }}
     >
       <Box
@@ -168,7 +169,7 @@ const FAQPage: React.FC = () => {
                 });
               }}
               dataTestId={DATA_TEST_ID.FAQ_PAGE_BACK_LINK}
-              color={theme.palette.brandAction.main}
+              color={theme.palette.primary.main}
               sx={{
                 marginBottom: theme.fixedSpacing(theme.tabiyaSpacing.xl),
                 opacity: isOnline ? 1 : 0.5,
@@ -197,7 +198,7 @@ const FAQPage: React.FC = () => {
                 maxWidth: "640px",
               }}
             >
-              {t("faq.lede")}
+              {t("faq.lede", { appName })}
             </Typography>
             <Box sx={{ maxWidth: 480, marginTop: theme.fixedSpacing(theme.tabiyaSpacing.xl) }}>
               <TextField
@@ -233,9 +234,9 @@ const FAQPage: React.FC = () => {
                 }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    "& fieldset": { borderColor: theme.palette.primary.main },
-                    "&:hover fieldset": { borderColor: theme.palette.primary.main },
-                    "&.Mui-focused fieldset": { borderColor: theme.palette.primary.main },
+                    "& fieldset": { borderColor: theme.palette.secondary.main },
+                    "&:hover fieldset": { borderColor: theme.palette.secondary.main },
+                    "&.Mui-focused fieldset": { borderColor: theme.palette.secondary.main },
                   },
                 }}
               />
@@ -260,7 +261,7 @@ const FAQPage: React.FC = () => {
                 fontWeight: 600,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                color: theme.palette.brandAction.main,
+                color: theme.palette.primary.main,
                 marginBottom: theme.fixedSpacing(theme.tabiyaSpacing.sm),
               }}
             >
@@ -278,7 +279,7 @@ const FAQPage: React.FC = () => {
                 marginBottom: theme.fixedSpacing(theme.tabiyaSpacing.md),
               }}
             >
-              {t("faq.tutorialHeading")}
+              {t("faq.tutorialHeading", { appName })}
             </Typography>
             <Box
               sx={{
@@ -290,14 +291,14 @@ const FAQPage: React.FC = () => {
                 overflow: "hidden",
                 boxSizing: "border-box",
                 border: `1px solid ${theme.palette.divider}`,
-                backgroundColor: theme.palette.containerBackground.main,
+                backgroundColor: theme.palette.pageBackground.main,
               }}
             >
               <Box
                 component="iframe"
                 ref={iframeRef}
                 src={getFaqTutorialVideoUrl() || FAQ_TUTORIAL_VIDEO_FALLBACK_URL}
-                title={t("faq.tutorialIframeTitle")}
+                title={t("faq.tutorialIframeTitle", { appName })}
                 allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
                 allowFullScreen
                 referrerPolicy="strict-origin-when-cross-origin"
@@ -344,7 +345,7 @@ const FAQPage: React.FC = () => {
           top: 0,
           zIndex: theme.zIndex.appBar,
           height: "4px",
-          backgroundColor: theme.palette.containerBackground.main,
+          backgroundColor: theme.palette.pageBackground.main,
         }}
       >
         <Box
@@ -369,7 +370,7 @@ const FAQPage: React.FC = () => {
             top: 0,
             bottom: 0,
             width: `max(80px, ${scrollProgress * 100}%)`,
-            backgroundColor: theme.palette.brandAction.main,
+            backgroundColor: theme.palette.primary.main,
             borderRadius: "0 2px 2px 0",
             transition: "width 80ms linear",
           }}
@@ -429,7 +430,7 @@ const FAQPage: React.FC = () => {
                   marginBottom: "16px",
                 }}
               >
-                <Box component="span" sx={{ color: theme.palette.brandAction.main, marginRight: "6px" }}>
+                <Box component="span" sx={{ color: theme.palette.primary.main, marginRight: "6px" }}>
                   {section.number}.
                 </Box>
                 {section.title}

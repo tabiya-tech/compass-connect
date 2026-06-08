@@ -51,7 +51,7 @@ exports[`TypingChatMessage should render the Typing Chat message correctly when 
       class="MuiBox-root css-x1sij0"
     >
       <p
-        class="MuiTypography-root MuiTypography-body1 css-itlcv9-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body1 css-cgr9ng-MuiTypography-root"
       >
         Typing
       </p>
@@ -59,17 +59,17 @@ exports[`TypingChatMessage should render the Typing Chat message correctly when 
         class="MuiBox-root css-sz63p1"
       >
         <span
-          class="MuiTypography-root MuiTypography-body1 css-1aelj6c-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-ombwtc-MuiTypography-root"
         >
           .
         </span>
         <span
-          class="MuiTypography-root MuiTypography-body1 css-y1kmai-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-19ya0cw-MuiTypography-root"
         >
           .
         </span>
         <span
-          class="MuiTypography-root MuiTypography-body1 css-13ysxbd-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-13uyads-MuiTypography-root"
         >
           .
         </span>
@@ -130,7 +130,7 @@ exports[`TypingChatMessage should render the Typing Chat message correctly when 
       class="MuiBox-root css-x1sij0"
     >
       <p
-        class="MuiTypography-root MuiTypography-body1 css-itlcv9-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body1 css-cgr9ng-MuiTypography-root"
       >
         Typing
       </p>
@@ -138,17 +138,17 @@ exports[`TypingChatMessage should render the Typing Chat message correctly when 
         class="MuiBox-root css-sz63p1"
       >
         <span
-          class="MuiTypography-root MuiTypography-body1 css-1aelj6c-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-ombwtc-MuiTypography-root"
         >
           .
         </span>
         <span
-          class="MuiTypography-root MuiTypography-body1 css-y1kmai-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-19ya0cw-MuiTypography-root"
         >
           .
         </span>
         <span
-          class="MuiTypography-root MuiTypography-body1 css-13ysxbd-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-13uyads-MuiTypography-root"
         >
           .
         </span>

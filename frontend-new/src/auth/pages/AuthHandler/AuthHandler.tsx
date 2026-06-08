@@ -43,8 +43,11 @@ const REDIRECT_DELAY_MS = 3000;
 const getQueryParams = (search: string): URLSearchParams => {
   // With a hash router Firebase usually appends params after the hash, so location.search has them.
   // If the install was done with a non-hash URL (or a redirect stripped them), fall back to window.location.search.
+  // If that's also empty, parse params from the hash fragment (e.g. /#/auth-handler?mode=...&oobCode=...).
   if (search) return new URLSearchParams(search);
-  return new URLSearchParams(window.location.search);
+  if (window.location.search) return new URLSearchParams(window.location.search);
+  const hashQuery = window.location.hash.includes("?") ? window.location.hash.split("?")[1] : "";
+  return new URLSearchParams(hashQuery);
 };
 
 const AuthHandler: React.FC = () => {
@@ -220,11 +223,11 @@ const AuthHandler: React.FC = () => {
         fullWidth
         showCircle
         onClick={goToLogin}
-        color="brandAction"
+        color="primary"
         data-testid={DATA_TEST_ID.BACK_TO_LOGIN_BUTTON}
         sx={{
-          backgroundColor: theme.palette.common.cream,
-          color: theme.palette.brandAction.main,
+          backgroundColor: theme.palette.tertiary.light,
+          color: theme.palette.primary.main,
           alignSelf: "center",
         }}
       >
@@ -280,12 +283,12 @@ const AuthHandler: React.FC = () => {
         type="submit"
         showCircle
         disableWhenOffline={true}
-        color="brandAction"
+        color="primary"
         disabled={isSubmitting || !isPasswordValid || newPassword !== confirmPassword}
         data-testid={DATA_TEST_ID.SUBMIT_BUTTON}
         sx={{
-          backgroundColor: theme.palette.common.cream,
-          color: theme.palette.brandAction.main,
+          backgroundColor: theme.palette.tertiary.light,
+          color: theme.palette.primary.main,
           alignSelf: "center",
         }}
       >
@@ -320,12 +323,12 @@ const AuthHandler: React.FC = () => {
         </Typography>
         <PrimaryButton
           showCircle
-          color="brandAction"
+          color="primary"
           onClick={goToLogin}
           data-testid={DATA_TEST_ID.BACK_TO_LOGIN_BUTTON}
           sx={{
-            backgroundColor: theme.palette.common.cream,
-            color: theme.palette.brandAction.main,
+            backgroundColor: theme.palette.tertiary.light,
+            color: theme.palette.primary.main,
             alignSelf: "center",
           }}
         >

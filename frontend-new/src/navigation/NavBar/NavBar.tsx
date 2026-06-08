@@ -10,7 +10,7 @@ import ContextMenu from "src/theme/ContextMenu/ContextMenu";
 import { MenuItemConfig } from "src/theme/ContextMenu/menuItemConfig.types";
 import { IsOnlineContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import AuthenticationServiceFactory from "src/auth/services/Authentication.service.factory";
-import { getAppIconUrl } from "src/envService";
+import { getAppIconUrl, getProductName } from "src/envService";
 import { useSnackbar } from "src/theme/SnackbarProvider/SnackbarProvider";
 import { useTranslation } from "react-i18next";
 import type { TranslationKey } from "src/react-i18next";
@@ -86,9 +86,10 @@ const getInitials = (name: string): string => {
     .slice(0, 2);
 };
 
-const NavBar: React.FC<NavBarProps> = ({ headerColor = "brandAction" }) => {
+const NavBar: React.FC<NavBarProps> = ({ headerColor = "primary" }) => {
   const theme = useTheme();
   const { t, i18n } = useTranslation();
+  const appName = getProductName();
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
@@ -110,8 +111,8 @@ const NavBar: React.FC<NavBarProps> = ({ headerColor = "brandAction" }) => {
   const userName = profileData.name || "";
 
   const paletteColor = theme.palette[headerColor as keyof typeof theme.palette] as PaletteColor;
-  const bgColor = paletteColor?.main ?? theme.palette.brandAction.main;
-  const textColor = paletteColor?.contrastText ?? theme.palette.brandAction.contrastText;
+  const bgColor = paletteColor?.main ?? theme.palette.primary.main;
+  const textColor = paletteColor?.contrastText ?? theme.palette.primary.contrastText;
 
   const logoUrlFromEnv = getAppIconUrl();
   const logoSrc = logoUrlFromEnv || `${process.env.PUBLIC_URL}/njila_logo.svg`;
@@ -429,7 +430,12 @@ const NavBar: React.FC<NavBarProps> = ({ headerColor = "brandAction" }) => {
             aria-disabled={!isOnline}
             data-testid={DATA_TEST_ID.NAVBAR_LOGO_LINK}
           >
-            <img src={logoSrc} alt={t("app.compassLogoAlt")} height={28} data-testid={DATA_TEST_ID.NAVBAR_LOGO} />
+            <img
+              src={logoSrc}
+              alt={t("app.compassLogoAlt", { appName })}
+              height={28}
+              data-testid={DATA_TEST_ID.NAVBAR_LOGO}
+            />
           </NavLink>
         </Box>
 

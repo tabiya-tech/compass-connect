@@ -12,7 +12,7 @@ exports[`ReportDrawerContent should render ExperiencesDrawerContent correctly 1`
       class="MuiBox-root css-1lekzkb"
     >
       <p
-        class="MuiTypography-root MuiTypography-body2 css-1j9lmhu-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body2 css-p7yadv-MuiTypography-root"
         data-testid="experiences-drawer-content-occupation-34a59a9e-e7f6-4a10-8b72-0fd401c727de"
       >
         Project Manager
@@ -22,7 +22,7 @@ exports[`ReportDrawerContent should render ExperiencesDrawerContent correctly 1`
         class="MuiBox-root css-192qrng"
       >
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeMedium css-12ux9aj-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-1q5mhqh-MuiButtonBase-root-MuiIconButton-root"
           data-testid="experiences-drawer-more-button-34a59a9e-e7f6-4a10-8b72-0fd401c727de"
           tabindex="0"
           title="More options"
@@ -43,7 +43,7 @@ exports[`ReportDrawerContent should render ExperiencesDrawerContent correctly 1`
       </div>
     </div>
     <span
-      class="MuiTypography-root MuiTypography-caption css-16ph65h-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-caption css-bakd6-MuiTypography-root"
       data-testid="experiences-drawer-content-date-34a59a9e-e7f6-4a10-8b72-0fd401c727de"
     >
       2022 — Present
@@ -54,7 +54,7 @@ exports[`ReportDrawerContent should render ExperiencesDrawerContent correctly 1`
     </span>
   </div>
   <p
-    class="MuiTypography-root MuiTypography-body2 css-1sldguw-MuiTypography-root"
+    class="MuiTypography-root MuiTypography-body2 css-1kjd8gp-MuiTypography-root"
     data-testid="experiences-drawer-content-summary-34a59a9e-e7f6-4a10-8b72-0fd401c727de"
   >
     Managed multiple projects simultaneously, ensuring timely delivery and client satisfaction. Coordinated cross-functional teams of developers, designers, and stakeholders to achieve project milestones. Implemented agile methodologies that improved delivery efficiency by 30%. Conducted regular client meetings to gather feedback and ensure alignment with business objectives. Resolved critical issues during development cycles to prevent delays and maintain quality standards.
@@ -63,7 +63,7 @@ exports[`ReportDrawerContent should render ExperiencesDrawerContent correctly 1`
     class="MuiBox-root css-70qvj9"
   >
     <p
-      class="MuiTypography-root MuiTypography-body1 css-p6o7v3-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body1 css-16eqv48-MuiTypography-root"
       data-testid="experiences-drawer-content-skills-34a59a9e-e7f6-4a10-8b72-0fd401c727de"
     >
       <b>
@@ -96,7 +96,7 @@ exports[`ReportDrawerContent should render ExperiencesDrawerContent correctly 1`
     data-testid="experiences-drawer-skills-container-34a59a9e-e7f6-4a10-8b72-0fd401c727de"
   >
     <div
-      class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault css-1fptgix-MuiButtonBase-root-MuiChip-root"
+      class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault css-isz2j2-MuiButtonBase-root-MuiChip-root"
       data-testid="experiences-drawer-chip-34a59a9e-e7f6-4a10-8b72-0fd401c727de"
       role="button"
       tabindex="0"
@@ -108,7 +108,7 @@ exports[`ReportDrawerContent should render ExperiencesDrawerContent correctly 1`
       </span>
     </div>
     <div
-      class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault css-1fptgix-MuiButtonBase-root-MuiChip-root"
+      class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault css-isz2j2-MuiButtonBase-root-MuiChip-root"
       data-testid="experiences-drawer-chip-34a59a9e-e7f6-4a10-8b72-0fd401c727de"
       role="button"
       tabindex="0"
@@ -126,7 +126,7 @@ exports[`ReportDrawerContent should render ExperiencesDrawerContent correctly 1`
     <div
       data-testid="b7499b01-8082-4209-8667-c7d559a70caf-menu-header-message"
     >
-      These actions will become available once you have discussed the experience in detail with {{appName}}.
+      These actions will become available once you have discussed the experience in detail with mockProduct.
     </div>
     <div
       data-disabled="true"

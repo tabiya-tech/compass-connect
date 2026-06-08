@@ -3,7 +3,7 @@ import { Box, Container, Divider, Typography, useMediaQuery, useTheme } from "@m
 import type { SxProps } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import CustomLink from "src/theme/CustomLink/CustomLink";
-import { getProductName } from "src/envService";
+import { getMinistryUrl, getProductName } from "src/envService";
 import { routerPaths } from "src/app/routerPaths";
 import type { Theme } from "@mui/material/styles";
 
@@ -33,7 +33,7 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ sx }) => {
   const theme = useTheme();
   const { t } = useTranslation();
-  const appName = getProductName() || "";
+  const appName = getProductName();
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
 
   const privacyHref = `${globalThis.location.origin}/#${routerPaths.PRIVACY_POLICY}`;
@@ -91,7 +91,7 @@ const Footer: React.FC<FooterProps> = ({ sx }) => {
             />
             <Box
               component="img"
-              src={`${process.env.PUBLIC_URL}/ministry-tech.png`}
+              src={getMinistryUrl()}
               alt={t("home.footer.ministryTechLogoAlt")}
               data-testid={DATA_TEST_ID.FOOTER_MINISTRY_TECH_LOGO}
               sx={{

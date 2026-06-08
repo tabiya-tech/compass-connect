@@ -105,6 +105,42 @@ def download_frontend_bundle(
         raise
 
 
+def _patch_index_html(*, artifacts_dir: str, stack_name: str):
+    browser_tab_title = getenv("FRONTEND_BROWSER_TAB_TITLE", False, False)
+    meta_description = getenv("FRONTEND_META_DESCRIPTION", False, False)
+    frontend_seo_raw = getenv("FRONTEND_SEO", False, False)
+
+    index_html_path = os.path.join(artifacts_dir, "index.html")
+    if not os.path.exists(index_html_path):
+        print(f"warning: index.html not found at {index_html_path}, skipping HTML patching.")
+        return
+
+    content = open(index_html_path, encoding="utf-8").read()
+
+    if browser_tab_title:
+        content = content.replace("%%FRONTEND_BROWSER_TAB_TITLE%%", browser_tab_title)
+
+    if meta_description:
+        content = content.replace("%%FRONTEND_META_DESCRIPTION%%", meta_description)
+
+    if frontend_seo_raw:
+        try:
+            seo = json.loads(frontend_seo_raw)
+            if seo.get("name"):
+                content = content.replace("%%FRONTEND_SEO_NAME%%", seo["name"])
+            if seo.get("url"):
+                content = content.replace("%%FRONTEND_SEO_URL%%", seo["url"])
+            if seo.get("image"):
+                content = content.replace("%%FRONTEND_SEO_IMAGE%%", seo["image"])
+            if seo.get("description"):
+                content = content.replace("%%FRONTEND_SEO_DESCRIPTION%%", seo["description"])
+        except (json.JSONDecodeError, TypeError) as e:
+            print(f"warning: could not parse FRONTEND_SEO for stack {stack_name}: {e}")
+
+    open(index_html_path, "w", encoding="utf-8").write(content)
+    print(f"Done patching index.html for stack: {stack_name}.")
+
+
 def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
     sentry_dsn: str = getenv("FRONTEND_SENTRY_DSN", True, False)
     enable_sentry: str = getenv("FRONTEND_ENABLE_SENTRY", False, False)
@@ -134,11 +170,14 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
     frontend_browser_tab_title: Optional[str] = getenv("FRONTEND_BROWSER_TAB_TITLE", False, False)
     frontend_meta_description: Optional[str] = getenv("FRONTEND_META_DESCRIPTION", False, False)
     frontend_logo_url: Optional[str] = getenv("FRONTEND_LOGO_URL", False, False)
+    frontend_ministry_url: Optional[str] = getenv("FRONTEND_MINISTRY_URL", False, False)
     frontend_dark_logo_url: Optional[str] = getenv("FRONTEND_DARK_LOGO_URL", False, False)
     frontend_favicon_url: Optional[str] = getenv("FRONTEND_FAVICON_URL", False, False)
     frontend_app_icon_url: Optional[str] = getenv("FRONTEND_APP_ICON_URL", False, False)
+    frontend_chat_avatar_url: Optional[str] = getenv("FRONTEND_CHAT_AVATAR_URL", False, False)
     frontend_theme_css_variables: Optional[str] = getenv("FRONTEND_THEME_CSS_VARIABLES", False, False)
     frontend_seo: Optional[str] = getenv("FRONTEND_SEO", False, False)
+    frontend_illustrations: Optional[str] = getenv("FRONTEND_ILLUSTRATIONS", False, False)
     skills_report_config: Optional[str] = getenv("FRONTEND_SKILLS_REPORT_OUTPUT_CONFIG", False, False)
     frontend_faq_tutorial_video_url: Optional[str] = getenv("FRONTEND_FAQ_TUTORIAL_VIDEO_URL", False, False)
 
@@ -194,9 +233,11 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
         "FRONTEND_BROWSER_TAB_TITLE": base64_encode(frontend_browser_tab_title),
         "FRONTEND_META_DESCRIPTION": base64_encode(frontend_meta_description),
         "FRONTEND_LOGO_URL": base64_encode(frontend_logo_url),
+        "FRONTEND_MINISTRY_URL": base64_encode(frontend_ministry_url or ""),
         "FRONTEND_DARK_LOGO_URL": base64_encode(frontend_dark_logo_url),
         "FRONTEND_FAVICON_URL": base64_encode(frontend_favicon_url),
         "FRONTEND_APP_ICON_URL": base64_encode(frontend_app_icon_url),
+        "FRONTEND_CHAT_AVATAR_URL": base64_encode(frontend_chat_avatar_url),
         "FRONTEND_THEME_CSS_VARIABLES": base64_encode(frontend_theme_css_variables),
         "FRONTEND_SEO": base64_encode(frontend_seo),
         "FRONTEND_SKILLS_REPORT_OUTPUT_CONFIG": base64_encode(skills_report_config),
@@ -205,6 +246,7 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
         "FRONTEND_GTM_ENABLED": base64_encode(frontend_gtm_enabled or ""),
         "FRONTEND_FAQ_TUTORIAL_VIDEO_URL": base64_encode(frontend_faq_tutorial_video_url or ""),
         "FRONTEND_LEGAL_DOCUMENTS": base64_encode(frontend_legal_documents or ""),
+        "FRONTEND_ILLUSTRATIONS": base64_encode(frontend_illustrations or ""),
     }
 
     env_json_content = f"""window.tabiyaConfig = {json.dumps(frontend_env_json, indent=4)};"""
@@ -272,6 +314,12 @@ def prepare_frontend(
 
     # construct the env.js content for this deployment and stack.
     _construct_env_js_content(
+        stack_name=stack_name,
+        artifacts_dir=stack_artifacts_dir
+    )
+
+    # patch index.html with deploy-time branding/metadata for SEO.
+    _patch_index_html(
         stack_name=stack_name,
         artifacts_dir=stack_artifacts_dir
     )

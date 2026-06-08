@@ -18,7 +18,7 @@
     "@storybook/react": "^8.1.3",
     "@storybook/react-webpack5": "^8.1.3",
     "@storybook/test": "^8.1.3",
-    "@storybook/test-runner": "^0.18.2",
+    "@storybook/test-runner": "0.19.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^16.2.0",
     "@testing-library/react-hooks": "^8.0.1",
@@ -68,8 +68,7 @@
     "brotli-wasm": "^3.0.1",
     "colorjs.io": "^0.5.2",
     "docx": "^8.5.0",
-    "firebase": "^10.12.2",
-    "firebaseui": "^6.1.0",
+    "firebase": "12.13.0",
     "framer-motion": "^11.2.11",
     "i18next": "^23.11.5",
     "i18next-browser-languagedetector": "^8.0.0",
@@ -119,7 +118,19 @@
     "parser": "@typescript-eslint/parser",
     "rules": {
       "import/first": "off"
-    }
+    },
+    "overrides": [
+      {
+        "files": [
+          "src/knowledgeHub/documentLoader.ts",
+          "src/faq/faqDocumentLoader.ts",
+          "src/legal/legalDocumentLoader.ts"
+        ],
+        "rules": {
+          "import/no-webpack-loader-syntax": "off"
+        }
+      }
+    ]
   },
   "jest": {
     "resetMocks": false,

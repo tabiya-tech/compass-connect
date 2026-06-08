@@ -9,6 +9,9 @@ export interface Consideration {
 }
 
 export interface SectorStaticData {
+  /** Short key used for icon lookup and i18n translation (e.g. "agriculture") */
+  sector: string;
+  description: string;
   displayName: string;
   sectorApiParam: string;
   heroColor: string;
@@ -25,8 +28,36 @@ export interface SectorStaticData {
   sources: string;
 }
 
+/**
+ * Which pathway pages to show per app name (value of GLOBAL_PRODUCT_NAME).
+ * Unknown app names fall back to showing all sectors.
+ */
+export const PATHWAY_PAGES_BY_APP: Record<string, string[]> = {
+  Njila: [
+    "agriculture-pathway",
+    "mining-pathway",
+    "energy-pathway",
+    "hospitality-pathway",
+    "health-pathway",
+    "water-pathway",
+  ],
+  Njira: ["energy-pathway"],
+};
+
+/**
+ * Returns the ordered list of sector IDs to display for the given app name.
+ * Falls back to all sectors if the app name is not in PATHWAY_PAGES_BY_APP.
+ */
+export const getSectorsForApp = (appName: string): SectorStaticData[] => {
+  const ids = PATHWAY_PAGES_BY_APP[appName] ?? Object.keys(SECTOR_DATA);
+  return ids.flatMap((id) => (SECTOR_DATA[id] ? [SECTOR_DATA[id]] : []));
+};
+
 const SECTOR_DATA: Record<string, SectorStaticData> = {
   "agriculture-pathway": {
+    sector: "agriculture",
+    description:
+      "Agriculture is the largest employer in Zambia, but it is shifting from subsistence farming to commercial agribusiness and technology-driven production.",
     displayName: "Agriculture",
     sectorApiParam: "Agriculture",
     heroColor: "#2D7D46",
@@ -87,6 +118,9 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
   },
 
   "mining-pathway": {
+    sector: "mining",
+    description:
+      "Zambia is the world's seventh-largest copper producer. Mining is the highest-paying industrial sector, with jobs concentrated in the Copperbelt and North-Western provinces.",
     displayName: "Mining",
     sectorApiParam: "Mining",
     heroColor: "#0A5C4A",
@@ -147,6 +181,9 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
   },
 
   "energy-pathway": {
+    sector: "energy",
+    description:
+      "Zambia is undergoing a major energy transformation. Solar capacity is expanding 17x by 2030, creating thousands of new skilled jobs across generation, transmission, and distribution.",
     displayName: "Energy",
     sectorApiParam: "Energy",
     heroColor: "#D44B1A",
@@ -203,6 +240,9 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
   },
 
   "hospitality-pathway": {
+    sector: "hospitality",
+    description:
+      "Zambia's tourism sector is anchored by Victoria Falls and 20 national parks. Over 102,000 people work in accommodation and food services, with entry programmes as short as three months.",
     displayName: "Hospitality & Tourism",
     sectorApiParam: "Hospitality",
     heroColor: "#B45309",
@@ -264,6 +304,9 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
   },
 
   "health-pathway": {
+    sector: "health",
+    description:
+      "Allied health sciences support clinical care through diagnostics, rehabilitation, pharmacy, laboratory work, and environmental health. TEVET programmes lead to regulated roles registered with the HPCZ.",
     displayName: "Health Sciences",
     sectorApiParam: "Health",
     heroColor: "#0F766E",
@@ -329,6 +372,9 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
   },
 
   "water-pathway": {
+    sector: "water",
+    description:
+      "Only 36% of Zambians have access to safely managed drinking water. The sector spans over 70 occupations across water supply, wastewater, solid waste, hydrology, and environmental services.",
     displayName: "Water & Sanitation",
     sectorApiParam: "Water",
     heroColor: "#0E7490",
@@ -387,5 +433,79 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
       "Sources: 2023 Labour Force Survey (ZamStats) · EEI 2022/2023 (ZamStats) · Critical Skills List (TEVETA, 2025) · TEVETA Master Dataset (Dec 2025) · WHO/UNICEF Joint Monitoring Programme (2023) · NWASCO",
   },
 };
+
+/** Locale-specific overrides — keyed by i18n locale code, then by pathway ID. */
+const SECTOR_DATA_BY_LOCALE: Record<string, Record<string, SectorStaticData>> = {
+  "pt-MZ": {
+    "energy-pathway": {
+      sector: "energy",
+      description:
+        "Moçambique é um dos maiores produtores de gás natural de África, com o corredor de GNL de Cabo Delgado a criar um pico de procura de técnicos qualificados. Em paralelo, a expansão da rede eléctrica e das energias renováveis abre oportunidades em todo o país.",
+      displayName: "Energia",
+      sectorApiParam: "Energy",
+      heroColor: "#D44B1A",
+      ladderColors: ["#D44B1A", "#c24316", "#b03a12", "#9e320e", "#8c2a0a"],
+      avgEarnings: "—",
+      heroText:
+        "Moçambique é um dos maiores produtores de gás natural de África, com o corredor de GNL de Cabo Delgado a criar um pico de procura de técnicos qualificados. Em paralelo, a expansão da rede eléctrica e das energias renováveis abre oportunidades em todo o país.",
+      heroHighlight:
+        "Os cursos industriais de ETP oferecem os salários mais elevados de todas as áreas de formação profissional.",
+      geoLabel:
+        "A energia está distribuída por todo o país, com o corredor de GNL concentrado em Cabo Delgado e a rede da EDM a expandir-se para as províncias do norte e do interior.",
+      mapFile: "mz-energy-map.svg",
+      mapAlt: "Mapa de Moçambique com províncias de energia destacadas",
+      employers: [
+        {
+          province: "Nacional",
+          employers: ["EDM – Electricidade de Moçambique (HQ Maputo)", "ENH – Empresa Nacional de Hidrocarbonetos"],
+        },
+        {
+          province: "Cabo Delgado",
+          employers: ["TotalEnergies Mozambique LNG (Palma)", "Eni – Coral FLNG (offshore)"],
+        },
+        {
+          province: "Sul (Inhambane / Maputo)",
+          employers: ["Sasol (gás natural, Temane)", "CMC di Ravenna (infra-estrutura energética)"],
+        },
+        {
+          province: "Vários",
+          employers: [
+            "Empreiteiros de construção civil (energias renováveis)",
+            "Empresas de instalação solar (sector em crescimento)",
+          ],
+        },
+      ],
+      programmeSubtitleSuffix:
+        "Os programas abrangem os campos profissionais de Engenharia e Produção Industrial (EPI) e Indústria Extractiva (EXT).",
+      considerations: [
+        {
+          title: "Corredor de GNL de Cabo Delgado",
+          body: "O GNL cria uma procura pico de técnicos de gás e electricidade industrial em Pemba e arredores. Os trabalhadores com certificados de Operador de Planta de Processamento de Gás têm fortes perspectivas de carreira, mas a oferta formativa é ainda escassa fora de Pemba.",
+        },
+        {
+          title: "Expansão do solar e das renováveis",
+          body: "A Estratégia Nacional de Energia (ENDE 2025–2044) prevê uma expansão significativa das energias renováveis. Os técnicos de instalação fotovoltaica e de energias renováveis estão entre as ocupações emergentes mais procuradas.",
+        },
+        {
+          title: "Progressão na carreira",
+          body: "As carreiras em energia vão de cursos curtos de instalação eléctrica (Nível II) a programas de Técnico Superior de 2,5–3 anos (Nível V). Os cursos industriais de ETP oferecem os salários mais elevados de todas as áreas de formação — com uma taxa de emprego de 70% aos 4–5 anos.",
+        },
+        {
+          title: "Lacuna de género e trabalhadores estrangeiros",
+          body: "A ENDE 2025–2044 estabelece uma meta de 40% de mulheres nas áreas de formação prioritárias. Os trabalhadores estrangeiros no sector extractivo aumentaram 31,8% no T3 2025, o que indica escassez de competências locais que a formação ETP pode colmatar.",
+        },
+      ],
+      sources:
+        "Fontes: Catálogo Nacional de Qualificações Profissionais – CNQP (ANEP, Dezembro 2025) · Boletim Informativo do Mercado do Trabalho – III Trimestre 2025 (MTGAS/DNOMT, 2025) · Decreto n.º 61/2022 – Quadro Nacional de Qualificações (Conselho de Ministros, 2022) · Informação para IA – Contexto do Sistema ETP (ANEP, 2025) · Directora Alexandrina Registry (ANEP, 2025) · Crescimento Inclusivo em Moçambique – Transição da Escola para o Trabalho (2024) · Diagnóstico das Necessidades de Formação Alinhadas à Demanda do Empregador – Draft (Vision Solution, Fevereiro 2026)",
+    },
+  },
+};
+
+/**
+ * Returns the static data for a pathway, preferring a locale-specific override when available.
+ * Falls back to the default (English/Zambia) data.
+ */
+export const getSectorData = (documentId: string, locale: string): SectorStaticData | undefined =>
+  SECTOR_DATA_BY_LOCALE[locale]?.[documentId] ?? SECTOR_DATA[documentId];
 
 export default SECTOR_DATA;

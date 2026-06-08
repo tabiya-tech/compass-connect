@@ -53,12 +53,12 @@ interface CtaCardProps {
   titleTailColor: string;
   descriptionColor: string;
   filledButton?: {
-    color: "primary" | "brandAction";
+    color: "primary" | "secondary";
     bgColor: string;
     textColor: string;
   };
   outlinedButton?: {
-    color: "brandAction" | "secondary";
+    color: "primary" | "secondary" | "tertiary" | "neutral" | "accent";
   };
 }
 
@@ -156,9 +156,10 @@ const HomeCtaGrid: React.FC = () => {
     });
   };
 
-  const profileCardBg = theme.palette.primary.main;
+  const profileCardBg = theme.palette.secondary.main;
   const profileCardText = theme.palette.common.white;
-  const pathwaysCardBg = theme.palette.brandAction.main;
+  const pathwaysCardBg = theme.palette.primary.main;
+  const jobMatchesBg = theme.palette.quaternary.main;
 
   return (
     <Box sx={{ display: "flex", width: "100%" }}>
@@ -167,6 +168,7 @@ const HomeCtaGrid: React.FC = () => {
         sx={{
           flex: 1,
           backgroundColor: profileCardBg,
+          marginRight: -2,
           display: { xs: "none", md: "block" },
         }}
       />
@@ -195,9 +197,9 @@ const HomeCtaGrid: React.FC = () => {
             titleTailColor={alpha(profileCardText, 0.8)}
             descriptionColor={profileCardText}
             filledButton={{
-              color: "primary",
-              bgColor: theme.palette.common.cream,
-              textColor: profileCardBg,
+              color: "secondary",
+              bgColor: theme.palette.tertiary.main,
+              textColor: theme.palette.tertiary.contrastText,
             }}
           />
 
@@ -216,9 +218,9 @@ const HomeCtaGrid: React.FC = () => {
             titleTailColor={alpha(theme.palette.common.white, 0.8)}
             descriptionColor={theme.palette.common.white}
             filledButton={{
-              color: "brandAction",
-              bgColor: theme.palette.common.cream,
-              textColor: pathwaysCardBg,
+              color: "primary",
+              bgColor: theme.palette.tertiary.main,
+              textColor: theme.palette.tertiary.contrastText,
             }}
           />
 
@@ -232,12 +234,12 @@ const HomeCtaGrid: React.FC = () => {
               go(routerPaths.JOB_MATCHING);
             }}
             isLoading={loadingCta === "jobs"}
-            backgroundColor={theme.palette.common.cream}
-            titleLeadColor={theme.palette.secondary.main}
-            titleTailColor={theme.palette.secondary.main}
+            backgroundColor={jobMatchesBg}
+            titleLeadColor={theme.palette.neutral.main}
+            titleTailColor={theme.palette.neutral.main}
             descriptionColor={theme.palette.text.primary}
             outlinedButton={{
-              color: "secondary",
+              color: "neutral",
             }}
           />
         </Grid>
@@ -247,7 +249,8 @@ const HomeCtaGrid: React.FC = () => {
       <Box
         sx={{
           flex: 1,
-          backgroundColor: theme.palette.common.cream,
+          backgroundColor: jobMatchesBg,
+          marginLeft: -2,
           display: { xs: "none", md: "block" },
         }}
       />

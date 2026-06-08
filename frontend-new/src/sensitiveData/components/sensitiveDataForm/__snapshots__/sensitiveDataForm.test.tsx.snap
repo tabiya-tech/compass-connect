@@ -15,14 +15,14 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
         class="MuiBox-root css-0"
       >
         <h1
-          class="MuiTypography-root MuiTypography-h1 MuiTypography-gutterBottom css-1lre3s8-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h1 MuiTypography-gutterBottom css-hkkmtv-MuiTypography-root"
         >
           Provide Your Information
         </h1>
         <p
-          class="MuiTypography-root MuiTypography-body2 css-1sldguw-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body2 css-1kjd8gp-MuiTypography-root"
         >
-          We use your data to personalize your experience and may contact you about {{appName}}.
+          We use your data to personalize your experience and may contact you about mockProduct.
            You can skip this step.
         </p>
       </div>
@@ -36,7 +36,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
             class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-iqf2tr-MuiFormControl-root-MuiTextField-root"
           >
             <label
-              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-utjiy8-MuiFormLabel-root-MuiInputLabel-root"
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-qxupq8-MuiFormLabel-root-MuiInputLabel-root"
               data-shrink="false"
               for=":r2:"
               id=":r2:-label"
@@ -51,7 +51,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
               </span>
             </label>
             <div
-              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-rdckqg-MuiInputBase-root-MuiOutlinedInput-root"
+              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-8xfsmf-MuiInputBase-root-MuiOutlinedInput-root"
             >
               <input
                 aria-invalid="false"
@@ -82,7 +82,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
             class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-iqf2tr-MuiFormControl-root-MuiTextField-root"
           >
             <label
-              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-utjiy8-MuiFormLabel-root-MuiInputLabel-root"
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-qxupq8-MuiFormLabel-root-MuiInputLabel-root"
               data-shrink="false"
               for=":r3:"
               id=":r3:-label"
@@ -97,7 +97,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
               </span>
             </label>
             <div
-              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-rdckqg-MuiInputBase-root-MuiOutlinedInput-root"
+              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-8xfsmf-MuiInputBase-root-MuiOutlinedInput-root"
             >
               <input
                 aria-invalid="false"
@@ -131,7 +131,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
               class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-iqf2tr-MuiFormControl-root-MuiTextField-root"
             >
               <label
-                class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-utjiy8-MuiFormLabel-root-MuiInputLabel-root"
+                class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-qxupq8-MuiFormLabel-root-MuiInputLabel-root"
                 data-shrink="false"
                 for=":r4:"
                 id=":r4:-label"
@@ -146,7 +146,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
                 </span>
               </label>
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-tyiq0s-MuiInputBase-root-MuiOutlinedInput-root"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-2i5eih-MuiInputBase-root-MuiOutlinedInput-root"
               >
                 <input
                   aria-autocomplete="list"
@@ -212,7 +212,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
               class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-iqf2tr-MuiFormControl-root-MuiTextField-root"
             >
               <label
-                class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-utjiy8-MuiFormLabel-root-MuiInputLabel-root"
+                class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-qxupq8-MuiFormLabel-root-MuiInputLabel-root"
                 data-shrink="false"
                 for=":r7:"
                 id=":r7:-label"
@@ -227,7 +227,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
                 </span>
               </label>
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-tyiq0s-MuiInputBase-root-MuiOutlinedInput-root"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-2i5eih-MuiInputBase-root-MuiOutlinedInput-root"
               >
                 <input
                   aria-autocomplete="list"
@@ -290,7 +290,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
             class="MuiFormControl-root MuiFormControl-fullWidth css-11rpdry-MuiFormControl-root"
           >
             <label
-              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-utjiy8-MuiFormLabel-root-MuiInputLabel-root"
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-qxupq8-MuiFormLabel-root-MuiInputLabel-root"
               data-shrink="false"
               id="school-year-label"
             >
@@ -304,7 +304,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
               </span>
             </label>
             <div
-              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiSelect-root css-1kjolvi-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
+              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiSelect-root css-1d5jv9x-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root"
             >
               <div
                 aria-expanded="false"
@@ -370,7 +370,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
             Skip
           </a>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-52k4rr-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-6gfnbp-MuiButtonBase-root-MuiButton-root"
             data-testid="sensitive-data-form-button-ab02918f-d559-47ba-9662-ea6b3a3606d1"
             disabled=""
             tabindex="-1"
@@ -378,7 +378,7 @@ exports[`Sensitive Data Form Rendering static fields should render First Name, L
           >
             Start conversation
             <div
-              class="MuiBox-root css-f2dt27"
+              class="MuiBox-root css-16aoagw"
             >
               <svg
                 aria-hidden="true"

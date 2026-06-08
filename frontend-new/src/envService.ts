@@ -29,15 +29,18 @@ export enum EnvVariables {
   FRONTEND_META_DESCRIPTION = "FRONTEND_META_DESCRIPTION",
   FRONTEND_SEO = "FRONTEND_SEO",
   FRONTEND_LOGO_URL = "FRONTEND_LOGO_URL",
+  FRONTEND_MINISTRY_URL = "FRONTEND_MINISTRY_URL",
   FRONTEND_DARK_LOGO_URL = "FRONTEND_DARK_LOGO_URL",
   FRONTEND_FAVICON_URL = "FRONTEND_FAVICON_URL",
   FRONTEND_APP_ICON_URL = "FRONTEND_APP_ICON_URL",
+  FRONTEND_CHAT_AVATAR_URL = "FRONTEND_CHAT_AVATAR_URL",
   FRONTEND_THEME_CSS_VARIABLES = "FRONTEND_THEME_CSS_VARIABLES",
   FRONTEND_SKILLS_REPORT_OUTPUT_CONFIG = "FRONTEND_SKILLS_REPORT_OUTPUT_CONFIG",
   FRONTEND_GTM_CONTAINER_ID = "FRONTEND_GTM_CONTAINER_ID",
   FRONTEND_GTM_ENABLED = "FRONTEND_GTM_ENABLED",
   FRONTEND_FAQ_TUTORIAL_VIDEO_URL = "FRONTEND_FAQ_TUTORIAL_VIDEO_URL",
   FRONTEND_LEGAL_DOCUMENTS = "FRONTEND_LEGAL_DOCUMENTS",
+  FRONTEND_ILLUSTRATIONS = "FRONTEND_ILLUSTRATIONS",
 }
 
 export const requiredEnvVariables = [
@@ -216,7 +219,7 @@ export const getProductName = () => {
   const envAppName = getEnv(EnvVariables.GLOBAL_PRODUCT_NAME);
   if (!envAppName) {
     console.warn("Product name not set, keeping the default");
-    return "Compass";
+    return "Njila";
   }
 
   return envAppName;
@@ -240,11 +243,52 @@ export const getLegalDocumentsEnvVar = () => getEnv(EnvVariables.FRONTEND_LEGAL_
 
 export const getLogoUrl = () => getEnv(EnvVariables.FRONTEND_LOGO_URL);
 
+export const DEFAULT_MINISTRY_URL = "/ministry-tech.png";
+
+export const getMinistryUrl = () => getEnv(EnvVariables.FRONTEND_MINISTRY_URL) || DEFAULT_MINISTRY_URL;
+
 export const getDarkLogoUrl = () => getEnv(EnvVariables.FRONTEND_DARK_LOGO_URL);
 
 export const getFaviconUrl = () => getEnv(EnvVariables.FRONTEND_FAVICON_URL);
 
 export const getAppIconUrl = () => getEnv(EnvVariables.FRONTEND_APP_ICON_URL);
+
+export const getChatAvatarUrl = () => getEnv(EnvVariables.FRONTEND_CHAT_AVATAR_URL);
+
+export interface IllustrationUrls {
+  loginHero: string;
+  loginFeature1: string;
+  loginFeature2: string;
+  loginFeature3: string;
+  homeHero: string;
+  careerReadinessHero: string;
+  authShapesBackground: string;
+  dashboardShapesBackground?: string;
+}
+
+export const DEFAULT_ILLUSTRATION_URLS: IllustrationUrls = {
+  loginHero: "/climber.svg",
+  loginFeature1: "/conversation.svg",
+  loginFeature2: "/resume.svg",
+  loginFeature3: "/runner.svg",
+  homeHero: "/path.svg",
+  careerReadinessHero: "/thinkers.svg",
+  authShapesBackground: "/Shapes.svg",
+};
+
+export const getIllustrationUrls = (): IllustrationUrls => {
+  const jsonString = getEnv(EnvVariables.FRONTEND_ILLUSTRATIONS);
+  if (!jsonString) {
+    return DEFAULT_ILLUSTRATION_URLS;
+  }
+  try {
+    const parsed = JSON.parse(jsonString) as Partial<IllustrationUrls>;
+    return { ...DEFAULT_ILLUSTRATION_URLS, ...parsed };
+  } catch (e) {
+    console.error(new EnvError("Error parsing FRONTEND_ILLUSTRATIONS JSON", e));
+    return DEFAULT_ILLUSTRATION_URLS;
+  }
+};
 
 export interface ThemeCssVariables {
   "brand-primary"?: string;
@@ -255,9 +299,37 @@ export interface ThemeCssVariables {
   "brand-secondary-light"?: string;
   "brand-secondary-dark"?: string;
   "brand-secondary-contrast-text"?: string;
+  "brand-tertiary"?: string;
+  "brand-tertiary-light"?: string;
+  "brand-tertiary-dark"?: string;
+  "brand-tertiary-contrast-text"?: string;
+  "brand-accent"?: string;
+  "brand-accent-light"?: string;
+  "brand-accent-dark"?: string;
+  "brand-accent-contrast-text"?: string;
+  "brand-quaternary"?: string;
+  "brand-quaternary-light"?: string;
+  "brand-quaternary-dark"?: string;
+  "brand-quaternary-contrast-text"?: string;
+  "brand-neutral"?: string;
+  "brand-neutral-light"?: string;
+  "brand-neutral-dark"?: string;
+  "brand-neutral-contrast-text"?: string;
+  "brand-highlight"?: string;
+  "brand-highlight-light"?: string;
+  "brand-highlight-dark"?: string;
+  "brand-highlight-contrast-text"?: string;
+  "nav-main-background"?: string;
+  "nav-main-text"?: string;
+  "page-background"?: string;
+  "page-background-light"?: string;
+  "page-background-dark"?: string;
+  "page-background-contrast-text"?: string;
   "text-primary"?: string;
   "text-secondary"?: string;
   "text-accent"?: string;
+  "font-heading"?: string;
+  "font-body"?: string;
 }
 
 export const getThemeCssVariables = (): ThemeCssVariables => {

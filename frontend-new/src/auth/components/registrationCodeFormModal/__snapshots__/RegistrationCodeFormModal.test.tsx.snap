@@ -22,7 +22,7 @@ exports[`RegistrationCodeFormModal renders correctly when modal is shown and cal
     tabindex="-1"
   >
     <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeMedium css-bz8oxb-MuiButtonBase-root-MuiIconButton-root"
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-1tx9fg4-MuiButtonBase-root-MuiIconButton-root"
       data-testid="invitation-code-close-icon-f782907a-6904-482c-b148-3c6682bf7b54"
       tabindex="0"
       title="Close registration code form"
@@ -41,13 +41,13 @@ exports[`RegistrationCodeFormModal renders correctly when modal is shown and cal
       </svg>
     </button>
     <h4
-      class="MuiTypography-root MuiTypography-h4 css-5bx0bc-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-h4 css-biwz0a-MuiTypography-root"
       data-testid="invitation-code-modal-title-f782907a-6904-482c-b148-3c6682bf7b54"
     >
       Registration code
     </h4>
     <p
-      class="MuiTypography-root MuiTypography-body2 css-1sldguw-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-body2 css-1kjd8gp-MuiTypography-root"
       data-testid="invitation-code-modal-subtitle-f782907a-6904-482c-b148-3c6682bf7b54"
     >
       Enter your registration code
@@ -56,7 +56,7 @@ exports[`RegistrationCodeFormModal renders correctly when modal is shown and cal
       class="MuiFormControl-root MuiFormControl-marginNormal MuiFormControl-fullWidth MuiTextField-root css-1x3w0b7-MuiFormControl-root-MuiTextField-root"
     >
       <label
-        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-utjiy8-MuiFormLabel-root-MuiInputLabel-root"
+        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-required MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined css-qxupq8-MuiFormLabel-root-MuiInputLabel-root"
         data-shrink="false"
         for=":r2:"
         id=":r2:-label"
@@ -71,7 +71,7 @@ exports[`RegistrationCodeFormModal renders correctly when modal is shown and cal
         </span>
       </label>
       <div
-        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-rdckqg-MuiInputBase-root-MuiOutlinedInput-root"
+        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-8xfsmf-MuiInputBase-root-MuiOutlinedInput-root"
       >
         <input
           aria-invalid="false"
@@ -100,7 +100,7 @@ exports[`RegistrationCodeFormModal renders correctly when modal is shown and cal
       </div>
     </div>
     <button
-      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation MuiButton-fullWidth Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation MuiButton-fullWidth css-1dobt1y-MuiButtonBase-root-MuiButton-root"
+      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-fullWidth Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-fullWidth css-1ucp07z-MuiButtonBase-root-MuiButton-root"
       data-testid="invitation-code-submit-button-f782907a-6904-482c-b148-3c6682bf7b54"
       disabled=""
       tabindex="-1"
@@ -109,7 +109,7 @@ exports[`RegistrationCodeFormModal renders correctly when modal is shown and cal
       Submit
     </button>
     <span
-      class="MuiTypography-root MuiTypography-caption css-sy7dkz-MuiTypography-root"
+      class="MuiTypography-root MuiTypography-caption css-9bpare-MuiTypography-root"
     >
       Don't have a registration code?
        

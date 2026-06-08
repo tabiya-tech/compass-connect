@@ -7,7 +7,7 @@ exports[`AddSkillsDrawer should render component successfully 1`] = `
   style="webkit-transform: none; transform: none; webkit-transition: -webkit-transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms; transition: transform 225ms cubic-bezier(0.0, 0, 0.2, 1) 0ms;"
 >
   <div
-    class="MuiBox-root css-12hjs59"
+    class="MuiBox-root css-6rkihu"
   >
     <div
       class="MuiBox-root css-1821gv5"
@@ -16,7 +16,7 @@ exports[`AddSkillsDrawer should render component successfully 1`] = `
         class="MuiBox-root css-axw7ok"
       >
         <h5
-          class="MuiTypography-root MuiTypography-h5 css-1qy0vqe-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h5 css-12hhh1k-MuiTypography-root"
           data-testid="skills-drawer-title-82681361-b582-4dc3-8129-63f3f0f66eee"
         >
           Select Skills
@@ -43,17 +43,17 @@ exports[`AddSkillsDrawer should render component successfully 1`] = `
         </button>
       </div>
       <p
-        class="MuiTypography-root MuiTypography-body2 css-1j9lmhu-MuiTypography-root"
+        class="MuiTypography-root MuiTypography-body2 css-p7yadv-MuiTypography-root"
         data-testid="skills-drawer-subtitle-82681361-b582-4dc3-8129-63f3f0f66eee"
       >
-        These are additional top skills identified by Njila based on your experience.
+        These are additional top skills identified by mockProduct based on your experience.
       </p>
     </div>
     <div
       class="MuiBox-root css-knb1ux"
     >
       <div
-        class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault css-1t8u09c-MuiButtonBase-root-MuiChip-root"
+        class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault css-uxsp3n-MuiButtonBase-root-MuiChip-root"
         data-testid="skills-drawer-item-82681361-b582-4dc3-8129-63f3f0f66eee"
         role="button"
         tabindex="0"
@@ -80,7 +80,7 @@ exports[`AddSkillsDrawer should render component successfully 1`] = `
               </svg>
             </div>
             <p
-              class="MuiTypography-root MuiTypography-body1 css-1bi84dc-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 css-1x4stuw-MuiTypography-root"
             >
               Management
             </p>
@@ -88,7 +88,7 @@ exports[`AddSkillsDrawer should render component successfully 1`] = `
         </span>
       </div>
       <div
-        class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault css-1t8u09c-MuiButtonBase-root-MuiChip-root"
+        class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault css-uxsp3n-MuiButtonBase-root-MuiChip-root"
         data-testid="skills-drawer-item-82681361-b582-4dc3-8129-63f3f0f66eee"
         role="button"
         tabindex="0"
@@ -115,7 +115,7 @@ exports[`AddSkillsDrawer should render component successfully 1`] = `
               </svg>
             </div>
             <p
-              class="MuiTypography-root MuiTypography-body1 css-1bi84dc-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 css-1x4stuw-MuiTypography-root"
             >
               Communication
             </p>
@@ -128,14 +128,13 @@ exports[`AddSkillsDrawer should render component successfully 1`] = `
     class="MuiBox-root css-ly9aqk"
   >
     <hr
-      class="MuiDivider-root MuiDivider-fullWidth css-q0cs3r-MuiDivider-root"
-      color="primary"
+      class="MuiDivider-root MuiDivider-fullWidth css-14ga047-MuiDivider-root"
     />
     <div
       class="MuiBox-root css-ebbk9p"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-mcyfwo-MuiButtonBase-root-MuiButton-root"
+        class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedSecondary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation MuiButton-root MuiButton-outlined MuiButton-outlinedSecondary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-3drodq-MuiButtonBase-root-MuiButton-root"
         data-testid="skills-drawer-cancel-button-82681361-b582-4dc3-8129-63f3f0f66eee"
         tabindex="0"
         type="button"
@@ -143,7 +142,7 @@ exports[`AddSkillsDrawer should render component successfully 1`] = `
         Cancel
       </button>
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary MuiButton-disableElevation css-x7x9b9-MuiButtonBase-root-MuiButton-root"
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-disableElevation css-q0kl0n-MuiButtonBase-root-MuiButton-root"
         data-testid="skills-drawer-ok-button-82681361-b582-4dc3-8129-63f3f0f66eee"
         disabled=""
         tabindex="-1"

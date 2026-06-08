@@ -13,11 +13,11 @@ exports[`StepsComponent should render component successfully 1`] = `
       data-testid="checkbox-with-textarea-form-control-989402f0-9fda-4400-958c-2d6c7bce9821"
     >
       <legend
-        class="MuiFormLabel-root MuiFormLabel-colorPrimary css-r4s1mn-MuiFormLabel-root"
+        class="MuiFormLabel-root MuiFormLabel-colorPrimary css-1nu1x3u-MuiFormLabel-root"
         data-testid="checkbox-with-textarea-form-label-989402f0-9fda-4400-958c-2d6c7bce9821"
       >
         <p
-          class="MuiTypography-root MuiTypography-body1 css-15m3obd-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-p04nki-MuiTypography-root"
           data-testid="question-text-bf2b8e40-5a77-4eac-a0ea-ba8af97a5d67"
         >
           Select options
@@ -30,7 +30,7 @@ exports[`StepsComponent should render component successfully 1`] = `
           class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-1t8zf5u-MuiFormControlLabel-root"
         >
           <span
-            class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-ayfl4m-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
+            class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorSecondary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorSecondary MuiCheckbox-sizeMedium css-14e759d-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
             data-testid="checkbox-with-textarea-checkbox-option-989402f0-9fda-4400-958c-2d6c7bce9821"
           >
             <input
@@ -52,7 +52,7 @@ exports[`StepsComponent should render component successfully 1`] = `
             </svg>
           </span>
           <span
-            class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-id7iv4-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-1ta2uh2-MuiTypography-root"
           >
             option1
           </span>
@@ -61,7 +61,7 @@ exports[`StepsComponent should render component successfully 1`] = `
           class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-1t8zf5u-MuiFormControlLabel-root"
         >
           <span
-            class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-ayfl4m-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
+            class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorSecondary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorSecondary MuiCheckbox-sizeMedium css-14e759d-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
             data-testid="checkbox-with-textarea-checkbox-option-989402f0-9fda-4400-958c-2d6c7bce9821"
           >
             <input
@@ -82,7 +82,7 @@ exports[`StepsComponent should render component successfully 1`] = `
             </svg>
           </span>
           <span
-            class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-id7iv4-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-1ta2uh2-MuiTypography-root"
           >
             option2
           </span>
@@ -92,7 +92,7 @@ exports[`StepsComponent should render component successfully 1`] = `
         class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-iqf2tr-MuiFormControl-root-MuiTextField-root"
       >
         <div
-          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-multiline css-11urx56-MuiInputBase-root-MuiOutlinedInput-root"
+          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-multiline css-qydyph-MuiInputBase-root-MuiOutlinedInput-root"
         >
           <textarea
             aria-invalid="false"
@@ -139,7 +139,7 @@ exports[`StepsComponent should render component successfully 1`] = `
         class="MuiBox-root css-ota23g"
       >
         <p
-          class="MuiTypography-root MuiTypography-body1 css-15m3obd-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-p04nki-MuiTypography-root"
           data-testid="question-text-bf2b8e40-5a77-4eac-a0ea-ba8af97a5d67"
         >
           Rate this
@@ -148,7 +148,7 @@ exports[`StepsComponent should render component successfully 1`] = `
           class="MuiBox-root css-a0ovpn"
         >
           <span
-            class="MuiRating-root MuiRating-sizeSmall css-5zcknv-MuiRating-root"
+            class="MuiRating-root MuiRating-sizeSmall css-11zzyli-MuiRating-root"
             data-testid="custom-rating-field-7bb1da6e-bd0f-4edf-bbbb-ff7ade168944"
           >
             <label
@@ -343,13 +343,13 @@ exports[`StepsComponent should render component successfully 1`] = `
             class="MuiBox-root css-s83orl"
           >
             <p
-              class="MuiTypography-root MuiTypography-body2 css-198aa2-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body2 css-1ni6uo-MuiTypography-root"
               data-testid="custom-rating-low-label-7bb1da6e-bd0f-4edf-bbbb-ff7ade168944"
             >
               Low
             </p>
             <p
-              class="MuiTypography-root MuiTypography-body2 css-198aa2-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body2 css-1ni6uo-MuiTypography-root"
               data-testid="custom-rating-high-label-7bb1da6e-bd0f-4edf-bbbb-ff7ade168944"
             >
               High
@@ -367,11 +367,11 @@ exports[`StepsComponent should render component successfully 1`] = `
       data-testid="yes-no-question-form-control-9803f91b-499a-41b3-9348-795de9e399a9"
     >
       <legend
-        class="MuiFormLabel-root MuiFormLabel-colorPrimary css-r4s1mn-MuiFormLabel-root"
+        class="MuiFormLabel-root MuiFormLabel-colorPrimary css-1nu1x3u-MuiFormLabel-root"
         data-testid="yes-no-question-form-label-9803f91b-499a-41b3-9348-795de9e399a9"
       >
         <p
-          class="MuiTypography-root MuiTypography-body1 css-15m3obd-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-p04nki-MuiTypography-root"
           data-testid="question-text-bf2b8e40-5a77-4eac-a0ea-ba8af97a5d67"
         >
           Yes or No?
@@ -387,7 +387,7 @@ exports[`StepsComponent should render component successfully 1`] = `
           data-testid="yes-no-question-radio-no-9803f91b-499a-41b3-9348-795de9e399a9"
         >
           <span
-            class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root MuiRadio-root MuiRadio-colorPrimary MuiRadio-root MuiRadio-colorPrimary css-1fzmqjb-MuiButtonBase-root-MuiSwitchBase-root-MuiRadio-root"
+            class="MuiButtonBase-root MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary MuiRadio-root MuiRadio-colorSecondary css-19hgwe4-MuiButtonBase-root-MuiSwitchBase-root-MuiRadio-root"
           >
             <input
               class="PrivateSwitchBase-input css-12xagqm-MuiSwitchBase-root"
@@ -423,7 +423,7 @@ exports[`StepsComponent should render component successfully 1`] = `
             </span>
           </span>
           <span
-            class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-id7iv4-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-1ta2uh2-MuiTypography-root"
           >
             No
           </span>
@@ -433,7 +433,7 @@ exports[`StepsComponent should render component successfully 1`] = `
           data-testid="yes-no-question-radio-yes-9803f91b-499a-41b3-9348-795de9e399a9"
         >
           <span
-            class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root MuiRadio-root MuiRadio-colorPrimary Mui-checked MuiRadio-root MuiRadio-colorPrimary css-1fzmqjb-MuiButtonBase-root-MuiSwitchBase-root-MuiRadio-root"
+            class="MuiButtonBase-root MuiRadio-root MuiRadio-colorSecondary PrivateSwitchBase-root MuiRadio-root MuiRadio-colorSecondary Mui-checked MuiRadio-root MuiRadio-colorSecondary css-19hgwe4-MuiButtonBase-root-MuiSwitchBase-root-MuiRadio-root"
           >
             <input
               checked=""
@@ -470,7 +470,7 @@ exports[`StepsComponent should render component successfully 1`] = `
             </span>
           </span>
           <span
-            class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-id7iv4-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label css-1ta2uh2-MuiTypography-root"
           >
             Yes
           </span>
@@ -480,7 +480,7 @@ exports[`StepsComponent should render component successfully 1`] = `
         class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-iqf2tr-MuiFormControl-root-MuiTextField-root"
       >
         <div
-          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-11urx56-MuiInputBase-root-MuiOutlinedInput-root"
+          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-multiline css-qydyph-MuiInputBase-root-MuiOutlinedInput-root"
         >
           <textarea
             aria-invalid="false"

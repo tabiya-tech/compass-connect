@@ -40,11 +40,12 @@ describe("Chat Utils", () => {
       const givenSentAt = new Date().toISOString();
       // AND a fill color
       const givenFillColor = "primary";
+      const textColor = "primary";
       // AND nanoid returns a specific value
       (nanoid as jest.Mock).mockReturnValue("foo-nanoid");
 
       // WHEN generating a user message
-      const result = generateUserMessage(givenMessage, givenSentAt, givenFillColor);
+      const result = generateUserMessage(givenMessage, givenSentAt, givenFillColor, textColor);
 
       // THEN expect the message to have the correct structure
       expect(result).toEqual({
@@ -55,6 +56,7 @@ describe("Chat Utils", () => {
           message: givenMessage,
           sent_at: givenSentAt,
           fill_color: givenFillColor,
+          text_color: textColor,
         },
         component: expect.any(Function),
       });
@@ -79,7 +81,7 @@ describe("Chat Utils", () => {
       const givenMessageId = "specific-id";
 
       // WHEN generating a user message with a specific ID
-      const result = generateUserMessage(givenMessage, givenSentAt, givenFillColor, givenMessageId);
+      const result = generateUserMessage(givenMessage, givenSentAt, givenFillColor, givenFillColor, givenMessageId);
 
       // THEN expect the message to have the correct structure
       expect(result).toEqual({
@@ -90,6 +92,7 @@ describe("Chat Utils", () => {
           message: givenMessage,
           sent_at: givenSentAt,
           fill_color: givenFillColor,
+          text_color: givenFillColor,
         },
         component: expect.any(Function),
       });

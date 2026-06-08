@@ -35,7 +35,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
           class="MuiBox-root css-1821gv5"
         >
           <h4
-            class="MuiTypography-root MuiTypography-h4 css-1msbui-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h4 css-5x0cac-MuiTypography-root"
             data-testid="module-progress-title-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
           >
             Profile Strength
@@ -52,7 +52,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                 class="MuiBox-root css-0"
               >
                 <h5
-                  class="MuiTypography-root MuiTypography-h5 css-1jkqkm3-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-h5 css-u2godh-MuiTypography-root"
                 >
                   0
                   %
@@ -62,7 +62,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   aria-valuemax="100"
                   aria-valuemin="0"
                   aria-valuenow="0"
-                  class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-pegw78-MuiLinearProgress-root"
+                  class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-15cohze-MuiLinearProgress-root"
                   data-testid="module-progress-0-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
                   role="progressbar"
                 >
@@ -79,7 +79,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-1a1vzpo"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-18ni0in-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
                     Education Skills
                   </p>
@@ -88,7 +88,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
-                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-11t7bkz-MuiLinearProgress-root"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
                     role="progressbar"
                   >
                     <span
@@ -97,7 +97,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-lmop9j-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
                   >
                     0
                     %
@@ -107,7 +107,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-1a1vzpo"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-18ni0in-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
                     Work & Other Skills
                   </p>
@@ -116,7 +116,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
-                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-11t7bkz-MuiLinearProgress-root"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
                     role="progressbar"
                   >
                     <span
@@ -125,7 +125,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-lmop9j-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
                   >
                     0
                     %
@@ -161,13 +161,13 @@ exports[`Profile Component Rendering should render all profile sections with cor
             class="MuiBox-root css-h9yv4t"
           >
             <h4
-              class="MuiTypography-root MuiTypography-h4 css-1msbui-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h4 css-5x0cac-MuiTypography-root"
               data-testid="career-explorer-title-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
             >
               Career Pathways
             </h4>
             <button
-              class="MuiTypography-root MuiTypography-body2 css-1cn72rn-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body2 css-8ggys1-MuiTypography-root"
               type="button"
             >
               Browse all →
@@ -186,10 +186,10 @@ exports[`Profile Component Rendering should render all profile sections with cor
                 data-testid="career-explorer-sector-0-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
               >
                 <div
-                  class="MuiBox-root css-pn0rw6"
+                  class="MuiBox-root css-db0ss1"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     ⛏️
                   </p>
@@ -198,12 +198,12 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Mining
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Underground extraction, safety, equipment operation
                   </span>
@@ -233,7 +233,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-1xg2n7c"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     ⚡️
                   </p>
@@ -242,12 +242,12 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Energy
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Power generation, solar, grid maintenance
                   </span>
@@ -277,7 +277,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-19xvcpf"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     🌾
                   </p>
@@ -286,12 +286,12 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Agriculture
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Farming, food processing, agribusiness
                   </span>
@@ -318,10 +318,10 @@ exports[`Profile Component Rendering should render all profile sections with cor
                 data-testid="career-explorer-sector-3-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
               >
                 <div
-                  class="MuiBox-root css-ylbmmm"
+                  class="MuiBox-root css-cjz941"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     🏞
                   </p>
@@ -330,12 +330,12 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Hospitality & Tourism
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Tourism, hotels, catering, customer service
                   </span>
@@ -362,10 +362,10 @@ exports[`Profile Component Rendering should render all profile sections with cor
                 data-testid="career-explorer-sector-4-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
               >
                 <div
-                  class="MuiBox-root css-cjz941"
+                  class="MuiBox-root css-pn0rw6"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     💧
                   </p>
@@ -374,12 +374,12 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Water & Sanitation
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Water management, sanitation, infrastructure
                   </span>
@@ -409,7 +409,7 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-1d1x81w"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     🩺
                   </p>
@@ -418,12 +418,12 @@ exports[`Profile Component Rendering should render all profile sections with cor
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Health Sciences
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Allied health, diagnostics, pharmacy, physiotherapy
                   </span>
@@ -508,7 +508,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
           class="MuiBox-root css-1821gv5"
         >
           <h4
-            class="MuiTypography-root MuiTypography-h4 css-1msbui-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h4 css-5x0cac-MuiTypography-root"
             data-testid="module-progress-title-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
           >
             Profile Strength
@@ -525,7 +525,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                 class="MuiBox-root css-0"
               >
                 <h5
-                  class="MuiTypography-root MuiTypography-h5 css-1jkqkm3-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-h5 css-u2godh-MuiTypography-root"
                 >
                   0
                   %
@@ -535,7 +535,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   aria-valuemax="100"
                   aria-valuemin="0"
                   aria-valuenow="0"
-                  class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-pegw78-MuiLinearProgress-root"
+                  class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-15cohze-MuiLinearProgress-root"
                   data-testid="module-progress-0-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
                   role="progressbar"
                 >
@@ -552,7 +552,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-1a1vzpo"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-18ni0in-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
                     Education Skills
                   </p>
@@ -561,7 +561,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
-                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-11t7bkz-MuiLinearProgress-root"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
                     role="progressbar"
                   >
                     <span
@@ -570,7 +570,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-lmop9j-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
                   >
                     0
                     %
@@ -580,7 +580,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-1a1vzpo"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-18ni0in-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
                     Work & Other Skills
                   </p>
@@ -589,7 +589,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
-                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-11t7bkz-MuiLinearProgress-root"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
                     role="progressbar"
                   >
                     <span
@@ -598,7 +598,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-lmop9j-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
                   >
                     0
                     %
@@ -634,13 +634,13 @@ exports[`Profile Component Rendering should render correctly with partial data 1
             class="MuiBox-root css-h9yv4t"
           >
             <h4
-              class="MuiTypography-root MuiTypography-h4 css-1msbui-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h4 css-5x0cac-MuiTypography-root"
               data-testid="career-explorer-title-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
             >
               Career Pathways
             </h4>
             <button
-              class="MuiTypography-root MuiTypography-body2 css-1cn72rn-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body2 css-8ggys1-MuiTypography-root"
               type="button"
             >
               Browse all →
@@ -659,10 +659,10 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                 data-testid="career-explorer-sector-0-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
               >
                 <div
-                  class="MuiBox-root css-pn0rw6"
+                  class="MuiBox-root css-db0ss1"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     ⛏️
                   </p>
@@ -671,12 +671,12 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Mining
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Underground extraction, safety, equipment operation
                   </span>
@@ -706,7 +706,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-1xg2n7c"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     ⚡️
                   </p>
@@ -715,12 +715,12 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Energy
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Power generation, solar, grid maintenance
                   </span>
@@ -750,7 +750,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-19xvcpf"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     🌾
                   </p>
@@ -759,12 +759,12 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Agriculture
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Farming, food processing, agribusiness
                   </span>
@@ -791,10 +791,10 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                 data-testid="career-explorer-sector-3-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
               >
                 <div
-                  class="MuiBox-root css-ylbmmm"
+                  class="MuiBox-root css-cjz941"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     🏞
                   </p>
@@ -803,12 +803,12 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Hospitality & Tourism
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Tourism, hotels, catering, customer service
                   </span>
@@ -835,10 +835,10 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                 data-testid="career-explorer-sector-4-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
               >
                 <div
-                  class="MuiBox-root css-cjz941"
+                  class="MuiBox-root css-pn0rw6"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     💧
                   </p>
@@ -847,12 +847,12 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Water & Sanitation
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Water management, sanitation, infrastructure
                   </span>
@@ -882,7 +882,7 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-1d1x81w"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     🩺
                   </p>
@@ -891,12 +891,12 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Health Sciences
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Allied health, diagnostics, pharmacy, physiotherapy
                   </span>
@@ -981,7 +981,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
           class="MuiBox-root css-1821gv5"
         >
           <h4
-            class="MuiTypography-root MuiTypography-h4 css-1msbui-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h4 css-5x0cac-MuiTypography-root"
             data-testid="module-progress-title-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
           >
             Profile Strength
@@ -998,7 +998,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                 class="MuiBox-root css-0"
               >
                 <h5
-                  class="MuiTypography-root MuiTypography-h5 css-1jkqkm3-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-h5 css-u2godh-MuiTypography-root"
                 >
                   0
                   %
@@ -1008,7 +1008,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   aria-valuemax="100"
                   aria-valuemin="0"
                   aria-valuenow="0"
-                  class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-pegw78-MuiLinearProgress-root"
+                  class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-15cohze-MuiLinearProgress-root"
                   data-testid="module-progress-0-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
                   role="progressbar"
                 >
@@ -1025,7 +1025,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-1a1vzpo"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-18ni0in-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
                     Education Skills
                   </p>
@@ -1034,7 +1034,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
-                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-11t7bkz-MuiLinearProgress-root"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
                     role="progressbar"
                   >
                     <span
@@ -1043,7 +1043,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-lmop9j-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
                   >
                     0
                     %
@@ -1053,7 +1053,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-1a1vzpo"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-18ni0in-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
                     Work & Other Skills
                   </p>
@@ -1062,7 +1062,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
-                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-11t7bkz-MuiLinearProgress-root"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
                     role="progressbar"
                   >
                     <span
@@ -1071,7 +1071,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-lmop9j-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
                   >
                     0
                     %
@@ -1107,13 +1107,13 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
             class="MuiBox-root css-h9yv4t"
           >
             <h4
-              class="MuiTypography-root MuiTypography-h4 css-1msbui-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h4 css-5x0cac-MuiTypography-root"
               data-testid="career-explorer-title-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
             >
               Career Pathways
             </h4>
             <button
-              class="MuiTypography-root MuiTypography-body2 css-1cn72rn-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body2 css-8ggys1-MuiTypography-root"
               type="button"
             >
               Browse all →
@@ -1132,10 +1132,10 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                 data-testid="career-explorer-sector-0-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
               >
                 <div
-                  class="MuiBox-root css-pn0rw6"
+                  class="MuiBox-root css-db0ss1"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     ⛏️
                   </p>
@@ -1144,12 +1144,12 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Mining
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Underground extraction, safety, equipment operation
                   </span>
@@ -1179,7 +1179,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-1xg2n7c"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     ⚡️
                   </p>
@@ -1188,12 +1188,12 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Energy
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Power generation, solar, grid maintenance
                   </span>
@@ -1223,7 +1223,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-19xvcpf"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     🌾
                   </p>
@@ -1232,12 +1232,12 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Agriculture
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Farming, food processing, agribusiness
                   </span>
@@ -1264,10 +1264,10 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                 data-testid="career-explorer-sector-3-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
               >
                 <div
-                  class="MuiBox-root css-ylbmmm"
+                  class="MuiBox-root css-cjz941"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     🏞
                   </p>
@@ -1276,12 +1276,12 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Hospitality & Tourism
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Tourism, hotels, catering, customer service
                   </span>
@@ -1308,10 +1308,10 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                 data-testid="career-explorer-sector-4-career-explorer-card-d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a"
               >
                 <div
-                  class="MuiBox-root css-cjz941"
+                  class="MuiBox-root css-pn0rw6"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     💧
                   </p>
@@ -1320,12 +1320,12 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Water & Sanitation
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Water management, sanitation, infrastructure
                   </span>
@@ -1355,7 +1355,7 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-1d1x81w"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-mv222k-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-m929ox-MuiTypography-root"
                   >
                     🩺
                   </p>
@@ -1364,12 +1364,12 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                   class="MuiBox-root css-1fjtzvx"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-16ilwzm-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-1ckbig1-MuiTypography-root"
                   >
                     Health Sciences
                   </p>
                   <span
-                    class="MuiTypography-root MuiTypography-caption css-1wps13e-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-caption css-1q4a8lu-MuiTypography-root"
                   >
                     Allied health, diagnostics, pharmacy, physiotherapy
                   </span>

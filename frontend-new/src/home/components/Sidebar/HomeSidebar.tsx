@@ -37,9 +37,10 @@ const HomeSidebar: React.FC<HomeSidebarProps> = ({ showViewCvButton = true }) =>
     return drawerWorkSkills.length > 0 ? drawerWorkSkills : uniqueProfileSkills;
   }, [profileData.skills, drawerWorkSkills]);
 
-  const accentColor = theme.palette.primary.main;
-  const tealBg = theme.palette.brandAccent.light;
-  const amberBg = theme.palette.common.cream;
+  const highlightBg = theme.palette.highlight.main;
+  const highlightText = theme.palette.highlight.contrastText;
+  const quaternaryBg = theme.palette.quaternary.main;
+  const quaternaryText = theme.palette.quaternary.contrastText;
 
   const handleViewCV = () => void openExperiencesDrawer();
 
@@ -49,9 +50,10 @@ const HomeSidebar: React.FC<HomeSidebarProps> = ({ showViewCvButton = true }) =>
         <SectionTitle>{t("home.sidebar.home.skillsFromWork")}</SectionTitle>
         <ChipList
           chips={workSkills}
-          chipBgColor={tealBg}
-          chipTextColor={accentColor}
-          accentColor={accentColor}
+          chipBgColor={highlightBg}
+          chipTextColor={highlightText}
+          chipBorderRadius="6px"
+          accentColor={highlightBg}
           emptyText={t("home.sidebar.home.workSkillsEmpty")}
           emptyTestId={DATA_TEST_ID.HOME_SIDEBAR_SKILLS_FROM_WORK_EMPTY}
           chipTestId={DATA_TEST_ID.HOME_SIDEBAR_SKILLS_FROM_WORK_CHIP}
@@ -62,9 +64,10 @@ const HomeSidebar: React.FC<HomeSidebarProps> = ({ showViewCvButton = true }) =>
         <SectionTitle>{t("home.sidebar.home.skillsFromTEVET")}</SectionTitle>
         <ChipList
           chips={programmeSkills}
-          chipBgColor={amberBg}
-          chipTextColor={theme.palette.common.black}
-          accentColor={accentColor}
+          chipBgColor={quaternaryBg}
+          chipTextColor={quaternaryText}
+          chipBorderRadius="6px"
+          accentColor={quaternaryBg}
           emptyText={t("home.sidebar.home.programmeSkillsEmpty")}
           emptyTestId={DATA_TEST_ID.HOME_SIDEBAR_PROGRAMME_SKILLS_EMPTY}
           chipTestId={DATA_TEST_ID.HOME_SIDEBAR_PROGRAMME_SKILLS_CHIP}
