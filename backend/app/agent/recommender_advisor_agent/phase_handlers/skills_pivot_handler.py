@@ -22,7 +22,7 @@ from app.agent.recommender_advisor_agent.llm_response_models import (
 from app.agent.recommender_advisor_agent.phase_handlers.base_handler import BasePhaseHandler
 from app.agent.recommender_advisor_agent.intent_classifier import IntentClassifier
 from app.conversation_memory.conversation_memory_manager import ConversationContext
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from app.i18n.translation_service import t
 
 
 class SkillsPivotPhaseHandler(BasePhaseHandler):
@@ -41,7 +41,7 @@ class SkillsPivotPhaseHandler(BasePhaseHandler):
 
     def __init__(
         self,
-        conversation_llm: GeminiGenerativeLLM,
+        conversation_llm_provider,
         conversation_caller: LLMCaller[ConversationResponse],
         intent_classifier: IntentClassifier = None,
         exploration_handler: 'ExplorationPhaseHandler' = None,
@@ -54,7 +54,7 @@ class SkillsPivotPhaseHandler(BasePhaseHandler):
         Initialize the skills pivot handler.
 
         Args:
-            conversation_llm: LLM for generating responses
+            conversation_llm_provider: Callable returning the conversation LLM for the current request locale
             conversation_caller: LLM caller for conversation responses
             intent_classifier: Optional intent classifier for detecting user intent
             exploration_handler: Optional exploration handler for immediate transitions
@@ -62,7 +62,7 @@ class SkillsPivotPhaseHandler(BasePhaseHandler):
             action_planning_handler: Optional action planning handler for immediate transitions
             present_handler: Optional present handler for returning to recommendations
         """
-        super().__init__(conversation_llm, conversation_caller, **kwargs)
+        super().__init__(conversation_llm_provider, conversation_caller, **kwargs)
         self._intent_classifier = intent_classifier
         self._exploration_handler = exploration_handler
         self._concerns_handler = concerns_handler
@@ -90,7 +90,7 @@ class SkillsPivotPhaseHandler(BasePhaseHandler):
         if state.recommendations is None:
             return ConversationResponse(
                 reasoning="No recommendations available for pivot",
-                message="Let me find some alternative paths for you. What kind of skills would you like to develop?",
+                message=t("messages", "recommenderAdvisor.pivotNoRecommendations"),
                 finished=False
             ), []
 
@@ -308,9 +308,7 @@ Generate a response that:
 
             return ConversationResponse(
                 reasoning=f"Skills gap analysis for '{requested_occupation}' (LLM failed - using fallback)",
-                message=f"I understand {requested_occupation} is important to you. However, there's a significant skills gap between your current experience and what {requested_occupation} typically requires. "
-                        f"Unfortunately, we don't have specific training recommendations that directly bridge this gap. "
-                        f"Would you like to reconsider the recommendations that match your current strengths?",
+                message=t("messages", "recommenderAdvisor.gapAnalysisFallback", occupation=requested_occupation),
                 finished=False
             ), all_llm_stats
 
@@ -417,7 +415,7 @@ You previously provided educational career path guidance for "{requested_occupat
 
                 return ConversationResponse(
                     reasoning=f"User chose to return to original recommendations after '{requested_occupation}' guidance",
-                    message="I understand. Let's refocus on the careers that align well with your current skills and experience. Which of the original recommendations would you like to explore more?",
+                    message=t("messages", "recommenderAdvisor.returnToOriginal"),
                     finished=False
                 ), all_llm_stats
 
@@ -625,50 +623,54 @@ Respond helpfully and contextually to the user's input. You should:
             state: Current agent state
             is_followup_to_educational_guidance: If True, user chose training path after educational guidance (use positive framing)
         """
+        header = "**" + t("messages", "recommenderAdvisor.trainingRecommendationsHeader") + "**\n"
         if is_followup_to_educational_guidance:
             # User chose to explore training path - positive framing
             parts = [
-                "Great! Here are the skill-building opportunities that could help you pursue that path:\n\n",
-                "**Training Recommendations:**\n"
+                t("messages", "recommenderAdvisor.trainingIntroPositive") + "\n\n",
+                header
             ]
         else:
             # User rejected occupations - empathetic framing
             parts = [
-                "I understand none of those career paths felt right. That's completely okay - let's approach this differently.\n\n",
-                "Looking at your interests, here are skill-building opportunities that could open up new options:\n\n",
-                "**Training Recommendations:**\n"
+                t("messages", "recommenderAdvisor.trainingIntroEmpathetic1") + "\n\n",
+                t("messages", "recommenderAdvisor.trainingIntroEmpathetic2") + "\n\n",
+                header
             ]
-        
+
         for i, trn in enumerate(trainings, 1):
             # Build header
             provider_info = f" ({trn.provider})" if trn.provider else ""
-            hours_info = f", {trn.estimated_hours} hours" if trn.estimated_hours else ""
+            hours_info = f", {trn.estimated_hours} {t('messages', 'recommenderAdvisor.labelHours')}" if trn.estimated_hours else ""
             parts.append(f"\n**{i}. {trn.training_title}**{provider_info}{hours_info}")
-            
+
             # Cost info
             if trn.cost:
-                parts.append(f"\n   - Cost: {trn.cost}")
-            
+                parts.append(f"\n   - {t('messages', 'recommenderAdvisor.labelCost')}: {trn.cost}")
+
             # Justification
             parts.append(f"\n   - {trn.justification}")
-            
+
             # What occupations it opens
             if trn.target_occupations:
                 targets = ", ".join(trn.target_occupations[:3])
-                parts.append(f"\n   - Opens doors to: {targets}")
-            
+                parts.append(f"\n   - {t('messages', 'recommenderAdvisor.labelOpensDoorsTo')}: {targets}")
+
             # Delivery mode
             if trn.delivery_mode:
-                mode_display = trn.delivery_mode.replace("_", " ").capitalize()
-                parts.append(f"\n   - Format: {mode_display}")
-            
+                mode_display = t(
+                    "messages", f"recommenderAdvisor.deliveryModes.{trn.delivery_mode}",
+                    trn.delivery_mode.replace("_", " ").capitalize()
+                )
+                parts.append(f"\n   - {t('messages', 'recommenderAdvisor.labelFormat')}: {mode_display}")
+
             # Track as presented
             if trn.uuid not in state.presented_trainings:
                 state.presented_trainings.append(trn.uuid)
-        
-        parts.append("\n\nWould building these skills make you feel more confident about career options?")
-        parts.append("\n\nOr is there something else holding you back that we should talk about?")
-        
+
+        parts.append("\n\n" + t("messages", "recommenderAdvisor.trainingConfidencePrompt"))
+        parts.append("\n\n" + t("messages", "recommenderAdvisor.trainingHoldingBack"))
+
         return "".join(parts)
     
     async def _handle_no_trainings(
@@ -680,16 +682,8 @@ Respond helpfully and contextually to the user's input. You should:
         """Handle case where no training recommendations are available."""
         
         # This often means deeper issues - explore barriers
-        message = """I understand none of those career paths felt right.
+        message = t("messages", "recommenderAdvisor.noTrainingsBarriers")
 
-Before I suggest more options, I'd like to understand what's really driving your decisions. Sometimes it's not about the careers themselves, but about other things:
-
-- **Confidence**: Feeling unsure if you can succeed?
-- **External pressures**: Family expectations, financial constraints?
-- **Clarity**: Still unsure what you actually want?
-
-What's the main thing that makes these options feel wrong for you?"""
-        
         # Move to concerns phase to explore deeper
         state.conversation_phase = ConversationPhase.ADDRESS_CONCERNS
         
@@ -725,26 +719,28 @@ What's the main thing that makes these options feel wrong for you?"""
             state.conversation_phase = ConversationPhase.ACTION_PLANNING
             return ConversationResponse(
                 reasoning="Could not find training details",
-                message="Great! Let's plan how you'll get started with that training.",
+                message=t("messages", "recommenderAdvisor.planGetStartedGeneric"),
                 finished=False
             ), []
-        
+
         # Build detailed training info and transition to action
-        message = f"""Great choice! Let me tell you more about **{training.training_title}**:
+        mode_display = t(
+            "messages", f"recommenderAdvisor.deliveryModes.{training.delivery_mode or 'online'}",
+            (training.delivery_mode or "online").replace("_", " ").capitalize()
+        )
+        targets = ', '.join(training.target_occupations[:4]) if training.target_occupations \
+            else t("messages", "recommenderAdvisor.valMultipleCareerPaths")
+        message = (
+            t("messages", "recommenderAdvisor.trainingInterestHeader", training=training.training_title) + "\n\n"
+            + f"**{t('messages', 'recommenderAdvisor.labelProvider')}:** {training.provider or t('messages', 'recommenderAdvisor.valVarious')}\n"
+            + f"**{t('messages', 'recommenderAdvisor.labelDuration')}:** {training.estimated_hours or t('messages', 'recommenderAdvisor.valVaries')} {t('messages', 'recommenderAdvisor.labelHours')}\n"
+            + f"**{t('messages', 'recommenderAdvisor.labelFormat')}:** {mode_display}\n"
+            + f"**{t('messages', 'recommenderAdvisor.labelCost')}:** {training.cost or t('messages', 'recommenderAdvisor.valContactProvider')}\n\n"
+            + f"**{t('messages', 'recommenderAdvisor.labelWhatYoullLearn')}**\n{training.justification}\n\n"
+            + f"**{t('messages', 'recommenderAdvisor.labelCareerDoors')}**\n{targets}\n\n"
+            + t("messages", "recommenderAdvisor.trainingStartPrompt")
+        )
 
-**Provider:** {training.provider or "Various"}
-**Duration:** {training.estimated_hours or "Varies"} hours
-**Format:** {(training.delivery_mode or "online").replace("_", " ").capitalize()}
-**Cost:** {training.cost or "Contact provider"}
-
-**What you'll learn:**
-{training.justification}
-
-**Career doors this opens:**
-{', '.join(training.target_occupations[:4]) if training.target_occupations else "Multiple career paths"}
-
-Would you like to start this training? I can help you take the next step."""
-        
         state.conversation_phase = ConversationPhase.ACTION_PLANNING
 
         return ConversationResponse(
@@ -793,7 +789,7 @@ Would you like to start this training? I can help you take the next step."""
         elif intent.intent == "request_outside_recommendations":
             # Delegate to base handler's method
             return await self._handle_request_outside_recommendations(
-                requested_occupation_name=intent.requested_occupation_name or "that occupation",
+                requested_occupation_name=intent.requested_occupation_name or t("messages", "recommenderAdvisor.thatOccupation"),
                 user_input=user_input,
                 state=state,
                 context=context
@@ -841,7 +837,7 @@ Would you like to start this training? I can help you take the next step."""
             # Fallback: return transition message
             return ConversationResponse(
                 reasoning=f"User committed to training '{target_training.training_title}', transitioning to ACTION_PLANNING",
-                message=f"Great! Let's plan how you'll get started with {target_training.training_title}. What's your first step?",
+                message=t("messages", "recommenderAdvisor.planGetStartedNamed", training=target_training.training_title),
                 finished=False
             ), []
         else:
@@ -849,7 +845,7 @@ Would you like to start this training? I can help you take the next step."""
             self.logger.warning("User accepted a training but couldn't identify which one")
             return ConversationResponse(
                 reasoning="User expressed commitment but training not identified",
-                message="I'm glad you're interested! Which training would you like to pursue? Let me know the name or number.",
+                message=t("messages", "recommenderAdvisor.whichTrainingPursue"),
                 finished=False
             ), []
 
@@ -873,7 +869,7 @@ Would you like to start this training? I can help you take the next step."""
         # Fallback: return transition message
         return ConversationResponse(
             reasoning="User wants to return to original occupation recommendations",
-            message="Of course! Let's look at the career recommendations again. Which one would you like to explore?",
+            message=t("messages", "recommenderAdvisor.returnLookAgain"),
             finished=False
         ), []
 
@@ -919,7 +915,7 @@ Would you like to start this training? I can help you take the next step."""
             # Fallback: just return transition message
             return ConversationResponse(
                 reasoning=f"User wants to explore {target_occ.occupation}, transitioning to EXPLORATION phase",
-                message=f"Great! Let me tell you more about {target_occ.occupation}.",
+                message=t("messages", "recommenderAdvisor.tellMeMoreAbout", occupation=target_occ.occupation),
                 finished=False
             ), []
 
@@ -949,20 +945,22 @@ Would you like to start this training? I can help you take the next step."""
         if target_training:
             # Provide detailed training information
             # Stay in SKILLS_UPGRADE_PIVOT phase (just providing more info, not committing)
-            message = f"""Here's more about **{target_training.training_title}**:
-
-**Provider:** {target_training.provider or "Various providers"}
-**Duration:** {target_training.estimated_hours or "Varies"} hours
-**Format:** {(target_training.delivery_mode or "online").replace("_", " ").capitalize()}
-**Cost:** {target_training.cost or "Contact provider for pricing"}
-
-**What you'll learn:**
-{target_training.justification}
-
-**Career doors this opens:**
-{', '.join(target_training.target_occupations[:4]) if target_training.target_occupations else "Multiple career paths"}
-
-Would you like to pursue this training, or would you like to know more about the other options?"""
+            mode_display = t(
+                "messages", f"recommenderAdvisor.deliveryModes.{target_training.delivery_mode or 'online'}",
+                (target_training.delivery_mode or "online").replace("_", " ").capitalize()
+            )
+            targets = ', '.join(target_training.target_occupations[:4]) if target_training.target_occupations \
+                else t("messages", "recommenderAdvisor.valMultipleCareerPaths")
+            message = (
+                t("messages", "recommenderAdvisor.trainingExploreHeader", training=target_training.training_title) + "\n\n"
+                + f"**{t('messages', 'recommenderAdvisor.labelProvider')}:** {target_training.provider or t('messages', 'recommenderAdvisor.valVariousProviders')}\n"
+                + f"**{t('messages', 'recommenderAdvisor.labelDuration')}:** {target_training.estimated_hours or t('messages', 'recommenderAdvisor.valVaries')} {t('messages', 'recommenderAdvisor.labelHours')}\n"
+                + f"**{t('messages', 'recommenderAdvisor.labelFormat')}:** {mode_display}\n"
+                + f"**{t('messages', 'recommenderAdvisor.labelCost')}:** {target_training.cost or t('messages', 'recommenderAdvisor.valContactProviderPricing')}\n\n"
+                + f"**{t('messages', 'recommenderAdvisor.labelWhatYoullLearn')}**\n{target_training.justification}\n\n"
+                + f"**{t('messages', 'recommenderAdvisor.labelCareerDoors')}**\n{targets}\n\n"
+                + t("messages", "recommenderAdvisor.trainingPursueOrMore")
+            )
 
             return ConversationResponse(
                 reasoning=f"Providing detailed information about {target_training.training_title}",
@@ -994,6 +992,6 @@ Would you like to pursue this training, or would you like to know more about the
         # Fallback: just return transition message
         return ConversationResponse(
             reasoning="User expressed a concern about trainings, transitioning to CONCERNS phase to address it",
-            message="I hear you. Let's talk through that concern.",
+            message=t("messages", "recommenderAdvisor.hearYouTalkConcern"),
             finished=False
         ), []

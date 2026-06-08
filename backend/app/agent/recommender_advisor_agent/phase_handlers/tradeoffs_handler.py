@@ -18,6 +18,7 @@ from app.agent.recommender_advisor_agent.phase_handlers.base_handler import Base
 from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_manager import ConversationContext
+from app.i18n.translation_service import t
 
 
 class TradeoffsPhaseHandler(BasePhaseHandler):
@@ -53,7 +54,7 @@ class TradeoffsPhaseHandler(BasePhaseHandler):
             state.conversation_phase = ConversationPhase.CAREER_EXPLORATION
             return ConversationResponse(
                 reasoning="No clear preference for tradeoff discussion",
-                message="Let me understand - which of these career paths interests you most?",
+                message=t("messages", "recommenderAdvisor.whichInterestsMost"),
                 finished=False
             ), []
 
@@ -62,7 +63,7 @@ class TradeoffsPhaseHandler(BasePhaseHandler):
             state.conversation_phase = ConversationPhase.CAREER_EXPLORATION
             return ConversationResponse(
                 reasoning="No tradeoff needed - proceeding with user's choice",
-                message=f"Great choice with **{preferred_occ.occupation}**! Let's talk about your next steps.",
+                message=t("messages", "recommenderAdvisor.greatChoiceNextSteps", occupation=preferred_occ.occupation),
                 finished=False
             ), []
 

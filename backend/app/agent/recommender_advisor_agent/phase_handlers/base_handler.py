@@ -5,7 +5,7 @@ Provides common functionality for all phase handlers.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 import logging
 
 from app.agent.agent_types import LLMStats
@@ -18,6 +18,7 @@ from app.agent.simple_llm_agent.prompt_response_template import get_json_respons
 from common_libs.llm.generative_models import GeminiGenerativeLLM
 from app.vector_search.esco_entities import OccupationEntity
 from app.vector_search.similarity_search_service import SimilaritySearchService
+from app.i18n.translation_service import t
 
 
 class BasePhaseHandler(ABC):
@@ -30,7 +31,7 @@ class BasePhaseHandler(ABC):
     
     def __init__(
         self,
-        conversation_llm: GeminiGenerativeLLM,
+        conversation_llm_provider: Callable[[], GeminiGenerativeLLM],
         conversation_caller: LLMCaller[ConversationResponse],
         occupation_search_service: Optional[SimilaritySearchService[OccupationEntity]] = None,
         skills_pivot_handler: Optional['SkillsPivotPhaseHandler'] = None,
@@ -40,17 +41,31 @@ class BasePhaseHandler(ABC):
         Initialize the phase handler.
 
         Args:
-            conversation_llm: LLM for generating conversational responses
+            conversation_llm_provider: Callable returning the conversation LLM for the current
+                request locale. Resolved lazily on each access (via the _conversation_llm
+                property) so the LLM's system instructions match the user's currently-selected
+                language rather than a language frozen at construction time.
             conversation_caller: Typed LLM caller for response parsing
             occupation_search_service: Optional occupation search service for finding occupations not in recommendations
             skills_pivot_handler: Optional skills pivot handler for immediate delegation when user persists on out-of-list occupation
             logger: Optional logger instance
         """
-        self._conversation_llm = conversation_llm
+        self._conversation_llm_provider = conversation_llm_provider
         self._conversation_caller = conversation_caller
         self._occupation_search_service = occupation_search_service
         self._skills_pivot_handler = skills_pivot_handler
         self.logger = logger or logging.getLogger(self.__class__.__name__)
+
+    @property
+    def _conversation_llm(self) -> GeminiGenerativeLLM:
+        """
+        The conversation LLM for the current request locale.
+
+        Resolved on each access via the provider so handlers always use an LLM whose
+        system instructions are built for the user's currently-selected language. This is
+        what allows two calls in different languages to receive replies in those languages.
+        """
+        return self._conversation_llm_provider()
     
     @abstractmethod
     async def handle(
@@ -234,7 +249,7 @@ Generate a response that:
             # Fallback to basic acknowledgment
             return ConversationResponse(
                 reasoning=f"User mentioned {found_occupation.preferredLabel} (not in recommendations), LLM failed - using fallback",
-                message=f"I found {found_occupation.preferredLabel} in our database. While it wasn't among my top recommendations based on your profile, I'm happy to explore it with you if you're interested. Would you like to learn more about it, or hear why I suggested the alternatives instead?",
+                message=t("messages", "recommenderAdvisor.baseOutOfListFallback", occupation=found_occupation.preferredLabel),
                 finished=False
             ), all_llm_stats
 
@@ -298,8 +313,7 @@ Generate a response that:
             occupation_name = state.pending_out_of_list_occupation
             return ConversationResponse(
                 reasoning=f"User persisted on '{occupation_name}', pivoting to skills gap analysis (no handler available)",
-                message=f"I understand {occupation_name} is important to you. "
-                        f"Let me help you understand what it would take to pursue this path and show you relevant training options.",
+                message=t("messages", "recommenderAdvisor.basePersistPivot", occupation=occupation_name),
                 finished=False
             ), all_llm_stats
 
@@ -516,9 +530,7 @@ Generate a response that:
             # Fallback to simple template
             return ConversationResponse(
                 reasoning=f"User requested '{requested_occupation_name}' outside recommendations, LLM failed - using fallback",
-                message=f"I understand you're interested in {requested_occupation_name}. "
-                        f"It wasn't in my top recommendations because your current skills and preferences align better with the options I showed you. "
-                        f"Would you still like to explore {requested_occupation_name}, or shall we dive deeper into these recommendations?",
+                message=t("messages", "recommenderAdvisor.baseExplainNotRecommended", occupation=requested_occupation_name),
                 finished=False
             ), all_llm_stats
 

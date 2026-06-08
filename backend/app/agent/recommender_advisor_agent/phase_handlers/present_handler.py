@@ -21,16 +21,16 @@ from app.agent.recommender_advisor_agent.llm_response_models import (
 )
 from app.agent.recommender_advisor_agent.phase_handlers.base_handler import BasePhaseHandler
 from app.agent.recommender_advisor_agent.prompts import (
-    PRESENT_RECOMMENDATIONS_PROMPT,
+    get_present_recommendations_prompt,
     build_context_block
 )
 from app.agent.recommender_advisor_agent.intent_classifier import IntentClassifier
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
-from common_libs.llm.generative_models import GeminiGenerativeLLM
 from app.vector_search.esco_entities import OccupationEntity
 from app.vector_search.similarity_search_service import SimilaritySearchService
+from app.i18n.translation_service import t
 
 
 class PresentPhaseHandler(BasePhaseHandler):
@@ -48,7 +48,7 @@ class PresentPhaseHandler(BasePhaseHandler):
 
     def __init__(
         self,
-        conversation_llm: GeminiGenerativeLLM,
+        conversation_llm_provider,
         conversation_caller: LLMCaller[ConversationResponse],
         intent_classifier: IntentClassifier = None,
         exploration_handler: 'ExplorationPhaseHandler' = None,
@@ -61,7 +61,7 @@ class PresentPhaseHandler(BasePhaseHandler):
         Initialize the present handler.
 
         Args:
-            conversation_llm: LLM for generating responses
+            conversation_llm_provider: Callable returning the conversation LLM for the current request locale
             conversation_caller: LLM caller for conversation responses
             intent_classifier: Optional intent classifier for detecting user intent
             exploration_handler: Optional exploration handler for immediate transitions
@@ -69,7 +69,7 @@ class PresentPhaseHandler(BasePhaseHandler):
             tradeoffs_handler: Optional tradeoffs handler for immediate transitions
             occupation_search_service: Optional occupation search service for finding occupations not in recommendations
         """
-        super().__init__(conversation_llm, conversation_caller, **kwargs)
+        super().__init__(conversation_llm_provider, conversation_caller, **kwargs)
         self._intent_classifier = intent_classifier
         self._exploration_handler = exploration_handler
         self._concerns_handler = concerns_handler
@@ -91,7 +91,7 @@ class PresentPhaseHandler(BasePhaseHandler):
         if state.recommendations is None:
             return ConversationResponse(
                 reasoning="No recommendations available",
-                message="I don't have any recommendations ready yet. Let me prepare some for you.",
+                message=t("messages", "recommenderAdvisor.noRecommendationsYet"),
                 finished=False
             ), []
 
@@ -108,7 +108,7 @@ class PresentPhaseHandler(BasePhaseHandler):
                 return await self._present_opportunities(user_input, state, context, opportunities)
             return ConversationResponse(
                 reasoning="No occupation or opportunity recommendations available",
-                message="I couldn't find suitable career recommendations at this time. Let me try a different approach.",
+                message=t("messages", "recommenderAdvisor.noSuitableRecommendations"),
                 finished=False
             ), []
 
@@ -194,7 +194,7 @@ class PresentPhaseHandler(BasePhaseHandler):
         )
 
         # Build prompt for LLM
-        full_prompt = context_block + PRESENT_RECOMMENDATIONS_PROMPT + get_json_response_instructions()
+        full_prompt = context_block + get_present_recommendations_prompt() + get_json_response_instructions()
 
         # Call LLM to generate natural presentation
         response, llm_stats = await self._call_llm(full_prompt, user_input, context)
@@ -246,7 +246,7 @@ class PresentPhaseHandler(BasePhaseHandler):
             country_of_user=state.country_of_user
         )
 
-        full_prompt = context_block + PRESENT_RECOMMENDATIONS_PROMPT + get_json_response_instructions()
+        full_prompt = context_block + get_present_recommendations_prompt() + get_json_response_instructions()
         response, llm_stats = await self._call_llm(full_prompt, user_input, context)
         return response, llm_stats
 
@@ -308,7 +308,7 @@ class PresentPhaseHandler(BasePhaseHandler):
             self.logger.warning(f"GUARDRAIL TRIGGERED: User requested occupation outside recommendations: {intent.requested_occupation_name}")
             # Use strict guardrail to redirect back to recommendations
             return await self._handle_request_outside_recommendations(
-                requested_occupation_name=intent.requested_occupation_name or "that occupation",
+                requested_occupation_name=intent.requested_occupation_name or t("messages", "recommenderAdvisor.thatOccupation"),
                 user_input=user_input,
                 state=state,
                 context=context
@@ -393,7 +393,7 @@ class PresentPhaseHandler(BasePhaseHandler):
             # Fallback: just return transition message (requires another user turn)
             return ConversationResponse(
                 reasoning=f"User wants to explore {target_occ.occupation}, transitioning to EXPLORATION phase",
-                message=f"Great! Let me tell you more about {target_occ.occupation}.",
+                message=t("messages", "recommenderAdvisor.tellMeMoreAbout", occupation=target_occ.occupation),
                 finished=False
             ), []
 
@@ -430,7 +430,7 @@ class PresentPhaseHandler(BasePhaseHandler):
 
             return ConversationResponse(
                 reasoning="User rejected 3+ occupations, pivoting to training recommendations",
-                message="I understand these occupations aren't quite right. Let me show you some training opportunities that could open up new career paths for you.",
+                message=t("messages", "recommenderAdvisor.pivotToTraining"),
                 finished=False
             ), []
 
@@ -440,7 +440,7 @@ class PresentPhaseHandler(BasePhaseHandler):
 
             return ConversationResponse(
                 reasoning="User has rejected multiple recommendations, transitioning to address concerns",
-                message="I'm noticing these recommendations aren't resonating with you. Can you help me understand what's not working? What's most important to you in a career?",
+                message=t("messages", "recommenderAdvisor.notResonating"),
                 finished=False
             ), []
 
@@ -468,7 +468,7 @@ class PresentPhaseHandler(BasePhaseHandler):
         # Fallback: just return transition message (requires another user turn)
         return ConversationResponse(
             reasoning="User expressed a concern, transitioning to CONCERNS phase to address it",
-            message="I hear you. Let's talk through that concern.",
+            message=t("messages", "recommenderAdvisor.hearYouTalkConcern"),
             finished=False
         ), []
 
@@ -533,7 +533,7 @@ class PresentPhaseHandler(BasePhaseHandler):
             # Fallback: just return transition message
             return ConversationResponse(
                 reasoning="User is interested, transitioning to EXPLORATION phase to learn more",
-                message=f"Great! Let me tell you more about {target_occ.occupation}.",
+                message=t("messages", "recommenderAdvisor.tellMeMoreAbout", occupation=target_occ.occupation),
                 finished=False
             ), []
 
@@ -560,7 +560,7 @@ class PresentPhaseHandler(BasePhaseHandler):
             # Fallback to basic presentation
             return ConversationResponse(
                 reasoning="LLM call failed, using fallback presentation",
-                message="I have some career recommendations for you. Which would you like to explore first?",
+                message=t("messages", "recommenderAdvisor.presentationFallback"),
                 finished=False
             ), []
 

@@ -12,6 +12,7 @@ from app.agent.recommender_advisor_agent.llm_response_models import Conversation
 from app.agent.recommender_advisor_agent.phase_handlers.base_handler import BasePhaseHandler
 from app.agent.recommender_advisor_agent.recommendation_interface import RecommendationInterface
 from app.conversation_memory.conversation_memory_manager import ConversationContext
+from app.i18n.translation_service import t
 
 
 class IntroPhaseHandler(BasePhaseHandler):
@@ -64,13 +65,8 @@ class IntroPhaseHandler(BasePhaseHandler):
             )
         
         # Build intro message
-        intro_message = """Great! I've identified some career paths that could be a really good fit for you.
+        intro_message = t("messages", "recommenderAdvisor.intro")
 
-            I'll show you a few options, and we can discuss what appeals to you and what concerns you might have. There's no pressure - I just want to help you understand what's out there and find something worth pursuing.
-
-            Ready to see what I found?
-        """
-        
         response = ConversationResponse(
             reasoning="Introducing the recommendation session, building rapport",
             message=intro_message,

@@ -19,6 +19,7 @@ from app.agent.recommender_advisor_agent.types import (
 from app.agent.recommender_advisor_agent.llm_response_models import ConversationResponse
 from app.agent.recommender_advisor_agent.phase_handlers.base_handler import BasePhaseHandler
 from app.conversation_memory.conversation_memory_manager import ConversationContext
+from app.i18n.translation_service import t
 
 # DB6 imports (Epic 1 dependency - optional)
 try:
@@ -86,33 +87,39 @@ class WrapupPhaseHandler(BasePhaseHandler):
         """
         return ConversationResponse(
             reasoning="Session complete",
-            message="Great talking with you! Good luck with your next steps. Remember - persistence beats perfection. You've got this! 🚀",
+            message=t("messages", "recommenderAdvisor.complete"),
             finished=True
         ), []
     
     def _build_session_summary(self, state: RecommenderAdvisorAgentState) -> str:
         """Build the session summary message."""
-        parts = ["Perfect! Here's what we've discussed:\n"]
+        parts = [t("messages", "recommenderAdvisor.summaryHeader")]
 
         # Current focus
         if state.current_focus_id:
             focus_title = self._get_focus_title(state)
-            parts.append(f"\n**Your top match:** {focus_title}")
+            parts.append("\n\n**" + t("messages", "recommenderAdvisor.summaryTopMatch", title=focus_title) + "**")
 
         # Action commitment
         if state.action_commitment:
             commitment = state.action_commitment
-            action_display = commitment.action_type.value.replace("_", " ").title()
-            timeline_display = commitment.commitment_level.value.replace("_", " ").title()
+            action_display = t(
+                "messages", f"recommenderAdvisor.actionTypeLabels.{commitment.action_type.value}",
+                commitment.action_type.value.replace("_", " ").title()
+            )
+            timeline_display = t(
+                "messages", f"recommenderAdvisor.commitmentLevelLabels.{commitment.commitment_level.value}",
+                commitment.commitment_level.value.replace("_", " ").title()
+            )
 
-            parts.append(f"\n**Next step:** {action_display}")
-            parts.append(f"\n**Timeline:** {timeline_display}")
+            parts.append("\n\n**" + t("messages", "recommenderAdvisor.summaryNextStep", action=action_display) + "**")
+            parts.append("\n**" + t("messages", "recommenderAdvisor.summaryTimeline", timeline=timeline_display) + "**")
 
             if commitment.barriers_mentioned:
-                parts.append(f"\n**Potential barriers:** {', '.join(commitment.barriers_mentioned)}")
+                parts.append("\n**" + t("messages", "recommenderAdvisor.summaryBarriers", barriers=', '.join(commitment.barriers_mentioned)) + "**")
 
-        parts.append("\n\nI've saved this to your profile so we can follow up.")
-        parts.append("\n\nGood luck with your next steps! Remember - persistence beats perfection. You've got this! 🚀")
+        parts.append("\n\n" + t("messages", "recommenderAdvisor.summarySaved"))
+        parts.append("\n\n" + t("messages", "recommenderAdvisor.summaryGoodLuck"))
 
         return "".join(parts)
     
