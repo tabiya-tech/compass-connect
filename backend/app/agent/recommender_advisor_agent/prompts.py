@@ -10,8 +10,8 @@ Epic 3: Recommender Agent Implementation
 
 from app.agent.prompt_template.agent_prompt_template import (
     STD_AGENT_CHARACTER,
-    STD_LANGUAGE_STYLE,
 )
+from app.agent.prompt_template.locale_style import get_language_style
 from app.countries import Country, get_country_glossary
 from app.agent.recommender_advisor_agent.labor_market_contexts import (
     KENYAN_LABOR_MARKET_CONTEXT,
@@ -25,11 +25,11 @@ from app.agent.recommender_advisor_agent.labor_market_contexts import (
 
 # ========== BASE PROMPT TEMPLATE ==========
 
-BASE_RECOMMENDER_PROMPT = f"""
-{STD_AGENT_CHARACTER}
-
-{STD_LANGUAGE_STYLE}
-
+# Static body of the base recommender prompt (everything after the character +
+# language-style header). The header is prepended at call time by
+# get_base_recommender_prompt() so the language style reflects the per-request
+# locale rather than a language frozen at import time.
+_BASE_RECOMMENDER_BODY = """
 ## YOUR OVERARCHING GOAL
 
 Your primary objective is to optimize for user **EFFORT in the DIRECTION of the recommendations**.
@@ -203,11 +203,25 @@ When the user's country is specified, adapt your conversation accordingly:
 """
 
 
+def get_base_recommender_prompt() -> str:
+    """
+    Build the base recommender prompt for the current request locale.
+
+    The language style is resolved at call time via get_language_style(with_locale=True)
+    so the agent replies in the user's currently-selected language rather than a language
+    frozen at import/construction time. This must be called during execution (when the
+    locale context variable is set), not at module import or in a constructor.
+    """
+    return f"""
+{STD_AGENT_CHARACTER}
+
+{get_language_style(with_locale=True)}
+{_BASE_RECOMMENDER_BODY}"""
+
+
 # ========== PHASE-SPECIFIC PROMPTS ==========
 
-INTRO_PHASE_PROMPT = (
-    BASE_RECOMMENDER_PROMPT
-    + """
+_INTRO_PHASE_SUFFIX = """
 ## INTRO PHASE - SPECIFIC GUIDANCE
 
 Your task: Set expectations about the recommendation process.
@@ -228,12 +242,14 @@ Your task: Set expectations about the recommendation process.
 
 **Tone**: Warm, encouraging, conversational.
 """
-)
 
 
-PRESENT_RECOMMENDATIONS_PROMPT = (
-    BASE_RECOMMENDER_PROMPT
-    + """
+def get_intro_phase_prompt() -> str:
+    """Build the INTRO phase prompt for the current request locale."""
+    return get_base_recommender_prompt() + _INTRO_PHASE_SUFFIX
+
+
+_PRESENT_RECOMMENDATIONS_SUFFIX = """
 ## PRESENT RECOMMENDATIONS PHASE - SPECIFIC GUIDANCE
 
 Your task: Present occupation recommendations in a natural, conversational way while maintaining strict rank order.
@@ -298,12 +314,14 @@ When "What we learned about how this person thinks" is present in the context bl
 - Reference 1-2 of their strongest values in your opening sentence to signal you remember them:
   "Given how important [value] is to you, I've focused on options where that's strongest..."
 """
-)
 
 
-CAREER_EXPLORATION_PROMPT = (
-    BASE_RECOMMENDER_PROMPT
-    + """
+def get_present_recommendations_prompt() -> str:
+    """Build the PRESENT RECOMMENDATIONS phase prompt for the current request locale."""
+    return get_base_recommender_prompt() + _PRESENT_RECOMMENDATIONS_SUFFIX
+
+
+_CAREER_EXPLORATION_SUFFIX = """
 ## CAREER EXPLORATION PHASE - SPECIFIC GUIDANCE
 
 Your task: Provide a deep-dive on the occupation the user selected, connecting it to their profile and building motivation.
@@ -387,12 +405,14 @@ Let's dive into **[Occupation]**:
 
 **IMPORTANT**: This is an ongoing conversation. Set `finished` to `false` - the user needs to respond to your question about their concerns. The conversation is NOT complete.
 """
-)
 
 
-ADDRESS_CONCERNS_PROMPT_CLASSIFICATION = (
-    BASE_RECOMMENDER_PROMPT
-    + """
+def get_career_exploration_prompt() -> str:
+    """Build the CAREER EXPLORATION phase prompt for the current request locale."""
+    return get_base_recommender_prompt() + _CAREER_EXPLORATION_SUFFIX
+
+
+_ADDRESS_CONCERNS_CLASSIFICATION_SUFFIX = """
 ## ADDRESS CONCERNS PHASE - STEP 1: CLASSIFY RESISTANCE
 
 Your task: Classify the type of resistance or acceptance the user is expressing.
@@ -457,12 +477,14 @@ Use these signals to sharpen your classification, not replace it. The user's act
 
 **Output**: Return the classification type and a brief summary.
 """
-)
 
 
-ADDRESS_CONCERNS_PROMPT_RESPONSE = (
-    BASE_RECOMMENDER_PROMPT
-    + """
+def get_address_concerns_prompt_classification() -> str:
+    """Build the ADDRESS CONCERNS (classify resistance) prompt for the current request locale."""
+    return get_base_recommender_prompt() + _ADDRESS_CONCERNS_CLASSIFICATION_SUFFIX
+
+
+_ADDRESS_CONCERNS_RESPONSE_SUFFIX = """
 ## ADDRESS CONCERNS PHASE - STEP 2: RESPOND TO RESISTANCE
 
 Your task: Address the user's concern with empathy, honesty, and constructive guidance.
@@ -557,12 +579,14 @@ If no qualitative context is present, respond using only the standard strategies
 
 **Tone**: Empathetic, honest, constructive, non-pushy.
 """
-)
 
 
-ACTION_PLANNING_PROMPT = (
-    BASE_RECOMMENDER_PROMPT
-    + """
+def get_address_concerns_prompt_response() -> str:
+    """Build the ADDRESS CONCERNS (respond to resistance) prompt for the current request locale."""
+    return get_base_recommender_prompt() + _ADDRESS_CONCERNS_RESPONSE_SUFFIX
+
+
+_ACTION_PLANNING_SUFFIX = """
 ## ACTION PLANNING PHASE - SPECIFIC GUIDANCE
 
 Your task: Guide the user toward concrete, actionable next steps.
@@ -637,12 +661,14 @@ Great choice! Let's make this concrete.
 **When do you think you could [action]?** This week, or would next month be more realistic?
 ```
 """
-)
 
 
-DISCUSS_TRADEOFFS_PROMPT = (
-    BASE_RECOMMENDER_PROMPT
-    + """
+def get_action_planning_prompt() -> str:
+    """Build the ACTION PLANNING phase prompt for the current request locale."""
+    return get_base_recommender_prompt() + _ACTION_PLANNING_SUFFIX
+
+
+_DISCUSS_TRADEOFFS_SUFFIX = """
 ## DISCUSS TRADEOFFS PHASE - SPECIFIC GUIDANCE
 
 Your task: Help user balance their preferences against labor market realities.
@@ -725,12 +751,14 @@ Both paths are valid. The question is: **what matters more to you right now** - 
 What's your gut telling you?
 ```
 """
-)
 
 
-FOLLOW_UP_PROMPT = (
-    BASE_RECOMMENDER_PROMPT
-    + """
+def get_discuss_tradeoffs_prompt() -> str:
+    """Build the DISCUSS TRADEOFFS phase prompt for the current request locale."""
+    return get_base_recommender_prompt() + _DISCUSS_TRADEOFFS_SUFFIX
+
+
+_FOLLOW_UP_SUFFIX = """
 ## FOLLOW-UP PHASE - SPECIFIC GUIDANCE
 
 Your task: Clarify ambiguous or unclear user responses.
@@ -804,12 +832,14 @@ If you had to pick just ONE of these to learn more about today, which would it b
 - Or something else entirely?
 ```
 """
-)
 
 
-SKILLS_UPGRADE_PIVOT_PROMPT = (
-    BASE_RECOMMENDER_PROMPT
-    + """
+def get_follow_up_prompt() -> str:
+    """Build the FOLLOW-UP phase prompt for the current request locale."""
+    return get_base_recommender_prompt() + _FOLLOW_UP_SUFFIX
+
+
+_SKILLS_UPGRADE_PIVOT_SUFFIX = """
 ## SKILLS UPGRADE PIVOT PHASE - SPECIFIC GUIDANCE
 
 Your task: Present training/skills development recommendations after user has rejected occupation options.
@@ -895,12 +925,14 @@ Looking at your interests, here are skill-building opportunities that could open
 **Which of these skills sounds most interesting to you?** Or is there something else you've been curious about learning?
 ```
 """
-)
 
 
-WRAPUP_PROMPT = (
-    BASE_RECOMMENDER_PROMPT
-    + """
+def get_skills_upgrade_pivot_prompt() -> str:
+    """Build the SKILLS UPGRADE PIVOT phase prompt for the current request locale."""
+    return get_base_recommender_prompt() + _SKILLS_UPGRADE_PIVOT_SUFFIX
+
+
+_WRAPUP_SUFFIX = """
 ## WRAPUP PHASE - SPECIFIC GUIDANCE
 
 Your task: Summarize the session, confirm action commitment, and close gracefully.
@@ -991,7 +1023,11 @@ If you need support or want to discuss how it went, I'm here anytime. You've got
 
 **Note**: The final message after WRAPUP (in COMPLETE phase) is just a brief farewell - keep it short and warm.
 """
-)
+
+
+def get_wrapup_prompt() -> str:
+    """Build the WRAPUP phase prompt for the current request locale."""
+    return get_base_recommender_prompt() + _WRAPUP_SUFFIX
 
 
 # ========== HELPER FUNCTIONS ==========
@@ -1001,26 +1037,31 @@ def get_phase_prompt(phase: str) -> str:
     """
     Get the appropriate prompt template for a given phase.
 
+    The prompt is built at call time so its language style reflects the per-request
+    locale. Call this during execution (when the locale context variable is set),
+    not at module import or in a constructor.
+
     Args:
         phase: Phase name (e.g., "INTRO", "PRESENT", "EXPLORATION", "CONCERNS", "ACTION", etc.)
 
     Returns:
         Full prompt template for that phase
     """
-    prompts = {
-        "INTRO": INTRO_PHASE_PROMPT,
-        "PRESENT": PRESENT_RECOMMENDATIONS_PROMPT,
-        "EXPLORATION": CAREER_EXPLORATION_PROMPT,
-        "CONCERNS_CLASSIFICATION": ADDRESS_CONCERNS_PROMPT_CLASSIFICATION,
-        "CONCERNS_RESPONSE": ADDRESS_CONCERNS_PROMPT_RESPONSE,
-        "ACTION": ACTION_PLANNING_PROMPT,
-        "TRADEOFFS": DISCUSS_TRADEOFFS_PROMPT,
-        "FOLLOW_UP": FOLLOW_UP_PROMPT,
-        "SKILLS_PIVOT": SKILLS_UPGRADE_PIVOT_PROMPT,
-        "WRAPUP": WRAPUP_PROMPT,
+    builders = {
+        "INTRO": get_intro_phase_prompt,
+        "PRESENT": get_present_recommendations_prompt,
+        "EXPLORATION": get_career_exploration_prompt,
+        "CONCERNS_CLASSIFICATION": get_address_concerns_prompt_classification,
+        "CONCERNS_RESPONSE": get_address_concerns_prompt_response,
+        "ACTION": get_action_planning_prompt,
+        "TRADEOFFS": get_discuss_tradeoffs_prompt,
+        "FOLLOW_UP": get_follow_up_prompt,
+        "SKILLS_PIVOT": get_skills_upgrade_pivot_prompt,
+        "WRAPUP": get_wrapup_prompt,
     }
 
-    return prompts.get(phase, BASE_RECOMMENDER_PROMPT)
+    builder = builders.get(phase)
+    return builder() if builder else get_base_recommender_prompt()
 
 
 def build_context_block(

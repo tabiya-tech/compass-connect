@@ -17,7 +17,7 @@ from app.agent.recommender_advisor_agent.intent_classifier import IntentClassifi
 from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_manager import ConversationContext
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from app.i18n.translation_service import t
 
 
 class FollowupPhaseHandler(BasePhaseHandler):
@@ -34,7 +34,7 @@ class FollowupPhaseHandler(BasePhaseHandler):
     
     def __init__(
         self,
-        conversation_llm: GeminiGenerativeLLM,
+        conversation_llm_provider,
         conversation_caller: LLMCaller[ConversationResponse],
         intent_classifier: IntentClassifier,
         **kwargs
@@ -45,7 +45,7 @@ class FollowupPhaseHandler(BasePhaseHandler):
         Args:
             intent_classifier: Intent classifier for detecting user intent
         """
-        super().__init__(conversation_llm, conversation_caller, **kwargs)
+        super().__init__(conversation_llm_provider, conversation_caller, **kwargs)
         self._intent_classifier = intent_classifier
     
     async def handle(
@@ -75,7 +75,7 @@ class FollowupPhaseHandler(BasePhaseHandler):
             self.logger.warning(f"GUARDRAIL TRIGGERED: User requested occupation outside recommendations: {intent.requested_occupation_name}")
             # Use strict guardrail to redirect back to recommendations
             return await self._handle_request_outside_recommendations(
-                requested_occupation_name=intent.requested_occupation_name or "that occupation",
+                requested_occupation_name=intent.requested_occupation_name or t("messages", "recommenderAdvisor.thatOccupation"),
                 user_input=user_input,
                 state=state,
                 context=context
@@ -132,15 +132,15 @@ class FollowupPhaseHandler(BasePhaseHandler):
     ) -> str:
         """Get appropriate transition message for the intent."""
         if intent.intent == "explore_occupation" and intent.target_occupation_index:
-            return "Let me tell you more about that one."
+            return t("messages", "recommenderAdvisor.transitionTellMore")
         elif intent.intent == "express_concern":
-            return "I hear you. Let's talk through that."
+            return t("messages", "recommenderAdvisor.transitionHearYou")
         elif intent.intent == "accept":
-            return "Great! Let's plan your next steps."
+            return t("messages", "recommenderAdvisor.transitionPlanSteps")
         elif intent.intent == "show_opportunities":
-            return "Let me show you what's available."
+            return t("messages", "recommenderAdvisor.transitionShowAvailable")
         else:
-            return "Let me help with that."
+            return t("messages", "recommenderAdvisor.transitionHelp")
     
     async def _generate_clarification(
         self,

@@ -239,8 +239,7 @@ class WelcomeAgent(Agent):
             return (WelcomeAgentLLMResponseWithLLMStats(
                 reasoning=_error_message,
 
-                # TODO: Move this to the translations.json file
-                message="Sorry, I didn't understand that. Can you please rephrase?",
+                message=t("messages", "welcomeAgentRephrase"),
                 user_indicated_start=False,
                 llm_stats=llm_stats_list), 100, ValueError(_error_message))
 

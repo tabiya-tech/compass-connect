@@ -26,7 +26,7 @@ from app.agent.recommender_advisor_agent.intent_classifier import IntentClassifi
 from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_manager import ConversationContext
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from app.i18n.translation_service import t
 
 
 class ActionPhaseHandler(BasePhaseHandler):
@@ -43,7 +43,7 @@ class ActionPhaseHandler(BasePhaseHandler):
 
     def __init__(
         self,
-        conversation_llm: GeminiGenerativeLLM,
+        conversation_llm_provider,
         conversation_caller: LLMCaller[ConversationResponse],
         action_caller: LLMCaller[ActionExtractionResult],
         intent_classifier: IntentClassifier = None,
@@ -62,7 +62,7 @@ class ActionPhaseHandler(BasePhaseHandler):
             concerns_handler: Optional concerns handler for immediate delegation
             wrapup_handler: Optional wrapup handler for immediate delegation
         """
-        super().__init__(conversation_llm, conversation_caller, **kwargs)
+        super().__init__(conversation_llm_provider, conversation_caller, **kwargs)
         self._action_caller = action_caller
         self._intent_classifier = intent_classifier
         self._present_handler = present_handler
@@ -100,7 +100,7 @@ class ActionPhaseHandler(BasePhaseHandler):
                 self.logger.warning(f"GUARDRAIL TRIGGERED: User requested occupation outside recommendations: {intent.requested_occupation_name}")
                 # Use strict guardrail to redirect back to recommendations
                 return await self._handle_request_outside_recommendations(
-                    requested_occupation_name=intent.requested_occupation_name or "that occupation",
+                    requested_occupation_name=intent.requested_occupation_name or t("messages", "recommenderAdvisor.thatOccupation"),
                     user_input=user_input,
                     state=state,
                     context=context
@@ -138,7 +138,7 @@ class ActionPhaseHandler(BasePhaseHandler):
                 # Fallback if no present handler available
                 return ConversationResponse(
                     reasoning="User wants to explore other recommendations",
-                    message="Let me show you your other career recommendations.",
+                    message=t("messages", "recommenderAdvisor.showOtherRecommendations"),
                     finished=False
                 ), all_llm_stats
 
@@ -154,7 +154,7 @@ class ActionPhaseHandler(BasePhaseHandler):
                 # Fallback if no concerns handler available
                 return ConversationResponse(
                     reasoning="User wants to address more concerns",
-                    message="Of course! What's on your mind?",
+                    message=t("messages", "recommenderAdvisor.whatsOnYourMind"),
                     finished=False
                 ), all_llm_stats
 
@@ -363,17 +363,16 @@ IMPORTANT - When to set finished:
     
     def _build_commitment_acknowledgment(self, commitment: ActionCommitment) -> str:
         """Build acknowledgment message for a commitment."""
-        action_verbs = {
-            ActionType.APPLY_TO_JOB: "apply",
-            ActionType.ENROLL_IN_TRAINING: "enroll",
-            ActionType.EXPLORE_OCCUPATION: "explore",
-            ActionType.RESEARCH_EMPLOYER: "research",
-            ActionType.NETWORK: "reach out to contacts",
-        }
-        
-        action_verb = action_verbs.get(commitment.action_type, "take action")
-        timeline = commitment.commitment_level.value.replace("_", " ")
-        
-        return f"""Excellent! So you're going to {action_verb} for **{commitment.recommendation_title}**, and you'll do that {timeline}.
+        action_verb = t(
+            "messages", f"recommenderAdvisor.actionVerbs.{commitment.action_type.value}",
+            t("messages", "recommenderAdvisor.actionVerbs.default")
+        )
+        timeline = t(
+            "messages", f"recommenderAdvisor.commitmentTimelinePhrases.{commitment.commitment_level.value}",
+            commitment.commitment_level.value.replace("_", " ")
+        )
 
-That's a great step. Let me summarize what we've discussed..."""
+        return t(
+            "messages", "recommenderAdvisor.commitmentAcknowledgment",
+            action=action_verb, title=commitment.recommendation_title, timeline=timeline
+        )

@@ -19,13 +19,14 @@ from app.agent.recommender_advisor_agent.llm_response_models import (
 )
 from app.agent.recommender_advisor_agent.phase_handlers.base_handler import BasePhaseHandler
 from app.agent.recommender_advisor_agent.prompts import (
-    CAREER_EXPLORATION_PROMPT,
+    get_career_exploration_prompt,
     build_context_block
 )
 from app.agent.recommender_advisor_agent.intent_classifier import IntentClassifier
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
+from app.i18n.translation_service import t
 
 
 class ExplorationPhaseHandler(BasePhaseHandler):
@@ -42,7 +43,7 @@ class ExplorationPhaseHandler(BasePhaseHandler):
 
     def __init__(
         self,
-        conversation_llm,
+        conversation_llm_provider,
         conversation_caller,
         intent_classifier: IntentClassifier = None,
         concerns_handler: 'ConcernsPhaseHandler' = None,
@@ -54,14 +55,14 @@ class ExplorationPhaseHandler(BasePhaseHandler):
         Initialize the exploration handler.
 
         Args:
-            conversation_llm: LLM for generating responses
+            conversation_llm_provider: Callable returning the conversation LLM for the current request locale
             conversation_caller: LLM caller for conversation responses
             intent_classifier: Optional intent classifier for detecting user intent
             concerns_handler: Optional concerns handler for immediate transitions
             action_handler: Optional action handler for immediate transitions
             tradeoffs_handler: Optional tradeoffs handler for immediate transitions
         """
-        super().__init__(conversation_llm, conversation_caller, **kwargs)
+        super().__init__(conversation_llm_provider, conversation_caller, **kwargs)
         self._intent_classifier = intent_classifier
         self._concerns_handler = concerns_handler
         self._action_handler = action_handler
@@ -85,7 +86,7 @@ class ExplorationPhaseHandler(BasePhaseHandler):
             state.conversation_phase = ConversationPhase.PRESENT_RECOMMENDATIONS
             return ConversationResponse(
                 reasoning="No occupation selected, returning to presentation",
-                message="Which occupation would you like to learn more about?",
+                message=t("messages", "recommenderAdvisor.whichToLearnAbout"),
                 finished=False
             ), []
 
@@ -95,7 +96,7 @@ class ExplorationPhaseHandler(BasePhaseHandler):
         if rec is None or not isinstance(rec, OccupationRecommendation):
             return ConversationResponse(
                 reasoning="Could not find selected occupation",
-                message="I couldn't find that occupation. Would you like to see the options again?",
+                message=t("messages", "recommenderAdvisor.couldntFindOccupation"),
                 finished=False
             ), []
 
@@ -147,7 +148,7 @@ class ExplorationPhaseHandler(BasePhaseHandler):
         )
 
         # Build prompt for LLM
-        full_prompt = context_block + CAREER_EXPLORATION_PROMPT + get_json_response_instructions()
+        full_prompt = context_block + get_career_exploration_prompt() + get_json_response_instructions()
 
         # Call LLM to generate exploration
         response, llm_stats = await self._call_llm(full_prompt, user_input, context, rec)
@@ -196,7 +197,7 @@ class ExplorationPhaseHandler(BasePhaseHandler):
             # Fallback: just return transition message
             return ConversationResponse(
                 reasoning="User expressed concern during exploration, transitioning to CONCERNS phase",
-                message="I hear your concern. Let's talk through that.",
+                message=t("messages", "recommenderAdvisor.hearConcernTalkThrough"),
                 finished=False
             ), []
 
@@ -220,7 +221,7 @@ class ExplorationPhaseHandler(BasePhaseHandler):
             # Fallback: just return transition message
             return ConversationResponse(
                 reasoning="User is ready to move forward, transitioning to ACTION phase",
-                message="That's great! Let's talk about your next steps and how to move forward with this path.",
+                message=t("messages", "recommenderAdvisor.readyNextSteps"),
                 finished=False
             ), []
 
@@ -239,7 +240,7 @@ class ExplorationPhaseHandler(BasePhaseHandler):
 
             return ConversationResponse(
                 reasoning="User rejected occupation, returning to presentation",
-                message="No problem. Let's look at the other options.",
+                message=t("messages", "recommenderAdvisor.lookOtherOptions"),
                 finished=False
             ), []
 
@@ -286,7 +287,7 @@ class ExplorationPhaseHandler(BasePhaseHandler):
 
             return ConversationResponse(
                 reasoning="User wants different occupation but unclear which, returning to presentation",
-                message="Which occupation would you like to explore instead?",
+                message=t("messages", "recommenderAdvisor.whichToExploreInstead"),
                 finished=False
             ), []
 
@@ -387,13 +388,16 @@ class ExplorationPhaseHandler(BasePhaseHandler):
         except Exception as e:
             self.logger.error(f"LLM call failed: {e}")
             # Fallback to basic exploration
-            fallback_message = f"""Let's explore **{occ.occupation}**:
-
-**What this involves**: {occ.description if occ.description else 'A role focused on ' + occ.occupation.lower()}
-
-**Why this matches you**: {occ.justification if occ.justification else 'Based on your skills and preferences'}
-
-**What concerns do you have about this path?**"""
+            description = occ.description if occ.description else t(
+                "messages", "recommenderAdvisor.roleFocusedOn", occupation=occ.occupation.lower()
+            )
+            justification = occ.justification if occ.justification else t(
+                "messages", "recommenderAdvisor.basedOnSkillsPrefs"
+            )
+            fallback_message = t(
+                "messages", "recommenderAdvisor.explorationFallback",
+                occupation=occ.occupation, description=description, justification=justification
+            )
 
             return ConversationResponse(
                 reasoning="LLM call failed, using fallback exploration",

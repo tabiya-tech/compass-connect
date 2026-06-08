@@ -23,14 +23,14 @@ from app.agent.recommender_advisor_agent.llm_response_models import (
 )
 from app.agent.recommender_advisor_agent.phase_handlers.base_handler import BasePhaseHandler
 from app.agent.recommender_advisor_agent.prompts import (
-    ADDRESS_CONCERNS_PROMPT_CLASSIFICATION,
-    ADDRESS_CONCERNS_PROMPT_RESPONSE,
+    get_address_concerns_prompt_classification,
+    get_address_concerns_prompt_response,
     build_context_block
 )
 from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_manager import ConversationContext
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from app.i18n.translation_service import t
 
 
 class ConcernsPhaseHandler(BasePhaseHandler):
@@ -46,7 +46,7 @@ class ConcernsPhaseHandler(BasePhaseHandler):
 
     def __init__(
         self,
-        conversation_llm: GeminiGenerativeLLM,
+        conversation_llm_provider,
         conversation_caller: LLMCaller[ConversationResponse],
         resistance_caller: LLMCaller[ResistanceClassification],
         intent_classifier=None,
@@ -61,7 +61,7 @@ class ConcernsPhaseHandler(BasePhaseHandler):
             intent_classifier: Optional intent classifier for detecting non-concern intents
             action_handler: Optional action handler for immediate delegation
         """
-        super().__init__(conversation_llm, conversation_caller, **kwargs)
+        super().__init__(conversation_llm_provider, conversation_caller, **kwargs)
         self._resistance_caller = resistance_caller
         self._intent_classifier = intent_classifier
         self._action_handler = action_handler
@@ -98,7 +98,7 @@ class ConcernsPhaseHandler(BasePhaseHandler):
                         "outside recommendations: %s", intent.requested_occupation_name
                     )
                     return await self._handle_request_outside_recommendations(
-                        requested_occupation_name=intent.requested_occupation_name or "that occupation",
+                        requested_occupation_name=intent.requested_occupation_name or t("messages", "recommenderAdvisor.thatOccupation"),
                         user_input=user_input,
                         state=state,
                         context=context
@@ -124,7 +124,7 @@ class ConcernsPhaseHandler(BasePhaseHandler):
 
                         return ConversationResponse(
                             reasoning=f"User wants to explore {target_occ.occupation} instead, transitioning to CAREER_EXPLORATION",
-                            message=f"Okay, let's explore the {target_occ.occupation} option instead.",
+                            message=t("messages", "recommenderAdvisor.exploreInstead", occupation=target_occ.occupation),
                             finished=False
                         ), all_llm_stats
 
@@ -141,7 +141,7 @@ class ConcernsPhaseHandler(BasePhaseHandler):
                     # Fallback if no action handler available
                     return ConversationResponse(
                         reasoning="User accepted/understood, transitioning to action planning (no handler available)",
-                        message="Great! Let's talk about next steps.",
+                        message=t("messages", "recommenderAdvisor.nextStepsShort"),
                         finished=False
                     ), all_llm_stats
 
@@ -163,7 +163,7 @@ class ConcernsPhaseHandler(BasePhaseHandler):
 
             return ConversationResponse(
                 reasoning="Classification failed, providing generic supportive response",
-                message="I hear your concern. Can you tell me more about what specifically worries you? That will help me address it better.",
+                message=t("messages", "recommenderAdvisor.concernTellMore"),
                 finished=False
             ), all_llm_stats
 
@@ -177,7 +177,7 @@ class ConcernsPhaseHandler(BasePhaseHandler):
                 return await self._action_handler.handle(user_input, state, context)
 
             # Fallback if no action handler available - offer choices
-            occupation_name = "this path"
+            occupation_name = t("messages", "recommenderAdvisor.thisPath")
             if state.current_focus_id:
                 rec = state.get_recommendation_by_id(state.current_focus_id)
                 if rec and hasattr(rec, 'occupation'):
@@ -185,11 +185,7 @@ class ConcernsPhaseHandler(BasePhaseHandler):
 
             return ConversationResponse(
                 reasoning="User showed acceptance, transitioning to action planning (no handler available)",
-                message=f"Great! I'm glad that's helpful. What would you like to do next?\n\n"
-                        f"1. **Discuss next steps** for {occupation_name} (how to apply, prepare, etc.)\n"
-                        f"2. **Explore other career options** from your recommendations\n"
-                        f"3. **Keep discussing** any remaining concerns\n\n"
-                        f"Which option sounds best to you?",
+                message=t("messages", "recommenderAdvisor.acceptanceMenu", occupation=occupation_name),
                 finished=False
             ), all_llm_stats
 
@@ -205,7 +201,7 @@ class ConcernsPhaseHandler(BasePhaseHandler):
             # Fallback if no action handler available
             return ConversationResponse(
                 reasoning="No resistance detected, transitioning to action planning (no handler available)",
-                message="Great! It sounds like this path interests you. Let's talk about next steps.",
+                message=t("messages", "recommenderAdvisor.pathInterestsNextSteps"),
                 finished=False
             ), all_llm_stats
 
@@ -251,7 +247,7 @@ Your response must be a JSON object with the following schema:
 Always return a valid JSON object matching this exact schema.
 """
 
-        full_prompt = ADDRESS_CONCERNS_PROMPT_CLASSIFICATION + "\n\n" + schema_instructions
+        full_prompt = get_address_concerns_prompt_classification() + "\n\n" + schema_instructions
 
         return await self._resistance_caller.call_llm(
             llm=self._conversation_llm,
@@ -312,7 +308,7 @@ Always return a valid JSON object matching this exact schema.
 """
 
         # Build full prompt
-        full_prompt = context_block + classification_context + ADDRESS_CONCERNS_PROMPT_RESPONSE + "\n\n" + get_json_response_instructions()
+        full_prompt = context_block + classification_context + get_address_concerns_prompt_response() + "\n\n" + get_json_response_instructions()
 
         return await self._conversation_caller.call_llm(
             llm=self._conversation_llm,

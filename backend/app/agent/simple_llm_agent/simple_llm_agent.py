@@ -7,6 +7,7 @@ from app.agent.simple_llm_agent.llm_response import ModelResponse
 from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_manager import ConversationContext
+from app.i18n.translation_service import t
 from common_libs.llm.generative_models import GeminiGenerativeLLM
 from common_libs.llm.models_utils import LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG
 from common_libs.llm.schema_builder import with_response_schema
@@ -59,7 +60,7 @@ class SimpleLLMAgent(Agent):
         if model_response is None:
             model_response = ModelResponse(
                 reasoning="Failed to get a response",
-                message="I am facing some difficulties right now, could you please repeat what you said?",
+                message=t("messages", "simpleLlmAgentFailure"),
                 finished=False)
 
         agent_end_time = time.time()

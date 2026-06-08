@@ -1873,22 +1873,22 @@ Vignettes Completed: {pv.n_vignettes_completed}
 
         # Only include strongest signals as fallback (using simplified structure)
         if pv.financial_importance > 0.7:
-            summary_parts.append("• Financial compensation is important to you")
+            summary_parts.append(t("messages", "preferenceElicitation.basicSummary.financial"))
 
         if pv.job_security_importance > 0.7:
-            summary_parts.append("• Job security and stability matter to you")
+            summary_parts.append(t("messages", "preferenceElicitation.basicSummary.jobSecurity"))
 
         if pv.career_advancement_importance > 0.7:
-            summary_parts.append("• Career growth is important to you")
+            summary_parts.append(t("messages", "preferenceElicitation.basicSummary.careerGrowth"))
 
         if pv.work_life_balance_importance > 0.7:
-            summary_parts.append("• Work-life balance is important to you")
+            summary_parts.append(t("messages", "preferenceElicitation.basicSummary.workLifeBalance"))
 
         if pv.social_impact_importance > 0.7:
-            summary_parts.append("• Making a positive social impact matters to you")
+            summary_parts.append(t("messages", "preferenceElicitation.basicSummary.socialImpact"))
 
         if not summary_parts:
-            summary_parts.append("• I've learned about your job preferences")
+            summary_parts.append(t("messages", "preferenceElicitation.basicSummary.generic"))
 
         return "\n".join(summary_parts)
 

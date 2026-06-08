@@ -43,12 +43,12 @@ from app.agent.recommender_advisor_agent.phase_handlers import (
     ActionPhaseHandler,
     WrapupPhaseHandler,
 )
-from app.agent.prompt_template.agent_prompt_template import (
-    STD_AGENT_CHARACTER,
-    STD_LANGUAGE_STYLE
-)
+from app.agent.prompt_template.agent_prompt_template import STD_AGENT_CHARACTER
+from app.agent.prompt_template.locale_style import get_language_style
 from app.agent.prompt_template.quick_reply_prompt import QUICK_REPLY_PROMPT
 from app.conversation_memory.conversation_memory_manager import ConversationContext
+from app.i18n.translation_service import t, get_i18n_manager
+from app.i18n.types import Locale
 from common_libs.llm.generative_models import GeminiGenerativeLLM
 from common_libs.llm.models_utils import (
     LLMConfig,
@@ -109,17 +109,18 @@ class RecommenderAdvisorAgent(Agent):
         self._db6_client = db6_client
         self._occupation_search_service = occupation_search_service
 
-        # Initialize LLM
+        # Conversation LLM configuration. The LLM itself is NOT built here: its system
+        # instructions embed the language style, which depends on the per-request locale.
+        # Building it in the constructor would freeze the language for the agent's lifetime
+        # and cause replies to drift to the construction-time locale. Instead it is built
+        # lazily per locale at execution time (see _get_conversation_llm), so two calls made
+        # in different languages each get a reply in their own language.
         llm_config = LLMConfig(
             # generation_config=LOW_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
             generation_config=MEDIUM_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
         )
-
-        conversation_system_instructions = self._build_conversation_system_instructions()
-        self._conversation_llm = GeminiGenerativeLLM(
-            system_instructions=conversation_system_instructions,
-            config=llm_config
-        )
+        self._llm_config = llm_config
+        self._conversation_llm_by_locale: dict[Locale, GeminiGenerativeLLM] = {}
 
         # Initialize LLM callers
         self._conversation_caller: LLMCaller[ConversationResponse] = LLMCaller[ConversationResponse](
@@ -151,7 +152,7 @@ class RecommenderAdvisorAgent(Agent):
     def _init_phase_handlers(self) -> None:
         """Initialize all phase handlers."""
         self._intro_handler = IntroPhaseHandler(
-            conversation_llm=self._conversation_llm,
+            conversation_llm_provider=self._get_conversation_llm,
             conversation_caller=self._conversation_caller,
             recommendation_interface=self._recommendation_interface,
             occupation_search_service=self._occupation_search_service,
@@ -160,7 +161,7 @@ class RecommenderAdvisorAgent(Agent):
 
         # Initialize action handler first (needed by concerns handler)
         self._action_handler = ActionPhaseHandler(
-            conversation_llm=self._conversation_llm,
+            conversation_llm_provider=self._get_conversation_llm,
             conversation_caller=self._conversation_caller,
             action_caller=self._action_caller,
             intent_classifier=self._intent_classifier,
@@ -169,7 +170,7 @@ class RecommenderAdvisorAgent(Agent):
 
         # Initialize concerns handler (depends on action_handler)
         self._concerns_handler = ConcernsPhaseHandler(
-            conversation_llm=self._conversation_llm,
+            conversation_llm_provider=self._get_conversation_llm,
             conversation_caller=self._conversation_caller,
             resistance_caller=self._resistance_caller,
             intent_classifier=self._intent_classifier,
@@ -179,14 +180,14 @@ class RecommenderAdvisorAgent(Agent):
         )
 
         self._tradeoffs_handler = TradeoffsPhaseHandler(
-            conversation_llm=self._conversation_llm,
+            conversation_llm_provider=self._get_conversation_llm,
             conversation_caller=self._conversation_caller,
             logger=self.logger
         )
 
         # Initialize exploration handler with delegation targets (constructor injection)
         self._exploration_handler = ExplorationPhaseHandler(
-            conversation_llm=self._conversation_llm,
+            conversation_llm_provider=self._get_conversation_llm,
             conversation_caller=self._conversation_caller,
             intent_classifier=self._intent_classifier,
             concerns_handler=self._concerns_handler,
@@ -198,7 +199,7 @@ class RecommenderAdvisorAgent(Agent):
 
         # Initialize present handler with delegation targets (constructor injection)
         self._present_handler = PresentPhaseHandler(
-            conversation_llm=self._conversation_llm,
+            conversation_llm_provider=self._get_conversation_llm,
             conversation_caller=self._conversation_caller,
             intent_classifier=self._intent_classifier,
             exploration_handler=self._exploration_handler,
@@ -209,14 +210,14 @@ class RecommenderAdvisorAgent(Agent):
         )
 
         self._followup_handler = FollowupPhaseHandler(
-            conversation_llm=self._conversation_llm,
+            conversation_llm_provider=self._get_conversation_llm,
             conversation_caller=self._conversation_caller,
             intent_classifier=self._intent_classifier,
             logger=self.logger
         )
         
         self._skills_pivot_handler = SkillsPivotPhaseHandler(
-            conversation_llm=self._conversation_llm,
+            conversation_llm_provider=self._get_conversation_llm,
             conversation_caller=self._conversation_caller,
             intent_classifier=self._intent_classifier,
             exploration_handler=self._exploration_handler,
@@ -227,7 +228,7 @@ class RecommenderAdvisorAgent(Agent):
         )
 
         self._wrapup_handler = WrapupPhaseHandler(
-            conversation_llm=self._conversation_llm,
+            conversation_llm_provider=self._get_conversation_llm,
             conversation_caller=self._conversation_caller,
             db6_client=self._db6_client,
             logger=self.logger
@@ -241,8 +242,37 @@ class RecommenderAdvisorAgent(Agent):
         self._action_handler._wrapup_handler = self._wrapup_handler
 
     
+    def _get_conversation_llm(self) -> GeminiGenerativeLLM:
+        """
+        Get the conversation LLM, constructing it on request for the current locale.
+
+        The system instructions embed the language style, which depends on the per-request
+        locale (resolved from the user_language context variable). Constructing the LLM lazily
+        ensures the prompt language matches the user's current locale. The result is memoized
+        per locale so we don't rebuild it on every LLM call within the same conversation, while
+        still letting two calls in different languages each get their own correctly-localized LLM.
+
+        Returns:
+            A GeminiGenerativeLLM with system instructions for the current locale.
+        """
+        locale = get_i18n_manager().get_locale()
+        llm = self._conversation_llm_by_locale.get(locale)
+        if llm is None:
+            llm = GeminiGenerativeLLM(
+                system_instructions=self._build_conversation_system_instructions(),
+                config=self._llm_config,
+            )
+            self._conversation_llm_by_locale[locale] = llm
+        return llm
+
     def _build_conversation_system_instructions(self) -> str:
-        """Build system instructions for the conversation LLM."""
+        """
+        Build system instructions for the conversation LLM.
+
+        The language style is resolved at call time via get_language_style(with_locale=True)
+        so the instructions pin the user's currently-selected language. Must be called during
+        execution (when the locale context variable is set), not in the constructor.
+        """
         return f"""
             {STD_AGENT_CHARACTER}
 
@@ -250,7 +280,7 @@ class RecommenderAdvisorAgent(Agent):
             Your goal is to motivate users to take concrete action - applying for jobs, enrolling
             in training, or actively exploring career paths.
 
-            {STD_LANGUAGE_STYLE}
+            {get_language_style(with_locale=True)}
 
             ## HARD RULES (NON-NEGOTIABLE):
 
@@ -403,14 +433,14 @@ class RecommenderAdvisorAgent(Agent):
             self.logger.error(f"Unknown phase: {phase}")
             return ConversationResponse(
                 reasoning=f"Unknown phase: {phase}",
-                message="I seem to have lost track. Let me show you the recommendations again.",
+                message=t("messages", "recommenderAdvisor.lostTrack"),
                 finished=False
             ), []
     
     def _create_error_response(self, start_time: float) -> AgentOutput:
         """Create an error response."""
         return AgentOutput(
-            message_for_user="I apologize, but I encountered an issue. Let's try again.",
+            message_for_user=t("messages", "recommenderAdvisor.genericError"),
             finished=False,
             agent_type=self.agent_type,
             agent_response_time_in_sec=round(time.time() - start_time, 2),
