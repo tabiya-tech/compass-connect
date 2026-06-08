@@ -20,7 +20,10 @@ from app.agent.preference_elicitation_agent.types import (
     VignetteOption
 )
 from app.agent.llm_caller import LLMCaller
+from app.agent.prompt_template import get_language_style
 from app.countries import Country
+from app.i18n.translation_service import get_i18n_manager
+from app.i18n.types import Locale
 from common_libs.llm.models_utils import (
     BasicLLM,
     LLMConfig,
@@ -191,10 +194,13 @@ Example Output:
             generation_config=LOW_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
         )
 
-        self._llm = GeminiGenerativeLLM(
-            system_instructions=system_instructions,
-            config=llm_config
-        )
+        # The system instructions are language-dependent (the language style is resolved from the
+        # per-request locale), so the LLM is built lazily per locale rather than once at __init__.
+        # Building it eagerly here would bake in whatever locale happened to be active at construction
+        # time and emit vignette content in the wrong language. Memoized per locale.
+        self._system_instructions_base = system_instructions
+        self._llm_config = llm_config
+        self._llm_by_locale: dict[Locale, "GeminiGenerativeLLM"] = {}
 
         # Load templates from config
         if templates_config_path is None:
@@ -357,6 +363,27 @@ Example Output:
             }
         )
 
+    def _get_llm(self) -> "GeminiGenerativeLLM":
+        """
+        Get the vignette-generation LLM, built on request for the current locale.
+
+        The system instructions embed the language style (resolved from the per-request locale),
+        so the generated vignette content matches the user's language. The result is memoized per
+        locale so the LLM is not rebuilt on every call within the same conversation.
+        """
+        from common_libs.llm.generative_models import GeminiGenerativeLLM
+
+        locale = get_i18n_manager().get_locale()
+        llm = self._llm_by_locale.get(locale)
+        if llm is None:
+            system_instructions = f"{get_language_style(with_locale=True, for_json_output=True)}\n\n{self._system_instructions_base}"
+            llm = GeminiGenerativeLLM(
+                system_instructions=system_instructions,
+                config=self._llm_config
+            )
+            self._llm_by_locale[locale] = llm
+        return llm
+
     async def _generate_vignette_content(
         self,
         template: VignetteTemplate,
@@ -417,7 +444,7 @@ Generate a personalized vignette that:
         )
 
         response, _ = await caller.call_llm(
-            llm=self._llm,
+            llm=self._get_llm(),
             llm_input=prompt,
             logger=self._logger
         )
@@ -604,7 +631,7 @@ Generate personalized content now:
         )
 
         response, _ = await caller.call_llm(
-            llm=self._llm,
+            llm=self._get_llm(),
             llm_input=prompt,
             logger=self._logger
         )

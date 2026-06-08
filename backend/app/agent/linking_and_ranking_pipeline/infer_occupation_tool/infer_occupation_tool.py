@@ -8,9 +8,10 @@ from pydantic import BaseModel
 
 from app.agent.agent_types import LLMStats
 from app.agent.experience.work_type import WorkType
-from app.context_vars import detected_language_ctx_var
+from app.context_vars import user_language_ctx_var
 from app.countries import Country
 from app.i18n.swahili_mapping import SwahiliMappingService
+from app.i18n.types import Locale
 from app.vector_search.esco_entities import OccupationSkillEntity
 from app.vector_search.esco_search_service import OccupationSkillSearchService, OccupationSearchService
 from app.vector_search.similarity_search_service import FilterSpec
@@ -82,11 +83,14 @@ class InferOccupationTool:
         titles: set[str] = {experience_title.strip().lower()}.union(
             {title.strip().lower() for title in contextualization_response.contextual_titles})
 
-        # Dual-query retrieval for Swahili / mixed input (M3):
-        # When the detected language is Swahili or mixed, normalize Swahili titles
-        # and add the English-normalized versions to the search set alongside originals.
-        detected_lang = detected_language_ctx_var.get("english")
-        if detected_lang in ("swahili", "mixed"):
+        # Dual-query retrieval for Swahili input (M3):
+        # When the active locale is Swahili, normalize Swahili titles and add the
+        # English-normalized versions to the search set alongside the originals.
+        try:
+            is_swahili = user_language_ctx_var.get() == Locale.SW_KE
+        except LookupError:
+            is_swahili = False
+        if is_swahili:
             mapping_service = SwahiliMappingService.get_instance()
             normalized_titles: set[str] = set()
             for title in list(titles):

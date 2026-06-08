@@ -117,6 +117,17 @@
       "workLifeBalance": "• Work-life balance is important to you",
       "socialImpact": "• Making a positive social impact matters to you",
       "generic": "• I've learned about your job preferences"
+    },
+    "bws": {
+      "occupationIntro": "Great! Now that I understand what matters to you in a job, let's figure out which broad career areas interest you most.\n\nI'll show you groups of job types. For each group, tell me:\n• Which type of job would you **most** like to have?\n• Which would you **least** like to have?\n\n",
+      "questionHeader": "**Question {task_number} of {total_tasks}**\n\n",
+      "occupationListHeader": "Here are 5 job types:\n\n",
+      "occupationItemFallback": "Occupation {code}",
+      "occupationChoosePrompt": "Which would you **most** like to do? And which would you **least** like to do?\n",
+      "example": "\n_Example: \"Most: B, Least: D\" or \"I prefer C and dislike A\"_",
+      "waIntro": "Great! Now that I understand what matters to you in a job, let's figure out which work activities interest you most.\n\nI'll show you groups of work activities. For each group, tell me:\n• Which activity would you **most** enjoy doing at work?\n• Which would you **least** enjoy?\n\n",
+      "waListHeader": "Here are 5 work activities:\n\n",
+      "waChoosePrompt": "Which would you **most** enjoy? And which would you **least** enjoy?\n"
     }
   },
   "recommenderAdvisor": {

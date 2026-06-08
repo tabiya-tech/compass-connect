@@ -117,6 +117,17 @@
       "workLifeBalance": "• O equilíbrio entre o trabalho e a vida pessoal é importante para si",
       "socialImpact": "• Ter um impacto social positivo é importante para si",
       "generic": "• Aprendi sobre as suas preferências de trabalho"
+    },
+    "bws": {
+      "occupationIntro": "Óptimo! Agora que entendo o que é importante para si num emprego, vamos descobrir quais as áreas profissionais gerais que mais lhe interessam.\n\nVou mostrar-lhe grupos de tipos de emprego. Para cada grupo, diga-me:\n• Que tipo de emprego gostaria **mais** de ter?\n• Qual gostaria **menos**?\n\n",
+      "questionHeader": "**Pergunta {task_number} de {total_tasks}**\n\n",
+      "occupationListHeader": "Aqui estão 5 tipos de emprego:\n\n",
+      "occupationItemFallback": "Ocupação {code}",
+      "occupationChoosePrompt": "Qual gostaria **mais** de fazer? E qual gostaria **menos** de fazer?\n",
+      "example": "\n_Exemplo: \"Mais: B, Menos: D\" ou \"Prefiro C e não gosto de A\"_",
+      "waIntro": "Óptimo! Agora que entendo o que é importante para si num emprego, vamos descobrir quais as actividades de trabalho que mais lhe interessam.\n\nVou mostrar-lhe grupos de actividades de trabalho. Para cada grupo, diga-me:\n• Que actividade **gostaria mais** de fazer no trabalho?\n• Qual **gostaria menos**?\n\n",
+      "waListHeader": "Aqui estão 5 actividades de trabalho:\n\n",
+      "waChoosePrompt": "Qual **gostaria mais**? E qual **gostaria menos**?\n"
     }
   },
   "recommenderAdvisor": {

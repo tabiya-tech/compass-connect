@@ -33,11 +33,6 @@ llm_call_duration_ms_ctx_var = contextvars.ContextVar(
     "llm_call_duration_ms", default=-1
 )
 
-# Detected language for the current turn (ENGLISH, SWAHILI, or MIXED)
-detected_language_ctx_var = contextvars.ContextVar(
-    "detected_language", default="english"
-)
-
 # User profile context for prompt injection (formatted string from plain personal data)
 # This context is injected into all conversation prompts so the LLM can have context about the user it is helping
 user_profile_context_var = contextvars.ContextVar[Optional[str]](
