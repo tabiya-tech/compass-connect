@@ -16,10 +16,7 @@ from app.countries import Country
 from app.server_config import UNSUMMARIZED_WINDOW_SIZE, TO_BE_SUMMARIZED_WINDOW_SIZE
 from app.vector_search.vector_search_dependencies import SearchServices
 from evaluation_tests.baseline_metrics_collector import BaselineMetricsCollector
-from app.agent.language_detector import get_detected_language_for_locale
 from app.agent.persona_detector import detect_persona
-from app.context_vars import detected_language_ctx_var
-from app.i18n.translation_service import get_i18n_manager
 
 logger = logging.getLogger(__name__)
 
@@ -108,8 +105,6 @@ class E2EChatExecutor:
         self._state.agent_director_state.persona_type = persona_type
         self._state.collect_experience_state.persona_type = persona_type
         self._state.skills_explorer_agent_state.persona_type = persona_type
-        locale = get_i18n_manager().get_locale()
-        detected_language_ctx_var.set(get_detected_language_for_locale(locale))
         await self._agent_director.execute(agent_input)
         # get the context again after the history has been updated
         conversation_context = await self._conversation_memory_manager.get_conversation_context()
