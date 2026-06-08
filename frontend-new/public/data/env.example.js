@@ -124,7 +124,8 @@ window.tabiyaConfig = {
       homeHero: "/path.svg",
       careerReadinessHero: "/thinkers.svg",
       authShapesBackground: "/Shapes.svg",
-      dashboardShapesBackground: '',
+      dashboardShapesBackground: "",
+      homeHeroIllustrationPosition: "", // "edge" or "center"
     })
   ),
   // Override platform colours and fonts — see src/styles/variables.css for all available keys.

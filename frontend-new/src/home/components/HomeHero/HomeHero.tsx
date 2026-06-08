@@ -16,6 +16,8 @@ const HomeHero: React.FC = () => {
   const theme = useTheme();
   const { t } = useTranslation();
   const appName = getProductName();
+  const illustrationUrls = getIllustrationUrls();
+  const isEdge = (illustrationUrls.homeHeroIllustrationPosition ?? "center") === "edge";
 
   return (
     <Box
@@ -25,9 +27,16 @@ const HomeHero: React.FC = () => {
         display: "flex",
         flexDirection: { xs: "column", sm: "row" },
         alignItems: { xs: "stretch", sm: "flex-end" },
-        gap: { xs: theme.fixedSpacing(theme.tabiyaSpacing.md), sm: theme.fixedSpacing(theme.tabiyaSpacing.lg) },
+        gap: {
+          xs: theme.fixedSpacing(theme.tabiyaSpacing.md),
+          sm: isEdge ? 0 : theme.fixedSpacing(theme.tabiyaSpacing.lg),
+        },
         overflow: "visible",
         position: "relative",
+        ...(isEdge && {
+          // Align text with a normal content area: replicate the centered max-width left offset + gutter
+          paddingLeft: "calc(max(0px, (100vw - var(--layout-content-max-width)) / 2) + var(--layout-gutter-x))",
+        }),
       }}
     >
       <Box sx={{ flex: { sm: "1 1 60%" }, minWidth: 0, alignSelf: { sm: "center" } }}>
@@ -77,28 +86,30 @@ const HomeHero: React.FC = () => {
         sx={{
           flex: { sm: "1 1 40%" },
           display: "flex",
-          justifyContent: "center",
+          justifyContent: isEdge ? { sm: "center", md: "flex-end" } : "center",
           alignItems: "flex-end",
           position: "relative",
           zIndex: 2,
+          overflow: "visible",
+          transform: isEdge ? { sm: "translateY(16px)" } : { sm: "translateY(0)" },
         }}
       >
         <Box
           sx={{
             width: "100%",
-            maxWidth: { xs: 320, sm: 480, md: 560 },
+            ...(!isEdge && { maxWidth: { xs: 320, sm: 480, md: 560 } }),
             height: { xs: 240, sm: 320, md: 380 },
             maxHeight: { xs: 240, sm: 320, md: 380 },
             aspectRatio: "14 / 9",
             display: "flex",
             alignItems: "flex-end",
-            justifyContent: "center",
+            justifyContent: isEdge ? { sm: "center", md: "flex-end" } : "center",
             marginBottom: { xs: theme.fixedSpacing(theme.tabiyaSpacing.md), sm: 0 },
           }}
         >
           <Box
             component="img"
-            src={getIllustrationUrls().homeHero}
+            src={illustrationUrls.homeHero}
             alt={t("home.hero.illustrationAlt")}
             data-testid={DATA_TEST_ID.HOME_HERO_ILLUSTRATION}
             sx={{
@@ -108,7 +119,7 @@ const HomeHero: React.FC = () => {
               maxHeight: "100%",
               display: "block",
               objectFit: "contain",
-              objectPosition: "bottom center",
+              objectPosition: isEdge ? "bottom right" : "bottom center",
               pointerEvents: "none",
             }}
           />
