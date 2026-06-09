@@ -3,7 +3,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { Box, useTheme } from "@mui/material";
 import ChatBubble from "src/chat/chatMessage/components/chatBubble/ChatBubble";
 import BrandLogo from "src/chat/chatMessage/components/brandLogo/BrandLogo";
-import { MessageContainer } from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import { MessageContainer } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import { ConversationMessageSender } from "src/chat/ChatService/ChatService.types";
 import {
   EffortType,

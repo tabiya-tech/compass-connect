@@ -6,10 +6,10 @@ import { nanoid } from "nanoid";
 import ChatPage from "./ChatPage";
 import { IChatMessage } from "src/chat/Chat.types";
 import { ConversationMessageSender, QuickReplyOption } from "src/chat/ChatService/ChatService.types";
-import CompassChatMessage, {
-  CompassChatMessageProps,
-  COMPASS_CHAT_MESSAGE_TYPE,
-} from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import AgentChatMessage, {
+  AgentChatMessageProps,
+  AGENT_CHAT_MESSAGE_TYPE,
+} from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import UserChatMessage, {
   UserChatMessageProps,
   USER_CHAT_MESSAGE_TYPE,
@@ -49,7 +49,7 @@ const createMessage = (
     component =
       sender === ConversationMessageSender.USER
         ? (props) => <UserChatMessage {...(props as UserChatMessageProps)} />
-        : (props) => <CompassChatMessage {...(props as CompassChatMessageProps)} />;
+        : (props) => <AgentChatMessage {...(props as AgentChatMessageProps)} />;
   }
 
   return { type: payload.type, message_id: payload.message_id, sender: payload.sender, payload, component };
@@ -59,13 +59,13 @@ const sampleConversation: IChatMessage<any>[] = [
   createMessage(
     "Hello! I'm Compass, your career exploration assistant. What kind of work have you done before?",
     ConversationMessageSender.COMPASS,
-    COMPASS_CHAT_MESSAGE_TYPE
+    AGENT_CHAT_MESSAGE_TYPE
   ),
   createMessage("I worked as a baker for 5 years.", ConversationMessageSender.USER, USER_CHAT_MESSAGE_TYPE),
   createMessage(
     "That's wonderful! Baking involves many valuable skills. Can you tell me more about your day-to-day responsibilities?",
     ConversationMessageSender.COMPASS,
-    COMPASS_CHAT_MESSAGE_TYPE
+    AGENT_CHAT_MESSAGE_TYPE
   ),
 ];
 
@@ -317,7 +317,7 @@ export const ChatFinished: Story = {
         createMessage(
           "Thank you for sharing your experience! You've identified many valuable skills. Good luck with your career journey.",
           ConversationMessageSender.COMPASS,
-          COMPASS_CHAT_MESSAGE_TYPE
+          AGENT_CHAT_MESSAGE_TYPE
         ),
       ],
       messageFieldProps: {
@@ -355,7 +355,7 @@ const InteractiveChatPage: React.FC = () => {
     createMessage(
       "Hello! I'm Compass. Tell me about your work experience.",
       ConversationMessageSender.COMPASS,
-      COMPASS_CHAT_MESSAGE_TYPE
+      AGENT_CHAT_MESSAGE_TYPE
     ),
   ]);
   const [aiIsTyping, setAiIsTyping] = useState(false);
@@ -376,7 +376,7 @@ const InteractiveChatPage: React.FC = () => {
         createMessage(
           `Thanks for sharing! "${message}" sounds like valuable experience. Would you like to tell me more?`,
           ConversationMessageSender.COMPASS,
-          COMPASS_CHAT_MESSAGE_TYPE
+          AGENT_CHAT_MESSAGE_TYPE
         ),
       ]);
       setQuickReplies([{ label: "Yes, tell me more" }, { label: "Move on" }]);

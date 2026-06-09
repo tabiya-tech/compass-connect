@@ -1,6 +1,11 @@
 import { nanoid } from "nanoid";
 import { IChatMessage } from "src/chat/Chat.types";
-import { ConversationMessageSender, MessageReaction, QuickReplyOption } from "./ChatService/ChatService.types";
+import {
+  ConversationMessage,
+  ConversationMessageSender,
+  MessageReaction,
+  QuickReplyOption,
+} from "./ChatService/ChatService.types";
 import BWSTaskMessage, { BWS_TASK_MESSAGE_TYPE } from "src/chat/chatMessage/bwsTaskMessage/BWSTaskMessage";
 import { BWSTaskMessageProps, BWSTaskMetadata } from "src/chat/chatMessage/bwsTaskMessage/BWSTaskMessage.types";
 import { CurrentPhase } from "src/chat/chatProgressbar/types";
@@ -9,10 +14,10 @@ import UserChatMessage, {
   UserChatMessageProps,
   USER_CHAT_MESSAGE_TYPE,
 } from "src/chat/chatMessage/userChatMessage/UserChatMessage";
-import CompassChatMessage, {
-  CompassChatMessageProps,
-  COMPASS_CHAT_MESSAGE_TYPE,
-} from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import AgentChatMessage, {
+  AgentChatMessageProps,
+  AGENT_CHAT_MESSAGE_TYPE,
+} from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import ConversationConclusionChatMessage, {
   ConversationConclusionChatMessageProps,
   CONVERSATION_CONCLUSION_CHAT_MESSAGE_TYPE,
@@ -79,15 +84,15 @@ export const generateUserMessage = (
   };
 };
 
-export const generateCompassMessage = (
+export const generateAgentMessage = (
   message_id: string,
   message: string,
   sent_at: string,
-  reaction: MessageReaction | null,
+  reaction?: MessageReaction | null,
   quick_reply_options?: QuickReplyOption[] | null,
   onQuickReplyClick?: (label: string) => void
-): IChatMessage<CompassChatMessageProps> => {
-  const payload: CompassChatMessageProps = {
+): IChatMessage<AgentChatMessageProps> => {
+  const payload: AgentChatMessageProps = {
     message_id: message_id,
     message: message,
     sent_at: sent_at,
@@ -96,11 +101,11 @@ export const generateCompassMessage = (
     ...(onQuickReplyClick ? { onQuickReplyClick } : {}),
   };
   return {
-    type: COMPASS_CHAT_MESSAGE_TYPE,
+    type: AGENT_CHAT_MESSAGE_TYPE,
     message_id: message_id,
     sender: ConversationMessageSender.COMPASS,
     payload: payload,
-    component: (prop: CompassChatMessageProps) => <CompassChatMessage {...prop} />,
+    component: (prop: AgentChatMessageProps) => <AgentChatMessage {...prop} />,
   };
 };
 
@@ -274,6 +279,61 @@ export const generateBWSTaskMessage = (
     payload,
     component: (props: BWSTaskMessageProps) => <BWSTaskMessage {...props} />,
   };
+};
+
+/**
+ * Maps a flat list of ConversationMessages to IChatMessage[]
+ * ready for ChatList. Pass messages already filtered (conclusion excluded).
+ */
+export const mapConversationMessagesToChatMessages = (
+  messages: ConversationMessage[],
+  options: {
+    userFillColor: string;
+    userTextColor: string;
+    onBWSSubmit: (taskId: string, bestWaId: string, worstWaId: string) => Promise<void>;
+    onQuickReply?: (label: string) => void;
+    bwsTransitionMessage: string;
+  }
+): IChatMessage<any>[] => {
+  return messages.flatMap((message, idx, arr): IChatMessage<any>[] => {
+    if (message.sender === ConversationMessageSender.USER) {
+      // BWS responses are encoded as JSON and should not appear as chat bubbles
+      try {
+        const parsed = JSON.parse(message.message);
+        if (parsed.type === "bws_response") return [];
+      } catch {}
+      return [generateUserMessage(message.message, message.sent_at, options.userFillColor, options.userTextColor)];
+    }
+
+    const isLast = idx === arr.length - 1;
+
+    if (message.message_type === "BWS_TASK" && message.metadata) {
+      const bwsMessage = generateBWSTaskMessage(message.message_id, message.metadata, options.onBWSSubmit);
+      if (message.metadata.task_number === 1) {
+        return [
+          generateAgentMessage(
+            `bws-transition-${message.message_id}`,
+            options.bwsTransitionMessage,
+            message.sent_at,
+            null
+          ),
+          bwsMessage,
+        ];
+      }
+      return [bwsMessage];
+    }
+
+    return [
+      generateAgentMessage(
+        message.message_id,
+        message.message,
+        message.sent_at,
+        message.reaction,
+        isLast ? message.quick_reply_options : null,
+        isLast && message.quick_reply_options ? options.onQuickReply : undefined
+      ),
+    ];
+  });
 };
 
 export const formatExperiencesToMessage = (experiences: string[] | null): string => {

@@ -1,7 +1,7 @@
 import React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Box } from "@mui/material";
-import CareerReadinessChat from "src/careerReadiness/components/CareerReadinessAgentMessage/CareerReadinessChat/CareerReadinessChat";
+import CareerReadinessChat from "src/careerReadiness/components/CareerReadinessChat/CareerReadinessChat";
 import CareerReadinessService from "src/careerReadiness/services/CareerReadinessService";
 import type { CareerReadinessConversationResponse } from "src/careerReadiness/types";
 

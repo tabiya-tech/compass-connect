@@ -9,14 +9,14 @@ import { ConversationMessageSender } from "src/chat/ChatService/ChatService.type
 import { IChatMessage } from "src/chat/Chat.types";
 import { nanoid } from "nanoid";
 import { USER_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/userChatMessage/UserChatMessage";
-import { COMPASS_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import { AGENT_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import { TYPING_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/typingChatMessage/TypingChatMessage";
 import { ERROR_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/errorChatMessage/ErrorChatMessage";
 import { CONVERSATION_CONCLUSION_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/conversationConclusionChatMessage/ConversationConclusionChatMessage";
-import CompassChatMessage, {
-  DATA_TEST_ID as COMPASS_CHAT_MESSAGE_DATA_TEST_ID,
-  CompassChatMessageProps,
-} from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import AgentChatMessage, {
+  DATA_TEST_ID as AGENT_CHAT_MESSAGE_DATA_TEST_ID,
+  AgentChatMessageProps,
+} from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import UserChatMessage, {
   DATA_TEST_ID as USER_CHAT_MESSAGE_DATA_TEST_ID,
   UserChatMessageProps,
@@ -41,8 +41,8 @@ jest.mock("src/chat/chatMessage/userChatMessage/UserChatMessage", () => {
   };
 });
 
-jest.mock("src/chat/chatMessage/compassChatMessage/CompassChatMessage", () => {
-  const originalModule = jest.requireActual("src/chat/chatMessage/compassChatMessage/CompassChatMessage");
+jest.mock("src/chat/chatMessage/agentChatMessage/AgentChatMessage", () => {
+  const originalModule = jest.requireActual("src/chat/chatMessage/agentChatMessage/AgentChatMessage");
   return {
     __esModule: true,
     ...originalModule,
@@ -117,7 +117,7 @@ describe("ChatList", () => {
     };
 
     // AND compass message data with reaction
-    const compassMessageData: CompassChatMessageProps = {
+    const compassMessageData: AgentChatMessageProps = {
       message_id: nanoid(),
       message: "Hi, I'm Compass",
       sent_at: givenDate,
@@ -128,7 +128,7 @@ describe("ChatList", () => {
     };
 
     // AND another compass message data
-    const compassMessageData2: CompassChatMessageProps = {
+    const compassMessageData2: AgentChatMessageProps = {
       message_id: nanoid(),
       message: "Let's explore your experiences!",
       sent_at: givenDate,
@@ -161,18 +161,18 @@ describe("ChatList", () => {
         component: (props) => <UserChatMessage {...(props as UserChatMessageProps)} />,
       },
       {
-        type: COMPASS_CHAT_MESSAGE_TYPE,
+        type: AGENT_CHAT_MESSAGE_TYPE,
         message_id: nanoid(),
         sender: ConversationMessageSender.COMPASS,
         payload: compassMessageData,
-        component: (props) => <CompassChatMessage {...(props as CompassChatMessageProps)} />,
+        component: (props) => <AgentChatMessage {...(props as AgentChatMessageProps)} />,
       },
       {
-        type: COMPASS_CHAT_MESSAGE_TYPE,
+        type: AGENT_CHAT_MESSAGE_TYPE,
         message_id: nanoid(),
         sender: ConversationMessageSender.COMPASS,
         payload: compassMessageData2,
-        component: (props) => <CompassChatMessage {...(props as CompassChatMessageProps)} />,
+        component: (props) => <AgentChatMessage {...(props as AgentChatMessageProps)} />,
       },
       {
         type: TYPING_CHAT_MESSAGE_TYPE,
@@ -233,15 +233,15 @@ describe("ChatList", () => {
     );
 
     // AND expect the Compass Chat message components to be shown
-    const compassChatMessages = screen.getAllByTestId(COMPASS_CHAT_MESSAGE_DATA_TEST_ID.CHAT_MESSAGE_CONTAINER);
-    expect(compassChatMessages).toHaveLength(2);
-    compassChatMessages.forEach((chatMessage) => {
+    const agentChatMessages = screen.getAllByTestId(AGENT_CHAT_MESSAGE_DATA_TEST_ID.CHAT_MESSAGE_CONTAINER);
+    expect(agentChatMessages).toHaveLength(2);
+    agentChatMessages.forEach((chatMessage) => {
       expect(chatMessage).toBeInTheDocument();
     });
 
     // AND expect the Compass Chat message components to be called with the correct messages
-    expect(CompassChatMessage).toHaveBeenNthCalledWith(1, compassMessageData, {});
-    expect(CompassChatMessage).toHaveBeenNthCalledWith(2, compassMessageData2, {});
+    expect(AgentChatMessage).toHaveBeenNthCalledWith(1, compassMessageData, {});
+    expect(AgentChatMessage).toHaveBeenNthCalledWith(2, compassMessageData2, {});
 
     // AND expect the Typing Chat Message component to be rendered
     expect(TypingChatMessage).toHaveBeenCalledWith({ waitBeforeThinking: 15000 }, {});
@@ -302,7 +302,7 @@ describe("ChatList", () => {
         message_id: nanoid(),
         sender: ConversationMessageSender.COMPASS,
         payload: givenCompassMessageData,
-        component: (props) => <CompassChatMessage {...(props as CompassChatMessageProps)} />,
+        component: (props) => <AgentChatMessage {...(props as AgentChatMessageProps)} />,
       },
     ];
 

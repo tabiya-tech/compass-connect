@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import CompassChatMessage from "./CompassChatMessage";
+import AgentChatMessage from "./AgentChatMessage";
 import { nanoid } from "nanoid";
 import { ReactionKind } from "src/chat/reaction/reaction.types";
 import { getBackendUrl } from "src/envService";
@@ -22,9 +22,9 @@ const mockData = (status: number, deleteStatus: number, delay: number = 0) => [
   },
 ];
 
-const meta: Meta<typeof CompassChatMessage> = {
-  title: "Chat/ChatMessage/CompassChatMessage",
-  component: CompassChatMessage,
+const meta: Meta<typeof AgentChatMessage> = {
+  title: "Chat/ChatMessage/AgentChatMessage",
+  component: AgentChatMessage,
   tags: ["autodocs"],
   parameters: {
     mockData: mockData(200, 204),
@@ -39,7 +39,7 @@ const meta: Meta<typeof CompassChatMessage> = {
 
 export default meta;
 
-type Story = StoryObj<typeof CompassChatMessage>;
+type Story = StoryObj<typeof AgentChatMessage>;
 
 export const Shown: Story = {
   args: {
@@ -82,43 +82,43 @@ export const SingleLetter: Story = {
 export const ShownWithDifferentTimestamps: Story = {
   render: () => (
     <>
-      <CompassChatMessage
+      <AgentChatMessage
         message_id={nanoid()}
         sent_at={new Date().toISOString()}
         message="sent just now"
         reaction={null}
       />
-      <CompassChatMessage
+      <AgentChatMessage
         message_id={nanoid()}
         sent_at={new Date(Date.now() - 1000 * 60 * 60).toISOString()}
         message="sent an hour ago"
         reaction={null}
       />
-      <CompassChatMessage
+      <AgentChatMessage
         message_id={nanoid()}
         sent_at={new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()}
         message="sent yesterday"
         reaction={null}
       />
-      <CompassChatMessage
+      <AgentChatMessage
         message_id={nanoid()}
         sent_at={new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString()}
         message="sent two days ago"
         reaction={null}
       />
-      <CompassChatMessage
+      <AgentChatMessage
         message_id={nanoid()}
         sent_at={new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString()}
         message="sent a week ago"
         reaction={null}
       />
-      <CompassChatMessage
+      <AgentChatMessage
         message_id={nanoid()}
         sent_at={new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString()}
         message="sent a month ago"
         reaction={null}
       />
-      <CompassChatMessage
+      <AgentChatMessage
         message_id={nanoid()}
         sent_at={new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString()}
         message="sent a year ago"

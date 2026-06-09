@@ -6,10 +6,10 @@ import ChatView from "./ChatView";
 import { IChatMessage } from "src/chat/Chat.types";
 import { ConversationMessageSender, QuickReplyOption } from "src/chat/ChatService/ChatService.types";
 import { nanoid } from "nanoid";
-import CompassChatMessage, {
-  CompassChatMessageProps,
-  COMPASS_CHAT_MESSAGE_TYPE,
-} from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import AgentChatMessage, {
+  AgentChatMessageProps,
+  AGENT_CHAT_MESSAGE_TYPE,
+} from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import UserChatMessage, {
   UserChatMessageProps,
   USER_CHAT_MESSAGE_TYPE,
@@ -52,7 +52,7 @@ const createMessage = (
     component =
       sender === ConversationMessageSender.USER
         ? (props) => <UserChatMessage {...(props as UserChatMessageProps)} />
-        : (props) => <CompassChatMessage {...(props as CompassChatMessageProps)} />;
+        : (props) => <AgentChatMessage {...(props as AgentChatMessageProps)} />;
   }
 
   return {
@@ -69,7 +69,7 @@ const sampleConversation = [
   createMessage(
     "Hello! I'm Compass, your career exploration assistant. I'm here to help you discover your skills and explore career opportunities. What kind of work have you done before?",
     ConversationMessageSender.COMPASS,
-    COMPASS_CHAT_MESSAGE_TYPE
+    AGENT_CHAT_MESSAGE_TYPE
   ),
   createMessage(
     "I worked as a baker for 5 years. I made bread, cakes, and pastries.",
@@ -79,7 +79,7 @@ const sampleConversation = [
   createMessage(
     "That's wonderful experience! Baking involves many valuable skills. Can you tell me more about your responsibilities? For example, did you manage inventory, train others, or handle customer orders?",
     ConversationMessageSender.COMPASS,
-    COMPASS_CHAT_MESSAGE_TYPE
+    AGENT_CHAT_MESSAGE_TYPE
   ),
 ];
 
@@ -172,7 +172,7 @@ export const SingleMessage: Story = {
       createMessage(
         "Welcome to Compass! I'm here to help you explore your career options. What would you like to discuss today?",
         ConversationMessageSender.COMPASS,
-        COMPASS_CHAT_MESSAGE_TYPE
+        AGENT_CHAT_MESSAGE_TYPE
       ),
     ],
     messageFieldProps: {
@@ -220,7 +220,7 @@ export const WithSingleQuickReply: Story = {
       createMessage(
         "Would you like to continue exploring your skills?",
         ConversationMessageSender.COMPASS,
-        COMPASS_CHAT_MESSAGE_TYPE
+        AGENT_CHAT_MESSAGE_TYPE
       ),
     ],
     quickReplyOptions: [{ label: "Yes, let's continue" }],
@@ -246,7 +246,7 @@ export const WithManyQuickReplies: Story = {
       createMessage(
         "Which area would you like to focus on?",
         ConversationMessageSender.COMPASS,
-        COMPASS_CHAT_MESSAGE_TYPE
+        AGENT_CHAT_MESSAGE_TYPE
       ),
     ],
     quickReplyOptions: [
@@ -280,7 +280,7 @@ export const WithLongQuickReplyText: Story = {
       createMessage(
         "Please select the option that best describes your experience:",
         ConversationMessageSender.COMPASS,
-        COMPASS_CHAT_MESSAGE_TYPE
+        AGENT_CHAT_MESSAGE_TYPE
       ),
     ],
     quickReplyOptions: [
@@ -358,7 +358,7 @@ export const ChatFinished: Story = {
       createMessage(
         "Thank you for exploring your skills with me today! You've identified many valuable competencies. Good luck with your career journey!",
         ConversationMessageSender.COMPASS,
-        COMPASS_CHAT_MESSAGE_TYPE
+        AGENT_CHAT_MESSAGE_TYPE
       ),
     ],
     messageFieldProps: {
@@ -496,7 +496,7 @@ export const LongConversation: Story = {
           ? `This is message ${i + 1} from Compass. It contains some helpful information about career exploration and skill discovery.`
           : `This is my response ${i + 1}. I'm sharing my work experience and skills with Compass.`,
         i % 2 === 0 ? ConversationMessageSender.COMPASS : ConversationMessageSender.USER,
-        i % 2 === 0 ? COMPASS_CHAT_MESSAGE_TYPE : USER_CHAT_MESSAGE_TYPE
+        i % 2 === 0 ? AGENT_CHAT_MESSAGE_TYPE : USER_CHAT_MESSAGE_TYPE
       )
     ),
     messageFieldProps: {
@@ -524,7 +524,7 @@ const InteractiveChatView: React.FC = () => {
     createMessage(
       "Hello! I'm Compass. Tell me about your work experience.",
       ConversationMessageSender.COMPASS,
-      COMPASS_CHAT_MESSAGE_TYPE
+      AGENT_CHAT_MESSAGE_TYPE
     ),
   ]);
   const [aiIsTyping, setAiIsTyping] = useState(false);
@@ -552,7 +552,7 @@ const InteractiveChatView: React.FC = () => {
         createMessage(
           `Thanks for sharing! "${message}" sounds like valuable experience. Would you like to tell me more about specific skills you developed?`,
           ConversationMessageSender.COMPASS,
-          COMPASS_CHAT_MESSAGE_TYPE
+          AGENT_CHAT_MESSAGE_TYPE
         ),
       ]);
       setQuickReplies([

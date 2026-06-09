@@ -12,11 +12,9 @@ import { ConversationMessageSender, QuickReplyOption } from "src/chat/ChatServic
 import { IChatMessage } from "src/chat/Chat.types";
 import { nanoid } from "nanoid";
 import { USER_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/userChatMessage/UserChatMessage";
-import { COMPASS_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import { AGENT_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import UserChatMessage, { UserChatMessageProps } from "src/chat/chatMessage/userChatMessage/UserChatMessage";
-import CompassChatMessage, {
-  CompassChatMessageProps,
-} from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import AgentChatMessage, { AgentChatMessageProps } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 
 // Mock the ChatList component
 jest.mock("src/chat/chatList/ChatList", () => {
@@ -146,7 +144,7 @@ describe("ChatView", () => {
         component: (props) => <UserChatMessage {...(props as UserChatMessageProps)} />,
       },
       {
-        type: COMPASS_CHAT_MESSAGE_TYPE,
+        type: AGENT_CHAT_MESSAGE_TYPE,
         message_id: nanoid(),
         sender: ConversationMessageSender.COMPASS,
         payload: {
@@ -154,8 +152,8 @@ describe("ChatView", () => {
           message: "Hi, I'm Compass",
           sent_at: givenDate,
           reaction: null,
-        } as CompassChatMessageProps,
-        component: (props) => <CompassChatMessage {...(props as CompassChatMessageProps)} />,
+        } as AgentChatMessageProps,
+        component: (props) => <AgentChatMessage {...(props as AgentChatMessageProps)} />,
       },
     ];
 

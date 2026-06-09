@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Box, Button, Tooltip, Typography, LinearProgress, useTheme } from "@mui/material";
 import { BWSAlternative, BWSTaskMessageProps } from "./BWSTaskMessage.types";
 import { ConversationMessageSender } from "src/chat/ChatService/ChatService.types";
-import { MessageContainer } from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import { MessageContainer } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import BrandLogo from "src/chat/chatMessage/components/brandLogo/BrandLogo";
 
 const uniqueId = "bws-task-message-3c9e8f21-47b2-4a1d-9d63-c7e2f1a85b04";

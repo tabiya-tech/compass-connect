@@ -2,11 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTheme } from "@mui/material";
 import ChatPage from "src/chat/ChatPage/ChatPage";
 import CareerExplorerSidebar from "src/home/components/Sidebar/CareerExplorerSidebar";
-import { generateUserMessage } from "src/chat/util";
+import { generateUserMessage, generateTypingMessage } from "src/chat/util";
 import type { IChatMessage } from "src/chat/Chat.types";
 import type { TranslationKey } from "src/react-i18next";
 import CareerExplorerService from "src/careerExplorer/services/CareerExplorerService";
-import { generateCareerExplorerTypingMessage } from "src/careerExplorer/components/CareerExplorerTypingMessage/CareerExplorerTypingMessage";
 import { mapCareerExplorerMessagesToChatMessages } from "src/careerExplorer/utils/mapCareerExplorerMessagesToChatMessages";
 import type { CareerExplorerMessage } from "src/careerExplorer/types";
 
@@ -40,7 +39,7 @@ const CareerExplorerChat: React.FC<CareerExplorerChatProps> = ({
     handleSendRef.current(label);
   }, []);
 
-  const typingMessage = useMemo(() => generateCareerExplorerTypingMessage(), []);
+  const typingMessage = useMemo(() => generateTypingMessage(), []);
 
   const displayMessages = useMemo(() => {
     if (aiIsTyping || (isLoading && messages.length === 0)) {

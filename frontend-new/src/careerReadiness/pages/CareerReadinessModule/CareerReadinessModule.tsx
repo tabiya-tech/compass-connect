@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getProductName } from "src/envService";
 import { routerPaths } from "src/app/routerPaths";
-import CareerReadinessChat from "src/careerReadiness/components/CareerReadinessAgentMessage/CareerReadinessChat/CareerReadinessChat";
+import CareerReadinessChat from "src/careerReadiness/components/CareerReadinessChat/CareerReadinessChat";
 import CareerReadinessService from "src/careerReadiness/services/CareerReadinessService";
 import type { ModuleSummary } from "src/careerReadiness/types";
 import ErrorPage from "src/error/errorPage/ErrorPage";

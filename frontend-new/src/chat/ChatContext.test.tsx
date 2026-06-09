@@ -7,10 +7,8 @@ import { ChatProvider, useChatContext } from "./ChatContext";
 import { FeedbackStatus } from "src/feedback/overallFeedback/feedbackForm/FeedbackForm";
 import { PersistentStorageService } from "src/app/PersistentStorageService/PersistentStorageService";
 import { ConversationMessageSender } from "src/chat/ChatService/ChatService.types";
-import CompassChatMessage, {
-  CompassChatMessageProps,
-} from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
-import { COMPASS_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import AgentChatMessage, { AgentChatMessageProps } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
+import { AGENT_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 
 // Mock PersistentStorageService
 jest.mock("src/app/PersistentStorageService/PersistentStorageService", () => ({
@@ -47,7 +45,7 @@ describe("ChatContext", () => {
       message: "Test message",
       sender: ConversationMessageSender.COMPASS,
       sent_at: FIXED_TIMESTAMP,
-      type: COMPASS_CHAT_MESSAGE_TYPE,
+      type: AGENT_CHAT_MESSAGE_TYPE,
       reaction: null,
     };
 
@@ -58,11 +56,11 @@ describe("ChatContext", () => {
         <button
           onClick={() =>
             addMessage({
-              type: COMPASS_CHAT_MESSAGE_TYPE,
+              type: AGENT_CHAT_MESSAGE_TYPE,
               message_id: messageData.message_id,
               sender: messageData.sender,
               payload: messageData,
-              component: (props) => <CompassChatMessage {...(props as CompassChatMessageProps)} />,
+              component: (props) => <AgentChatMessage {...(props as AgentChatMessageProps)} />,
             })
           }
         >
@@ -127,7 +125,7 @@ describe("ChatContext", () => {
       sender: ConversationMessageSender.COMPASS,
       message: "Test message",
       sent_at: FIXED_TIMESTAMP,
-      type: COMPASS_CHAT_MESSAGE_TYPE,
+      type: AGENT_CHAT_MESSAGE_TYPE,
       reaction: null,
     };
 

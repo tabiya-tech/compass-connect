@@ -1,12 +1,7 @@
-import React from "react";
 import type { IChatMessage } from "src/chat/Chat.types";
-import { ConversationMessageSender } from "src/chat/ChatService/ChatService.types";
-import { generateUserMessage } from "src/chat/util";
+import { generateAgentMessage, generateUserMessage } from "src/chat/util";
 import type { CareerExplorerMessage } from "src/careerExplorer/types";
-import CareerExplorerAgentMessage, {
-  CAREER_EXPLORER_AGENT_MESSAGE_TYPE,
-  type CareerExplorerAgentMessageProps,
-} from "src/careerExplorer/components/CareerExplorerAgentMessage/CareerExplorerAgentMessage";
+import type { AgentChatMessageProps } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 
 export const mapCareerExplorerMessageToChatMessage = (
   msg: CareerExplorerMessage,
@@ -14,26 +9,19 @@ export const mapCareerExplorerMessageToChatMessage = (
   fillColor: string,
   textColor: string,
   onQuickReplyClick?: (label: string) => void
-): IChatMessage<CareerExplorerAgentMessageProps> | ReturnType<typeof generateUserMessage> => {
-  const sentAt = msg.sent_at;
+): IChatMessage<AgentChatMessageProps> | ReturnType<typeof generateUserMessage> => {
   if (msg.sender === "USER") {
-    return generateUserMessage(msg.message, sentAt, fillColor, textColor, msg.message_id);
+    return generateUserMessage(msg.message, msg.sent_at, fillColor, textColor, msg.message_id);
   }
   const quickReplyOptions = isLastMessage ? msg.metadata?.quick_reply_options ?? null : null;
-  const payload: CareerExplorerAgentMessageProps = {
-    message_id: msg.message_id,
-    message: msg.message,
-    sent_at: sentAt,
-    quick_reply_options: quickReplyOptions,
-    onQuickReplyClick: quickReplyOptions ? onQuickReplyClick : undefined,
-  };
-  return {
-    type: CAREER_EXPLORER_AGENT_MESSAGE_TYPE,
-    message_id: msg.message_id,
-    sender: ConversationMessageSender.COMPASS,
-    payload,
-    component: (p: CareerExplorerAgentMessageProps) => <CareerExplorerAgentMessage {...p} />,
-  };
+  return generateAgentMessage(
+    msg.message_id,
+    msg.message,
+    msg.sent_at,
+    null,
+    quickReplyOptions,
+    quickReplyOptions ? onQuickReplyClick : undefined
+  );
 };
 
 export const mapCareerExplorerMessagesToChatMessages = (
