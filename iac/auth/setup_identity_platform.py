@@ -218,15 +218,11 @@ def _setup_identity_platform(
                 ),
                 verify_email_template=EmailTemplateArgs(
                     sender_local_part="noreply",
-                    sender_display_name=app_name,
-                    subject="Please verify your email address",
-                    body=f"<p>Hello %DISPLAY_NAME%,</p>\n<p>Follow this link to verify your email address.</p>\n<p><a href='%LINK%'>%LINK%</a></p>\n<p>If you didn't ask to verify this address, you can ignore this email.</p>\n<p>Thanks,</p>\n<p>Your {app_name} team</p>",
+                    sender_display_name=app_name
                 ),
                 reset_password_template=EmailTemplateArgs(
                     sender_local_part="noreply",
-                    sender_display_name=app_name,
-                    subject="Reset your password",
-                    body=f"<p>Hello,</p>\n<p>Follow this link to reset your {app_name} password for your %EMAIL% account.</p>\n<p><a href='%LINK%'>%LINK%</a></p>\n<p>If you didn't ask to reset your password, you can ignore this email.</p>\n<p>Thanks,</p>\n<p>Your {app_name} team</p>",
+                    sender_display_name=app_name
                 )
             )
         ),

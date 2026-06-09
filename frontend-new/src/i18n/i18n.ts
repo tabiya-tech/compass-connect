@@ -23,6 +23,7 @@ import questionsEsEs from "src/feedback/overallFeedback/feedbackForm/questions-e
 import questionsEsAr from "src/feedback/overallFeedback/feedbackForm/questions-es-AR.json";
 import questionsNyZm from "src/feedback/overallFeedback/feedbackForm/questions-ny-ZM.json";
 import questionsPtMz from "src/feedback/overallFeedback/feedbackForm/questions-pt-MZ.json";
+import { updateLanguage } from "../auth/firebaseConfig";
 
 // --- i18n initialization ---
 const resources = {
@@ -105,6 +106,8 @@ if (!envSupportedLocales.includes(currentLanguage as Locale)) {
   i18n.changeLanguage(fallbackLocale);
 }
 
+updateLanguage(currentLanguage);
+
 // ========================================================
 //             Unexpected Events
 // ========================================================
@@ -119,6 +122,10 @@ i18n.on("missingKey", (languages, namespace, key: string, res: string) => {
 
 i18n.on("failedLoading", (lng, ns, msg) => {
   console.error(`Failed to load translation for ${lng} ${ns}`, msg);
+});
+
+i18n.on("languageChanged", (lng) => {
+  updateLanguage(lng);
 });
 
 export default i18n;
