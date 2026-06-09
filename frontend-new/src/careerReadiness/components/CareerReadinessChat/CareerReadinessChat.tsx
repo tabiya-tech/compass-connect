@@ -4,29 +4,26 @@ import { useSnackbar } from "notistack";
 import { useTranslation } from "react-i18next";
 import ChatPage from "src/chat/ChatPage/ChatPage";
 import CareerReadinessSidebar from "src/home/components/Sidebar/CareerReadinessSidebar";
-import { generateSomethingWentWrongMessage } from "src/chat/util";
+import {
+  generateAgentMessage,
+  generateSomethingWentWrongMessage,
+  generateTypingMessage,
+  generateUserMessage,
+} from "src/chat/util";
 import type { IChatMessage } from "src/chat/Chat.types";
 import { ConversationMessageSender } from "src/chat/ChatService/ChatService.types";
 import { PersistentStorageService } from "src/app/PersistentStorageService/PersistentStorageService";
 import CareerReadinessService from "src/careerReadiness/services/CareerReadinessService";
-import { generateCareerReadinessTypingMessage } from "src/careerReadiness/components/CareerReadinessTypingMessage/CareerReadinessTypingMessage";
 import {
   getLatestQuizHistorySummary,
   mapCareerReadinessMessagesToChatMessages,
 } from "src/careerReadiness/utils/mapCareerReadinessMessagesToChatMessages";
-import CareerReadinessAgentMessage, {
-  CAREER_READINESS_AGENT_MESSAGE_TYPE,
-  type CareerReadinessAgentMessageProps,
-} from "src/careerReadiness/components/CareerReadinessAgentMessage/CareerReadinessAgentMessage";
+import type { AgentChatMessageProps } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import CareerReadinessQuizChatMessage, {
   CAREER_READINESS_QUIZ_CHAT_MESSAGE_TYPE,
   type CareerReadinessQuizChatMessageProps,
   type QuizSubmissionResult,
 } from "src/careerReadiness/components/CareerReadinessQuizChatMessage/CareerReadinessQuizChatMessage";
-import CareerReadinessUserMessage, {
-  CAREER_READINESS_USER_MESSAGE_TYPE,
-  type CareerReadinessUserMessageProps,
-} from "src/careerReadiness/components/CareerReadinessUserMessage/CareerReadinessUserMessage";
 import type { QuizSubmissionResponse } from "src/careerReadiness/types";
 
 export interface CareerReadinessChatProps {
@@ -61,7 +58,7 @@ const CareerReadinessChat: React.FC<CareerReadinessChatProps> = ({
     handleSendRef.current(label);
   }, []);
 
-  const typingMessage = useMemo(() => generateCareerReadinessTypingMessage(), []);
+  const typingMessage = useMemo(() => generateTypingMessage(), []);
 
   const displayMessages = useMemo(() => {
     if (aiIsTyping) {
@@ -91,20 +88,10 @@ const CareerReadinessChat: React.FC<CareerReadinessChatProps> = ({
       targetConversationId: string,
       message: string,
       options?: { messageId?: string; sentAt?: string }
-    ): IChatMessage<CareerReadinessAgentMessageProps> => {
+    ): IChatMessage<AgentChatMessageProps> => {
       const messageId = options?.messageId ?? `quiz-result-${targetConversationId}-${Date.now()}`;
       const sentAt = options?.sentAt ?? new Date().toISOString();
-      return {
-        type: CAREER_READINESS_AGENT_MESSAGE_TYPE,
-        message_id: messageId,
-        sender: ConversationMessageSender.COMPASS,
-        payload: {
-          message_id: messageId,
-          message,
-          sent_at: sentAt,
-        },
-        component: (p: CareerReadinessAgentMessageProps) => <CareerReadinessAgentMessage {...p} />,
-      };
+      return generateAgentMessage(messageId, message, sentAt, null);
     },
     []
   );
@@ -114,22 +101,6 @@ const CareerReadinessChat: React.FC<CareerReadinessChatProps> = ({
       return t("careerReadiness.quizPassedAgentMessage", { score, total });
     },
     [t]
-  );
-
-  const buildUserMessage = useCallback(
-    (message: string, messageId?: string): IChatMessage<CareerReadinessUserMessageProps> => {
-      return {
-        type: CAREER_READINESS_USER_MESSAGE_TYPE,
-        message_id: messageId ?? `career-readiness-user-${Date.now()}`,
-        sender: ConversationMessageSender.USER,
-        payload: {
-          message,
-          fillColor: theme.palette.accent.main,
-        },
-        component: (p: CareerReadinessUserMessageProps) => <CareerReadinessUserMessage {...p} />,
-      };
-    },
-    [theme]
   );
 
   const serializeAnswers = useCallback((answers: Record<number, string>): Record<string, string> => {
@@ -407,7 +378,13 @@ const CareerReadinessChat: React.FC<CareerReadinessChatProps> = ({
         })
       );
       const optimisticId = `optimistic-${Date.now()}`;
-      const optimisticUserMessage = buildUserMessage(userMessage, optimisticId);
+      const optimisticUserMessage = generateUserMessage(
+        userMessage,
+        new Date().toISOString(),
+        theme.palette.accent.main,
+        theme.palette.accent.contrastText,
+        optimisticId
+      );
       setMessages((prev) => [...prev, optimisticUserMessage]);
       setAiIsTyping(true);
       setFailedSendDraft(null);
@@ -455,7 +432,6 @@ const CareerReadinessChat: React.FC<CareerReadinessChatProps> = ({
       isChatLockedForQuiz,
       onModuleCompleted,
       appendOrReplaceQuizMessage,
-      buildUserMessage,
       persistQuizQuestions,
       createQuizSubmitHandler,
       handleQuickReply,

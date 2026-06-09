@@ -1,20 +1,13 @@
 /**
  * Maps Career Readiness API messages to the chat UI format (IChatMessage).
  * Converts backend payloads into the shape ChatList expects and wires agent
- * messages to CareerReadinessAgentMessage so the first message can explain the module.
+ * messages to AgentChatMessage so the first message can explain the module.
  */
-import React from "react";
 import type { IChatMessage } from "src/chat/Chat.types";
-import { ConversationMessageSender } from "src/chat/ChatService/ChatService.types";
 import type { CareerReadinessMessage } from "src/careerReadiness/types";
-import CareerReadinessAgentMessage, {
-  CAREER_READINESS_AGENT_MESSAGE_TYPE,
-  type CareerReadinessAgentMessageProps,
-} from "src/careerReadiness/components/CareerReadinessAgentMessage/CareerReadinessAgentMessage";
-import CareerReadinessUserMessage, {
-  CAREER_READINESS_USER_MESSAGE_TYPE,
-  type CareerReadinessUserMessageProps,
-} from "src/careerReadiness/components/CareerReadinessUserMessage/CareerReadinessUserMessage";
+import { generateAgentMessage, generateUserMessage } from "src/chat/util";
+import type { AgentChatMessageProps } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
+import type { UserChatMessageProps } from "src/chat/chatMessage/userChatMessage/UserChatMessage";
 
 export const isBackendQuizAnswersMessage = (msg: CareerReadinessMessage): boolean => {
   return msg.sender === "USER" && msg.message.startsWith("Quiz answers:");
@@ -104,37 +97,19 @@ export const mapCareerReadinessMessageToChatMessage = (
   fillColor: string,
   textColor?: string,
   onQuickReplyClick?: (label: string) => void
-): IChatMessage<CareerReadinessAgentMessageProps> | IChatMessage<CareerReadinessUserMessageProps> => {
-  const sentAt = msg.sent_at;
+): IChatMessage<AgentChatMessageProps> | IChatMessage<UserChatMessageProps> => {
   if (msg.sender === "USER") {
-    const payload: CareerReadinessUserMessageProps = {
-      message: msg.message,
-      fillColor,
-      textColor,
-    };
-    return {
-      type: CAREER_READINESS_USER_MESSAGE_TYPE,
-      message_id: msg.message_id,
-      sender: ConversationMessageSender.USER,
-      payload,
-      component: (p: CareerReadinessUserMessageProps) => <CareerReadinessUserMessage {...p} />,
-    };
+    return generateUserMessage(msg.message, msg.sent_at, fillColor, textColor ?? "", msg.message_id);
   }
   const quickReplyOptions = isLastMessage ? msg.metadata?.quick_reply_options ?? null : null;
-  const payload: CareerReadinessAgentMessageProps = {
-    message_id: msg.message_id,
-    message: msg.message,
-    sent_at: sentAt,
-    quick_reply_options: quickReplyOptions,
-    onQuickReplyClick: quickReplyOptions ? onQuickReplyClick : undefined,
-  };
-  return {
-    type: CAREER_READINESS_AGENT_MESSAGE_TYPE,
-    message_id: msg.message_id,
-    sender: ConversationMessageSender.COMPASS,
-    payload,
-    component: (p: CareerReadinessAgentMessageProps) => <CareerReadinessAgentMessage {...p} />,
-  };
+  return generateAgentMessage(
+    msg.message_id,
+    msg.message,
+    msg.sent_at,
+    null,
+    quickReplyOptions,
+    quickReplyOptions ? onQuickReplyClick : undefined
+  );
 };
 
 export const mapCareerReadinessMessagesToChatMessages = (

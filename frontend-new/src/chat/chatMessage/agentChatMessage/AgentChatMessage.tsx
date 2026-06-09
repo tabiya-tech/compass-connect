@@ -19,25 +19,18 @@ export const MessageContainer = styled(Box)<{ origin: ConversationMessageSender 
   width: "100%",
 }));
 
-export const COMPASS_CHAT_MESSAGE_TYPE = `compass-message-${uniqueId}`;
+export const AGENT_CHAT_MESSAGE_TYPE = `agent-message-${uniqueId}`;
 
-export interface CompassChatMessageProps {
+export interface AgentChatMessageProps {
   message_id: string;
   message: string;
   sent_at: string; // ISO formatted datetime string
-  reaction: MessageReaction | null;
+  reaction?: MessageReaction | null;
   quick_reply_options?: QuickReplyOption[] | null;
   onQuickReplyClick?: (label: string) => void;
 }
 
-const CompassChatMessage: React.FC<CompassChatMessageProps> = ({
-  message_id,
-  message,
-  sent_at,
-  reaction,
-  quick_reply_options,
-  onQuickReplyClick,
-}) => {
+const AgentChatMessage: React.FC<AgentChatMessageProps> = ({ message }) => {
   return (
     <MessageContainer origin={ConversationMessageSender.COMPASS} data-testid={DATA_TEST_ID.CHAT_MESSAGE_CONTAINER}>
       <Box data-testid={DATA_TEST_ID.CHAT_MESSAGE_BRAND_LOGO}>
@@ -61,4 +54,4 @@ const CompassChatMessage: React.FC<CompassChatMessageProps> = ({
   );
 };
 
-export default CompassChatMessage;
+export default AgentChatMessage;

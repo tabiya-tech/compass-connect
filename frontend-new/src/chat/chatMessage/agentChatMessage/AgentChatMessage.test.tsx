@@ -1,7 +1,7 @@
 // mute the console
 import "src/_test_utilities/consoleMock";
 
-import CompassChatMessage, { COMPASS_CHAT_MESSAGE_TYPE, DATA_TEST_ID } from "./CompassChatMessage";
+import AgentChatMessage, { AGENT_CHAT_MESSAGE_TYPE, DATA_TEST_ID } from "./AgentChatMessage";
 import ChatBubble, {
   DATA_TEST_ID as CHAT_BUBBLE_DATA_TEST_ID,
 } from "src/chat/chatMessage/components/chatBubble/ChatBubble";
@@ -19,18 +19,18 @@ jest.mock("src/chat/chatMessage/components/chatBubble/ChatBubble", () => {
 });
 
 describe("render tests", () => {
-  test("should render the Compass Chat message", () => {
-    // GIVEN a compass chat message sent at a given time
+  test("should render the Agent Chat message", () => {
+    // GIVEN an agent chat message
     const givenDate = new Date(2024, 6, 25).toISOString();
     const messageData = {
       message_id: nanoid(),
-      message: "Hello, I'm Compass",
+      message: "Hello, I'm the assistant",
       sent_at: givenDate,
-      type: COMPASS_CHAT_MESSAGE_TYPE,
+      type: AGENT_CHAT_MESSAGE_TYPE,
       reaction: null,
     };
-    // WHEN the user chat message is rendered
-    render(<CompassChatMessage {...messageData} />);
+    // WHEN the agent chat message is rendered
+    render(<AgentChatMessage {...messageData} />);
 
     // THEN expect the message container to be visible
     expect(screen.getByTestId(DATA_TEST_ID.CHAT_MESSAGE_CONTAINER)).toBeInTheDocument();

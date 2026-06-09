@@ -47,7 +47,7 @@ import { lazyWithPreload } from "src/utils/preloadableComponent/PreloadableCompo
 import { ConversationPhase, defaultCurrentPhase } from "./chatProgressbar/types";
 import { ChatProvider } from "src/chat/ChatContext";
 import { USER_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/userChatMessage/UserChatMessage";
-import { COMPASS_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import { AGENT_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import { TYPING_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/typingChatMessage/TypingChatMessage";
 import { ERROR_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/errorChatMessage/ErrorChatMessage";
 import { CONVERSATION_CONCLUSION_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/conversationConclusionChatMessage/ConversationConclusionChatMessage";
@@ -1273,9 +1273,7 @@ describe("Chat", () => {
             ...givenPreviousConversation.messages.map((message) => ({
               message_id: expect.any(String),
               type:
-                message.sender === ConversationMessageSender.COMPASS
-                  ? COMPASS_CHAT_MESSAGE_TYPE
-                  : USER_CHAT_MESSAGE_TYPE,
+                message.sender === ConversationMessageSender.COMPASS ? AGENT_CHAT_MESSAGE_TYPE : USER_CHAT_MESSAGE_TYPE,
               sender: message.sender,
               payload:
                 message.sender === ConversationMessageSender.COMPASS
@@ -1337,9 +1335,7 @@ describe("Chat", () => {
             ...givenPreviousConversation.messages.map((message) => ({
               message_id: expect.any(String),
               type:
-                message.sender === ConversationMessageSender.COMPASS
-                  ? COMPASS_CHAT_MESSAGE_TYPE
-                  : USER_CHAT_MESSAGE_TYPE,
+                message.sender === ConversationMessageSender.COMPASS ? AGENT_CHAT_MESSAGE_TYPE : USER_CHAT_MESSAGE_TYPE,
               sender: message.sender,
               payload:
                 message.sender === ConversationMessageSender.COMPASS
@@ -1372,9 +1368,7 @@ describe("Chat", () => {
             ...givenSendMessageResponse.messages.map((message) => ({
               message_id: expect.any(String),
               type:
-                message.sender === ConversationMessageSender.COMPASS
-                  ? COMPASS_CHAT_MESSAGE_TYPE
-                  : USER_CHAT_MESSAGE_TYPE,
+                message.sender === ConversationMessageSender.COMPASS ? AGENT_CHAT_MESSAGE_TYPE : USER_CHAT_MESSAGE_TYPE,
               sender:
                 message.sender === ConversationMessageSender.COMPASS
                   ? ConversationMessageSender.COMPASS
@@ -1529,9 +1523,7 @@ describe("Chat", () => {
             ...givenPreviousConversation.messages.map((message) => ({
               message_id: expect.any(String),
               type:
-                message.sender === ConversationMessageSender.COMPASS
-                  ? COMPASS_CHAT_MESSAGE_TYPE
-                  : USER_CHAT_MESSAGE_TYPE,
+                message.sender === ConversationMessageSender.COMPASS ? AGENT_CHAT_MESSAGE_TYPE : USER_CHAT_MESSAGE_TYPE,
               sender: message.sender,
               payload:
                 message.sender === ConversationMessageSender.COMPASS

@@ -4,7 +4,7 @@ import { ConversationMessageSender } from "src/chat/ChatService/ChatService.type
 import {
   FIXED_MESSAGES_TEXT,
   formatExperiencesToMessage,
-  generateCompassMessage,
+  generateAgentMessage,
   generateCVTypingMessage,
   generatePleaseRepeatMessage,
   generateSomethingWentWrongMessage,
@@ -16,7 +16,7 @@ import { ReactionKind } from "./reaction/reaction.types";
 import { ConversationPhase } from "./chatProgressbar/types";
 import { InvalidConversationPhasePercentage } from "./errors";
 import { USER_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/userChatMessage/UserChatMessage";
-import { COMPASS_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import { AGENT_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import { TYPING_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/typingChatMessage/TypingChatMessage";
 import { ERROR_CHAT_MESSAGE_TYPE } from "src/chat/chatMessage/errorChatMessage/ErrorChatMessage";
 import { CV_TYPING_CHAT_MESSAGE_TYPE } from "src/CV/CVTypingChatMessage/CVTypingChatMessage";
@@ -106,7 +106,7 @@ describe("Chat Utils", () => {
     });
   });
 
-  describe("generateCompassMessage", () => {
+  describe("generateAgentMessage", () => {
     test("should generate a compass message with the correct structure", () => {
       // GIVEN a message string
       const givenMessage = "foo";
@@ -120,13 +120,13 @@ describe("Chat Utils", () => {
         kind: ReactionKind.LIKED,
       };
       // WHEN generating a compass message
-      const result = generateCompassMessage(givenMessageId, givenMessage, givenSentAt, givenReaction);
+      const result = generateAgentMessage(givenMessageId, givenMessage, givenSentAt, givenReaction);
 
       // THEN expect the message to have the correct structure
       expect(result).toEqual({
         message_id: givenMessageId,
         sender: ConversationMessageSender.COMPASS,
-        type: COMPASS_CHAT_MESSAGE_TYPE,
+        type: AGENT_CHAT_MESSAGE_TYPE,
         payload: {
           message_id: givenMessageId,
           message: givenMessage,
@@ -135,7 +135,7 @@ describe("Chat Utils", () => {
         },
         component: expect.any(Function),
       });
-      // AND expect the component to be a function that returns a CompassChatMessage
+      // AND expect the component to be a function that returns a AgentChatMessage
       expect(result.component).toEqual(expect.any(Function));
       // AND expect no errors or warnings to have been logged
       expect(console.error).not.toHaveBeenCalled();
@@ -150,13 +150,13 @@ describe("Chat Utils", () => {
       // AND a timestamp
       const givenSentAt = "2024-03-20T12:00:00Z";
       // WHEN generating a compass message with null reaction
-      const result = generateCompassMessage(givenMessageId, givenMessage, givenSentAt, null);
+      const result = generateAgentMessage(givenMessageId, givenMessage, givenSentAt, null);
 
       // THEN expect the message to have the correct structure
       expect(result).toEqual({
         message_id: givenMessageId,
         sender: ConversationMessageSender.COMPASS,
-        type: COMPASS_CHAT_MESSAGE_TYPE,
+        type: AGENT_CHAT_MESSAGE_TYPE,
         payload: {
           message_id: givenMessageId,
           message: givenMessage,
@@ -165,7 +165,7 @@ describe("Chat Utils", () => {
         },
         component: expect.any(Function),
       });
-      // AND expect the component to be a function that returns a CompassChatMessage
+      // AND expect the component to be a function that returns a AgentChatMessage
       expect(result.component).toEqual(expect.any(Function));
       // AND expect no errors or warnings to have been logged
       expect(console.error).not.toHaveBeenCalled();
@@ -187,7 +187,7 @@ describe("Chat Utils", () => {
       const givenOnQuickReplyClick = jest.fn();
 
       // WHEN generating a compass message with quick reply options
-      const result = generateCompassMessage(
+      const result = generateAgentMessage(
         givenMessageId,
         givenMessage,
         givenSentAt,
@@ -200,7 +200,7 @@ describe("Chat Utils", () => {
       expect(result).toEqual({
         message_id: givenMessageId,
         sender: ConversationMessageSender.COMPASS,
-        type: COMPASS_CHAT_MESSAGE_TYPE,
+        type: AGENT_CHAT_MESSAGE_TYPE,
         payload: {
           message_id: givenMessageId,
           message: givenMessage,
@@ -211,7 +211,7 @@ describe("Chat Utils", () => {
         },
         component: expect.any(Function),
       });
-      // AND expect the component to be a function that returns a CompassChatMessage
+      // AND expect the component to be a function that returns a AgentChatMessage
       expect(result.component).toEqual(expect.any(Function));
       // AND expect no errors or warnings to have been logged
       expect(console.error).not.toHaveBeenCalled();
@@ -229,7 +229,7 @@ describe("Chat Utils", () => {
       const givenReaction = null;
 
       // WHEN generating a compass message without quick reply options
-      const result = generateCompassMessage(givenMessageId, givenMessage, givenSentAt, givenReaction);
+      const result = generateAgentMessage(givenMessageId, givenMessage, givenSentAt, givenReaction);
 
       // THEN expect the payload to NOT contain quick_reply_options
       expect(result.payload).not.toHaveProperty("quick_reply_options");
@@ -239,7 +239,7 @@ describe("Chat Utils", () => {
       expect(result).toEqual({
         message_id: givenMessageId,
         sender: ConversationMessageSender.COMPASS,
-        type: COMPASS_CHAT_MESSAGE_TYPE,
+        type: AGENT_CHAT_MESSAGE_TYPE,
         payload: {
           message_id: givenMessageId,
           message: givenMessage,
@@ -248,7 +248,7 @@ describe("Chat Utils", () => {
         },
         component: expect.any(Function),
       });
-      // AND expect the component to be a function that returns a CompassChatMessage
+      // AND expect the component to be a function that returns a AgentChatMessage
       expect(result.component).toEqual(expect.any(Function));
       // AND expect no errors or warnings to have been logged
       expect(console.error).not.toHaveBeenCalled();
@@ -268,7 +268,7 @@ describe("Chat Utils", () => {
       const givenQuickReplyOptions = null;
 
       // WHEN generating a compass message with null quick reply options
-      const result = generateCompassMessage(
+      const result = generateAgentMessage(
         givenMessageId,
         givenMessage,
         givenSentAt,

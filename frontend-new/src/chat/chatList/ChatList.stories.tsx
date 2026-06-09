@@ -4,10 +4,10 @@ import ChatList from "./ChatList";
 import { ConversationMessageSender } from "src/chat/ChatService/ChatService.types";
 import { IChatMessage } from "src/chat/Chat.types";
 import { nanoid } from "nanoid";
-import CompassChatMessage, {
-  CompassChatMessageProps,
-  COMPASS_CHAT_MESSAGE_TYPE,
-} from "src/chat/chatMessage/compassChatMessage/CompassChatMessage";
+import AgentChatMessage, {
+  AgentChatMessageProps,
+  AGENT_CHAT_MESSAGE_TYPE,
+} from "src/chat/chatMessage/agentChatMessage/AgentChatMessage";
 import UserChatMessage, {
   UserChatMessageProps,
   USER_CHAT_MESSAGE_TYPE,
@@ -53,7 +53,7 @@ const createMessage = (
     component =
       sender === ConversationMessageSender.USER
         ? (props) => <UserChatMessage {...(props as UserChatMessageProps)} />
-        : (props) => <CompassChatMessage {...(props as CompassChatMessageProps)} />;
+        : (props) => <AgentChatMessage {...(props as AgentChatMessageProps)} />;
   }
 
   return {
@@ -89,7 +89,7 @@ type Story = StoryObj<typeof ChatList>;
 export const Shown: Story = {
   args: {
     messages: [
-      createMessage("Hello, how can I help you?", ConversationMessageSender.COMPASS, COMPASS_CHAT_MESSAGE_TYPE),
+      createMessage("Hello, how can I help you?", ConversationMessageSender.COMPASS, AGENT_CHAT_MESSAGE_TYPE),
       createMessage("I need help with something", ConversationMessageSender.USER, USER_CHAT_MESSAGE_TYPE),
     ],
   },
@@ -118,7 +118,7 @@ export const TypingWhenEmpty: Story = {
 
 export const SingleMessage: Story = {
   args: {
-    messages: [createMessage("Hello, I'm Compass", ConversationMessageSender.COMPASS, COMPASS_CHAT_MESSAGE_TYPE)],
+    messages: [createMessage("Hello, I'm Compass", ConversationMessageSender.COMPASS, AGENT_CHAT_MESSAGE_TYPE)],
   },
 };
 
@@ -126,7 +126,7 @@ export const MultipleMessages: Story = {
   args: {
     messages: [
       createMessage("Hello", ConversationMessageSender.USER, USER_CHAT_MESSAGE_TYPE),
-      createMessage("Hi, I'm Compass", ConversationMessageSender.COMPASS, COMPASS_CHAT_MESSAGE_TYPE),
+      createMessage("Hi, I'm Compass", ConversationMessageSender.COMPASS, AGENT_CHAT_MESSAGE_TYPE),
       createMessage(
         "Thank you for using compass",
         ConversationMessageSender.COMPASS,
@@ -143,7 +143,7 @@ export const LongConversation: Story = {
       createMessage(
         `Message ${i}`,
         i % 2 === 0 ? ConversationMessageSender.COMPASS : ConversationMessageSender.USER,
-        i % 2 === 0 ? COMPASS_CHAT_MESSAGE_TYPE : USER_CHAT_MESSAGE_TYPE
+        i % 2 === 0 ? AGENT_CHAT_MESSAGE_TYPE : USER_CHAT_MESSAGE_TYPE
       )
     ),
   },
