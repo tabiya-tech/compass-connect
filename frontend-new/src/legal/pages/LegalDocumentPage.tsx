@@ -57,7 +57,7 @@ const LegalDocumentPage: React.FC<LegalDocumentPageProps> = ({ variant }) => {
             src={logoSrc}
             alt={appName}
             data-testid={DATA_TEST_ID.LEGAL_PAGE_LOGO}
-            sx={{ maxWidth: "70%", width: "auto", height: "auto", objectFit: "contain", alignSelf: "flex-start" }}
+            sx={{ maxWidth: "120px", width: "auto", height: "auto", objectFit: "contain", alignSelf: "flex-start" }}
           />
         </Link>
 
