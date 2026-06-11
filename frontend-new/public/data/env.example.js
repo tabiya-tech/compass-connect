@@ -109,7 +109,13 @@ window.tabiyaConfig = {
     })
   ),
   FRONTEND_LOGO_URL: btoa("/logo.svg"),
-  FRONTEND_MINISTRY_URL: btoa("/ministry-tech.png"),
+  FRONTEND_PARTNER_LOGOS: btoa(
+    JSON.stringify([
+      { src: "/world-bank-logo.svg", alt: "World Bank Group", height: 28 },
+      { src: "/ministry-tech.png", alt: "Ministry of Technology and Science", height: 36 },
+      { src: "/tabiya-logo.svg", alt: "Tabiya", height: 46 },
+    ])
+  ),
   FRONTEND_DARK_LOGO_URL: btoa("/njila-logo-dark.svg"),
   FRONTEND_FAVICON_URL: btoa("/favicon.svg"),
   FRONTEND_APP_ICON_URL: btoa("/compass.svg"),

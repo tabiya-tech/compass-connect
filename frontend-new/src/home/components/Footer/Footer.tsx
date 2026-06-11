@@ -3,7 +3,7 @@ import { Box, Container, Divider, Typography, useMediaQuery, useTheme } from "@m
 import type { SxProps } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import CustomLink from "src/theme/CustomLink/CustomLink";
-import { getMinistryUrl, getProductName } from "src/envService";
+import { getPartnerLogos, getProductName, type PartnerLogo } from "src/envService";
 import { routerPaths } from "src/app/routerPaths";
 import type { Theme } from "@mui/material/styles";
 
@@ -12,9 +12,7 @@ const uniqueId = "a7f3d2b1-8e4c-4a9f-b6d5-3c1e2f7a8b9d";
 export const DATA_TEST_ID = {
   FOOTER_CONTAINER: `footer-container-${uniqueId}`,
   FOOTER_LOGOS_CONTAINER: `footer-logos-container-${uniqueId}`,
-  FOOTER_WORLD_BANK_LOGO: `footer-world-bank-logo-${uniqueId}`,
-  FOOTER_MINISTRY_TECH_LOGO: `footer-ministry-tech-logo-${uniqueId}`,
-  FOOTER_TABIYA_LOGO: `footer-tabiya-logo-${uniqueId}`,
+  FOOTER_PARTNER_LOGO: (index: number) => `footer-partner-logo-${index}-${uniqueId}`,
   FOOTER_PRIVACY_LINK: `footer-privacy-link-${uniqueId}`,
   FOOTER_TERMS_LINK: `footer-terms-link-${uniqueId}`,
   FOOTER_CONTACT_LINK: `footer-contact-link-${uniqueId}`,
@@ -35,6 +33,13 @@ const Footer: React.FC<FooterProps> = ({ sx }) => {
   const { t } = useTranslation();
   const appName = getProductName();
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
+  const configuredPartnerLogos = getPartnerLogos();
+  const DEFAULT_PARTNER_LOGOS = [
+    { src: `${process.env.PUBLIC_URL}/world-bank-logo.svg`, alt: t("home.footer.worldBankLogoAlt"), height: 28 },
+    { src: `${process.env.PUBLIC_URL}/ministry-tech.png`, alt: t("home.footer.ministryTechLogoAlt"), height: 36 },
+    { src: `${process.env.PUBLIC_URL}/tabiya-logo.svg`, alt: t("home.footer.tabiyaLogoAlt"), height: 46 },
+  ];
+  const footerLogos: PartnerLogo[] = configuredPartnerLogos.length > 0 ? configuredPartnerLogos : DEFAULT_PARTNER_LOGOS;
 
   const privacyHref = `${globalThis.location.origin}/#${routerPaths.PRIVACY_POLICY}`;
   const termsHref = `${globalThis.location.origin}/#${routerPaths.TERMS_OF_USE}`;
@@ -64,10 +69,10 @@ const Footer: React.FC<FooterProps> = ({ sx }) => {
           {/* Partner logos */}
           <Box
             sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "repeat(3, max-content)" },
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              flexWrap: "wrap",
               alignItems: "center",
-              justifyItems: "center",
               justifyContent: "center",
               columnGap: theme.spacing(theme.tabiyaSpacing.md),
               rowGap: theme.spacing(theme.tabiyaSpacing.md),
@@ -76,37 +81,20 @@ const Footer: React.FC<FooterProps> = ({ sx }) => {
             }}
             data-testid={DATA_TEST_ID.FOOTER_LOGOS_CONTAINER}
           >
-            <Box
-              component="img"
-              src={`${process.env.PUBLIC_URL}/world-bank-logo.svg`}
-              alt={t("home.footer.worldBankLogoAlt")}
-              data-testid={DATA_TEST_ID.FOOTER_WORLD_BANK_LOGO}
-              sx={{
-                height: 28,
-                width: "auto",
-                objectFit: "contain",
-                mr: { xs: 0, sm: theme.fixedSpacing(1.5) },
-                mb: { xs: theme.fixedSpacing(1), sm: 0 },
-              }}
-            />
-            <Box
-              component="img"
-              src={getMinistryUrl()}
-              alt={t("home.footer.ministryTechLogoAlt")}
-              data-testid={DATA_TEST_ID.FOOTER_MINISTRY_TECH_LOGO}
-              sx={{
-                height: 36,
-                width: "auto",
-                objectFit: "contain",
-              }}
-            />
-            <Box
-              component="img"
-              src={`${process.env.PUBLIC_URL}/tabiya-logo.svg`}
-              alt={t("home.footer.tabiyaLogoAlt")}
-              data-testid={DATA_TEST_ID.FOOTER_TABIYA_LOGO}
-              sx={{ height: 46, width: "auto", objectFit: "contain" }}
-            />
+            {footerLogos.map((logo, index) => (
+              <Box
+                key={`${logo.src}-${index}`}
+                component="img"
+                src={logo.src}
+                alt={logo.alt ?? ""}
+                data-testid={DATA_TEST_ID.FOOTER_PARTNER_LOGO(index)}
+                sx={{
+                  height: logo.height ?? 36,
+                  width: logo.width ?? "auto",
+                  objectFit: "contain",
+                }}
+              />
+            ))}
           </Box>
 
           {/* Legal links */}

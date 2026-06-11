@@ -19,12 +19,10 @@ describe("Footer", () => {
     expect(footerContainer).toBeInTheDocument();
     // AND the logo container is in the document
     expect(screen.getByTestId(DATA_TEST_ID.FOOTER_LOGOS_CONTAINER)).toBeInTheDocument();
-    // AND the World Bank logo is displayed
-    expect(screen.getByTestId(DATA_TEST_ID.FOOTER_WORLD_BANK_LOGO)).toBeInTheDocument();
-    // AND the Ministry Tech logo is displayed
-    expect(screen.getByTestId(DATA_TEST_ID.FOOTER_MINISTRY_TECH_LOGO)).toBeInTheDocument();
-    // AND the Tabiya logo is displayed
-    expect(screen.getByTestId(DATA_TEST_ID.FOOTER_TABIYA_LOGO)).toBeInTheDocument();
+    // AND the three default partner logos (World Bank, Ministry, Tabiya) are displayed
+    expect(screen.getByTestId(DATA_TEST_ID.FOOTER_PARTNER_LOGO(0))).toBeInTheDocument();
+    expect(screen.getByTestId(DATA_TEST_ID.FOOTER_PARTNER_LOGO(1))).toBeInTheDocument();
+    expect(screen.getByTestId(DATA_TEST_ID.FOOTER_PARTNER_LOGO(2))).toBeInTheDocument();
     // AND the privacy link is in the document
     expect(screen.getByTestId(DATA_TEST_ID.FOOTER_PRIVACY_LINK)).toBeInTheDocument();
     // AND the term link is in the document

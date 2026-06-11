@@ -29,7 +29,7 @@ export enum EnvVariables {
   FRONTEND_META_DESCRIPTION = "FRONTEND_META_DESCRIPTION",
   FRONTEND_SEO = "FRONTEND_SEO",
   FRONTEND_LOGO_URL = "FRONTEND_LOGO_URL",
-  FRONTEND_MINISTRY_URL = "FRONTEND_MINISTRY_URL",
+  FRONTEND_PARTNER_LOGOS = "FRONTEND_PARTNER_LOGOS",
   FRONTEND_DARK_LOGO_URL = "FRONTEND_DARK_LOGO_URL",
   FRONTEND_FAVICON_URL = "FRONTEND_FAVICON_URL",
   FRONTEND_APP_ICON_URL = "FRONTEND_APP_ICON_URL",
@@ -240,9 +240,44 @@ export const getFaqTutorialVideoUrl = () => getEnv(EnvVariables.FRONTEND_FAQ_TUT
 
 export const getLogoUrl = () => getEnv(EnvVariables.FRONTEND_LOGO_URL);
 
-export const DEFAULT_MINISTRY_URL = "/ministry-tech.png";
+/**
+ * A single partner/branding logo rendered in the application footer.
+ *
+ * The list of logos is provided through the `FRONTEND_PARTNER_LOGOS` environment variable as a
+ * JSON array, allowing the footer logos to be customised per project. `height` and `width` are
+ * optional pixel sizes; when omitted the footer applies sensible defaults.
+ */
+export interface PartnerLogo {
+  src: string;
+  alt?: string;
+  height?: number;
+  width?: number;
+}
 
-export const getMinistryUrl = () => getEnv(EnvVariables.FRONTEND_MINISTRY_URL) || DEFAULT_MINISTRY_URL;
+/**
+ * Returns the list of partner logos configured via `FRONTEND_PARTNER_LOGOS`.
+ *
+ * Returns an empty array when the variable is unset, is not a JSON array, or cannot be parsed
+ * (an `EnvError` is logged in the latter two cases). Entries without a string `src` are dropped.
+ * Callers (e.g. the footer) are expected to provide their own defaults when the list is empty.
+ */
+export const getPartnerLogos = (): PartnerLogo[] => {
+  const jsonString = getEnv(EnvVariables.FRONTEND_PARTNER_LOGOS);
+  if (!jsonString) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(jsonString);
+    if (!Array.isArray(parsed)) {
+      console.error(new EnvError("FRONTEND_PARTNER_LOGOS must be a JSON array"));
+      return [];
+    }
+    return parsed.filter((logo): logo is PartnerLogo => !!logo && typeof logo.src === "string");
+  } catch (e) {
+    console.error(new EnvError("Error parsing FRONTEND_PARTNER_LOGOS JSON", e));
+    return [];
+  }
+};
 
 export const getDarkLogoUrl = () => getEnv(EnvVariables.FRONTEND_DARK_LOGO_URL);
 
