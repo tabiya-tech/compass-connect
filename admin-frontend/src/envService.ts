@@ -19,7 +19,7 @@ export enum EnvVariables {
   FRONTEND_META_DESCRIPTION = "FRONTEND_META_DESCRIPTION",
   FRONTEND_SEO = "FRONTEND_SEO",
   FRONTEND_LOGO_URL = "FRONTEND_LOGO_URL",
-  FRONTEND_MINISTRY_URL = "FRONTEND_MINISTRY_URL",
+  FRONTEND_PARTNER_LOGOS = "FRONTEND_PARTNER_LOGOS",
   FRONTEND_DARK_LOGO_URL = "FRONTEND_DARK_LOGO_URL",
   FRONTEND_FAVICON_URL = "FRONTEND_FAVICON_URL",
   FRONTEND_APP_ICON_URL = "FRONTEND_APP_ICON_URL",
@@ -132,9 +132,30 @@ export const getSeoEnvVar = () => getEnv(EnvVariables.FRONTEND_SEO);
 
 export const getLogoUrl = () => getEnv(EnvVariables.FRONTEND_LOGO_URL);
 
-export const DEFAULT_MINISTRY_URL = "/ministry-tech.png";
+export interface PartnerLogo {
+  src: string;
+  alt?: string;
+  height?: number;
+  width?: number;
+}
 
-export const getMinistryUrl = () => getEnv(EnvVariables.FRONTEND_MINISTRY_URL) || DEFAULT_MINISTRY_URL;
+export const getPartnerLogos = (): PartnerLogo[] => {
+  const jsonString = getEnv(EnvVariables.FRONTEND_PARTNER_LOGOS);
+  if (!jsonString) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(jsonString);
+    if (!Array.isArray(parsed)) {
+      console.error(new EnvError("FRONTEND_PARTNER_LOGOS must be a JSON array"));
+      return [];
+    }
+    return parsed.filter((logo): logo is PartnerLogo => !!logo && typeof logo.src === "string");
+  } catch (e) {
+    console.error(new EnvError("Error parsing FRONTEND_PARTNER_LOGOS JSON", e));
+    return [];
+  }
+};
 
 export const getDarkLogoUrl = () => getEnv(EnvVariables.FRONTEND_DARK_LOGO_URL);
 

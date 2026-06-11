@@ -15,25 +15,25 @@ exports[`Footer should render the footer container, logos, links, and collaborat
       class="MuiBox-root css-5uxyq9"
     >
       <div
-        class="MuiBox-root css-12e79r5"
+        class="MuiBox-root css-1un4655"
         data-testid="footer-logos-container-a7f3d2b1-8e4c-4a9f-b6d5-3c1e2f7a8b9d"
       >
         <img
           alt="World Bank Group Logo"
-          class="MuiBox-root css-ew4ty9"
-          data-testid="footer-world-bank-logo-a7f3d2b1-8e4c-4a9f-b6d5-3c1e2f7a8b9d"
+          class="MuiBox-root css-1cg3wzv"
+          data-testid="footer-partner-logo-0-a7f3d2b1-8e4c-4a9f-b6d5-3c1e2f7a8b9d"
           src="/world-bank-logo.svg"
         />
         <img
           alt="Ministry of Technology Logo"
           class="MuiBox-root css-1hpf2wo"
-          data-testid="footer-ministry-tech-logo-a7f3d2b1-8e4c-4a9f-b6d5-3c1e2f7a8b9d"
+          data-testid="footer-partner-logo-1-a7f3d2b1-8e4c-4a9f-b6d5-3c1e2f7a8b9d"
           src="/ministry-tech.png"
         />
         <img
           alt="Tabiya Logo"
           class="MuiBox-root css-doo493"
-          data-testid="footer-tabiya-logo-a7f3d2b1-8e4c-4a9f-b6d5-3c1e2f7a8b9d"
+          data-testid="footer-partner-logo-2-a7f3d2b1-8e4c-4a9f-b6d5-3c1e2f7a8b9d"
           src="/tabiya-logo.svg"
         />
       </div>

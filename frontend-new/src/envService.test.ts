@@ -29,8 +29,7 @@ import {
   getRegistrationCodeDisabled,
   getSkillsReportOutputConfigEnvVar,
   getFaqTutorialVideoUrl,
-  getMinistryUrl,
-  DEFAULT_MINISTRY_URL,
+  getPartnerLogos,
 } from "./envService";
 import { getRandomString } from "./_test_utilities/specialCharacters";
 
@@ -152,32 +151,84 @@ describe.each([
   });
 });
 
-describe("FRONTEND_MINISTRY_URL Getter (getMinistryUrl) tests", () => {
-  test("should return the default ministry logo path when the FRONTEND_MINISTRY_URL is not set", () => {
-    // GIVEN the FRONTEND_MINISTRY_URL environment variable is not set
+describe("FRONTEND_PARTNER_LOGOS Getter (getPartnerLogos) tests", () => {
+  test("should return an empty array when the FRONTEND_PARTNER_LOGOS is not set", () => {
+    // GIVEN the FRONTEND_PARTNER_LOGOS environment variable is not set
     Object.defineProperty(window, "tabiyaConfig", {
       value: {},
       writable: true,
     });
-    // WHEN getMinistryUrl is called
-    const actualMinistryUrl = getMinistryUrl();
-    // THEN expect it to return the default ministry logo path
-    expect(actualMinistryUrl).toBe(DEFAULT_MINISTRY_URL);
+    // WHEN getPartnerLogos is called
+    const actualPartnerLogos = getPartnerLogos();
+    // THEN expect it to return an empty array
+    expect(actualPartnerLogos).toEqual([]);
   });
 
-  test("should return the decoded value when the FRONTEND_MINISTRY_URL is set", () => {
-    // GIVEN the FRONTEND_MINISTRY_URL environment variable is set to a base64 encoded string
-    const givenValue = "https://example.org/custom-ministry-logo.png";
+  test("should return the decoded partner logos when the FRONTEND_PARTNER_LOGOS is set", () => {
+    // GIVEN the FRONTEND_PARTNER_LOGOS environment variable is set to a base64 encoded JSON array
+    const givenPartnerLogos = [
+      { src: "/world-bank-logo.svg", alt: "World Bank", height: 28 },
+      { src: "https://example.org/ministry.png", alt: "Ministry", height: 36, width: 120 },
+    ];
     Object.defineProperty(window, "tabiyaConfig", {
       value: {
-        FRONTEND_MINISTRY_URL: btoa(givenValue),
+        FRONTEND_PARTNER_LOGOS: btoa(JSON.stringify(givenPartnerLogos)),
       },
       writable: true,
     });
-    // WHEN getMinistryUrl is called
-    const actualMinistryUrl = getMinistryUrl();
-    // THEN expect it to return the decoded value
-    expect(actualMinistryUrl).toBe(givenValue);
+    // WHEN getPartnerLogos is called
+    const actualPartnerLogos = getPartnerLogos();
+    // THEN expect it to return the decoded partner logos
+    expect(actualPartnerLogos).toEqual(givenPartnerLogos);
+  });
+
+  test("should drop entries that do not have a string src", () => {
+    // GIVEN the FRONTEND_PARTNER_LOGOS contains an entry without a src
+    const givenPartnerLogos = [{ src: "/valid.svg", alt: "Valid" }, { alt: "missing src" }];
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: {
+        FRONTEND_PARTNER_LOGOS: btoa(JSON.stringify(givenPartnerLogos)),
+      },
+      writable: true,
+    });
+    // WHEN getPartnerLogos is called
+    const actualPartnerLogos = getPartnerLogos();
+    // THEN expect only the valid entry to be returned
+    expect(actualPartnerLogos).toEqual([{ src: "/valid.svg", alt: "Valid" }]);
+  });
+
+  test("should return an empty array and log an error when the FRONTEND_PARTNER_LOGOS is not valid JSON", () => {
+    // GIVEN the FRONTEND_PARTNER_LOGOS environment variable is set to an invalid JSON string
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: {
+        FRONTEND_PARTNER_LOGOS: btoa("not-json"),
+      },
+      writable: true,
+    });
+    // WHEN getPartnerLogos is called
+    const actualPartnerLogos = getPartnerLogos();
+    // THEN expect it to return an empty array
+    expect(actualPartnerLogos).toEqual([]);
+    // AND expect an error to have been logged
+    expect(console.error).toHaveBeenCalledWith(
+      new EnvError("Error parsing FRONTEND_PARTNER_LOGOS JSON", expect.any(Error))
+    );
+  });
+
+  test("should return an empty array and log an error when the FRONTEND_PARTNER_LOGOS is not a JSON array", () => {
+    // GIVEN the FRONTEND_PARTNER_LOGOS environment variable is set to a JSON object (not an array)
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: {
+        FRONTEND_PARTNER_LOGOS: btoa(JSON.stringify({ src: "/logo.svg" })),
+      },
+      writable: true,
+    });
+    // WHEN getPartnerLogos is called
+    const actualPartnerLogos = getPartnerLogos();
+    // THEN expect it to return an empty array
+    expect(actualPartnerLogos).toEqual([]);
+    // AND expect an error to have been logged
+    expect(console.error).toHaveBeenCalledWith(new EnvError("FRONTEND_PARTNER_LOGOS must be a JSON array"));
   });
 });
 
