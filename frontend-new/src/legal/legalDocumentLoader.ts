@@ -5,6 +5,8 @@ import privacyPolicyMd from "!!raw-loader!./documents/privacy-policy.md";
 import termsOfUseMd from "!!raw-loader!./documents/terms-of-use.md";
 import privacyPolicyNjiraMd from "!!raw-loader!./documents/privacy-policy-njira.md";
 import termsOfUseNjiraMd from "!!raw-loader!./documents/terms-of-use-njira.md";
+import privacyPolicyCompassConnectMd from "!!raw-loader!./documents/privacy-policy-compass-connect.md";
+import termsOfUseCompassConnectMd from "!!raw-loader!./documents/terms-of-use-compass-connect.md";
 
 export type LegalDocumentVariant = "privacy" | "terms";
 
@@ -16,6 +18,7 @@ export interface LegalDocument {
 const documentsByProductName: Record<string, Record<LegalDocumentVariant, string>> = {
   njila: { privacy: privacyPolicyMd, terms: termsOfUseMd },
   njira: { privacy: privacyPolicyNjiraMd, terms: termsOfUseNjiraMd },
+  "compass connect": { privacy: privacyPolicyCompassConnectMd, terms: termsOfUseCompassConnectMd },
 };
 
 export const getLegalDocument = (variant: LegalDocumentVariant): LegalDocument => {
