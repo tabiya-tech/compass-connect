@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" aria-hidden="true">
+  <!-- outer glow ring -->
+  <circle cx="100" cy="88" r="58" fill="none" stroke="#247066" stroke-width="2" opacity="0.2"/>
+  <!-- mid ring -->
+  <circle cx="100" cy="88" r="40" fill="none" stroke="#247066" stroke-width="2" opacity="0.45"/>
+  <!-- core circle -->
+  <circle cx="100" cy="88" r="22" fill="#00FF91" opacity="0.9"/>
+  <circle cx="100" cy="88" r="10" fill="#002147"/>
+
+  <!-- radiating lines (strengths / sparks) -->
+  <g stroke="#247066" stroke-width="2" stroke-linecap="round" opacity="0.6">
+    <line x1="100" y1="20" x2="100" y2="30"/>
+    <line x1="149" y1="39"  x2="142" y2="46"/>
+    <line x1="168" y1="88"  x2="158" y2="88"/>
+    <line x1="149" y1="137" x2="142" y2="130"/>
+    <line x1="51"  y1="137" x2="58"  y2="130"/>
+    <line x1="32"  y1="88"  x2="42"  y2="88"/>
+    <line x1="51"  y1="39"  x2="58"  y2="46"/>
+  </g>
+
+  <!-- small orbit dots -->
+  <circle cx="100" cy="30"  r="4" fill="#247066" opacity="0.5"/>
+  <circle cx="148" cy="50"  r="3" fill="#00FF91" opacity="0.7"/>
+  <circle cx="148" cy="126" r="3" fill="#247066" opacity="0.5"/>
+  <circle cx="52"  cy="50"  r="3" fill="#00FF91" opacity="0.7"/>
+
+  <!-- ground line -->
+  <line x1="44" y1="165" x2="156" y2="165" stroke="#E5E7EB" stroke-width="2" stroke-linecap="round"/>
+  <!-- base dot -->
+  <circle cx="100" cy="165" r="5" fill="#247066" opacity="0.4"/>
+</svg>

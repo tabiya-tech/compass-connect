@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" aria-hidden="true">
+  <!-- rising path -->
+  <path d="M24 175 C 60 175, 80 110, 130 75"
+        fill="none" stroke="#E5E7EB" stroke-width="2.5"/>
+  <path d="M24 175 C 60 175, 80 110, 130 75"
+        fill="none" stroke="#247066" stroke-width="3"
+        stroke-dasharray="2 9" stroke-linecap="round"/>
+
+  <!-- secondary branch path -->
+  <path d="M24 175 C 55 170, 100 155, 170 148"
+        fill="none" stroke="#247066" stroke-width="2"
+        stroke-dasharray="1 8" stroke-linecap="round" opacity="0.35"/>
+
+  <!-- destination sun ring -->
+  <circle cx="148" cy="52" r="28" fill="none" stroke="#247066" stroke-width="2" opacity="0.2"/>
+  <circle cx="148" cy="52" r="18" fill="none" stroke="#00FF91" stroke-width="2" opacity="0.4"/>
+  <circle cx="148" cy="52" r="9"  fill="#00FF91" opacity="0.9"/>
+  <circle cx="148" cy="52" r="4"  fill="#002147"/>
+
+  <!-- waypoint dots -->
+  <circle cx="24"  cy="175" r="8" fill="#247066"/>
+  <circle cx="75"  cy="128" r="6" fill="#247066" opacity="0.6"/>
+  <circle cx="112" cy="92"  r="5" fill="#247066" opacity="0.45"/>
+
+  <!-- small floating accent -->
+  <circle cx="42"  cy="60"  r="5" fill="#247066" opacity="0.3"/>
+  <circle cx="172" cy="110" r="4" fill="#00FF91" opacity="0.4"/>
+
+  <!-- ground line -->
+  <line x1="16" y1="183" x2="184" y2="183" stroke="#E5E7EB" stroke-width="2" stroke-linecap="round"/>
+</svg>

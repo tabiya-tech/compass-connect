@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 220" aria-hidden="true">
+  <!-- background glow -->
+  <circle cx="240" cy="55" r="48" fill="#00FF91" opacity="0.08"/>
+
+  <!-- rising dotted path: steep climb on the left, continuing up behind the card -->
+  <path d="M40 200 C 92 150, 168 72, 300 50"
+        fill="none" stroke="#247066" stroke-width="3.5"
+        stroke-dasharray="0.5 11" stroke-linecap="round"/>
+
+  <!-- secondary faint path (branching road) -->
+  <path d="M40 200 C 80 190, 160 175, 260 165"
+        fill="none" stroke="#247066" stroke-width="2"
+        stroke-dasharray="0.5 9" stroke-linecap="round" opacity="0.35"/>
+
+  <!-- sun / horizon accent -->
+  <circle cx="240" cy="55" r="20" fill="none" stroke="#247066" stroke-width="2" opacity="0.4"/>
+  <circle cx="240" cy="55" r="8" fill="#00FF91" opacity="0.85"/>
+
+  <!-- signpost pole -->
+  <path d="M200 80 V160" stroke="#002147" stroke-width="4" stroke-linecap="round"/>
+  <!-- signpost signs (all flush-left of pole at x=200) -->
+  <rect x="128" y="88"  width="72" height="20" rx="4" fill="#247066"/>
+  <rect x="136" y="114" width="64" height="20" rx="4" fill="#00FF91"/>
+  <rect x="142" y="140" width="58" height="20" rx="4" fill="#002147"/>
+
+  <!-- start waypoint -->
+  <circle cx="40" cy="200" r="8" fill="#247066"/>
+  <!-- mid waypoint -->
+  <circle cx="105" cy="140" r="6" fill="#247066" opacity="0.6"/>
+  <!-- destination waypoint (near top of path) -->
+  <circle cx="210" cy="76"  r="9" fill="#247066"/>
+  <circle cx="210" cy="76"  r="4" fill="#00FF91"/>
+</svg>
