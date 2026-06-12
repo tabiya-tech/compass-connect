@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">
+  <rect width="32" height="32" rx="7" fill="#002147"/>
+  <text
+    x="4" y="23"
+    font-family="Inter, system-ui, sans-serif"
+    font-size="17"
+    font-weight="700"
+    letter-spacing="-0.5"
+    fill="#FFFFFF"
+  >CC<tspan fill="#00FF91">.</tspan></text>
+</svg>
