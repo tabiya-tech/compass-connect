@@ -1320,5 +1320,8 @@
     "tutorialIframeTitle": "Vídeo tutorial do {{appName}}",
     "tutorialUnavailableOffline": "Está offline. Ligue-se à internet para ver este vídeo.",
     "scrollProgressLabel": "Progresso da leitura"
+  },
+  "legal": {
+    "documentUnavailable": "Este documento não está disponível neste momento. Por favor, tente novamente."
   }
 }

@@ -1320,5 +1320,8 @@
     "tutorialIframeTitle": "{{appName}} tutorial video",
     "tutorialUnavailableOffline": "You're offline. Connect to the internet to watch this video.",
     "scrollProgressLabel": "Reading progress"
+  },
+  "legal": {
+    "documentUnavailable": "This document is currently unavailable. Please try again."
   }
 }

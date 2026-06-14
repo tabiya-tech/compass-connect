@@ -1,11 +1,14 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Box, Container, Typography, useTheme } from "@mui/material";
 import MarkdownReader from "src/knowledgeHub/components/MarkdownReader/MarkdownReader";
 import { getDarkLogoUrl, getLogoUrl, getProductName } from "src/envService";
-import { getLegalDocument } from "src/legal/legalDocumentLoader";
+import { getLegalDocument, LegalDocument } from "src/legal/legalDocumentLoader";
 import type { LegalDocumentVariant } from "src/legal/legalDocumentLoader";
 import { routerPaths } from "src/app/routerPaths";
+import { Backdrop } from "src/theme/Backdrop/Backdrop";
+import ErrorPage from "src/error/errorPage/ErrorPage";
 
 const uniqueId = "b2c9e1a4-6f3d-4b8e-9c2a-1d5e7f0a4b6c";
 
@@ -20,14 +23,48 @@ export interface LegalDocumentPageProps {
   variant: LegalDocumentVariant;
 }
 
-const applyAppNamePlaceholders = (text: string, appName: string): string => text.replaceAll("{{appName}}", appName);
-
 const LegalDocumentPage: React.FC<LegalDocumentPageProps> = ({ variant }) => {
   const theme = useTheme();
-  const appName = getProductName();
+  const { t } = useTranslation();
+  const appName = getProductName() || "Njila";
 
-  const { title, markdown } = useMemo(() => getLegalDocument(variant), [variant]);
-  const markdownWithAppName = useMemo(() => applyAppNamePlaceholders(markdown, appName), [markdown, appName]);
+  const [document, setDocument] = useState<LegalDocument | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasError, setHasError] = useState<boolean>(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setHasError(false);
+    setDocument(null);
+
+    getLegalDocument(variant)
+      .then((doc) => {
+        if (cancelled) return;
+        setDocument(doc);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error(`Failed to load legal document for variant "${variant}":`, error);
+        setHasError(true);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [variant]);
+
+  if (hasError) {
+    return <ErrorPage errorMessage={t("legal.documentUnavailable")} showRefreshButton />;
+  }
+
+  if (isLoading || !document) {
+    return <Backdrop isShown={true} />;
+  }
 
   const logoUrlFromEnv = getDarkLogoUrl() || getLogoUrl();
   const logoSrc = logoUrlFromEnv || `${process.env.PUBLIC_URL}/njila-logo-dark.svg`;
@@ -62,11 +99,11 @@ const LegalDocumentPage: React.FC<LegalDocumentPageProps> = ({ variant }) => {
         </Link>
 
         <Typography variant="h2" textAlign="center" data-testid={DATA_TEST_ID.LEGAL_PAGE_TITLE}>
-          {title}
+          {document.title}
         </Typography>
 
         <Box data-testid={DATA_TEST_ID.LEGAL_PAGE_BODY}>
-          <MarkdownReader content={markdownWithAppName} headingEmphasis />
+          <MarkdownReader content={document.markdown} headingEmphasis />
         </Box>
       </Container>
     </Box>

@@ -39,6 +39,7 @@ export enum EnvVariables {
   FRONTEND_GTM_CONTAINER_ID = "FRONTEND_GTM_CONTAINER_ID",
   FRONTEND_GTM_ENABLED = "FRONTEND_GTM_ENABLED",
   FRONTEND_FAQ_TUTORIAL_VIDEO_URL = "FRONTEND_FAQ_TUTORIAL_VIDEO_URL",
+  FRONTEND_LEGAL_DOCUMENTS = "FRONTEND_LEGAL_DOCUMENTS",
   FRONTEND_ILLUSTRATIONS = "FRONTEND_ILLUSTRATIONS",
 }
 
@@ -237,6 +238,8 @@ export const getGtmContainerId = () => getEnv(EnvVariables.FRONTEND_GTM_CONTAINE
 export const getGtmEnabled = () => getEnv(EnvVariables.FRONTEND_GTM_ENABLED);
 
 export const getFaqTutorialVideoUrl = () => getEnv(EnvVariables.FRONTEND_FAQ_TUTORIAL_VIDEO_URL);
+
+export const getLegalDocumentsEnvVar = () => getEnv(EnvVariables.FRONTEND_LEGAL_DOCUMENTS);
 
 export const getLogoUrl = () => getEnv(EnvVariables.FRONTEND_LOGO_URL);
 

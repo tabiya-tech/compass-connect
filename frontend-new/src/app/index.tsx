@@ -454,11 +454,11 @@ const App = () => {
             },
             {
               path: routerPaths.PRIVACY_POLICY,
-              element: <LegalDocumentPage variant="privacy" />,
+              element: <LegalDocumentPage variant="privacyPolicy" />,
             },
             {
               path: routerPaths.TERMS_OF_USE,
-              element: <LegalDocumentPage variant="terms" />,
+              element: <LegalDocumentPage variant="termsOfUse" />,
             },
             {
               path: routerPaths.FAQ,

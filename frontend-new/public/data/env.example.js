@@ -159,6 +159,16 @@ window.tabiyaConfig = {
   FRONTEND_GTM_ENABLED: btoa("true"),
   FRONTEND_GTM_CONTAINER_ID: btoa("GTM-XXXXXXX"),
 
+  // ################################################################
+  // #       Legal documents (Terms of Use, Privacy Policy)
+  // ################################################################
+  FRONTEND_LEGAL_DOCUMENTS: btoa(
+    JSON.stringify({
+      termsOfUse: "/legal/terms-of-use.md",
+      privacyPolicy: "/legal/privacy-policy.md",
+    })
+  ),
+
   FRONTEND_SKILLS_REPORT_OUTPUT_CONFIG: btoa(
     JSON.stringify({
       logos: [

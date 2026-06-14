@@ -1,25 +1,36 @@
 import { parseYamlFrontmatter } from "src/utils/parseYamlFrontmatter";
+import { getLegalDocumentsConfig, LegalDocumentVariant } from "src/legal/legalDocumentsConfig";
 
-import privacyPolicyMd from "!!raw-loader!./documents/privacy-policy.md";
-import termsOfUseMd from "!!raw-loader!./documents/terms-of-use.md";
-
-export type LegalDocumentVariant = "privacy" | "terms";
-
-const documentRegistry: Record<LegalDocumentVariant, string> = {
-  privacy: privacyPolicyMd,
-  terms: termsOfUseMd,
-};
+export type { LegalDocumentVariant };
 
 export interface LegalDocument {
   title: string;
   markdown: string;
 }
 
-export const getLegalDocument = (variant: LegalDocumentVariant): LegalDocument => {
-  const raw = documentRegistry[variant];
+const DEFAULT_TITLES: Record<LegalDocumentVariant, string> = {
+  termsOfUse: "Terms of Use",
+  privacyPolicy: "Privacy Policy",
+};
+
+export const getLegalDocument = async (variant: LegalDocumentVariant): Promise<LegalDocument> => {
+  const url = getLegalDocumentsConfig()[variant];
+  if (!url) {
+    throw new Error(`No URL configured for legal document variant: ${variant}`);
+  }
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to load ${variant} from ${url}: ${response.status}`);
+  }
+
+  const raw = await response.text();
   const { data, content } = parseYamlFrontmatter(raw);
+  // parseYamlFrontmatter returns "Untitled" when no frontmatter title is present;
+  // fall back to a sensible per-variant default in that case.
+  const hasExplicitTitle = typeof data.title === "string" && data.title.length > 0 && data.title !== "Untitled";
   return {
-    title: data.title,
+    title: hasExplicitTitle ? data.title : DEFAULT_TITLES[variant],
     markdown: content.trimStart(),
   };
 };
