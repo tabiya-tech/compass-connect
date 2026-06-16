@@ -18,9 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 def _province_location_match(value: str) -> dict:
-    """Province filter regex for ``job.location``. Local copy of
-    ``JobService._case_insensitive_space_tolerant_match`` (keep in sync) so the
-    Province dropdown filters jobs as the /jobs endpoint does."""
+    """Case-insensitive, space-tolerant province filter regex for ``job.location``.
+
+    Job-demand analytics still reads the jobs MongoDB collection directly (it needs
+    skill-frequency aggregation, which the matching service /jobs API does not expose),
+    so this filter is kept independent of the now-HTTP-backed jobs ``JobService``."""
     normalized_tokens = [re.escape(token) for token in value.strip().split() if token]
     pattern = ".*".join(normalized_tokens) if normalized_tokens else re.escape(value)
     return {"$regex": pattern, "$options": "i"}

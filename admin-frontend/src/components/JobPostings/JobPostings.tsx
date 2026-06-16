@@ -38,14 +38,12 @@ const JobPostings: React.FC = () => {
     stats: jobPostingStats,
     loading,
     error,
-    sortKey,
-    sortDir,
-    page,
+    pageIndex,
     totalItems,
-    totalPages,
-    goToPage,
-    onSortChange,
-    onSortClear,
+    hasPrev,
+    hasNext,
+    goNext,
+    goPrev,
   } = useJobPostings({
     searchQuery: search,
     sectorQuery: sectorSearch,
@@ -75,8 +73,7 @@ const JobPostings: React.FC = () => {
         label: t("dashboard.jobPostings.table.jobTitle"),
         align: "left",
         minWidth: 180,
-        sortable: true,
-        sortType: "text",
+        sortable: false,
         render: (val) => renderCapitalizedText(val, true),
       },
       {
@@ -84,8 +81,7 @@ const JobPostings: React.FC = () => {
         label: t("dashboard.jobPostings.table.sector"),
         align: "left",
         minWidth: 130,
-        sortable: true,
-        sortType: "text",
+        sortable: false,
         render: (val) => renderCapitalizedText(val),
       },
       {
@@ -93,8 +89,7 @@ const JobPostings: React.FC = () => {
         label: t("dashboard.jobPostings.table.location"),
         align: "left",
         minWidth: 110,
-        sortable: true,
-        sortType: "text",
+        sortable: false,
         render: (val) => renderCapitalizedText(val),
       },
       {
@@ -102,8 +97,7 @@ const JobPostings: React.FC = () => {
         label: t("dashboard.jobPostings.table.platform"),
         align: "left",
         minWidth: 110,
-        sortable: true,
-        sortType: "text",
+        sortable: false,
         render: (val) => renderCapitalizedText(val),
       },
       {
@@ -178,8 +172,8 @@ const JobPostings: React.FC = () => {
   );
 
   const pageRangeLabel = t("dashboard.pagination.range", {
-    start: totalItems === 0 ? 0 : (page - 1) * PAGE_SIZE + 1,
-    end: totalItems === 0 ? 0 : Math.min(page * PAGE_SIZE, totalItems),
+    start: jobPostings.length === 0 ? 0 : (pageIndex - 1) * PAGE_SIZE + 1,
+    end: jobPostings.length === 0 ? 0 : (pageIndex - 1) * PAGE_SIZE + jobPostings.length,
     total: totalItems,
   });
 
@@ -257,17 +251,10 @@ const JobPostings: React.FC = () => {
         columns={columns}
         loading={loading}
         skeletonRows={8}
-        externalSortKey={sortKey}
-        externalSortDir={sortDir}
-        onSortChange={onSortChange}
-        onSortClear={onSortClear}
-        sortClearLabel={t("dashboard.dataTable.clearSorting")}
         ariaLabel={t("dashboard.jobPostings.aria.table")}
         emptyMessage={t("dashboard.jobPostings.jobsCount", { count: 0, total: 0 })}
         tableMinWidth={750}
-        page={page}
-        totalPages={totalPages}
-        onPageChange={goToPage}
+        cursorPagination={{ hasPrev, hasNext, onPrev: goPrev, onNext: goNext }}
         pageLabel={pageRangeLabel}
       />
 

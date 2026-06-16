@@ -1,6 +1,6 @@
 // ─── API response shape ───────────────────────────────────────────────────────
 
-/** Raw document returned by GET /jobs. Fields match the Zambia jobs DB. */
+/** Raw document returned by GET /jobs. Sourced from the matching service jobs catalog. */
 export interface JobApiDocument {
   uuid?: string;
   title?: string;
@@ -17,8 +17,9 @@ export interface JobApiDocument {
 
 /**
  * Raw document returned by GET /jobs/matched (inside the envelope's `matches` field).
- * Field names mirror the matching service response shape (opportunity_title / contract_type / URL),
- * enriched with employer/category/posted_date from the local jobs collection when the URL matches.
+ * Field names mirror the matching service response shape (opportunity_title / contract_type / URL).
+ * employer/location come straight from the matching recommendation; category/posted_date are
+ * present only when the matching service includes them.
  */
 export interface MatchedJobApiDocument {
   uuid?: string;
@@ -29,7 +30,6 @@ export interface MatchedJobApiDocument {
   final_score?: number;
   justification?: string;
   rank?: number;
-  // Enriched from the jobs collection
   employer?: string;
   category?: string;
   posted_date?: string;

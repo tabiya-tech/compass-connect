@@ -351,9 +351,6 @@ export default class AnalyticsService {
       skills?: string;
       cursor?: string;
       limit?: number;
-      sort_by?: "title" | "category" | "location" | "source_platform" | "posted_date";
-      sort_dir?: "asc" | "desc";
-      page?: number;
       include?: string;
     } = {}
   ): Promise<PaginatedResponse<JobApiItem>> {
@@ -364,9 +361,6 @@ export default class AnalyticsService {
     if (params.location) query.set("location", params.location);
     if (params.skills) query.set("skills", params.skills);
     if (params.cursor) query.set("cursor", params.cursor);
-    if (params.sort_by) query.set("sort_by", params.sort_by);
-    if (params.sort_dir) query.set("sort_dir", params.sort_dir);
-    if (params.page !== undefined) query.set("page", String(params.page));
     if (params.include) query.set("include", params.include);
     query.set("limit", String(params.limit ?? 20));
     const url = `${this.baseUrl}/jobs?${query}`;

@@ -23,12 +23,10 @@ export interface ListJobsParams {
   category?: string;
   employment_type?: string;
   location?: string;
+  skills?: string;
   cursor?: string;
-  page?: number;
   include?: string;
   limit?: number;
-  sort_by?: "title" | "category" | "location" | "posted_date";
-  sort_dir?: "asc" | "desc";
 }
 
 export default class JobService {
@@ -52,10 +50,8 @@ export default class JobService {
     if (params.category) query.set("category", params.category);
     if (params.employment_type) query.set("employment_type", params.employment_type);
     if (params.location) query.set("location", params.location);
+    if (params.skills) query.set("skills", params.skills);
     if (params.cursor) query.set("cursor", params.cursor);
-    if (params.sort_by) query.set("sort_by", params.sort_by);
-    if (params.sort_dir) query.set("sort_dir", params.sort_dir);
-    if (params.page !== undefined) query.set("page", String(params.page));
     if (params.include) query.set("include", params.include);
     query.set("limit", String(params.limit ?? 20));
 

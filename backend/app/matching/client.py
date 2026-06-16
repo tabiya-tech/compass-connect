@@ -1,5 +1,5 @@
 import logging
-from typing import Generic, TypeVar
+from typing import Generic, Optional, TypeVar
 
 import httpx
 from pydantic import BaseModel, ValidationError
@@ -90,6 +90,65 @@ class MatchingServiceClient:
             self._logger.exception(
                 f"Unexpected error calling matching service for user {request.user_id}"
             )
+            raise MatchingServiceError(
+                f"Unexpected matching service error: {str(e)}"
+            ) from e
+
+    async def get(
+        self,
+        response_cls: type[Response_],
+        path: str,
+        params: Optional[dict] = None,
+    ) -> Response_:
+        """GET ``path`` on the matching service and validate the JSON body into ``response_cls``.
+
+        Used for read-only endpoints such as ``/jobs`` and ``/jobs/stats``. ``params`` are
+        sent as query-string parameters (``None`` values are dropped). Raises
+        ``MatchingServiceError`` on HTTP, transport, or response-shape errors.
+        """
+        full_path = f"{self.base_url}{path}"
+        query = {k: v for k, v in (params or {}).items() if v is not None}
+        self._logger.info(f"Sending GET request to {full_path} params={query}")
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    full_path,
+                    headers={"x-api-key": self.api_key},
+                    params=query,
+                    timeout=self.timeout,
+                )
+                response.raise_for_status()
+                return response_cls.model_validate(response.json())
+
+        except httpx.HTTPStatusError as e:
+            self._logger.error(
+                f"Matching service HTTP error on GET {path}: "
+                f"status={e.response.status_code}, body={e.response.text}"
+            )
+            raise MatchingServiceError(
+                f"Matching service returned HTTP {e.response.status_code}: {e.response.text}"
+            ) from e
+
+        except httpx.RequestError as e:
+            self._logger.error(f"Matching service request error on GET {path}: {str(e)}")
+            raise MatchingServiceError(
+                f"Failed to connect to matching service: {str(e)}"
+            ) from e
+
+        except ValidationError as e:
+            self._logger.error(
+                f"Matching service GET {path} response does not match "
+                f"{response_cls.__name__}: {str(e)}"
+            )
+            raise MatchingServiceError(
+                f"Matching service returned a response that does not match {response_cls.__name__}: {str(e)}"
+            ) from e
+
+        except MatchingServiceError:
+            raise
+
+        except Exception as e:
+            self._logger.exception(f"Unexpected error calling matching service GET {path}")
             raise MatchingServiceError(
                 f"Unexpected matching service error: {str(e)}"
             ) from e

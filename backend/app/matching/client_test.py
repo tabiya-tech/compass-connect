@@ -108,6 +108,74 @@ class TestInit:
         assert actual_client.timeout == 300.0
 
 
+class TestGet:
+    @pytest.mark.asyncio
+    async def test_sends_get_with_api_key_and_params_dropping_none(
+        self, given_test_client: MatchingServiceClient
+    ):
+        # GIVEN a read endpoint and a response matching _FooResponse
+        given_response_body = {"foo": "hello", "bar": 7}
+        mock_request = httpx.Request("GET", "https://test-service.com/jobs")
+        mock_response = httpx.Response(status_code=200, json=given_response_body, request=mock_request)
+
+        with patch("app.matching.client.httpx.AsyncClient") as mock_client_class:
+            mock_client = AsyncMock()
+            mock_client.get.return_value = mock_response
+            mock_client_class.return_value.__aenter__.return_value = mock_client
+
+            # WHEN get is called with some None params
+            actual_result = await given_test_client.get(
+                response_cls=_FooResponse,
+                path="/jobs",
+                params={"limit": 20, "cursor": None, "search": "nurse"},
+            )
+
+            # THEN the result is the parsed response model
+            assert actual_result == _FooResponse(foo="hello", bar=7)
+
+            # AND the GET targets base_url + path with the api key and None params dropped
+            mock_client.get.assert_called_once()
+            actual_args, actual_kwargs = mock_client.get.call_args
+            assert actual_args[0] == "https://test-service.com/jobs"
+            assert actual_kwargs["headers"]["x-api-key"] == "test-api-key"
+            assert actual_kwargs["params"] == {"limit": 20, "search": "nurse"}
+            assert actual_kwargs["timeout"] == given_test_client.timeout
+
+    @pytest.mark.asyncio
+    async def test_raises_matching_service_error_on_http_status_error(
+        self, given_test_client: MatchingServiceClient
+    ):
+        # GIVEN the service returns a 500
+        mock_request = httpx.Request("GET", "https://test-service.com/jobs")
+        mock_response = httpx.Response(status_code=500, text="boom", request=mock_request)
+
+        with patch("app.matching.client.httpx.AsyncClient") as mock_client_class:
+            mock_client = AsyncMock()
+            mock_client.get.return_value = mock_response
+            mock_client_class.return_value.__aenter__.return_value = mock_client
+
+            # WHEN/THEN get raises MatchingServiceError
+            with pytest.raises(MatchingServiceError):
+                await given_test_client.get(response_cls=_FooResponse, path="/jobs")
+
+    @pytest.mark.asyncio
+    async def test_raises_matching_service_error_on_schema_mismatch(
+        self, given_test_client: MatchingServiceClient
+    ):
+        # GIVEN the service returns a body that does not match _FooResponse
+        mock_request = httpx.Request("GET", "https://test-service.com/jobs")
+        mock_response = httpx.Response(status_code=200, json={"unexpected": "shape"}, request=mock_request)
+
+        with patch("app.matching.client.httpx.AsyncClient") as mock_client_class:
+            mock_client = AsyncMock()
+            mock_client.get.return_value = mock_response
+            mock_client_class.return_value.__aenter__.return_value = mock_client
+
+            # WHEN/THEN get raises MatchingServiceError
+            with pytest.raises(MatchingServiceError):
+                await given_test_client.get(response_cls=_FooResponse, path="/jobs")
+
+
 class TestProcessRequestSuccess:
     @pytest.mark.asyncio
     async def test_sends_post_to_base_url_plus_path_with_expected_headers_and_body(

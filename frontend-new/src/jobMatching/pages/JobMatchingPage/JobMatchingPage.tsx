@@ -12,7 +12,7 @@ import JobDetailModal from "src/jobMatching/components/JobDetailModal/JobDetailM
 import { useJobs, PAGE_SIZE } from "src/jobMatching/hooks/useJobs";
 import { useMatchedJobs } from "src/jobMatching/hooks/useMatchedJobs";
 import JobService from "src/jobMatching/services/JobService";
-import type { JobFilters, JobRow, JobSortKey } from "src/jobMatching/types";
+import type { JobFilters, JobRow } from "src/jobMatching/types";
 import PrimaryButton from "src/theme/PrimaryButton/PrimaryButton";
 import BackLink from "src/navigation/BackLink/BackLink";
 
@@ -33,6 +33,10 @@ const toFilterOptions = (values: string[], selectedValue: string) => {
 
 const EMPTY_FILTERS: JobFilters = { search: "", category: "all", employmentType: "all", location: "all" };
 const SEARCH_DEBOUNCE_MS = 300;
+// Number of recent jobs sampled once on mount to seed the filter dropdowns. A single
+// bounded request — NOT a full-dataset cursor walk — keeps the dropdowns populated from
+// the newest postings without flooding the backend with continuous /jobs requests.
+const FILTER_SAMPLE_SIZE = 100;
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -81,8 +85,7 @@ const JobMatchingPage: React.FC = () => {
   const debouncedSearch = useDebouncedValue(browseFilters.search, SEARCH_DEBOUNCE_MS);
   const queryFilters = useMemo(() => ({ ...browseFilters, search: debouncedSearch }), [browseFilters, debouncedSearch]);
 
-  const { jobs, loading, error, page, totalPages, totalItems, sortKey, sortDir, onSortChange, onSortClear, goToPage } =
-    useJobs(queryFilters);
+  const { jobs, loading, error, pageIndex, totalItems, hasPrev, hasNext, goNext, goPrev } = useJobs(queryFilters);
   const {
     jobs: matchedJobs,
     loading: matchedLoading,
@@ -99,23 +102,17 @@ const JobMatchingPage: React.FC = () => {
         const categorySet = new Set<string>();
         const employmentTypeSet = new Set<string>();
         const locationSet = new Set<string>();
-        let cursor: string | undefined;
 
-        while (true) {
-          const result = await JobService.getInstance().listJobs({ cursor, limit: 100 });
-          result.data.forEach((doc) => {
-            const category = doc.category?.trim();
-            const employmentType = doc.employment_type?.trim();
-            const location = doc.location?.trim();
+        const result = await JobService.getInstance().listJobs({ limit: FILTER_SAMPLE_SIZE });
+        result.data.forEach((doc) => {
+          const category = doc.category?.trim();
+          const employmentType = doc.employment_type?.trim();
+          const location = doc.location?.trim();
 
-            if (category) categorySet.add(category);
-            if (employmentType) employmentTypeSet.add(employmentType);
-            if (location) locationSet.add(location);
-          });
-
-          if (!result.meta.next_cursor) break;
-          cursor = result.meta.next_cursor;
-        }
+          if (category) categorySet.add(category);
+          if (employmentType) employmentTypeSet.add(employmentType);
+          if (location) locationSet.add(location);
+        });
 
         if (!cancelled) {
           setDatasetFilterValues({
@@ -156,17 +153,17 @@ const JobMatchingPage: React.FC = () => {
   };
 
   const browsePageLabel = useMemo(() => {
-    const start = totalItems === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
-    const end = totalItems === 0 ? 0 : Math.min(page * PAGE_SIZE, totalItems);
+    const start = jobs.length === 0 ? 0 : (pageIndex - 1) * PAGE_SIZE + 1;
+    const end = jobs.length === 0 ? 0 : start + jobs.length - 1;
     return t("jobMatching.table.pageRange", { start, end, total: totalItems });
-  }, [page, totalItems, t]);
+  }, [pageIndex, jobs.length, totalItems, t]);
 
   const columns: ColumnDef<JobRow>[] = useMemo(
     () => [
       {
         key: "jobTitle",
         label: t("jobMatching.columns.jobTitle"),
-        sortable: true,
+        sortable: false,
         align: "left",
         minWidth: 180,
         cellSx: {
@@ -193,7 +190,7 @@ const JobMatchingPage: React.FC = () => {
       {
         key: "category",
         label: t("jobMatching.columns.category"),
-        sortable: true,
+        sortable: false,
         align: "left",
         minWidth: 120,
         filter: {
@@ -243,7 +240,7 @@ const JobMatchingPage: React.FC = () => {
       {
         key: "location",
         label: t("jobMatching.columns.location"),
-        sortable: true,
+        sortable: false,
         align: "left",
         minWidth: 110,
         filter: {
@@ -260,7 +257,7 @@ const JobMatchingPage: React.FC = () => {
       {
         key: "posted",
         label: t("jobMatching.columns.posted"),
-        sortable: true,
+        sortable: false,
         align: "left",
         minWidth: 120,
         render: (val) => (
@@ -407,11 +404,6 @@ const JobMatchingPage: React.FC = () => {
               rows={jobs}
               columns={columns}
               loading={loading}
-              externalSortKey={sortKey}
-              externalSortDir={sortDir}
-              onSortChange={(key, dir) => onSortChange(key as JobSortKey, dir)}
-              onSortClear={onSortClear}
-              sortClearLabel={t("jobMatching.table.sortClear")}
               tableMinWidth={750}
               ariaLabel={t("jobMatching.table.browseAriaLabel")}
               emptyMessage={t("jobMatching.table.noJobsFound")}
@@ -422,9 +414,7 @@ const JobMatchingPage: React.FC = () => {
                 onChange: (v) => setBrowseFilters((f) => ({ ...f, search: v })),
               }}
               onRowClick={handleRowClick}
-              page={page}
-              totalPages={totalPages}
-              onPageChange={goToPage}
+              cursorPagination={{ hasPrev, hasNext, onPrev: goPrev, onNext: goNext }}
               pageLabel={browsePageLabel}
             />
           </>

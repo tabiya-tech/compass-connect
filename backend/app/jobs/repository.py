@@ -1,10 +1,54 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Optional
 
-from motor.motor_asyncio import AsyncIOMotorCollection
+from pydantic import BaseModel, Field
 
-SORTABLE_FIELDS = {"title", "category", "location", "source_platform", "posted_date"}
+from app.matching.client import MatchingServiceClient
+
+
+class MatchingJobListItem(BaseModel):
+    """One job from the matching service ``GET /jobs`` (subset of fields we consume).
+
+    The matching service is the single source of truth for jobs; Compass no longer reads
+    a jobs MongoDB collection. ``extra="ignore"`` keeps us forward-compatible with the
+    matching service adding fields we don't (yet) surface.
+    """
+
+    model_config = {"extra": "ignore"}
+
+    uuid: Optional[str] = None
+    url: Optional[str] = None
+    opportunity_title: Optional[str] = None
+    location: Optional[str] = None
+    employer: Optional[str] = None
+    employment_type: Optional[str] = None
+    contract_type: Optional[str] = None
+    closing_date: Optional[str] = None
+    posted_date: Optional[str] = None
+    category: Optional[str] = None
+    source_platform: Optional[str] = None
+    skills: list[str] = Field(default_factory=list)
+
+
+class MatchingJobsPage(BaseModel):
+    """Cursor-paginated page returned by the matching service ``GET /jobs``."""
+
+    model_config = {"extra": "ignore"}
+
+    items: list[MatchingJobListItem] = Field(default_factory=list)
+    next_cursor: Optional[str] = None
+    total: Optional[int] = None
+
+
+class MatchingJobsStats(BaseModel):
+    """Aggregate counts returned by the matching service ``GET /jobs/stats``."""
+
+    model_config = {"extra": "ignore"}
+
+    total: int = 0
+    sectors: int = 0
+    platforms: int = 0
 
 
 class IJobRepository(ABC):
@@ -14,95 +58,59 @@ class IJobRepository(ABC):
     """
 
     @abstractmethod
-    async def list_jobs(
+    async def fetch_jobs_page(
         self,
-        filter_query: Dict[str, Any],
-        offset: int,
-        limit: int,
-        sort_by: str | None = None,
-        sort_dir: str = "asc",
-    ) -> List[Dict[str, Any]]:
+        *,
+        cursor: Optional[str] = None,
+        limit: int = 20,
+        search: Optional[str] = None,
+        category: Optional[str] = None,
+        employment_type: Optional[str] = None,
+        location: Optional[str] = None,
+        skills: Optional[str] = None,
+        days: Optional[int] = None,
+        include_total: bool = False,
+    ) -> MatchingJobsPage:
         pass
 
     @abstractmethod
-    async def count_jobs(self, filter_query: Dict[str, Any]) -> int:
-        pass
-
-    @abstractmethod
-    async def distinct_values(self, field: str, filter_query: Dict[str, Any]) -> List[str]:
-        pass
-
-    @abstractmethod
-    async def find_by_application_urls(self, urls: List[str]) -> List[Dict[str, Any]]:
+    async def fetch_stats(self) -> MatchingJobsStats:
         pass
 
 
 class JobRepository(IJobRepository):
-    """
-    JobRepository class is responsible for managing job records in the database.
-    """
+    """Reads jobs from the matching service HTTP API (``/jobs`` and ``/jobs/stats``)."""
 
-    def __init__(self, collection: AsyncIOMotorCollection):
-        self._collection = collection
+    def __init__(self, client: MatchingServiceClient):
+        self._client = client
         self._logger = logging.getLogger(self.__class__.__name__)
 
-    @staticmethod
-    def _build_sorted_pipeline(
-        filter_query: Dict[str, Any],
-        offset: int,
-        limit: int,
-        sort_by: str,
-        sort_dir: str,
-    ) -> List[Dict[str, Any]]:
-        direction = 1 if sort_dir == "asc" else -1
-        sort_text_expr: Dict[str, Any] = {
-            "$trim": {"input": {"$toString": {"$ifNull": [f"${sort_by}", ""]}}}
-        }
-        return [
-            {"$match": filter_query},
-            {
-                "$addFields": {
-                    "__sort_missing": {"$cond": [{"$eq": [sort_text_expr, ""]}, 1, 0]},
-                    "__sort_value": {"$toLower": sort_text_expr},
-                }
-            },
-            {"$sort": {"__sort_missing": 1, "__sort_value": direction, "_id": 1}},
-            {"$project": {"_id": 0, "__sort_missing": 0, "__sort_value": 0}},
-            {"$skip": offset},
-            {"$limit": limit + 1},
-        ]
-
-    async def list_jobs(
+    async def fetch_jobs_page(
         self,
-        filter_query: Dict[str, Any],
-        offset: int,
-        limit: int,
-        sort_by: str | None = None,
-        sort_dir: str = "asc",
-    ) -> List[Dict[str, Any]]:
-        if sort_by in SORTABLE_FIELDS:
-            pipeline = self._build_sorted_pipeline(filter_query, offset, limit, sort_by, sort_dir)
-            query = self._collection.aggregate(pipeline)
-        else:
-            query = self._collection.find(filter_query, projection={"_id": 0}).skip(offset).limit(limit + 1)
+        *,
+        cursor: Optional[str] = None,
+        limit: int = 20,
+        search: Optional[str] = None,
+        category: Optional[str] = None,
+        employment_type: Optional[str] = None,
+        location: Optional[str] = None,
+        skills: Optional[str] = None,
+        days: Optional[int] = None,
+        include_total: bool = False,
+    ) -> MatchingJobsPage:
+        params = {
+            "cursor": cursor,
+            "limit": limit,
+            "search": search,
+            "category": category,
+            "employment_type": employment_type,
+            "location": location,
+            "skills": skills,
+            "days": days,
+            # Send only when set; the matching service defaults include_total to false.
+            "include_total": "true" if include_total else None,
+        }
+        return await self._client.get(MatchingJobsPage, "/jobs", params=params)
 
-        docs: List[Dict[str, Any]] = []
-        async for doc in query:
-            docs.append(doc)
-        return docs
-
-    async def count_jobs(self, filter_query: Dict[str, Any]) -> int:
-        return await self._collection.count_documents(filter_query)
-
-    async def distinct_values(self, field: str, filter_query: Dict[str, Any]) -> List[str]:
-        values = await self._collection.distinct(field, filter_query)
-        return [str(v) for v in values if v]
-
-    async def find_by_application_urls(self, urls: List[str]) -> List[Dict[str, Any]]:
-        if not urls:
-            return []
-        query = self._collection.find({"application_url": {"$in": urls}}, projection={"_id": 0})
-        docs: List[Dict[str, Any]] = []
-        async for doc in query:
-            docs.append(doc)
-        return docs
+    async def fetch_stats(self) -> MatchingJobsStats:
+        return await self._client.get(MatchingJobsStats, "/jobs/stats")
