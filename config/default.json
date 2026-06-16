@@ -11,8 +11,25 @@
     },
     "assets": {
       "logo": "/logo.svg",
+      "darkLogo": "/logo-dark.svg",
       "favicon": "/favicon.svg",
-      "appIcon": "/njila-logo.svg"
+      "appIcon": "/njila-logo.svg",
+      "chatAvatar": "/chat-avatar.svg"
+    },
+    "partnerLogos": [
+      { "src": "/tabiya-logo.svg", "alt": "Tabiya", "height": 46 },
+      { "src": "/world-bank-logo.svg", "alt": "World Bank Group", "height": 28 }
+    ],
+    "illustrations": {
+      "loginHero": "/climber.svg",
+      "loginFeature1": "/conversation.svg",
+      "loginFeature2": "/resume.svg",
+      "loginFeature3": "/runner.svg",
+      "homeHero": "/path.svg",
+      "homeHeroIllustrationPosition": "center",
+      "careerReadinessHero": "/thinkers.svg",
+      "authShapesBackground": "/Shapes.svg",
+      "dashboardShapesBackground": "/Shapes.svg"
     },
     "theme": {
       "brand-primary": "0 255 145",
@@ -23,14 +40,44 @@
       "brand-secondary-light": "77 154 143",
       "brand-secondary-dark": "21 79 71",
       "brand-secondary-contrast-text": "0 0 0",
+      "brand-tertiary": "232 160 32",
+      "brand-tertiary-light": "250 240 216",
+      "brand-tertiary-dark": "230 142 22",
+      "brand-tertiary-contrast-text": "255 255 255",
+      "brand-accent": "92 191 191",
+      "brand-accent-light": "216 239 240",
+      "brand-accent-dark": "78 162 162",
+      "brand-accent-contrast-text": "26 18 8",
+      "brand-quaternary": "250 240 216",
+      "brand-quaternary-light": "253 248 235",
+      "brand-quaternary-dark": "232 160 32",
+      "brand-quaternary-contrast-text": "26 18 8",
+      "brand-neutral": "10 92 74",
+      "brand-neutral-light": "232 244 240",
+      "brand-neutral-dark": "8 61 49",
+      "brand-neutral-contrast-text": "255 255 255",
+      "brand-highlight": "10 92 74",
+      "brand-highlight-light": "232 244 240",
+      "brand-highlight-dark": "8 61 49",
+      "brand-highlight-contrast-text": "255 255 255",
+      "nav-main-background": "0 255 145",
+      "nav-main-text": "255 255 255",
+      "page-background": "249 246 240",
+      "page-background-light": "255 255 255",
+      "page-background-dark": "237 233 230",
+      "page-background-contrast-text": "106 99 89",
       "text-primary": "0 33 71",
       "text-secondary": "65 64 61",
-      "text-accent": "38 94 167"
+      "text-accent": "38 94 167",
+      "font-heading": "\"Bricolage Grotesque\", sans-serif",
+      "font-body": "\"Plus Jakarta Sans\", sans-serif"
     }
   },
   "auth": {
     "disableLoginCode": true,
-    "disableRegistrationCode": true
+    "disableRegistrationCode": true,
+    "disableRegistration": false,
+    "disableSocialAuth": false
   },
   "cv": {
     "enabled": true

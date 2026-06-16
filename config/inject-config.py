@@ -30,10 +30,13 @@ FRONTEND_ENV_MAP: Dict[str, str] = {
     'FRONTEND_BROWSER_TAB_TITLE': 'branding.browserTabTitle',
     'FRONTEND_META_DESCRIPTION': 'branding.metaDescription',
     'FRONTEND_LOGO_URL': 'branding.assets.logo',
+    'FRONTEND_DARK_LOGO_URL': 'branding.assets.darkLogo',
     'FRONTEND_FAVICON_URL': 'branding.assets.favicon',
     'FRONTEND_APP_ICON_URL': 'branding.assets.appIcon',
     'FRONTEND_CHAT_AVATAR_URL': 'branding.assets.chatAvatar',
+    'FRONTEND_PARTNER_LOGOS': 'branding.partnerLogos',
     'FRONTEND_FAQ_TUTORIAL_VIDEO_URL': 'faq.tutorialVideoUrl',
+    'FRONTEND_ILLUSTRATIONS': 'branding.illustrations',
     'FRONTEND_THEME_CSS_VARIABLES': 'branding.theme',
     'FRONTEND_SEO': 'branding.seo',
 
@@ -45,6 +48,8 @@ FRONTEND_ENV_MAP: Dict[str, str] = {
     # Invitation Codes
     "GLOBAL_DISABLE_LOGIN_CODE": "auth.disableLoginCode",
     "GLOBAL_DISABLE_REGISTRATION_CODE": "auth.disableRegistrationCode",
+    "FRONTEND_DISABLE_REGISTRATION": "auth.disableRegistration",
+    "FRONTEND_DISABLE_SOCIAL_AUTH": "auth.disableSocialAuth",
 
     # CV Upload
     "GLOBAL_ENABLE_CV_UPLOAD": "cv.enabled",
@@ -67,6 +72,8 @@ FRONTEND_JSON_FIELDS = {
     'FRONTEND_SKILLS_REPORT_OUTPUT_CONFIG',
     'FRONTEND_SUPPORTED_LOCALES',
     'FRONTEND_SENSITIVE_DATA_FIELDS',
+    'FRONTEND_ILLUSTRATIONS',
+    'FRONTEND_PARTNER_LOGOS',
     # Add more JSON.stringify fields here
 }
 
