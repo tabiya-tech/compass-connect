@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from http import HTTPStatus
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Response
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -140,32 +140,28 @@ def _build_preference_vector(prefs) -> PreferenceVector:
 
 def _enrich_matched_jobs(
     opportunities: list[CompassOpportunity],
-    jobs_by_url: dict,
 ) -> list[MatchedJobDocument]:
-    """Map CompassOpportunity entries to MatchedJobDocument and enrich with jobs-collection fields.
+    """Map CompassOpportunity entries from the matching service to MatchedJobDocument.
 
-    Join key is `URL` (matching service) ↔ `application_url` (jobs collection). The matching
-    service's `uuid` is stored on the entity for use as a row key on the frontend, but is not
-    used for the join (see service.py docstring for the schema mismatch context).
+    All surfaced fields come straight from the matching-service recommendation; Compass no
+    longer joins against a local jobs collection (it no longer owns one), so `category` and
+    `posted_date` are populated only when the matching service includes them.
     """
     results: list[MatchedJobDocument] = []
     for opp in opportunities:
-        doc = MatchedJobDocument(
-            uuid=opp.uuid or None,
-            opportunity_title=opp.opportunity_title or None,
-            location=opp.location,
-            contract_type=opp.contract_type,
-            URL=opp.url,
-            final_score=opp.final_score,
-            justification=opp.justification,
-            rank=opp.rank or None,
+        results.append(
+            MatchedJobDocument(
+                uuid=opp.uuid or None,
+                opportunity_title=opp.opportunity_title or None,
+                location=opp.location,
+                contract_type=opp.contract_type,
+                URL=opp.url,
+                final_score=opp.final_score,
+                justification=opp.justification,
+                rank=opp.rank or None,
+                employer=opp.employer,
+            )
         )
-        job = jobs_by_url.get(doc.URL or "")
-        if job:
-            doc.employer = job.employer
-            doc.category = job.category
-            doc.posted_date = job.posted_date
-        results.append(doc)
     return results
 
 
@@ -212,24 +208,21 @@ def add_jobs_routes(app: FastAPI, authentication: Optional[Authentication] = Non
         category: Optional[str] = Query(default=None, description="Filter by job category"),
         employment_type: Optional[str] = Query(default=None, description="Filter by employment type"),
         location: Optional[str] = Query(default=None, description="Filter by job location"),
-        skills: Optional[str] = Query(default=None, description="Filter by extracted skill label (case-insensitive substring)"),
+        skills: Optional[str] = Query(default=None, description="Filter by skill label (case-insensitive substring)"),
         days: Optional[int] = Query(default=None, ge=1, le=3650, description="Only include jobs posted within the last N days"),
-        page: Optional[int] = Query(default=None, description="1-based page number"),
-        cursor: Optional[str] = Query(default=None, description="Pagination cursor from previous response"),
+        cursor: Optional[str] = Query(default=None, description="Pagination cursor (next_cursor) from the previous response"),
         limit: Annotated[int, Query(ge=1, le=100, description="Max items per page")] = 20,
-        sort_by: Literal["title", "category", "location", "source_platform", "posted_date"] | None = Query(
-            default=None,
-            description="Sort field",
-        ),
-        sort_dir: Literal["asc", "desc"] = Query(default="asc", description="Sort direction"),
         include: Optional[str] = Query(default=None, description="Comma-separated: 'count' to include total"),
         job_service: IJobService = Depends(get_job_service),
     ):
         """
-        List jobs stored in MongoDB.
+        List jobs from the matching service.
 
-        Optional query parameters filter by category, employment type, location,
-        and/or posted_date window. Pagination is controlled by `cursor` and `limit`.
+        Optional query parameters filter by title, category, employment type, location,
+        skill, and/or posted_date window. Pagination is cursor-based: pass the
+        `meta.next_cursor` from the previous response as `cursor` to fetch the next page
+        (results are ordered newest-first). Pass `include=count` to receive the filtered
+        total in `meta.total`.
         """
         response.headers["Access-Control-Allow-Origin"] = "*"
         try:
@@ -240,21 +233,22 @@ def add_jobs_routes(app: FastAPI, authentication: Optional[Authentication] = Non
                 location=location,
                 skills=skills,
                 days=days,
-                page=page,
                 cursor=cursor,
                 limit=limit,
-                sort_by=sort_by,
-                sort_dir=sort_dir,
                 include=include,
             )
         except HTTPException:
             raise
-        except RuntimeError as exc:
-            raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
+        except MatchingServiceError as exc:
+            logger.error("Matching service error while listing jobs: %s", exc)
+            raise HTTPException(
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                detail="Matching service unavailable",
+            ) from exc
         except Exception as exc:
             raise HTTPException(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-                detail="Failed to fetch jobs from MongoDB",
+                detail="Failed to fetch jobs",
             ) from exc
 
     if authentication is not None:
@@ -275,7 +269,6 @@ def add_jobs_routes(app: FastAPI, authentication: Optional[Authentication] = Non
         async def get_matched_jobs(
             user_info: UserInfo = Depends(authentication.get_user_info()),
             job_preferences_service: IJobPreferencesService = Depends(get_job_preferences_service),
-            job_service: IJobService = Depends(get_job_service),
             user_profile_repo: UserProfileRepository = Depends(_get_user_profile_repository),
             programme_skills_repo: ProgrammeSkillsRepository = Depends(_get_programme_skills_repository),
             limit: Annotated[int, Query(ge=1, le=100, description="Max results")] = 20,
@@ -343,13 +336,9 @@ def add_jobs_routes(app: FastAPI, authentication: Optional[Authentication] = Non
                 )
                 opportunities = matching_result.opportunities[:limit]
 
-                # Enrich matched jobs with employer/category/posted_date from the jobs collection.
-                # Join key is application_url (matching service's `URL` == our `application_url`).
-                matched_urls: list[str] = [
-                    opp.url for opp in opportunities if opp.url
-                ]
-                jobs_by_url = await job_service.get_jobs_by_application_urls(matched_urls)
-                results = _enrich_matched_jobs(opportunities, jobs_by_url)
+                # Map the matching-service opportunities to the response shape. Fields come
+                # straight from the recommendation; Compass no longer joins a local jobs DB.
+                results = _enrich_matched_jobs(opportunities)
 
                 logger.info(
                     "matched-jobs response user=%s skills_source=%s matches_count=%d",

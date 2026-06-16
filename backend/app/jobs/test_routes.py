@@ -35,20 +35,14 @@ class _MockJobService(IJobService):
         location: Optional[str],
         skills: Optional[str],
         days: Optional[int],
-        page: Optional[int],
         cursor: Optional[str],
         limit: int,
-        sort_by: Optional[str],
-        sort_dir: str,
         include: Optional[str],
     ) -> PaginatedListResponse[JobDocument]:
         return PaginatedListResponse(
             data=[{"title": "Engineer"}],
             meta=PaginatedListMeta(limit=limit, next_cursor=None, has_more=False, total=None),
         )
-
-    async def get_jobs_by_application_urls(self, urls: list[str]) -> dict[str, JobDocument]:
-        return {}
 
 
 @pytest.fixture(scope="function")
@@ -80,24 +74,24 @@ class TestJobsRoutes:
         assert body["meta"]["limit"] == 20
         assert body["meta"]["has_more"] is False
 
-    def test_get_jobs_maps_runtime_error_to_500(self, client_with_mock_service: tuple[TestClient, _MockJobService], monkeypatch):
-        # GIVEN service raises RuntimeError
+    def test_get_jobs_maps_matching_service_error_to_500(self, client_with_mock_service: tuple[TestClient, _MockJobService], monkeypatch):
+        # GIVEN the service raises MatchingServiceError (the upstream is unavailable)
         client, service = client_with_mock_service
 
-        async def _raise_runtime_error(*_args, **_kwargs):
-            raise RuntimeError("db down")
+        async def _raise_matching_error(*_args, **_kwargs):
+            raise MatchingServiceError("upstream down")
 
-        monkeypatch.setattr(service, "list_jobs", _raise_runtime_error)
+        monkeypatch.setattr(service, "list_jobs", _raise_matching_error)
 
         # WHEN GET /jobs is called
         response = client.get("/jobs")
 
-        # THEN route maps to 500 with runtime message
+        # THEN route maps it to 500 with the unavailable detail
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-        assert response.json()["detail"] == "db down"
+        assert response.json()["detail"] == "Matching service unavailable"
 
     def test_get_jobs_preserves_http_exception(self, client_with_mock_service: tuple[TestClient, _MockJobService], monkeypatch):
-        # GIVEN service raises HTTPException (e.g., invalid cursor)
+        # GIVEN service raises HTTPException
         client, service = client_with_mock_service
 
         async def _raise_http_exception(*_args, **_kwargs):
@@ -112,67 +106,30 @@ class TestJobsRoutes:
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.json()["detail"] == "Invalid cursor"
 
-    def test_get_jobs_accepts_page_query(self, client_with_mock_service: tuple[TestClient, _MockJobService], monkeypatch):
-        # GIVEN a service implementation that validates page forwarding
-        client, service = client_with_mock_service
-
-        async def _capture_page(*_args, **kwargs):
-            assert kwargs["page"] == 3
-            return PaginatedListResponse(
-                data=[{"title": "Engineer"}],
-                meta=PaginatedListMeta(limit=kwargs["limit"], next_cursor=None, has_more=False, total=100),
-            )
-
-        monkeypatch.setattr(service, "list_jobs", _capture_page)
-
-        # WHEN GET /jobs is called with page=3
-        response = client.get("/jobs?page=3")
-
-        # THEN request succeeds and page is passed through
-        assert response.status_code == HTTPStatus.OK
-        assert response.json()["meta"]["total"] == 100
-
-    def test_get_jobs_forwards_skills_query_to_service(self, client_with_mock_service: tuple[TestClient, _MockJobService], monkeypatch):
-        # GIVEN a service that captures the skills argument
+    def test_get_jobs_forwards_filters_and_cursor_to_service(self, client_with_mock_service: tuple[TestClient, _MockJobService], monkeypatch):
+        # GIVEN a service that captures the forwarded arguments
         client, service = client_with_mock_service
         captured: dict = {}
 
-        async def _capture_skills(*_args, **kwargs):
-            captured["skills"] = kwargs["skills"]
+        async def _capture(*_args, **kwargs):
+            captured.update(kwargs)
             return PaginatedListResponse(
                 data=[],
-                meta=PaginatedListMeta(limit=kwargs["limit"], next_cursor=None, has_more=False, total=None),
+                meta=PaginatedListMeta(limit=kwargs["limit"], next_cursor="nxt", has_more=True, total=5),
             )
 
-        monkeypatch.setattr(service, "list_jobs", _capture_skills)
+        monkeypatch.setattr(service, "list_jobs", _capture)
 
-        # WHEN GET /jobs is called with ?skills=welding
-        response = client.get("/jobs?skills=welding")
+        # WHEN GET /jobs is called with filters, a cursor and include=count
+        response = client.get("/jobs?skills=welding&category=Eng&cursor=abc&include=count")
 
-        # THEN the skills query is forwarded verbatim to the service
+        # THEN the query params are forwarded verbatim to the service
         assert response.status_code == HTTPStatus.OK
         assert captured["skills"] == "welding"
-
-    def test_get_jobs_rejects_invalid_page(self, client_with_mock_service: tuple[TestClient, _MockJobService], monkeypatch):
-        # GIVEN service validation for invalid page input
-        client, service = client_with_mock_service
-
-        async def _validate_page(*_args, **kwargs):
-            if kwargs["page"] is not None and kwargs["page"] < 1:
-                raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="Invalid page")
-            return PaginatedListResponse(
-                data=[{"title": "Engineer"}],
-                meta=PaginatedListMeta(limit=kwargs["limit"], next_cursor=None, has_more=False, total=None),
-            )
-
-        monkeypatch.setattr(service, "list_jobs", _validate_page)
-
-        # WHEN GET /jobs is called with page=0
-        response = client.get("/jobs?page=0")
-
-        # THEN request is rejected as a bad request
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.json()["detail"] == "Invalid page"
+        assert captured["category"] == "Eng"
+        assert captured["cursor"] == "abc"
+        assert captured["include"] == "count"
+        assert response.json()["meta"]["next_cursor"] == "nxt"
 
 
 _MatchedFixtureMocks = dict
@@ -197,9 +154,9 @@ def matched_client(monkeypatch) -> tuple[TestClient, _MatchedFixtureMocks]:
     mock_prefs_service = AsyncMock(spec=IJobPreferencesService)
     mock_prefs_service.get_by_session.return_value = None
 
-    # Mock the job service (for get_jobs_by_application_urls enrichment)
+    # Mock the job service (the matched route no longer uses it, but it is still
+    # registered as an app dependency by add_jobs_routes).
     mock_job_service = AsyncMock(spec=IJobService)
-    mock_job_service.get_jobs_by_application_urls.return_value = {}
 
     # Mock the matching service (returns an empty CompassMatchingResult by default).
     # Despite the variable name (kept stable for existing assertions), this is a
@@ -280,8 +237,8 @@ class TestMatchedJobsRoute:
         assert len(actual_call_kwargs["skills_vector"].top_skills) == 1
         assert actual_response.json()["skills_source"] == "programme"
 
-    def test_enriches_results_from_jobs_collection(self, matched_client: tuple[TestClient, _MatchedFixtureMocks]):
-        # GIVEN the user has a programme + matching service returns one opportunity AND the jobs collection has enrichment for it
+    def test_surfaces_matching_service_fields_on_matches(self, matched_client: tuple[TestClient, _MatchedFixtureMocks]):
+        # GIVEN the user has a programme + matching service returns one opportunity with employer/location
         client, mocks = matched_client
         mocks["user_profile_repo"].get_explored_experience_entities.return_value = None
         mocks["programme_skills_repo"].find_by_programme_name.return_value = _given_programme_skills_doc()
@@ -295,63 +252,30 @@ class TestMatchedJobsRoute:
                     rank=1,
                     opportunity_title="Engineer",
                     url=given_url,
+                    employer="Acme Corp",
+                    location="Lusaka",
+                    contract_type="full_time",
                     final_score=0.9,
                 )
             ],
         )
-        mocks["job_service"].get_jobs_by_application_urls.return_value = {
-            given_url: JobDocument(
-                application_url=given_url,
-                employer="Acme Corp",
-                category="Engineering",
-                posted_date="2026-04-01",
-            )
-        }
 
         # WHEN GET /jobs/matched is called
         actual_response = client.get("/jobs/matched")
 
-        # THEN the response includes enriched employer/category/posted_date in the envelope's matches
+        # THEN the response surfaces the matching-service fields straight through (no local-DB join)
         assert actual_response.status_code == HTTPStatus.OK
         actual_body = actual_response.json()
         assert len(actual_body["matches"]) == 1
-        assert actual_body["matches"][0]["employer"] == "Acme Corp"
-        assert actual_body["matches"][0]["category"] == "Engineering"
-        assert actual_body["matches"][0]["posted_date"] == "2026-04-01"
-        # AND the join used application_url, not uuid
-        mocks["job_service"].get_jobs_by_application_urls.assert_awaited_once_with([given_url])
-
-    def test_returns_unenriched_when_urls_do_not_match(self, matched_client: tuple[TestClient, _MatchedFixtureMocks]):
-        # GIVEN matching service returns opportunities but jobs collection has no matching application_url
-        client, mocks = matched_client
-        mocks["user_profile_repo"].get_explored_experience_entities.return_value = None
-        mocks["programme_skills_repo"].find_by_programme_name.return_value = _given_programme_skills_doc()
-        mocks["matching_client"].generate_recommendations.return_value = CompassMatchingResult(
-            user_id="mock-user",
-            algorithm_version="v1",
-            opportunities=[
-                CompassOpportunity(
-                    uuid="id-1",
-                    rank=1,
-                    opportunity_title="Engineer",
-                    url="https://example.com/jobs/missing",
-                    final_score=0.9,
-                )
-            ],
-        )
-        mocks["job_service"].get_jobs_by_application_urls.return_value = {}
-
-        # WHEN GET /jobs/matched is called
-        actual_response = client.get("/jobs/matched")
-
-        # THEN the response still surfaces the opportunity, with empty enrichment fields
-        assert actual_response.status_code == HTTPStatus.OK
-        actual_body = actual_response.json()
-        assert len(actual_body["matches"]) == 1
-        assert actual_body["matches"][0]["opportunity_title"] == "Engineer"
-        assert actual_body["matches"][0]["employer"] is None
-        assert actual_body["matches"][0]["category"] is None
-        assert actual_body["matches"][0]["posted_date"] is None
+        match = actual_body["matches"][0]
+        assert match["opportunity_title"] == "Engineer"
+        assert match["employer"] == "Acme Corp"
+        assert match["location"] == "Lusaka"
+        assert match["contract_type"] == "full_time"
+        assert match["URL"] == given_url
+        # category/posted_date are not provided by the matching recommendation → null
+        assert match["category"] is None
+        assert match["posted_date"] is None
 
     def test_returns_500_on_matching_service_error(self, matched_client: tuple[TestClient, _MatchedFixtureMocks]):
         # GIVEN the user has a programme + matching service raises MatchingServiceError

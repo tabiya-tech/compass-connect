@@ -1,79 +1,75 @@
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 
-from app.jobs.repository import JobRepository
-
-
-class _AsyncCursor:
-    def __init__(self, docs):
-        self._docs = docs
-        self._index = 0
-
-    def skip(self, _offset):
-        return self
-
-    def limit(self, _limit):
-        return self
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self):
-        if self._index >= len(self._docs):
-            raise StopAsyncIteration
-        doc = self._docs[self._index]
-        self._index += 1
-        return doc
+from app.jobs.repository import (
+    JobRepository,
+    MatchingJobsPage,
+    MatchingJobsStats,
+)
 
 
 class TestJobRepository:
     @pytest.mark.asyncio
-    async def test_list_jobs_reads_from_collection_with_projection(self):
-        # GIVEN a collection that returns an async cursor
-        collection = MagicMock()
-        docs = [{"title": "A"}, {"title": "B"}]
-        collection.find.return_value = _AsyncCursor(docs)
-        repo = JobRepository(collection=collection)
+    async def test_fetch_jobs_page_calls_jobs_endpoint_with_filters(self):
+        # GIVEN a matching-service client returning a page
+        client = AsyncMock()
+        client.get.return_value = MatchingJobsPage(items=[], next_cursor="next", total=7)
+        repo = JobRepository(client=client)
 
-        # WHEN listing jobs
-        result = await repo.list_jobs(filter_query={"category": "Engineering"}, offset=10, limit=20)
+        # WHEN fetching a filtered page with a total requested
+        actual = await repo.fetch_jobs_page(
+            cursor="cur", limit=10, search="nurse", category="Health",
+            employment_type="full_time", location="Lusaka", skills="care",
+            days=30, include_total=True,
+        )
 
-        # THEN docs are collected and find is called with expected projection
-        assert result == docs
-        collection.find.assert_called_once_with({"category": "Engineering"}, projection={"_id": 0})
-
-    @pytest.mark.asyncio
-    async def test_list_jobs_with_sort_uses_aggregate_pipeline_with_missing_values_last(self):
-        # GIVEN a collection that returns an async cursor for aggregate
-        collection = MagicMock()
-        docs = [{"title": "Analyst"}, {"title": None}]
-        collection.aggregate.return_value = _AsyncCursor(docs)
-        repo = JobRepository(collection=collection)
-
-        # WHEN listing jobs with sorting
-        result = await repo.list_jobs(filter_query={"category": "Engineering"}, offset=5, limit=20, sort_by="title", sort_dir="desc")
-
-        # THEN repository uses an aggregation pipeline with null/empty-last sort semantics
-        assert result == docs
-        collection.aggregate.assert_called_once()
-        pipeline = collection.aggregate.call_args.args[0]
-        assert pipeline[0] == {"$match": {"category": "Engineering"}}
-        assert pipeline[2] == {"$sort": {"__sort_missing": 1, "__sort_value": -1, "_id": 1}}
-        assert pipeline[4] == {"$skip": 5}
-        assert pipeline[5] == {"$limit": 21}
-        collection.find.assert_not_called()
+        # THEN the matching service /jobs endpoint is called with mapped query params
+        assert actual.next_cursor == "next"
+        assert actual.total == 7
+        client.get.assert_awaited_once()
+        called_args, called_kwargs = client.get.call_args
+        assert called_args[0] is MatchingJobsPage
+        assert called_args[1] == "/jobs"
+        assert called_kwargs["params"] == {
+            "cursor": "cur",
+            "limit": 10,
+            "search": "nurse",
+            "category": "Health",
+            "employment_type": "full_time",
+            "location": "Lusaka",
+            "skills": "care",
+            "days": 30,
+            "include_total": "true",
+        }
 
     @pytest.mark.asyncio
-    async def test_count_jobs_delegates_to_collection(self):
-        # GIVEN a collection with count_documents
-        collection = MagicMock()
-        collection.count_documents = AsyncMock(return_value=42)
-        repo = JobRepository(collection=collection)
+    async def test_fetch_jobs_page_omits_include_total_when_false(self):
+        # GIVEN a matching-service client
+        client = AsyncMock()
+        client.get.return_value = MatchingJobsPage(items=[])
+        repo = JobRepository(client=client)
 
-        # WHEN counting jobs
-        total = await repo.count_jobs({"location": "Lusaka"})
+        # WHEN fetching a page without requesting the total
+        await repo.fetch_jobs_page(include_total=False)
 
-        # THEN repository delegates to motor collection
-        assert total == 42
-        collection.count_documents.assert_awaited_once_with({"location": "Lusaka"})
+        # THEN include_total is sent as None so the service uses its default (false)
+        assert client.get.call_args.kwargs["params"]["include_total"] is None
+
+    @pytest.mark.asyncio
+    async def test_fetch_stats_calls_stats_endpoint(self):
+        # GIVEN a matching-service client returning stats
+        client = AsyncMock()
+        client.get.return_value = MatchingJobsStats(total=42, sectors=3, platforms=2)
+        repo = JobRepository(client=client)
+
+        # WHEN fetching stats
+        actual = await repo.fetch_stats()
+
+        # THEN the /jobs/stats endpoint is called and stats returned
+        assert actual.total == 42
+        assert actual.sectors == 3
+        assert actual.platforms == 2
+        called_args, _ = client.get.call_args
+        assert called_args[0] is MatchingJobsStats
+        assert called_args[1] == "/jobs/stats"

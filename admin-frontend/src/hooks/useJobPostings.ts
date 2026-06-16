@@ -42,14 +42,13 @@ export interface UseJobPostingsResult {
   loading: boolean;
   statsLoading: boolean;
   error: Error | null;
-  sortKey: keyof JobPostingRow | null;
-  sortDir: "asc" | "desc";
-  page: number;
+  /** 1-based index of the current page (for the range label). */
+  pageIndex: number;
   totalItems: number;
-  totalPages: number;
-  goToPage: (page: number) => void;
-  onSortChange: (key: keyof JobPostingRow, dir?: "asc" | "desc") => void;
-  onSortClear: () => void;
+  hasPrev: boolean;
+  hasNext: boolean;
+  goNext: () => void;
+  goPrev: () => void;
 }
 
 export interface JobPostingQueryFilters {
@@ -59,28 +58,18 @@ export interface JobPostingQueryFilters {
   skillsQuery?: string;
 }
 
-function mapSortKeyToApiField(key: keyof JobPostingRow): "title" | "category" | "location" | "source_platform" | null {
-  const map: Partial<Record<keyof JobPostingRow, "title" | "category" | "location" | "source_platform">> = {
-    jobTitle: "title",
-    sector: "category",
-    location: "location",
-    platform: "source_platform",
-  };
-  return map[key] ?? null;
-}
-
 export function useJobPostings({
   searchQuery,
   sectorQuery = "",
   locationQuery = "",
   skillsQuery = "",
 }: JobPostingQueryFilters): UseJobPostingsResult {
-  const [page, setPage] = useState(1);
-  const [sortKey, setSortKey] = useState<keyof JobPostingRow | null>(null);
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  // Server-side cursor pagination: `cursorStack` holds the cursor used to fetch each visited
+  // page (first page = undefined). "previous" pops; "next" pushes the response's next_cursor.
+  const [cursorStack, setCursorStack] = useState<(string | undefined)[]>([undefined]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [rows, setRows] = useState<JobPostingRow[]>([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -91,8 +80,10 @@ export function useJobPostings({
   const normalizedLocationQuery = locationQuery.trim();
   const normalizedSkillsQuery = skillsQuery.trim();
 
+  // Reset to the first page whenever the filters change.
   useEffect(() => {
-    setPage(1);
+    setCursorStack([undefined]);
+    setNextCursor(null);
   }, [normalizedSearchQuery, normalizedSectorQuery, normalizedLocationQuery, normalizedSkillsQuery]);
 
   // Fetch stats once
@@ -116,6 +107,8 @@ export function useJobPostings({
     };
   }, []);
 
+  const currentCursor = cursorStack[cursorStack.length - 1];
+
   // Fetch current page
   useEffect(() => {
     let cancelled = false;
@@ -124,28 +117,27 @@ export function useJobPostings({
       setLoading(true);
       setError(null);
       try {
-        const apiSortBy = sortKey ? mapSortKeyToApiField(sortKey) : null;
         const result = await AnalyticsService.getInstance().listJobs({
           search: normalizedSearchQuery || undefined,
           category: normalizedSectorQuery || undefined,
           location: normalizedLocationQuery || undefined,
           skills: normalizedSkillsQuery || undefined,
-          page,
+          cursor: currentCursor,
           limit: PAGE_SIZE,
           include: "count",
-          ...(apiSortBy ? { sort_by: apiSortBy, sort_dir: sortDir } : {}),
         });
         if (!cancelled) {
           setRows(result.data.map(mapToRow));
+          setNextCursor(result.meta.next_cursor);
           if (typeof result.meta.total === "number") {
             setTotalItems(result.meta.total);
-            setTotalPages(Math.max(1, Math.ceil(result.meta.total / PAGE_SIZE)));
           }
         }
       } catch (e) {
         if (!cancelled) {
           setError(e instanceof Error ? e : new Error(String(e)));
           setRows([]);
+          setNextCursor(null);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -156,42 +148,15 @@ export function useJobPostings({
     return () => {
       cancelled = true;
     };
-  }, [
-    page,
-    sortDir,
-    sortKey,
-    normalizedSearchQuery,
-    normalizedSectorQuery,
-    normalizedLocationQuery,
-    normalizedSkillsQuery,
-  ]);
+  }, [currentCursor, normalizedSearchQuery, normalizedSectorQuery, normalizedLocationQuery, normalizedSkillsQuery]);
 
-  const goToPage = useCallback(
-    (nextPage: number) => {
-      if (!Number.isInteger(nextPage)) return;
-      setPage(Math.min(Math.max(1, nextPage), totalPages));
-    },
-    [totalPages]
-  );
+  const goNext = useCallback(() => {
+    if (nextCursor == null) return;
+    setCursorStack((prev) => [...prev, nextCursor]);
+  }, [nextCursor]);
 
-  const onSortChange = useCallback((key: keyof JobPostingRow, dir?: "asc" | "desc") => {
-    if (!mapSortKeyToApiField(key)) return;
-    setSortKey((prevKey) => {
-      const isSameKey = prevKey !== null && prevKey === key;
-      if (dir) {
-        setSortDir(dir);
-      } else {
-        setSortDir((prevDir) => (isSameKey ? (prevDir === "asc" ? "desc" : "asc") : "asc"));
-      }
-      return key;
-    });
-    setPage(1);
-  }, []);
-
-  const onSortClear = useCallback(() => {
-    setSortKey(null);
-    setSortDir("asc");
-    setPage(1);
+  const goPrev = useCallback(() => {
+    setCursorStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
   }, []);
 
   return {
@@ -200,13 +165,11 @@ export function useJobPostings({
     loading,
     statsLoading,
     error,
-    sortKey,
-    sortDir,
-    page,
+    pageIndex: cursorStack.length,
     totalItems,
-    totalPages,
-    goToPage,
-    onSortChange,
-    onSortClear,
+    hasPrev: cursorStack.length > 1,
+    hasNext: nextCursor != null,
+    goNext,
+    goPrev,
   };
 }

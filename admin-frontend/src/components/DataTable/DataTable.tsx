@@ -19,10 +19,13 @@ import {
   Popover,
   Divider,
   Pagination,
+  Button,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useTranslation } from "react-i18next";
 import { useSortableData } from "src/hooks/useSortableData";
 
@@ -76,10 +79,17 @@ export interface DataTableProps<T extends { id: string }> {
   emptyMessage?: string;
   /** When provided, renders a search field above the table */
   search?: SearchConfig;
-  // Pagination
+  // Pagination (numbered mode)
   page?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
+  /** Cursor pagination (server-side next/previous). Takes precedence over numbered mode. */
+  cursorPagination?: {
+    hasPrev: boolean;
+    hasNext: boolean;
+    onPrev: () => void;
+    onNext: () => void;
+  };
   prevPageLabel?: string;
   nextPageLabel?: string;
   pageLabel?: string;
@@ -260,6 +270,7 @@ function DataTable<T extends { id: string }>({
   page,
   totalPages,
   onPageChange,
+  cursorPagination,
   prevPageLabel,
   nextPageLabel,
   pageLabel,
@@ -662,7 +673,50 @@ function DataTable<T extends { id: string }>({
         </Table>
       </TableContainer>
 
-      {page !== undefined && totalPages !== undefined && onPageChange && (
+      {cursorPagination && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: { xs: "center", sm: "space-between" },
+            gap: theme.fixedSpacing(theme.tabiyaSpacing.md),
+            mt: theme.fixedSpacing(theme.tabiyaSpacing.md),
+          }}
+        >
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ display: { xs: "none", sm: "block" }, textAlign: "left", minWidth: 0, flexShrink: 1 }}
+          >
+            {pageLabel ?? ""}
+          </Typography>
+          <Box sx={{ display: "flex", gap: theme.fixedSpacing(theme.tabiyaSpacing.sm), flexShrink: 0 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<ChevronLeftIcon />}
+              disabled={loading || !cursorPagination.hasPrev}
+              onClick={cursorPagination.onPrev}
+              aria-label={resolvedPrevPageLabel}
+            >
+              {resolvedPrevPageLabel}
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              endIcon={<ChevronRightIcon />}
+              disabled={loading || !cursorPagination.hasNext}
+              onClick={cursorPagination.onNext}
+              aria-label={resolvedNextPageLabel}
+            >
+              {resolvedNextPageLabel}
+            </Button>
+          </Box>
+        </Box>
+      )}
+
+      {!cursorPagination && page !== undefined && totalPages !== undefined && onPageChange && (
         <Box
           sx={{
             display: "flex",
