@@ -1,54 +1,26 @@
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field, RootModel
+from typing import Optional
 
 from app.matching.client import MatchingServiceClient
 from app.matching.service import MatchingService
-from app.matching.matching_types import SkillsVector, PreferenceVector, CompassMatchingResult, MatchingAlgorithmVersion, \
-    MatchingRequest, CompassOpportunity
+from app.matching.matching_types import (
+    SkillsVector,
+    PreferenceVector,
+    CompassMatchingResult,
+    MatchingAlgorithmVersion,
+    MatchingRequest,
+)
+# The v2 endpoint now returns the same shape as /match, so reuse v1's response models and
+# mappers as the single source of truth (re-exported here so callers/tests can import them).
+from app.matching.service_v1 import (
+    _ResponseList,
+    _to_compass_occupation,
+    _to_compass_opportunity,
+    _to_compass_skill_gap,
+)
 
+__all__ = ["MatchingServiceV2", "_ResponseList"]
 
-class MatchV2JobRecommendation(BaseModel):
-    rank: int
-    job_uuid: str
-    opportunity_title: str = ""
-    employer: Optional[str] = None
-    location: Optional[str] = None
-    URL: Optional[str] = None
-    fusion_score: float
-    bm25_norm_within_candidates: Optional[float] = None
-    cos_norm_within_candidates: Optional[float] = None
-    mean_best_cosine_raw: Optional[float] = None
-    bm25_score_raw: Optional[float] = None
-    matched_skills: List[str] = Field(default_factory=list)
-    matched_skills_cosine: List[str] = Field(default_factory=list)
-
-
-class _Response(BaseModel):
-    user_id: str
-    n_jobs_scored: int
-    hybrid_recommendations: List[MatchV2JobRecommendation]
-    hybrid_config_summary: Dict[str, Any] = Field(default_factory=dict)
-
-
-class _ResponseList(RootModel[List[_Response]]):
-    """The `/match_v2` endpoint returns a list with one entry per user in the request.
-
-    We always send a single user, so the list has at most one element.
-    """
-
-
-def _to_compass_opportunity(rec: MatchV2JobRecommendation) -> CompassOpportunity:
-    return CompassOpportunity(
-        uuid=rec.job_uuid,
-        rank=rec.rank,
-        opportunity_title=rec.opportunity_title,
-        url=rec.URL,
-        employer=rec.employer,
-        location=rec.location,
-        final_score=rec.fusion_score,
-        matched_skill_labels=list(rec.matched_skills),
-        raw=rec.model_dump(),
-    )
+_MATCH_V2_PATH = "/experiments/v2/match"
 
 
 class MatchingServiceV2(MatchingService):
@@ -73,18 +45,15 @@ class MatchingServiceV2(MatchingService):
             preference_vector=preference_vector,
         )
 
-        response = await self._client.process_request(_ResponseList, "/experiments/v2/match", request)
+        response = await self._client.process_request(_ResponseList, _MATCH_V2_PATH, request)
         if not response.root:
             return CompassMatchingResult(user_id=youth_id, algorithm_version="v2")
 
         first = response.root[0]
-        metadata: Dict[str, Any] = {"n_jobs_scored": first.n_jobs_scored}
-        if first.hybrid_config_summary:
-            metadata["hybrid_config_summary"] = first.hybrid_config_summary
-
         return CompassMatchingResult(
             user_id=first.user_id or youth_id,
             algorithm_version="v2",
-            opportunities=[_to_compass_opportunity(r) for r in first.hybrid_recommendations],
-            metadata=metadata,
+            occupations=[_to_compass_occupation(o) for o in first.occupation_recommendations],
+            opportunities=[_to_compass_opportunity(o) for o in first.opportunity_recommendations],
+            skill_gaps=[_to_compass_skill_gap(g) for g in first.skill_gap_recommendations],
         )
