@@ -1,33 +1,51 @@
-# Compass Customization Guide
+# Compass Connect Customisation Guide
 
-This guide explains how-to white-label the Compass application using the supported configuration system.  
-It documents which parts of the application can be customized, how configuration is applied, and how to validate changes.
+This guide explains how to customise a Compass Connect deployment.
+It documents which parts of the application can be changed, what the constraints are, and how to apply a configuration.
 
 ## Overview
 
-Compass supports white-label customization through a JSON-based configuration file.
-This configuration controls branding, selected features, reports, and language settings.
+Compass Connect is the base product. New deployments — such as Njila Zambia — are created by starting from Compass Connect and applying a configuration file that overrides the branding, colours, features, and content for that specific deployment.
 
-Configuration values are injected into both the frontend and backend during deployment.
+No application code needs to change between deployments. Everything is controlled through a single JSON configuration file that is injected at deployment time.
+
+## Creating a New Deployment
+
+1. Copy `config/default.json` and give it a name that reflects your deployment (for example `config/njila.json`).
+2. Update the values in your new file — branding, colours, features, and any other sections relevant to your deployment.
+3. Apply the configuration locally by running:
+
+```bash
+cd config
+python3 inject-config.py --config njila.json
+```
+
+4. Restart the frontend and backend to pick up the new values.
+
+All available options are described in the sections below. Only the values you change need to be in your file — anything not specified falls back to the defaults in `default.json`.
 
 ## Configuration File
 
 All supported customization options are defined in `config/default.json`.
 
-This file is the **source of truth** for what can and cannot be customized.
+This file is the **source of truth** for what can and cannot be customised.
+
 
 ## Configuration Structure
 
-The configuration file is organized into the following top-level namespaces:
+The configuration file is organized into the following sections:
 
-- **branding**: Application name, logos, colors, and SEO metadata
-- **auth**: Authentication behavior
-- **cv**: CV feature availability
-- **skillsReport**: Skills report branding, formats, and content
-- **i18n**: Language and locale settings
-- **analytics**: Google Analytics 4 and Google Tag Manager integration
+- **branding** — Application name, logos, colours, illustrations, and SEO metadata
+- **auth** — Authentication behaviour
+- **cv** — CV feature availability
+- **skillsReport** — Skills report branding, formats, and content
+- **i18n** — Language and locale settings
+- **analytics** — Google Analytics 4 and Google Tag Manager integration
+- **faq** — Tutorial video URL
+- **sensitiveData** — User data collection fields
 
-Only options exposed in these namespaces are customizable. Core application logic, workflows, and layouts are fixed.
+Only options exposed in these sections are customizable. Core application logic, workflows, and page layouts are fixed.
+
 
 ## Branding Configuration
 
@@ -35,10 +53,6 @@ Only options exposed in these namespaces are customizable. Core application logi
 
 - **appName**: Name displayed throughout the application
 - **browserTabTitle**: Text shown in the browser tab
-
-![Application name](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/app-name.svg) ![Browser Tab title](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/browser-tab.svg)
-
-*Figure 1: Application name and browser tab title*
 
 ### SEO Metadata
 
@@ -51,31 +65,54 @@ Only options exposed in these namespaces are customizable. Core application logi
 ### Assets
 
 - **assets.logo**: Main logo (SVG recommended)
+- **assets.darkLogo**: Dark variant of the logo, used on light backgrounds
 - **assets.favicon**: Browser favicon
 - **assets.appIcon**: Application icon
+- **assets.chatAvatar**: Image shown as the AI assistant's avatar in the chat interface
 
-![Main logo](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/logo.svg) ![Favicon](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/favicon.svg) ![Application logo](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/app-logo.svg)
+Assets can be placed in the frontend `public` directory or hosted externally and referenced by URL.
 
-*Figure 2: Logo and icon assets*
+### Partner Logos
 
-Assets can be placed in the frontend `public` directory or hosted externally.
+- **partnerLogos**: List of logos shown in the application footer, each with a source URL, alt text, and optional height and width
 
-### Theme colors
+### Illustrations
 
-colors are defined using RGB values (for example: `"0 255 145"`).
+- **illustrations.loginHero**: Hero image on the login page
+- **illustrations.loginFeature1**: First supporting feature image on the login page
+- **illustrations.loginFeature2**: Second supporting feature image on the login page
+- **illustrations.loginFeature3**: Third supporting feature image on the login page
+- **illustrations.homeHero**: Hero image on the home page
+- **illustrations.homeHeroIllustrationPosition**: Position of the home hero — `center` or `edge`
+- **illustrations.careerReadinessHero**: Hero image on the career readiness page
+- **illustrations.authShapesBackground**: Background shape image used on auth pages
+- **illustrations.dashboardShapesBackground**: Background shape image used on the dashboard
 
-The following colors can be customized:
+### Theme Colours
 
-- Primary and secondary brand colors (including light, dark, and contrast text)
-- Primary, secondary, and accent text colors
+Colours are defined using RGB values (for example: `"0 255 145"`). This format allows the application to apply transparency variants automatically.
 
-![Branding Colors](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/branding-colors.svg)
+The following colour roles can be customised. Each role has a main colour plus light, dark, and contrast-text variants:
 
-*Figure 3: Theme color application*
+- **Primary** — the main brand colour, used on primary action buttons and key interactive elements
+- **Secondary** — used on section headers, cards, and supporting UI regions
+- **Tertiary** — used for subtle backgrounds and lower-emphasis elements
+- **Quaternary** — used for specific card backgrounds and highlight areas
+- **Accent** — used on tag chips, inline highlights, and supporting accents
+- **Neutral** — used on the navigation bar and neutral UI regions
+- **Highlight** — used on skill tags and programme-related chip elements
 
-**Accessibility requirement:**  
+Additional colours that can be customised:
 
-After updating colors, run Storybook locally with the chosen configuration and **run the accessibility tests** to ensure WCAG AA contrast compliance. Non-compliant color combinations will fail accessibility checks.
+- Navigation bar background and text colour
+- Page background (main, light variant, dark variant, and contrast text)
+- Primary, secondary, and accent text colours
+- Heading and body font families
+
+**Accessibility requirement:**
+
+After updating colours, run Storybook locally and run the accessibility tests to ensure WCAG AA contrast compliance. Non-compliant colour combinations will fail accessibility checks.
+
 
 ## Feature Configuration
 
@@ -85,106 +122,118 @@ After updating colors, run Storybook locally with the chosen configuration and *
 
 When disabled, all CV-related UI elements are hidden and CV APIs are not registered.
 
-![Feature CV](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/feature-cv.svg) 
-
-*Figure 4: CV feature enabled*
-
 ### Authentication
 
-- **auth.disableLoginCode**: Disable login code requirement
-- **auth.disableRegistrationCode**: Disable registration code requirement
+- **auth.disableLoginCode**: Disable the login code requirement
+- **auth.disableRegistrationCode**: Disable the registration code requirement
+- **auth.disableRegistration**: Disable registration entirely, making the application login-only
+- **auth.disableSocialAuth**: Hide social login options (for example Google sign-in)
 
-These settings control how users authenticate in the application.
+These settings control how users authenticate and register in the application.
 
-![Login code enabled](https://raw.githubusercontent.com/tabiya-tech/docs/refs/heads/main/.gitbook/assets/login-code.svg) ![Registration code enabled](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/registration-code.svg)
 
-*Figure 5: Login with code and registration with code enabled*
+## Legal Documents
+
+Each deployment has its own terms of use and privacy policy documents. The correct documents are served automatically based on the product name set in **branding.appName** (matched case-insensitively).
+
+To add legal documents for a new deployment:
+
+1. Add two Markdown files to `frontend-new/src/legal/documents/` following the naming convention:
+   - `privacy-policy-{product-slug}.md`
+   - `terms-of-use-{product-slug}.md`
+2. Import both files and register them in `frontend-new/src/legal/legalDocumentLoader.ts`, adding an entry to `documentsByProductName` with the lowercased product name as the key and both `privacy` and `terms` documents as values.
+
+If no entry is found for the product name, the application falls back to the default documents.
+
 
 ## Skills Report Configuration
 
-The skills report supports branding, format, and content customization.
+The skills report supports branding, format, and content customisation.
 
 ### Report Logos
 
 - **skillsReport.logos**: One or more logos displayed in generated reports
-- Separate sizing is supported for DOCX and PDF formats
 
-This allows single-brand or co-branded reports.
+Separate sizing is supported for DOCX and PDF formats. This allows single-brand or co-branded reports.
 
 ### Download Formats
 
-- **skillsReport.downloadFormats**: Control which formats are available (DOCX and/or PDF)
+- **skillsReport.downloadFormats**: Control which formats are available — DOCX, PDF, or both
 
 ### Report Content
 
-Partners can control which sections and fields appear in the report, including:
-
-- Summary section
-- Experience title
-- Company name
-- Date range
-- Location
-
-![Skills Report customization](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/skills-report.svg)
-
-*Figure 6: Skills report customization*
+- **skillsReport.report.summary.show**: Show or hide the summary section
+- **skillsReport.report.experienceDetails.title**: Show or hide the experience title
+- **skillsReport.report.experienceDetails.companyName**: Show or hide the company name
+- **skillsReport.report.experienceDetails.dateRange**: Show or hide the date range
+- **skillsReport.report.experienceDetails.location**: Show or hide the location
+- **skillsReport.report.experienceDetails.summary**: Show or hide the experience summary
 
 
-## Localization Configuration
+## Localisation Configuration
 
-Compass supports multiple languages through configuration.
+Compass Connect supports multiple languages through configuration.
 
 ### User Interface Locales
 
 - **i18n.ui.defaultLocale**: Default UI language
-- **i18n.ui.supportedLocales**: Available UI languages
+- **i18n.ui.supportedLocales**: List of available UI languages
 
 ### Conversation Locales
 
-- **i18n.conversation.default_locale**: Default conversation language
-- **i18n.conversation.available_locales**: Locale-specific configuration, including date format
-
-![Language Switcher](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/languages.svg)
-
-*Figure 7: Language switcher interface*
-
+- **i18n.conversation.default_locale**: Default language for the AI conversation
+- **i18n.conversation.available_locales**: Available conversation locales, each with a date format
 
 For full translation setup, see the [Language Guide](../add-a-new-language.md).
 
+
 ## Sensitive Data Fields Configuration
 
-The sensitive data form fields can be customized to collect different user information.
+The personal data collection form can be customised to collect different information per deployment.
 
-- **sensitiveData.fields**: Configuration for sensitive data collection fields
+- **sensitiveData.fields**: Configuration for each data collection field
 
-This allows customization of:
-- Which fields are displayed (name, email, gender, age, etc.)
-- Field types
+This allows customisation of:
+
+- Which fields are displayed (for example: name, email, gender, age, education)
+- Whether each field is required or optional
+- Field type (free text or a list of choices)
 - Validation rules and error messages
-- Localized labels and values
+- Labels and choice values per language
 
-![Sensitive Data Fields](https://raw.githubusercontent.com/tabiya-tech/docs/main/.gitbook/assets/sensitive-data-fields.svg)
+For the full schema and examples, see the [Sensitive Data Fields Configuration Guide](../frontend-new/sensitive-data-fields-config.md).
 
-*Figure 8: Sensitive data collection fields*
-
-
-For the complete schema documentation and examples, see the [Sensitive Data Fields Configuration Guide](../frontend-new/sensitive-data-fields-config.md).
 
 ## Analytics Configuration
 
-Compass supports Google Analytics 4 (GA4) event tracking via Google Tag Manager (GTM).
+Compass Connect supports Google Analytics 4 (GA4) event tracking via Google Tag Manager (GTM).
 
-- **analytics.enabled**: Enable or disable GTM in the frontend
-- **analytics.gtmContainerId**: GTM container ID (e.g., `GTM-XXXXXXX`)
+- **analytics.enabled**: Enable or disable tracking in the frontend
+- **analytics.gtmContainerId**: GTM container ID (for example: `GTM-XXXXXXX`)
 - **analytics.ga4PropertyId**: GA4 property ID
-- **analytics.ga4MeasurementId**: GA4 measurement ID (e.g., `G-XXXXXXX`)
+- **analytics.ga4MeasurementId**: GA4 measurement ID (for example: `G-XXXXXXX`)
 
-When enabled, the frontend tracks `user_registered` and `user_login` events automatically.
+When enabled, the frontend automatically tracks user registration and login events.
 
-The setup is automated via `backend/scripts/analytics/setup_analytics.py`, which creates the GA4 property, GTM container, tags,
-triggers, and variables, then writes the generated IDs into the configuration file.
+For the full setup guide, see the [Analytics Setup Guide](ANALYTICS_SETUP.md).
 
-For the full setup guide including prerequisites and step-by-step instructions, see the [Analytics Setup Guide](ANALYTICS_SETUP.md).
+
+## FAQ Configuration
+
+The FAQ section includes a tutorial video that can be customised per deployment.
+
+- **faq.tutorialVideoUrl**: URL of the tutorial video embedded in the FAQ page
+
+
+## What Cannot Be Changed
+
+The following are fixed across all deployments and cannot be altered through configuration:
+
+- Page layouts and the structure of UI components
+- Core AI conversation logic and skills discovery flow
+- Navigation routes and URL structure
+- Backend API endpoints and data models
+
 
 ## Applying Configuration Locally
 
@@ -194,19 +243,20 @@ Navigate to the `config` directory and run:
 
 ```bash
 cd config
-python3 inject-config.py
+python3 inject-config.py --config your-config.json
 ```
 
-This script reads the configuration file and injects values into:
+This reads the configuration file and injects values into:
 
-* Backend `.env` file
-* Frontend `public/data/env.js` file
+- Backend `.env` file
+- Frontend `public/data/env.js` file
 
-You can also apply only specific namespaces:
+To apply only specific sections:
 
 ```bash
-python3 inject-config.py --config default.json --namespaces branding auth
+python3 inject-config.py --config your-config.json --namespaces branding auth
 ```
+
 
 ## Configuration Reference
 
@@ -215,5 +265,5 @@ Refer to [default.json](default.json) for the complete configuration structure a
 ## Important Notes
 
 - If a configuration value is missing or contains a typo, the application will fall back to its default value
-- If changes do not appear after deployment, verify injected environment variables
+- If changes do not appear after deployment, verify the injected environment variables
 - Configuration keys must match the structure in **default.json** exactly
