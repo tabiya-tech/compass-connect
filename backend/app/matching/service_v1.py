@@ -20,10 +20,12 @@ class OptionalSkillMatch(BaseModel):
 
 
 class SkillComponents(BaseModel):
-    loc: float
-    ess: float
-    opt: float
-    grp: float
+    # Optional so /match_v4 can emit a partial, interpretable breakdown (ess/opt in [0,1];
+    # loc/grp null = "not computed"). The legacy Node2Vec /match path still fills all four.
+    loc: Optional[float] = None
+    ess: Optional[float] = None
+    opt: Optional[float] = None
+    grp: Optional[float] = None
 
 
 class SkillGroupMatch(BaseModel):
