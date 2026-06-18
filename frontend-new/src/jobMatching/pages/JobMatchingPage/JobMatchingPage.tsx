@@ -85,7 +85,7 @@ const JobMatchingPage: React.FC = () => {
   const debouncedSearch = useDebouncedValue(browseFilters.search, SEARCH_DEBOUNCE_MS);
   const queryFilters = useMemo(() => ({ ...browseFilters, search: debouncedSearch }), [browseFilters, debouncedSearch]);
 
-  const { jobs, loading, error, pageIndex, totalItems, hasPrev, hasNext, goNext, goPrev } = useJobs(queryFilters);
+  const { jobs, loading, error, pageIndex, totalItems, goNext, goPrev } = useJobs(queryFilters);
   const {
     jobs: matchedJobs,
     loading: matchedLoading,
@@ -152,11 +152,12 @@ const JobMatchingPage: React.FC = () => {
     setModalOpen(true);
   };
 
-  const browsePageLabel = useMemo(() => {
-    const start = jobs.length === 0 ? 0 : (pageIndex - 1) * PAGE_SIZE + 1;
-    const end = jobs.length === 0 ? 0 : start + jobs.length - 1;
-    return t("jobMatching.table.pageRange", { start, end, total: totalItems });
-  }, [pageIndex, jobs.length, totalItems, t]);
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / PAGE_SIZE);
+  const rangeStart = totalItems === 0 ? 0 : (pageIndex - 1) * PAGE_SIZE + 1;
+  const rangeEnd = totalItems === 0 ? 0 : Math.min(pageIndex * PAGE_SIZE, totalItems);
+  const pageLabel = useMemo(() => {
+    return t("jobMatching.table.pageRange", { start: rangeStart, end: rangeEnd, total: totalItems });
+  }, [rangeStart, rangeEnd, totalItems, t]);
 
   const columns: ColumnDef<JobRow>[] = useMemo(
     () => [
@@ -414,8 +415,10 @@ const JobMatchingPage: React.FC = () => {
                 onChange: (v) => setBrowseFilters((f) => ({ ...f, search: v })),
               }}
               onRowClick={handleRowClick}
-              cursorPagination={{ hasPrev, hasNext, onPrev: goPrev, onNext: goNext }}
-              pageLabel={browsePageLabel}
+              page={Math.max(1, pageIndex)}
+              totalPages={totalPages}
+              onPageChange={(newPage) => (newPage > pageIndex ? goNext() : goPrev())}
+              pageLabel={pageLabel}
             />
           </>
         )}

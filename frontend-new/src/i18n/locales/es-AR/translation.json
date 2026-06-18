@@ -1279,7 +1279,7 @@
       "searchPlaceholder": "Buscá títulos de empleo o empresas...",
       "searchAriaLabel": "Buscar empleos",
       "pageAriaLabel": "Página {{page}}",
-      "pageRange": "Página {{start}}–{{end}} de {{total}}"
+      "pageRange": "{{start}}–{{end}} de {{total}} elementos"
     },
     "columns": {
       "jobTitle": "Título del Empleo",

@@ -1279,7 +1279,7 @@
       "searchPlaceholder": "Search job titles or companies...",
       "searchAriaLabel": "Search jobs",
       "pageAriaLabel": "Page {{page}}",
-      "pageRange": "Page {{start}}–{{end}} of {{total}}"
+      "pageRange": "{{start}}–{{end}} of {{total}} items"
     },
     "columns": {
       "jobTitle": "Job Title",

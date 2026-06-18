@@ -3,7 +3,7 @@ import type { InstitutionRow } from "src/types";
 import AnalyticsService from "src/analytics/AnalyticsService";
 import type { InstitutionApiItem } from "src/analytics/AnalyticsService.types";
 
-const PAGE_SIZE = 20;
+export const PAGE_SIZE = 20;
 
 export interface UseInstitutionsResult {
   institutions: InstitutionRow[];

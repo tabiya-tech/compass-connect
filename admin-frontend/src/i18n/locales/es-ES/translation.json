@@ -332,7 +332,7 @@
     },
     "comingSoon": "No hay datos hasta el momento.",
     "pagination": {
-      "range": "Página {{start}}–{{end}} de {{total}}"
+      "range": "{{start}}–{{end}} de {{total}} elementos"
     }
   },
   "instructorDashboard": {

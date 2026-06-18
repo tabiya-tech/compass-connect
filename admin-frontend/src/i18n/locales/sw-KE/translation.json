@@ -332,7 +332,7 @@
     },
     "comingSoon": "Hakuna data hadi sasa.",
     "pagination": {
-      "range": "Ukurasa {{start}}–{{end}} wa {{total}}"
+      "range": "{{start}}–{{end}} kati ya {{total}} vitu"
     }
   },
   "instructorDashboard": {

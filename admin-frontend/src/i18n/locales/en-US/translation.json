@@ -255,7 +255,7 @@
       }
     },
     "pagination": {
-      "range": "Page {{start}}–{{end}} of {{total}}"
+      "range": "{{start}}–{{end}} of {{total}} items"
     },
     "jobPostings": {
       "stats": {
