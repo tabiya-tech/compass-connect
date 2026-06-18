@@ -62,11 +62,9 @@ const InstructorStudentsTable: React.FC<InstructorStudentsTableProps> = ({
 
   const allLabel = t("instructorDashboard.studentsTable.filters.all");
   const currentPage = safePageIndex + 1;
-  const pageLabel = t("dashboard.pagination.range", {
-    start: totalItems === 0 ? 0 : safePageIndex * pageSize + 1,
-    end: totalItems === 0 ? 0 : Math.min((safePageIndex + 1) * pageSize, totalItems),
-    total: totalItems,
-  });
+  const rangeStart = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const rangeEnd = totalItems === 0 ? 0 : Math.min(currentPage * pageSize, totalItems);
+  const pageLabel = t("dashboard.pagination.range", { start: rangeStart, end: rangeEnd, total: totalItems });
 
   const formatModuleLabel = (moduleId: string) => {
     const key = getModuleLabelKey(moduleId);

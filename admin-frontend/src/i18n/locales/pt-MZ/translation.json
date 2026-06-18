@@ -253,7 +253,7 @@
       }
     },
     "pagination": {
-      "range": "Página {{start}}–{{end}} de {{total}}"
+      "range": "{{start}}–{{end}} de {{total}} itens"
     },
     "jobPostings": {
       "stats": {

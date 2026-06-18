@@ -40,8 +40,6 @@ const JobPostings: React.FC = () => {
     error,
     pageIndex,
     totalItems,
-    hasPrev,
-    hasNext,
     goNext,
     goPrev,
   } = useJobPostings({
@@ -171,11 +169,10 @@ const JobPostings: React.FC = () => {
     [theme, t]
   );
 
-  const pageRangeLabel = t("dashboard.pagination.range", {
-    start: jobPostings.length === 0 ? 0 : (pageIndex - 1) * PAGE_SIZE + 1,
-    end: jobPostings.length === 0 ? 0 : (pageIndex - 1) * PAGE_SIZE + jobPostings.length,
-    total: totalItems,
-  });
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / PAGE_SIZE);
+  const rangeStart = totalItems === 0 ? 0 : (pageIndex - 1) * PAGE_SIZE + 1;
+  const rangeEnd = totalItems === 0 ? 0 : Math.min(pageIndex * PAGE_SIZE, totalItems);
+  const pageRangeLabel = t("dashboard.pagination.range", { start: rangeStart, end: rangeEnd, total: totalItems });
 
   return (
     <Box sx={{ paddingBottom: theme.fixedSpacing(theme.tabiyaSpacing.lg) }}>
@@ -254,7 +251,9 @@ const JobPostings: React.FC = () => {
         ariaLabel={t("dashboard.jobPostings.aria.table")}
         emptyMessage={t("dashboard.jobPostings.jobsCount", { count: 0, total: 0 })}
         tableMinWidth={750}
-        cursorPagination={{ hasPrev, hasNext, onPrev: goPrev, onNext: goNext }}
+        page={Math.max(1, pageIndex)}
+        totalPages={totalPages}
+        onPageChange={(newPage) => (newPage > pageIndex ? goNext() : goPrev())}
         pageLabel={pageRangeLabel}
       />
 

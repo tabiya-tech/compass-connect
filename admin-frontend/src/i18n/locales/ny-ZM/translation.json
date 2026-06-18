@@ -332,7 +332,7 @@
     },
     "comingSoon": "Palibe deta mpaka pano.",
     "pagination": {
-      "range": "Peji {{start}}–{{end}} mwa {{total}}"
+      "range": "{{start}}–{{end}} mwa {{total}} zinthu"
     }
   },
   "instructorDashboard": {

@@ -3,6 +3,7 @@ import { Typography, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import type { InstitutionRow } from "src/types";
 import DataTable, { type ColumnDef, type ColumnGroup } from "src/components/DataTable/DataTable";
+import { PAGE_SIZE } from "src/hooks/useInstitutions";
 
 export interface InstitutionsTableProps {
   rows: InstitutionRow[];
@@ -22,8 +23,6 @@ const GROUP_COLORS = {
   careerReadiness: "#7B61C4",
   careerExplorer: "#2ECC71",
 };
-
-const PAGE_SIZE = 20;
 
 const InstitutionsTable: React.FC<InstitutionsTableProps> = ({
   rows,
@@ -179,13 +178,12 @@ const InstitutionsTable: React.FC<InstitutionsTableProps> = ({
     },
   ];
 
+  const total = totalItems ?? 0;
+  const rangeStart = !page || total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeEnd = !page || total === 0 ? 0 : Math.min(page * PAGE_SIZE, total);
   const pageRangeLabel =
-    page !== undefined && totalItems !== undefined
-      ? t("dashboard.pagination.range", {
-          start: totalItems === 0 ? 0 : (page - 1) * PAGE_SIZE + 1,
-          end: totalItems === 0 ? 0 : Math.min(page * PAGE_SIZE, totalItems),
-          total: totalItems,
-        })
+    page !== undefined && totalPages !== undefined
+      ? t("dashboard.pagination.range", { start: rangeStart, end: rangeEnd, total })
       : undefined;
 
   return (
