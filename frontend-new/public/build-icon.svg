@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="step-icon" viewBox="0 0 88 88" aria-hidden="true">
+    <!-- dot-grid ascending bars: build -->
+    <g fill="#002147">
+        <circle cx="22" cy="58" r="5.5"></circle><circle cx="22" cy="44" r="5.5"></circle>
+        <circle cx="40" cy="58" r="5.5"></circle><circle cx="40" cy="44" r="5.5"></circle><circle cx="40" cy="30" r="5.5"></circle>
+        <circle cx="58" cy="58" r="5.5"></circle><circle cx="58" cy="44" r="5.5"></circle>
+    </g>
+    <circle cx="58" cy="30" r="6.5" fill="#00FF91"></circle>
+</svg>

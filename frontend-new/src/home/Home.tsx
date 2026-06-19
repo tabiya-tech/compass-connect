@@ -27,7 +27,7 @@ const Home: React.FC = () => {
   const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
   const { profileData, isLoadingModules, errors } = useUserProfileContext();
   const illustrationUrls = getIllustrationUrls();
-  const shapesBackgroundUrl = illustrationUrls.dashboardShapesBackground;
+  const shapesBackgroundUrl = illustrationUrls.dashboardShapesBackground?.src;
   const isHeroEdge = (illustrationUrls.homeHeroIllustrationPosition ?? "center") === "edge";
 
   const modulesLoadError = Boolean(errors?.modules);

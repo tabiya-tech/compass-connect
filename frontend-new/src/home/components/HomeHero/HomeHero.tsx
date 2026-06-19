@@ -109,12 +109,12 @@ const HomeHero: React.FC = () => {
         >
           <Box
             component="img"
-            src={illustrationUrls.homeHero}
+            src={illustrationUrls.homeHero.src}
             alt={t("home.hero.illustrationAlt")}
             data-testid={DATA_TEST_ID.HOME_HERO_ILLUSTRATION}
             sx={{
-              width: "100%",
-              height: "100%",
+              width: illustrationUrls.homeHero.width ?? "100%",
+              height: illustrationUrls.homeHero.height ?? "100%",
               maxWidth: "100%",
               maxHeight: "100%",
               display: "block",

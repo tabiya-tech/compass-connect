@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="step-icon" viewBox="0 0 88 88" aria-hidden="true">
+    <!-- dot-grid burst: find your path -->
+    <g fill="#002147">
+        <circle cx="44" cy="22" r="5.5"></circle><circle cx="44" cy="66" r="5.5"></circle>
+        <circle cx="22" cy="44" r="5.5"></circle><circle cx="66" cy="44" r="5.5"></circle>
+        <circle cx="29" cy="29" r="5.5"></circle><circle cx="59" cy="59" r="5.5"></circle>
+        <circle cx="44" cy="44" r="5.5"></circle>
+    </g>
+    <circle cx="61" cy="27" r="6.5" fill="#00FF91"></circle>
+</svg>
