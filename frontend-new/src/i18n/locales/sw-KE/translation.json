@@ -1124,6 +1124,8 @@
       "accessibility": "Ufikiaji",
       "contact": "Wasiliana",
       "collaboration": "{{appName}} ni zana ya bure ya mwongozo wa kazi inayotolewa na Wizara ya Teknolojia na Sayansi ya Zambia, iliyojengwa kwa ushirikiano na Kundi la Benki ya Dunia na Tabiya.",
+      "compassConnectLine1": "Hii ni utumaji wa maonyesho wa Compass Connect — zana ya mwongozo wa kazi inayoweza kubinafsishwa ya chanzo wazi, iliyojengwa na <tabiyaLink>Tabiya</tabiyaLink>.",
+      "compassConnectLine2": "Imejengwa juu ya <compassLink>Compass</compassLink>, zana ya mazungumzo ya chanzo wazi ya Tabiya kwa watafuta kazi.",
       "worldBankLogoAlt": "Nembo ya Kundi la Benki ya Dunia",
       "ministryTechLogoAlt": "Nembo ya Wizara ya Teknolojia",
       "tabiyaLogoAlt": "Nembo ya Tabiya"

@@ -1124,6 +1124,8 @@
       "accessibility": "Kufikira",
       "contact": "Lumikizani",
       "collaboration": "{{appName}} ndi chida chaulere cha malangizo a ntchito choperekedwa ndi Unduna wa Ukadaulo ndi Sayansi ku Zambia, chomangidwa mogwirizana ndi World Bank Group ndi Tabiya.",
+      "compassConnectLine1": "Iyi ndi ntchito yosonyeza ya Compass Connect — chida cha malangizo a ntchito chosintha ndi cholera mwaufulu, chomangidwa ndi <tabiyaLink>Tabiya</tabiyaLink>.",
+      "compassConnectLine2": "Chomangidwa pa <compassLink>Compass</compassLink>, chida cha Tabiya chosakanizira ndi anthu ofunafuna ntchito.",
       "worldBankLogoAlt": "Chizindikiro cha Gulu la World Bank",
       "ministryTechLogoAlt": "Chizindikiro cha Unduna wa Teknoloji",
       "tabiyaLogoAlt": "Chizindikiro cha Tabiya"
