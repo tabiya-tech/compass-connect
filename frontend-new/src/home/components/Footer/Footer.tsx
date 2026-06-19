@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Container, Divider, Typography, useMediaQuery, useTheme } from "@mui/material";
 import type { SxProps } from "@mui/material";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import CustomLink from "src/theme/CustomLink/CustomLink";
 import { getPartnerLogos, getProductName, type PartnerLogo } from "src/envService";
 import { routerPaths } from "src/app/routerPaths";
@@ -18,6 +18,11 @@ export const DATA_TEST_ID = {
   FOOTER_CONTACT_LINK: `footer-contact-link-${uniqueId}`,
   FOOTER_COPYRIGHT: `footer-copyright-${uniqueId}`,
   FOOTER_COLLABORATION: `footer-collaboration-${uniqueId}`,
+};
+
+export const COMPASS_CONNECT_URLS = {
+  TABIYA: "https://www.tabiya.org/",
+  COMPASS: "https://github.com/tabiya-tech/compass",
 };
 
 export const EXTERNAL_URLS = {
@@ -157,14 +162,39 @@ const Footer: React.FC<FooterProps> = ({ sx }) => {
             </CustomLink>
           </Box>
 
-          {/* Collaboration text */}
-          <Typography
-            color="text.secondary"
-            data-testid={DATA_TEST_ID.FOOTER_COLLABORATION}
-            sx={{ textAlign: "center", fontSize: "0.7rem" }}
-          >
-            {t("home.footer.collaboration", { appName })}
-          </Typography>
+          {/* Collaboration text*/}
+          {appName.toLowerCase() === "compass connect" ? (
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.15rem" }}>
+              <Typography color="text.secondary" sx={{ textAlign: "center", fontSize: "0.7rem" }}>
+                <Trans
+                  i18nKey="home.footer.compassConnectLine1"
+                  components={{
+                    tabiyaLink: (
+                      <CustomLink href={COMPASS_CONNECT_URLS.TABIYA} target="_blank" rel="noopener noreferrer" />
+                    ),
+                  }}
+                />
+              </Typography>
+              <Typography color="text.secondary" sx={{ textAlign: "center", fontSize: "0.7rem" }}>
+                <Trans
+                  i18nKey="home.footer.compassConnectLine2"
+                  components={{
+                    compassLink: (
+                      <CustomLink href={COMPASS_CONNECT_URLS.COMPASS} target="_blank" rel="noopener noreferrer" />
+                    ),
+                  }}
+                />
+              </Typography>
+            </Box>
+          ) : (
+            <Typography
+              color="text.secondary"
+              data-testid={DATA_TEST_ID.FOOTER_COLLABORATION}
+              sx={{ textAlign: "center", fontSize: "0.7rem" }}
+            >
+              {t("home.footer.collaboration", { appName })}
+            </Typography>
+          )}
         </Box>
       </Container>
     </Box>

@@ -1118,6 +1118,8 @@
       "accessibility": "Acessibilidade",
       "contact": "Contacto",
       "collaboration": "{{appName}} é uma ferramenta gratuita de orientação profissional oferecida pelo Ministério da Educação e Cultura de Moçambique, desenvolvida em parceria com o Grupo Banco Mundial e a Tabiya.",
+      "compassConnectLine1": "Esta é uma implementação de demonstração do Compass Connect — uma ferramenta de orientação profissional personalizável e de código aberto, desenvolvida pela <tabiyaLink>Tabiya</tabiyaLink>.",
+      "compassConnectLine2": "Construída sobre o <compassLink>Compass</compassLink>, a ferramenta conversacional de código aberto da Tabiya para candidatos a emprego.",
       "worldBankLogoAlt": "Logótipo do Grupo Banco Mundial",
       "ministryTechLogoAlt": "Logótipo do Ministério da Tecnologia",
       "tabiyaLogoAlt": "Logótipo da Tabiya"
