@@ -287,26 +287,35 @@ export const getAppIconUrl = () => getEnv(EnvVariables.FRONTEND_APP_ICON_URL);
 
 export const getChatAvatarUrl = () => getEnv(EnvVariables.FRONTEND_CHAT_AVATAR_URL);
 
-export interface IllustrationUrls {
-  loginHero: string;
-  loginFeature1: string;
-  loginFeature2: string;
-  loginFeature3: string;
-  homeHero: string;
-  homeHeroIllustrationPosition?: "center" | "edge";
-  careerReadinessHero: string;
-  authShapesBackground: string;
-  dashboardShapesBackground?: string;
+export interface IllustrationItem {
+  src: string;
+  width?: number | string;
+  height?: number | string;
 }
 
+export interface IllustrationUrls {
+  loginHero: IllustrationItem;
+  loginFeature1: IllustrationItem;
+  loginFeature2: IllustrationItem;
+  loginFeature3: IllustrationItem;
+  homeHero: IllustrationItem;
+  homeHeroIllustrationPosition?: "center" | "edge";
+  careerReadinessHero: IllustrationItem;
+  authShapesBackground: IllustrationItem;
+  dashboardShapesBackground?: IllustrationItem;
+}
+
+const toIllustrationItem = (val: string | IllustrationItem): IllustrationItem =>
+  typeof val === "string" ? { src: val } : val;
+
 export const DEFAULT_ILLUSTRATION_URLS: IllustrationUrls = {
-  loginHero: "/climber.svg",
-  loginFeature1: "/conversation.svg",
-  loginFeature2: "/resume.svg",
-  loginFeature3: "/runner.svg",
-  homeHero: "/path.svg",
-  careerReadinessHero: "/thinkers.svg",
-  authShapesBackground: "/Shapes.svg",
+  loginHero: { src: "/climber.svg" },
+  loginFeature1: { src: "/conversation.svg" },
+  loginFeature2: { src: "/resume.svg" },
+  loginFeature3: { src: "/runner.svg" },
+  homeHero: { src: "/path.svg" },
+  careerReadinessHero: { src: "/thinkers.svg" },
+  authShapesBackground: { src: "/Shapes.svg" },
 };
 
 export const getIllustrationUrls = (): IllustrationUrls => {
@@ -315,8 +324,16 @@ export const getIllustrationUrls = (): IllustrationUrls => {
     return DEFAULT_ILLUSTRATION_URLS;
   }
   try {
-    const parsed = JSON.parse(jsonString) as Partial<IllustrationUrls>;
-    return { ...DEFAULT_ILLUSTRATION_URLS, ...parsed };
+    const parsed = JSON.parse(jsonString) as Partial<Record<keyof IllustrationUrls, string | IllustrationItem>>;
+    return {
+      ...DEFAULT_ILLUSTRATION_URLS,
+      ...Object.fromEntries(
+        Object.entries(parsed).map(([key, val]) => [
+          key,
+          key === "homeHeroIllustrationPosition" ? val : toIllustrationItem(val as string | IllustrationItem),
+        ])
+      ),
+    } as IllustrationUrls;
   } catch (e) {
     console.error(new EnvError("Error parsing FRONTEND_ILLUSTRATIONS JSON", e));
     return DEFAULT_ILLUSTRATION_URLS;

@@ -32,11 +32,12 @@ jest.mock("src/envService", () => ({
   getChatAvatarUrl: jest.fn(() => ""),
   getFaqTutorialVideoUrl: jest.fn(() => ""),
   getIllustrationUrls: jest.fn(() => ({
-    loginHero: "/climber.svg",
-    loginFeature1: "/conversation.svg",
-    loginFeature2: "/resume.svg",
-    loginFeature3: "/runner.svg",
-    homeHero: "/path.svg",
-    careerReadinessHero: "/thinkers.svg",
+    loginHero: { src: "/climber.svg" },
+    loginFeature1: { src: "/conversation.svg" },
+    loginFeature2: { src: "/resume.svg" },
+    loginFeature3: { src: "/runner.svg" },
+    homeHero: { src: "/path.svg" },
+    careerReadinessHero: { src: "/thinkers.svg" },
+    authShapesBackground: { src: "/Shapes.svg" },
   })),
 }));

@@ -19,9 +19,11 @@ import SecondaryButton from "src/theme/SecondaryButton/SecondaryButton";
 
 const FeatureColumn: React.FC<{
   imageSrc: string;
+  imageWidth?: number | string;
+  imageHeight?: number | string;
   title: string;
   body: string;
-}> = ({ imageSrc, title, body }) => (
+}> = ({ imageSrc, imageWidth, imageHeight, title, body }) => (
   <Box
     sx={{
       width: "100%",
@@ -47,8 +49,8 @@ const FeatureColumn: React.FC<{
         src={imageSrc}
         alt=""
         sx={{
-          width: "100%",
-          height: "100%",
+          width: imageWidth ?? "100%",
+          height: imageHeight ?? "100%",
           objectFit: "contain",
           objectPosition: "bottom center",
         }}
@@ -200,11 +202,11 @@ const AuthLayout: React.FC = () => {
         >
           <Box
             component="img"
-            src={illustrations.loginHero}
+            src={illustrations.loginHero.src}
             alt=""
             sx={{
-              width: "100%",
-              height: "100%",
+              width: illustrations.loginHero.width ?? "100%",
+              height: illustrations.loginHero.height ?? "100%",
             }}
           />
         </Box>
@@ -297,17 +299,23 @@ const AuthLayout: React.FC = () => {
             }}
           >
             <FeatureColumn
-              imageSrc={illustrations.loginFeature1}
+              imageSrc={illustrations.loginFeature1.src}
+              imageWidth={illustrations.loginFeature1.width}
+              imageHeight={illustrations.loginFeature1.height}
               title={t("auth.pages.login.appHero.feature1Title")}
               body={t("auth.pages.login.appHero.feature1Body")}
             />
             <FeatureColumn
-              imageSrc={illustrations.loginFeature2}
+              imageSrc={illustrations.loginFeature2.src}
+              imageWidth={illustrations.loginFeature2.width}
+              imageHeight={illustrations.loginFeature2.height}
               title={t("auth.pages.login.appHero.feature2Title")}
               body={t("auth.pages.login.appHero.feature2Body")}
             />
             <FeatureColumn
-              imageSrc={illustrations.loginFeature3}
+              imageSrc={illustrations.loginFeature3.src}
+              imageWidth={illustrations.loginFeature3.width}
+              imageHeight={illustrations.loginFeature3.height}
               title={t("auth.pages.login.appHero.feature3Title")}
               body={t("auth.pages.login.appHero.feature3Body")}
             />

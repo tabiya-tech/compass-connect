@@ -65,12 +65,12 @@ const VerifyEmail: React.FC = () => {
       >
         <Box
           component="img"
-          src={getIllustrationUrls().loginFeature3}
+          src={getIllustrationUrls().loginFeature3.src}
           alt=""
           sx={{
             display: "block",
-            width: "100%",
-            height: "100%",
+            width: getIllustrationUrls().loginFeature3.width ?? "100%",
+            height: getIllustrationUrls().loginFeature3.height ?? "100%",
             maxWidth: "100%",
             maxHeight: "100%",
             objectFit: "contain",

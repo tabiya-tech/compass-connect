@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="hero-figure brand-art" viewBox="0 0 300 220" aria-hidden="true">
+    <!-- rising dotted path: steep climb on the left, continuing up behind the card -->
+    <path d="M40 200 C 92 150, 168 72, 300 50" fill="none" stroke="#247066" stroke-width="3.5" stroke-dasharray="0.5 11" stroke-linecap="round"></path>
+    <!-- start + mid waypoints -->
+    <circle cx="40" cy="200" r="8" fill="#247066"></circle>
+    <circle cx="105" cy="140" r="6" fill="#247066" opacity="0.6"></circle>
+</svg>

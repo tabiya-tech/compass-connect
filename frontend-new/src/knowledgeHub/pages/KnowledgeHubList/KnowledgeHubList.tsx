@@ -121,7 +121,7 @@ const KnowledgeHubList: React.FC = () => {
               >
                 <Box
                   component="img"
-                  src={getIllustrationUrls().loginFeature3}
+                  src={getIllustrationUrls().loginFeature3.src}
                   alt=""
                   sx={{
                     width: "100%",
@@ -164,7 +164,7 @@ const KnowledgeHubList: React.FC = () => {
                 >
                   <Box
                     component="img"
-                    src={getIllustrationUrls().loginFeature3}
+                    src={getIllustrationUrls().loginFeature3.src}
                     alt=""
                     sx={{
                       width: "100%",

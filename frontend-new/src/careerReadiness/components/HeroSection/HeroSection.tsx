@@ -63,11 +63,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ upNextModule, loading = false
         >
           <Box
             component="img"
-            src={getIllustrationUrls().careerReadinessHero}
+            src={getIllustrationUrls().careerReadinessHero.src}
             alt=""
             sx={{
-              width: "100%",
-              height: "100%",
+              width: getIllustrationUrls().careerReadinessHero.width ?? "100%",
+              height: getIllustrationUrls().careerReadinessHero.height ?? "100%",
               maxWidth: "100%",
               maxHeight: "100%",
               display: "block",
