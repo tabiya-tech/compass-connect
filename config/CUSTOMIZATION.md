@@ -1,42 +1,12 @@
 # Compass Connect Customisation Guide
 
-This guide explains how to customise a Compass Connect deployment.
-It documents which parts of the application can be changed, what the constraints are, and how to apply a configuration.
+This guide documents which parts of a Compass Connect deployment can be customised.
+All options are defined in [`config/default.json`](default.json), which is the source of truth for available settings.
 
-## Overview
+The configuration is organized into the following sections:
 
-Compass Connect is the base product. New deployments — such as Njila Zambia — are created by starting from Compass Connect and applying a configuration file that overrides the branding, colours, features, and content for that specific deployment.
-
-No application code needs to change between deployments. Everything is controlled through a single JSON configuration file that is injected at deployment time.
-
-## Creating a New Deployment
-
-1. Copy `config/default.json` and give it a name that reflects your deployment (for example `config/njila.json`).
-2. Update the values in your new file — branding, colours, features, and any other sections relevant to your deployment.
-3. Apply the configuration locally by running:
-
-```bash
-cd config
-python3 inject-config.py --config njila.json
-```
-
-4. Restart the frontend and backend to pick up the new values.
-
-All available options are described in the sections below. Only the values you change need to be in your file — anything not specified falls back to the defaults in `default.json`.
-
-## Configuration File
-
-All supported customization options are defined in `config/default.json`.
-
-This file is the **source of truth** for what can and cannot be customised.
-
-
-## Configuration Structure
-
-The configuration file is organized into the following sections:
-
-- **branding** — Application name, logos, colours, illustrations, and SEO metadata
-- **auth** — Authentication behaviour
+- **branding** — Application name, logos, colors, illustrations, and SEO metadata
+- **auth** — Authentication behavior
 - **cv** — CV feature availability
 - **skillsReport** — Skills report branding, formats, and content
 - **i18n** — Language and locale settings
@@ -46,217 +16,167 @@ The configuration file is organized into the following sections:
 
 Only options exposed in these sections are customizable. Core application logic, workflows, and page layouts are fixed.
 
+## App Name & Tab Title
 
-## Branding Configuration
+- `branding.appName` — name displayed throughout the application
+- `branding.browserTabTitle` — text shown in the browser tab
 
-### Application Identity
+## SEO Metadata
 
-- **appName**: Name displayed throughout the application
-- **browserTabTitle**: Text shown in the browser tab
+- `branding.metaDescription` — search engine description
+- `branding.seo.name` — site name for search results
+- `branding.seo.url` — public application URL
+- `branding.seo.image` — image used for social sharing
+- `branding.seo.description` — detailed SEO description
 
-### SEO Metadata
+## Logos & Icons
 
-- **metaDescription**: Search engine description
-- **seo.name**: Site name for search results
-- **seo.url**: Public application URL
-- **seo.image**: Image used for social sharing
-- **seo.description**: Detailed SEO description
+Place assets in `frontend-new/public/` and reference them as `/filename.ext`,
+or use a full URL to an externally hosted asset.
 
-### Assets
+- `branding.assets.logo` — main logo
+- `branding.assets.darkLogo` — logo variant used on light backgrounds
+- `branding.assets.favicon` — browser tab icon
+- `branding.assets.appIcon` — app icon (mobile / PWA)
+- `branding.assets.chatAvatar` — AI assistant avatar shown in the chat interface
 
-- **assets.logo**: Main logo (SVG recommended)
-- **assets.darkLogo**: Dark variant of the logo, used on light backgrounds
-- **assets.favicon**: Browser favicon
-- **assets.appIcon**: Application icon
-- **assets.chatAvatar**: Image shown as the AI assistant's avatar in the chat interface
+`branding.partnerLogos` is a list of partner logos shown in the footer.
+Each entry takes `src`, `alt`, and optional `width` / `height`.
 
-Assets can be placed in the frontend `public` directory or hosted externally and referenced by URL.
+## Illustrations
 
-### Partner Logos
+`branding.illustrations` controls the images shown across key pages.
+Each value can be a plain path (`"/image.ext"`) or an object with `src`, `width`, and `height`
+when you also want to control the display size.
 
-- **partnerLogos**: List of logos shown in the application footer, each with a source URL, alt text, and optional height and width
+- `loginHero` — large hero image on the login page
+- `loginFeature1`, `loginFeature2`, `loginFeature3` — three feature images on the login page
+- `homeHero` — hero image on the home page
+- `homeHeroIllustrationPosition` — `center` or `edge`, controls the hero alignment
+- `careerReadinessHero` — hero image on the career readiness page
+- `authShapesBackground` — decorative background pattern on auth pages
+- `dashboardShapesBackground` — decorative background pattern on the dashboard
 
-### Illustrations
+## Colors
 
-- **illustrations.loginHero**: Hero image on the login page
-- **illustrations.loginFeature1**: First supporting feature image on the login page
-- **illustrations.loginFeature2**: Second supporting feature image on the login page
-- **illustrations.loginFeature3**: Third supporting feature image on the login page
-- **illustrations.homeHero**: Hero image on the home page
-- **illustrations.homeHeroIllustrationPosition**: Position of the home hero — `center` or `edge`
-- **illustrations.careerReadinessHero**: Hero image on the career readiness page
-- **illustrations.authShapesBackground**: Background shape image used on auth pages
-- **illustrations.dashboardShapesBackground**: Background shape image used on the dashboard
+The application has seven brand colors. Each controls a specific region of the UI.
 
-### Theme Colours
+<img src="theme-colors.jpg" width="480" alt="Compass Connect brand colors" />
 
-Colours are defined using RGB values (for example: `"0 255 145"`). This format allows the application to apply transparency variants automatically.
+All color keys live under `branding.theme` in the config file.
+colors are defined as space-separated RGB values, for example `"0 255 145"`.
+This format lets the application generate transparency variants automatically.
 
-The following colour roles can be customised. Each role has a main colour plus light, dark, and contrast-text variants:
+- `brand-primary` — primary action buttons and key interactive elements
+- `brand-secondary` — section headers and feature cards
+- `brand-tertiary` — subtle backgrounds and lower-emphasis areas
+- `brand-quaternary` — specific card backgrounds
+- `brand-accent` — tag chips and inline highlights
+- `brand-neutral` — navigation bar
+- `brand-highlight` — skill tags and programme chips
 
-- **Primary** — the main brand colour, used on primary action buttons and key interactive elements
-- **Secondary** — used on section headers, cards, and supporting UI regions
-- **Tertiary** — used for subtle backgrounds and lower-emphasis elements
-- **Quaternary** — used for specific card backgrounds and highlight areas
-- **Accent** — used on tag chips, inline highlights, and supporting accents
-- **Neutral** — used on the navigation bar and neutral UI regions
-- **Highlight** — used on skill tags and programme-related chip elements
+Each color supports four variants by appending a suffix:
+`(none)` for the main value, `-light`, `-dark`, and `-contrast-text`.
+If only the main value is set the others are derived automatically.
 
-Additional colours that can be customised:
+After changing colors, verify text contrast meets WCAG AA
+(4.5 : 1 for body text, 3 : 1 for large text) using the
+[WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/).
 
-- Navigation bar background and text colour
-- Page background (main, light variant, dark variant, and contrast text)
-- Primary, secondary, and accent text colours
-- Heading and body font families
+## Languages & Translations
 
-**Accessibility requirement:**
+### Enabling Languages
 
-After updating colours, run Storybook locally and run the accessibility tests to ensure WCAG AA contrast compliance. Non-compliant colour combinations will fail accessibility checks.
+- `i18n.ui.defaultLocale` — language that loads by default
+- `i18n.ui.supportedLocales` — list of languages shown in the language switcher
+- `i18n.conversation.default_locale` — default language for the AI conversation
+- `i18n.conversation.available_locales` — languages available for the AI conversation
 
+### Adding or Translating a Language
 
-## Feature Configuration
+To add a new language or update existing translations, see the [Language Guide](../add-a-new-language.md).
 
-### CV Feature
+## Authentication
 
-- **cv.enabled**: Enable or disable CV functionality
-
-When disabled, all CV-related UI elements are hidden and CV APIs are not registered.
-
-### Authentication
-
-- **auth.disableLoginCode**: Disable the login code requirement
-- **auth.disableRegistrationCode**: Disable the registration code requirement
-- **auth.disableRegistration**: Disable registration entirely, making the application login-only
-- **auth.disableSocialAuth**: Hide social login options (for example Google sign-in)
-
-These settings control how users authenticate and register in the application.
-
+- `auth.disableLoginCode` — remove the login code requirement
+- `auth.disableRegistrationCode` — remove the registration code requirement
+- `auth.disableRegistration` — make the app login-only (hides the register flow entirely)
+- `auth.disableSocialAuth` — hide social login options such as Google sign-in
 
 ## Legal Documents
 
-Each deployment has its own terms of use and privacy policy documents. The correct documents are served automatically based on the product name set in **branding.appName** (matched case-insensitively).
+Legal documents are matched to the deployment automatically using `branding.appName` (case-insensitive).
 
-To add legal documents for a new deployment:
+To add documents for a new deployment:
 
-1. Add two Markdown files to `frontend-new/src/legal/documents/` following the naming convention:
+1. Add two Markdown files to `frontend-new/src/legal/documents/`:
    - `privacy-policy-{product-slug}.md`
    - `terms-of-use-{product-slug}.md`
-2. Import both files and register them in `frontend-new/src/legal/legalDocumentLoader.ts`, adding an entry to `documentsByProductName` with the lowercased product name as the key and both `privacy` and `terms` documents as values.
+2. Register them in `frontend-new/src/legal/legalDocumentLoader.ts` under `documentsByProductName`.
 
-If no entry is found for the product name, the application falls back to the default documents.
+If no match is found the app falls back to the default documents.
 
+## Features
 
-## Skills Report Configuration
+### CV Upload
 
-The skills report supports branding, format, and content customisation.
+`cv.enabled` controls whether CV functionality is available in the application.
+Set to `true` to enable or `false` to disable.
+When disabled, all CV-related UI elements are hidden and CV APIs are not registered.
 
-### Report Logos
+### Skills Report
 
-- **skillsReport.logos**: One or more logos displayed in generated reports
+- `skillsReport.logos` — one or more logos displayed in generated reports (supports separate sizing for DOCX and PDF)
+- `skillsReport.downloadFormats` — available download formats: `pdf`, `docx`, or both
+- `skillsReport.report.summary.show` — show or hide the summary section
+- `skillsReport.report.experienceDetails.title` — show or hide the experience title
+- `skillsReport.report.experienceDetails.companyName` — show or hide the company name
+- `skillsReport.report.experienceDetails.dateRange` — show or hide the date range
+- `skillsReport.report.experienceDetails.location` — show or hide the location
 
-Separate sizing is supported for DOCX and PDF formats. This allows single-brand or co-branded reports.
+## Analytics
 
-### Download Formats
+Compass Connect supports Google Analytics 4 (GA4) via Google Tag Manager (GTM).
 
-- **skillsReport.downloadFormats**: Control which formats are available — DOCX, PDF, or both
+- `analytics.enabled` — enable or disable tracking in the frontend
+- `analytics.gtmContainerId` — GTM container ID (for example `GTM-XXXXXXX`)
+- `analytics.ga4PropertyId` — GA4 property ID
+- `analytics.ga4MeasurementId` — GA4 measurement ID (for example `G-XXXXXXX`)
 
-### Report Content
+For full setup, see the [Analytics Setup Guide](ANALYTICS_SETUP.md).
 
-- **skillsReport.report.summary.show**: Show or hide the summary section
-- **skillsReport.report.experienceDetails.title**: Show or hide the experience title
-- **skillsReport.report.experienceDetails.companyName**: Show or hide the company name
-- **skillsReport.report.experienceDetails.dateRange**: Show or hide the date range
-- **skillsReport.report.experienceDetails.location**: Show or hide the location
-- **skillsReport.report.experienceDetails.summary**: Show or hide the experience summary
+## Data Collection Fields
 
+`sensitiveData.fields` configures the personal data form shown to users after registration.
+Each field supports visibility, required/optional, type (free text or choices), validation, and per-language labels.
 
-## Localisation Configuration
+For the full schema and examples, see the
+[Sensitive Data Fields Configuration Guide](../frontend-new/sensitive-data-fields-config.md).
 
-Compass Connect supports multiple languages through configuration.
+## FAQ Video
 
-### User Interface Locales
+`faq.tutorialVideoUrl` — URL of the tutorial video embedded in the FAQ page.
 
-- **i18n.ui.defaultLocale**: Default UI language
-- **i18n.ui.supportedLocales**: List of available UI languages
+## Applying Changes Locally
 
-### Conversation Locales
-
-- **i18n.conversation.default_locale**: Default language for the AI conversation
-- **i18n.conversation.available_locales**: Available conversation locales, each with a date format
-
-For full translation setup, see the [Language Guide](../add-a-new-language.md).
-
-
-## Sensitive Data Fields Configuration
-
-The personal data collection form can be customised to collect different information per deployment.
-
-- **sensitiveData.fields**: Configuration for each data collection field
-
-This allows customisation of:
-
-- Which fields are displayed (for example: name, email, gender, age, education)
-- Whether each field is required or optional
-- Field type (free text or a list of choices)
-- Validation rules and error messages
-- Labels and choice values per language
-
-For the full schema and examples, see the [Sensitive Data Fields Configuration Guide](../frontend-new/sensitive-data-fields-config.md).
-
-
-## Analytics Configuration
-
-Compass Connect supports Google Analytics 4 (GA4) event tracking via Google Tag Manager (GTM).
-
-- **analytics.enabled**: Enable or disable tracking in the frontend
-- **analytics.gtmContainerId**: GTM container ID (for example: `GTM-XXXXXXX`)
-- **analytics.ga4PropertyId**: GA4 property ID
-- **analytics.ga4MeasurementId**: GA4 measurement ID (for example: `G-XXXXXXX`)
-
-When enabled, the frontend automatically tracks user registration and login events.
-
-For the full setup guide, see the [Analytics Setup Guide](ANALYTICS_SETUP.md).
-
-
-## FAQ Configuration
-
-The FAQ section includes a tutorial video that can be customised per deployment.
-
-- **faq.tutorialVideoUrl**: URL of the tutorial video embedded in the FAQ page
-
-
-## What Cannot Be Changed
-
-The following are fixed across all deployments and cannot be altered through configuration:
-
-- Page layouts and the structure of UI components
-- Core AI conversation logic and skills discovery flow
-- Navigation routes and URL structure
-- Backend API endpoints and data models
-
-
-## Applying Configuration Locally
-
-The configuration is applied using the `inject-config.py` script.
-
-Navigate to the `config` directory and run:
+1. Copy `config/default.json` and give it a name that reflects your deployment (for example `config/connect.json`).
+2. Update the values in your new file. Only the values you change need to be included — anything not specified falls back to the defaults in `default.json`.
+3. Navigate to the `config` directory and run the inject script:
 
 ```bash
 cd config
-python3 inject-config.py --config your-config.json
+python3 inject-config.py --config connect.json
 ```
 
-This reads the configuration file and injects values into:
-
-- Backend `.env` file
-- Frontend `public/data/env.js` file
+This injects values into the backend `.env` file and the frontend `public/data/env.js` file.
 
 To apply only specific sections:
 
 ```bash
-python3 inject-config.py --config your-config.json --namespaces branding auth
+python3 inject-config.py --config connect.json --namespaces branding auth
 ```
 
+4. Restart the frontend and backend to pick up the new values.
 
 ## Configuration Reference
 
