@@ -756,12 +756,7 @@ const SensitiveDataForm: React.FC = () => {
           textParagraphs={[
             {
               id: "1",
-              text: (
-                <>
-                  {t("sensitiveData.components.sensitiveDataForm.rejectParagraph1", { appName })}{" "}
-                  <HighlightedSpan>{t("common.backdrop.loggingYouOut")}</HighlightedSpan>
-                </>
-              ),
+              text: <>{t("sensitiveData.components.sensitiveDataForm.rejectParagraph1", { appName })} </>,
             },
             { id: "2", text: <>{t("common.modal.areYouSureYouWantToExit")}</> },
           ]}
