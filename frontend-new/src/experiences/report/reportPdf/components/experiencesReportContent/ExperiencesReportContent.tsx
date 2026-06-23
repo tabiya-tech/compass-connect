@@ -1,20 +1,13 @@
 import React from "react";
-import { Image, Text, View } from "@react-pdf/renderer";
+import { Text, View } from "@react-pdf/renderer";
 import { Experience } from "src/experiences/experienceService/experiences.types";
 import styles from "src/experiences/report/reportPdf/styles";
 import { ReportContent } from "src/experiences/report/reportContent";
 import { ReportConfig } from "src/experiences/report/config/types";
-import { getBase64Image } from "src/experiences/report/util";
-
-interface CategoryHeader {
-  title: string;
-  icon: string;
-}
 
 interface ExperienceProps {
   experience: Experience;
   reportConfig: ReportConfig;
-  categoryHeader?: CategoryHeader;
 }
 
 // Number of skills that must always render together with the "Top Skills" title
@@ -37,7 +30,7 @@ export const capitalizeFirstLetter = (string: string): string => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
-const ExperiencesReportContent: React.FC<ExperienceProps> = ({ experience, reportConfig, categoryHeader }) => {
+const ExperiencesReportContent: React.FC<ExperienceProps> = ({ experience, reportConfig }) => {
   const { experienceDetails } = reportConfig;
 
   // Determine what date info to show based on config
@@ -65,15 +58,7 @@ const ExperiencesReportContent: React.FC<ExperienceProps> = ({ experience, repor
 
   return (
     <View style={styles.container} data-testid={DATA_TEST_ID.EXPERIENCES_CONTENT_REPORT_CONTAINER}>
-      <View wrap={false}>
-        {categoryHeader && (
-          <View style={styles.categoryTitleContainer}>
-            <Image src={getBase64Image(categoryHeader.icon)} style={styles.categoryIcon} source={undefined} />
-            <Text x={0} y={0} style={styles.categoryTitle}>
-              {categoryHeader.title}
-            </Text>
-          </View>
-        )}
+      <View wrap={false} minPresenceAhead={50}>
         {showTitle && (
           <Text
             x={0}
@@ -110,9 +95,11 @@ const ExperiencesReportContent: React.FC<ExperienceProps> = ({ experience, repor
         )}
       </View>
       {showSummary && (
-        <Text x={0} y={0} style={styles.summary} data-testid={DATA_TEST_ID.EXPERIENCES_CONTENT_REPORT_SUMMARY}>
-          {experience.summary}
-        </Text>
+        <View>
+          <Text x={0} y={0} style={styles.summary} data-testid={DATA_TEST_ID.EXPERIENCES_CONTENT_REPORT_SUMMARY}>
+            {experience.summary}
+          </Text>
+        </View>
       )}
       <View style={styles.skillsContainer} data-testid={DATA_TEST_ID.EXPERIENCES_CONTENT_REPORT_SKILLS}>
         <View wrap={false}>
@@ -126,9 +113,11 @@ const ExperiencesReportContent: React.FC<ExperienceProps> = ({ experience, repor
           ))}
         </View>
         {remainingSkills.map((skill) => (
-          <Text x={0} y={0} key={skill.UUID} style={[styles.skillText, styles.skillItem]}>
-            • {capitalizeFirstLetter(skill.preferredLabel)}
-          </Text>
+          <View wrap={false} key={skill.UUID}>
+            <Text x={0} y={0} style={[styles.skillText, styles.skillItem]}>
+              • {capitalizeFirstLetter(skill.preferredLabel)}
+            </Text>
+          </View>
         ))}
       </View>
     </View>

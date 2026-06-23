@@ -64,13 +64,14 @@ const SkillReportPDF: React.FC<SkillReportProps> = ({
 
     return (
       <View style={styles.categoryContainer}>
-        {experiences.map((experience, index) => (
-          <ExperiencesReportContent
-            key={experience.UUID}
-            experience={experience}
-            reportConfig={config.report}
-            categoryHeader={index === 0 ? { title, icon } : undefined}
-          />
+        <View wrap={false} minPresenceAhead={60} style={styles.categoryTitleContainer}>
+          <Image src={getBase64Image(icon)} style={styles.categoryIcon} source={undefined} />
+          <Text x={0} y={0} style={styles.categoryTitle}>
+            {title}
+          </Text>
+        </View>
+        {experiences.map((experience) => (
+          <ExperiencesReportContent key={experience.UUID} experience={experience} reportConfig={config.report} />
         ))}
       </View>
     );
@@ -95,12 +96,12 @@ const SkillReportPDF: React.FC<SkillReportProps> = ({
   return (
     <Document data-testid={DATA_TEST_ID.SKILL_REPORT_CONTAINER}>
       <Page size="A4" style={styles.page}>
+        <View fixed style={styles.logoContainer}>
+          {config.logos.map((logo, index) => (
+            <Image key={`logo-${index}`} src={getBase64Image(logo.url)} style={logo.pdfStyles} source={undefined} />
+          ))}
+        </View>
         <View style={styles.body} data-testid={DATA_TEST_ID.SKILL_REPORT_BODY}>
-          <View fixed style={styles.logoContainer}>
-            {config.logos.map((logo, index) => (
-              <Image key={`logo-${index}`} src={getBase64Image(logo.url)} style={logo.pdfStyles} source={undefined} />
-            ))}
-          </View>
           <Text x={0} y={0} style={styles.title} data-testid={DATA_TEST_ID.SKILL_REPORT_TITLE}>
             {ReportContent.SKILLS_REPORT_TITLE}
           </Text>
@@ -136,9 +137,11 @@ const SkillReportPDF: React.FC<SkillReportProps> = ({
             ) : null}
           </View>
           {config.report.summary.show && (
-            <Text x={0} y={0} style={styles.bodyText} data-testid={DATA_TEST_ID.SKILL_REPORT_BODY_TEXT}>
-              {prettifyText(ReportContent.REPORT_BODY_TEXT(formatDate(conversationConductedAt)))}
-            </Text>
+            <View>
+              <Text x={0} y={0} style={styles.bodyText} data-testid={DATA_TEST_ID.SKILL_REPORT_BODY_TEXT}>
+                {prettifyText(ReportContent.REPORT_BODY_TEXT(formatDate(conversationConductedAt)))}
+              </Text>
+            </View>
           )}
           <View style={styles.divider} />
           <Text x={0} y={0} style={styles.experiencesTitle} data-testid={DATA_TEST_ID.SKILL_REPORT_EXPERIENCES_TITLE}>

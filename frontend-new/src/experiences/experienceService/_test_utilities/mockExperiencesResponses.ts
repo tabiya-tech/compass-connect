@@ -127,10 +127,11 @@ const jobTitles = [
 ];
 
 const generateRandomSkill = (usedLabels: string[]): Skill => {
-  let randomLabel;
-  do {
-    randomLabel = skillsLabels[Math.floor(Math.random() * skillsLabels.length)];
-  } while (usedLabels.includes(randomLabel));
+  const availableLabels = skillsLabels.filter((label) => !usedLabels.includes(label));
+  const randomLabel =
+    availableLabels.length > 0
+      ? availableLabels[Math.floor(Math.random() * availableLabels.length)]
+      : `extra-skill-${usedLabels.length + 1}`;
   usedLabels.push(randomLabel);
   return {
     UUID: uuidv4(),
@@ -152,12 +153,14 @@ const generateStandaloneDate = (): string => {
   return chance < 0.5 ? "A long time ago" : "Since I was five";
 };
 
-const generateRandomExperience = (workType?: WorkType): Experience => {
+const generateRandomExperience = (workType?: WorkType, topSkillsCount = 10): Experience => {
   const useStandaloneDate = Math.random() < 0.5;
   const startDate = useStandaloneDate ? generateStandaloneDate() : generateRandomDate();
   const endDate = useStandaloneDate ? "" : Math.random() > 0.5 ? generateRandomDate() : "Present";
   const randomWorkType = workType || allWorkTypes[Math.floor(Math.random() * allWorkTypes.length)];
   const usedLabels: string[] = [];
+  const topSkillsCountCapped = Math.min(topSkillsCount, skillsLabels.length);
+  const remainingSkillsCount = Math.max(0, Math.floor(Math.random() * 15) - topSkillsCountCapped);
 
   return {
     UUID: uuidv4(),
@@ -170,14 +173,8 @@ const generateRandomExperience = (workType?: WorkType): Experience => {
     company: companyNames[Math.floor(Math.random() * companyNames.length)],
     location: locations[Math.floor(Math.random() * locations.length)],
     work_type: randomWorkType,
-    top_skills: [
-      generateRandomSkill(usedLabels),
-      generateRandomSkill(usedLabels),
-      generateRandomSkill(usedLabels),
-      generateRandomSkill(usedLabels),
-      generateRandomSkill(usedLabels),
-    ],
-    remaining_skills: Array.from({ length: Math.floor(Math.random() * 15) }, () => generateRandomSkill(usedLabels)),
+    top_skills: Array.from({ length: topSkillsCountCapped }, () => generateRandomSkill(usedLabels)),
+    remaining_skills: Array.from({ length: remainingSkillsCount }, () => generateRandomSkill(usedLabels)),
     exploration_phase: Math.random() < 0.5 ? DiveInPhase.EXPLORING_SKILLS : DiveInPhase.PROCESSED,
   };
 };

@@ -5,20 +5,20 @@ exports[`Report should render Report correctly 1`] = `
   data-testid="skill-report-container-5a296552-f91f-4c38-b88f-542cacaced8e"
 >
   <page
-    style="font-family: Inter; display: flex; flex-direction: column; padding-bottom: 126px; color: rgb(0, 0, 0);"
+    style="font-family: Inter; display: flex; flex-direction: column; padding-top: 96px; padding-bottom: 130px; color: rgb(0, 0, 0);"
   >
+    <view
+      style="display: flex; flex-direction: row; align-items: center; padding-bottom: 18px; padding-top: 32px; gap: 26px; position: absolute; top: 0px; width: 100%;"
+    >
+      <image
+        src="[object Promise]"
+        style="height: 46px;"
+      />
+    </view>
     <view
       data-testid="skill-report-body-5a296552-f91f-4c38-b88f-542cacaced8e"
       style="display: flex; flex-direction: column;"
     >
-      <view
-        style="display: flex; flex-direction: row; align-items: center; padding-bottom: 18px; padding-top: 32px; gap: 26px;"
-      >
-        <image
-          src="[object Promise]"
-          style="height: 46px;"
-        />
-      </view>
       <text
         data-testid="skill-report-title-5a296552-f91f-4c38-b88f-542cacaced8e"
         style="font-size: 16px; padding-bottom: 18px; color: rgb(0, 33, 71); font-family: Inter; font-weight: bold;"
@@ -99,14 +99,16 @@ exports[`Report should render Report correctly 1`] = `
           </text>
         </view>
       </view>
-      <text
-        data-testid="skill-report-body-text-5a296552-f91f-4c38-b88f-542cacaced8e"
-        style="font-size: 11px; word-break: break-word;"
-        x="0"
-        y="0"
-      >
-        This report summarizes the key information gathered during a conversation with Njila on June 01, 2021. Njila is an AI chatbot that assists job-seekers in exploring their skills and experiences. This report presents the candidate’s work experience and the skills identified from each experience. This information can be used to guide job search and highlight their skills when applying for jobs, especially during interviews with potential employers. It can be a good starting point for creating a complete CV.
-      </text>
+      <view>
+        <text
+          data-testid="skill-report-body-text-5a296552-f91f-4c38-b88f-542cacaced8e"
+          style="font-size: 11px; word-break: break-word;"
+          x="0"
+          y="0"
+        >
+          This report summarizes the key information gathered during a conversation with Njila on June 01, 2021. Njila is an AI chatbot that assists job-seekers in exploring their skills and experiences. This report presents the candidate’s work experience and the skills identified from each experience. This information can be used to guide job search and highlight their skills when applying for jobs, especially during interviews with potential employers. It can be a good starting point for creating a complete CV.
+        </text>
+      </view>
       <view
         style="border: 1px; margin-top: 12px; margin-bottom: 16px;"
       />
@@ -126,25 +128,28 @@ exports[`Report should render Report correctly 1`] = `
           style="display: flex; flex-direction: column; padding-bottom: 10px;"
         >
           <view
-            data-testid="experiences-content-report-container-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
-            style="display: flex; flex-direction: column; margin-bottom: 14px;"
+            minpresenceahead="60"
+            style="display: flex; flex-direction: row; align-items: center; padding-bottom: 12px;"
           >
-            <view>
-              <view
-                style="display: flex; flex-direction: row; align-items: center; margin-bottom: 12px;"
-              >
-                <image
-                  src="[object Promise]"
-                  style="height: 13px; margin-bottom: 2px; margin-right: 8px;"
-                />
-                <text
-                  style="font-size: 13px; font-family: Inter; font-weight: bold;"
-                  x="0"
-                  y="0"
-                >
-                  Unpaid Work
-                </text>
-              </view>
+            <image
+              src="[object Promise]"
+              style="height: 13px; padding-bottom: 2px; margin-right: 8px;"
+            />
+            <text
+              style="font-size: 13px; font-family: Inter; font-weight: bold;"
+              x="0"
+              y="0"
+            >
+              Unpaid Work
+            </text>
+          </view>
+          <view
+            data-testid="experiences-content-report-container-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
+            style="display: flex; flex-direction: column; padding-bottom: 14px;"
+          >
+            <view
+              minpresenceahead="50"
+            >
               <text
                 data-testid="experiences-content-report-experience-title-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
                 style="font-size: 12px; font-family: Inter; font-weight: bold;"
@@ -190,14 +195,16 @@ exports[`Report should render Report correctly 1`] = `
                 </text>
               </view>
             </view>
-            <text
-              data-testid="experiences-content-report-summary-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
-              style="font-size: 11px; padding-bottom: 6px; word-break: break-word;"
-              x="0"
-              y="0"
-            >
-              Managed multiple projects simultaneously, ensuring timely delivery and client satisfaction. Coordinated cross-functional teams of developers, designers, and stakeholders to achieve project milestones. Implemented agile methodologies that improved delivery efficiency by 30%. Conducted regular client meetings to gather feedback and ensure alignment with business objectives. Resolved critical issues during development cycles to prevent delays and maintain quality standards.
-            </text>
+            <view>
+              <text
+                data-testid="experiences-content-report-summary-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
+                style="font-size: 11px; padding-bottom: 6px; word-break: break-word;"
+                x="0"
+                y="0"
+              >
+                Managed multiple projects simultaneously, ensuring timely delivery and client satisfaction. Coordinated cross-functional teams of developers, designers, and stakeholders to achieve project milestones. Implemented agile methodologies that improved delivery efficiency by 30%. Conducted regular client meetings to gather feedback and ensure alignment with business objectives. Resolved critical issues during development cycles to prevent delays and maintain quality standards.
+              </text>
+            </view>
             <view
               data-testid="experiences-content-report-skills-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
               style="display: flex; flex-direction: column; align-items: flex-start;"
@@ -232,25 +239,28 @@ exports[`Report should render Report correctly 1`] = `
           style="display: flex; flex-direction: column; padding-bottom: 10px;"
         >
           <view
-            data-testid="experiences-content-report-container-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
-            style="display: flex; flex-direction: column; margin-bottom: 14px;"
+            minpresenceahead="60"
+            style="display: flex; flex-direction: row; align-items: center; padding-bottom: 12px;"
           >
-            <view>
-              <view
-                style="display: flex; flex-direction: row; align-items: center; margin-bottom: 12px;"
-              >
-                <image
-                  src="[object Promise]"
-                  style="height: 13px; margin-bottom: 2px; margin-right: 8px;"
-                />
-                <text
-                  style="font-size: 13px; font-family: Inter; font-weight: bold;"
-                  x="0"
-                  y="0"
-                >
-                  Trainee Work
-                </text>
-              </view>
+            <image
+              src="[object Promise]"
+              style="height: 13px; padding-bottom: 2px; margin-right: 8px;"
+            />
+            <text
+              style="font-size: 13px; font-family: Inter; font-weight: bold;"
+              x="0"
+              y="0"
+            >
+              Trainee Work
+            </text>
+          </view>
+          <view
+            data-testid="experiences-content-report-container-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
+            style="display: flex; flex-direction: column; padding-bottom: 14px;"
+          >
+            <view
+              minpresenceahead="50"
+            >
               <text
                 data-testid="experiences-content-report-experience-title-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
                 style="font-size: 12px; font-family: Inter; font-weight: bold;"
@@ -296,14 +306,16 @@ exports[`Report should render Report correctly 1`] = `
                 </text>
               </view>
             </view>
-            <text
-              data-testid="experiences-content-report-summary-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
-              style="font-size: 11px; padding-bottom: 6px; word-break: break-word;"
-              x="0"
-              y="0"
-            >
-              Managed multiple projects simultaneously, ensuring timely delivery and client satisfaction. Coordinated cross-functional teams of developers, designers, and stakeholders to achieve project milestones. Implemented agile methodologies that improved delivery efficiency by 30%. Conducted regular client meetings to gather feedback and ensure alignment with business objectives. Resolved critical issues during development cycles to prevent delays and maintain quality standards.
-            </text>
+            <view>
+              <text
+                data-testid="experiences-content-report-summary-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
+                style="font-size: 11px; padding-bottom: 6px; word-break: break-word;"
+                x="0"
+                y="0"
+              >
+                Managed multiple projects simultaneously, ensuring timely delivery and client satisfaction. Coordinated cross-functional teams of developers, designers, and stakeholders to achieve project milestones. Implemented agile methodologies that improved delivery efficiency by 30%. Conducted regular client meetings to gather feedback and ensure alignment with business objectives. Resolved critical issues during development cycles to prevent delays and maintain quality standards.
+              </text>
+            </view>
             <view
               data-testid="experiences-content-report-skills-e1f12442-9771-4e78-b3c7-77cd3b2172f8"
               style="display: flex; flex-direction: column; align-items: flex-start;"
@@ -338,13 +350,15 @@ exports[`Report should render Report correctly 1`] = `
         >
           Skills Description
         </text>
-        <text
-          style="font-size: 11px; word-break: break-word;"
-          x="0"
-          y="0"
-        >
-          Below, you will find a list of the skills discovered during your conversation with Njila, along with their descriptions.
-        </text>
+        <view>
+          <text
+            style="font-size: 11px; word-break: break-word;"
+            x="0"
+            y="0"
+          >
+            Below, you will find a list of the skills discovered during your conversation with Njila, along with their descriptions.
+          </text>
+        </view>
         <view
           style="border: 1px; margin-top: 12px; margin-bottom: 20px;"
         />
@@ -405,7 +419,7 @@ exports[`Report should render Report correctly 1`] = `
       </view>
     </view>
     <view
-      style="width: 100%; display: flex; flex-direction: column; padding-bottom: 26px; position: absolute; gap: 16px; bottom: 0px;"
+      style="width: 100%; height: 130px; display: flex; flex-direction: column; padding-top: 20px; padding-bottom: 26px; position: absolute; gap: 16px; bottom: 0px;"
     >
       <view
         style="display: flex; flex-direction: row; padding: 8px; border: 1px;"

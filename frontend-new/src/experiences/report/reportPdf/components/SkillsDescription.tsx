@@ -12,9 +12,11 @@ const SkillsDescription: React.FC<SkillsDescriptionProps> = ({ skillsList }) => 
     <Text x={0} y={0} style={styles.skillDescriptionTitle}>
       {ReportContent.SKILLS_DESCRIPTION_TITLE}
     </Text>
-    <Text x={0} y={0} style={styles.info}>
-      {ReportContent.SKILLS_DESCRIPTION_TEXT}
-    </Text>
+    <View>
+      <Text x={0} y={0} style={styles.info}>
+        {ReportContent.SKILLS_DESCRIPTION_TEXT}
+      </Text>
+    </View>
     <View style={styles.skillDivider} />
     {skillsList.map((skill) => (
       <View wrap={false} key={skill.UUID} style={styles.skillContainer}>

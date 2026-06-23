@@ -37,12 +37,18 @@ Font.register({
   ],
 });
 
+// Must match footer.height and logoContainer total height — the page reserves these spaces
+// so content never overlaps the header or footer on any page.
+const FOOTER_HEIGHT = 130;
+const LOGO_HEIGHT = 96;
+
 const styles = StyleSheet.create({
   page: {
     ...fontStyles.general,
     display: "flex",
     flexDirection: "column",
-    paddingBottom: 126,
+    paddingTop: LOGO_HEIGHT,
+    paddingBottom: FOOTER_HEIGHT,
     color: COLORS.textBlack,
   },
   title: {
@@ -103,11 +109,11 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    paddingBottom: 12,
   },
   categoryIcon: {
     height: 13,
-    marginBottom: 2,
+    paddingBottom: 2,
     marginRight: 8,
   },
   categoryTitle: {
@@ -117,7 +123,7 @@ const styles = StyleSheet.create({
   container: {
     display: "flex",
     flexDirection: "column",
-    marginBottom: 14,
+    paddingBottom: 14,
   },
   experienceTitle: {
     fontSize: 12,
@@ -154,6 +160,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 48,
     paddingTop: 32,
     gap: 26,
+    position: "absolute",
+    top: 0,
+    width: "100%",
   },
   image: {
     height: 42,
@@ -185,7 +194,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   skillItem: {
-    marginBottom: 4,
+    paddingBottom: 4,
   },
   skillDescriptionContainer: {
     display: "flex",
@@ -223,8 +232,10 @@ const styles = StyleSheet.create({
   },
   footer: {
     width: "100%",
+    height: FOOTER_HEIGHT,
     display: "flex",
     flexDirection: "column",
+    paddingTop: 20,
     paddingBottom: 26,
     position: "absolute",
     gap: 16,
