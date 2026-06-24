@@ -177,8 +177,8 @@ const InstructorStudentsTable: React.FC<InstructorStudentsTableProps> = ({
       },
     },
     {
-      key: "modulesExplored",
-      label: t("instructorDashboard.studentsTable.headers.modulesCompleted"),
+      key: "careerReadinessStarted",
+      label: t("instructorDashboard.studentsTable.headers.careerReadinessStarted"),
       sortable: true,
       sortType: "number",
       align: "center",
@@ -220,8 +220,8 @@ const InstructorStudentsTable: React.FC<InstructorStudentsTableProps> = ({
       },
     },
     {
-      key: "careerReady",
-      label: t("instructorDashboard.studentsTable.headers.careerReady"),
+      key: "careerReadinessCompleted",
+      label: t("instructorDashboard.studentsTable.headers.careerReadinessCompleted"),
       sortable: true,
       sortType: "text",
       align: "center",

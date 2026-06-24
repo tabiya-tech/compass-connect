@@ -35,8 +35,8 @@ export interface InstructorStudentRow {
   qualificationType: string;
   year: string;
   gender: string;
-  modulesExplored: number;
-  careerReady: string;
+  careerReadinessStarted: number;
+  careerReadinessCompleted: string;
   skillsDiscoveryStatus: "not_started" | "in_progress" | "completed";
   careerExplorerMessagesSent: number | null;
   lastLogin: string;
