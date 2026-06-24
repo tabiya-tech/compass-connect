@@ -1,6 +1,8 @@
 import React, { useMemo } from "react";
 import { Box } from "@mui/material";
 import { Outlet, useMatches } from "react-router-dom";
+import useThemeColor from "src/branding/useThemeColor";
+import { getThemeCssVariables } from "src/envService";
 import { useTranslation } from "react-i18next";
 import type { TranslationKey } from "src/react-i18next";
 import NavBar from "src/navigation/NavBar/NavBar";
@@ -45,6 +47,12 @@ const Layout: React.FC = () => {
       headerColor: handleWithTitle?.headerColor ?? firstHeaderColor ?? "primary",
     };
   }, [matches]);
+
+  // Sync browser theme-color to the page's top section; raw RGB values needed — theme.palette returns CSS var refs.
+  const themeCssVariables = getThemeCssVariables();
+  const cssVarKey = headerColor === "navMain" ? "nav-main-background" : `brand-${headerColor}`;
+  const rawColor = themeCssVariables[cssVarKey as keyof typeof themeCssVariables];
+  useThemeColor(rawColor ? `rgb(${rawColor.split(" ").join(", ")})` : undefined);
 
   return (
     <UserProfileProvider>
