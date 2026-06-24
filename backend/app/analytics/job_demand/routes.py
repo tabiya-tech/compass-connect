@@ -9,7 +9,6 @@ from http import HTTPStatus
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.analytics.job_demand.repository import (
     IJobDemandAnalyticsRepository,
@@ -18,21 +17,20 @@ from app.analytics.job_demand.repository import (
 from app.analytics.job_demand.sector_mapping import validate_sector_map
 from app.analytics.job_demand.types import JobDemandStatsResponse
 from app.constants.errors import HTTPErrorResponse
-from app.server_dependencies.db_dependencies import CompassDBProvider
+from app.jobs.get_job_service import get_job_repository
+from app.jobs.repository import IJobRepository
 from app.users.auth import Authentication
 from app.users.access_role import AccessRole, get_access_role_dependency
-from common_libs.environment_settings.mongo_db_settings import MongoDbSettings
 
 logger = logging.getLogger(__name__)
 
 
 async def _get_job_demand_analytics_repository(
-    jobs_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_jobs_db),
+    job_repository: IJobRepository = Depends(get_job_repository),
 ) -> IJobDemandAnalyticsRepository:
-    # Resolve the collection name the same way the /jobs endpoint does
-    # (env-injected; can differ from the literal Collections.JOBS in prod).
-    collection_name = MongoDbSettings().jobs_collection_name
-    return JobDemandAnalyticsRepository(jobs_db, collection_name)
+    # Reuses the same matching-service-backed IJobRepository as the Job
+    # Postings tab so the chart stays consistent with what users browse.
+    return JobDemandAnalyticsRepository(job_repository)
 
 
 def add_job_demand_analytics_routes(router: APIRouter, auth: Authentication) -> None:
@@ -48,12 +46,12 @@ def add_job_demand_analytics_routes(router: APIRouter, auth: Authentication) -> 
             HTTPStatus.INTERNAL_SERVER_ERROR: {"model": HTTPErrorResponse},
         },
         description=(
-            "Aggregate the top in-demand skills across job postings (taxonomy-linked "
-            "skills only). Optionally filter by location (province) and sector "
-            "(institution sector mapped to job-category prefixes). This is an "
-            "independent job-side market signal, not derived from per-user matching. "
-            "Requires a valid access role (results are global — jobs are not "
-            "institution-scoped, so no institution scoping is applied)."
+            "Aggregate the top in-demand skills across job postings. Optionally "
+            "filter by location (province) and sector (institution sector mapped "
+            "to job-category prefixes). This is an independent job-side market "
+            "signal, not derived from per-user matching. Requires a valid access "
+            "role (results are global — jobs are not institution-scoped, so no "
+            "institution scoping is applied)."
         ),
     )
     async def _job_demand_stats(
@@ -72,7 +70,7 @@ def add_job_demand_analytics_routes(router: APIRouter, auth: Authentication) -> 
         sector: Optional[str] = Query(
             default=None,
             max_length=120,
-            description="Filter by institution sector (mapped to job.category prefixes)",
+            description="Filter by institution sector (mapped to job-category prefixes)",
         ),
         repo: IJobDemandAnalyticsRepository = Depends(_get_job_demand_analytics_repository),
     ) -> JobDemandStatsResponse:

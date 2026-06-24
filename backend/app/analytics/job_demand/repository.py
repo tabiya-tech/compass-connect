@@ -1,31 +1,32 @@
 """
-Job-demand analytics: rank taxonomy-linked skills across job postings.
+Job-demand analytics: rank skills across job postings.
 
-Independent job-side signal — NOT the matching service (its matched/gap
-skills are user-conditioned and would bias demand).
+Reads from the matching service's ``/jobs`` HTTP API via ``IJobRepository`` —
+the same source the Job Postings tab and matched-jobs endpoint already use,
+so the Skills Analytics chart stays consistent with what users browse.
 """
 import logging
-import re
 from abc import ABC, abstractmethod
+from collections import Counter
 from typing import Optional
 
-from motor.motor_asyncio import AsyncIOMotorDatabase
-
-from app.analytics.job_demand.sector_mapping import job_category_match
+from app.analytics.job_demand.sector_mapping import (
+    _NO_FILTER_SENTINELS,
+    _category_to_sector,
+    category_leading_token,
+)
 from app.analytics.job_demand.types import JobDemandEntry, JobDemandStatsResponse
+from app.jobs.repository import IJobRepository, MatchingJobListItem
 
 logger = logging.getLogger(__name__)
 
+# Per-page size we request from the matching service.
+_PAGE_SIZE = 20
 
-def _province_location_match(value: str) -> dict:
-    """Case-insensitive, space-tolerant province filter regex for ``job.location``.
-
-    Job-demand analytics still reads the jobs MongoDB collection directly (it needs
-    skill-frequency aggregation, which the matching service /jobs API does not expose),
-    so this filter is kept independent of the now-HTTP-backed jobs ``JobService``."""
-    normalized_tokens = [re.escape(token) for token in value.strip().split() if token]
-    pattern = ".*".join(normalized_tokens) if normalized_tokens else re.escape(value)
-    return {"$regex": pattern, "$options": "i"}
+# Hard ceiling on jobs scanned per request — defensive against an unbounded
+# matching-service backlog. Far above the current ~1.4k postings; revisit if
+# the chart starts truncating data in prod.
+_MAX_JOBS_SCANNED = 10_000
 
 
 class IJobDemandAnalyticsRepository(ABC):
@@ -39,86 +40,97 @@ class IJobDemandAnalyticsRepository(ABC):
         raise NotImplementedError()
 
 
-class JobDemandAnalyticsRepository(IJobDemandAnalyticsRepository):
-    """MongoDB implementation for job-demand analytics aggregation queries."""
+def _sector_prefixes(sector: Optional[str]) -> Optional[set[str]]:
+    """Resolve an institution sector to the set of ``category`` leading-token
+    prefixes that map to it. Returns ``None`` when no sector filter applies and
+    an empty set when the sector has no aligned categories (no-supply: the chart
+    must be empty rather than fall back to market-wide data)."""
+    if sector is None:
+        return None
+    key = sector.strip().lower()
+    if key in _NO_FILTER_SENTINELS:
+        return None
+    return {
+        cat for cat, sec in _category_to_sector().items()
+        if isinstance(sec, str) and sec.strip().lower() == key
+    }
 
-    def __init__(self, db: AsyncIOMotorDatabase, collection_name: str):
-        self._db = db
-        self._collection_name = collection_name
+
+def _job_matches_sector(job: MatchingJobListItem, prefixes: set[str]) -> bool:
+    """Whether ``job.category``'s leading token maps to the requested sector."""
+    token = category_leading_token(job.category)
+    return token is not None and token in prefixes
+
+
+class JobDemandAnalyticsRepository(IJobDemandAnalyticsRepository):
+    """Aggregates skill demand by scanning the matching service ``/jobs`` API."""
+
+    def __init__(self, job_repository: IJobRepository):
+        self._job_repository = job_repository
 
     async def get_job_demand_stats(
         self, limit: int, location: Optional[str] = None, sector: Optional[str] = None
     ) -> JobDemandStatsResponse:
         """
-        Rank taxonomy-linked skills across job postings.
+        Rank skills across job postings.
 
         :param limit: max skills to return.
-        :param location: optional province filter on ``job.location``.
-        :param sector: optional institution-sector filter, mapped to
-            ``job.category`` prefixes (see ``sector_mapping``).
+        :param location: optional province filter — passed to the matching
+            service as the ``location`` query param.
+        :param sector: optional institution-sector filter; resolved via the
+            generated ``sector_category_map`` and applied client-side against
+            ``job.category``'s leading token (the matching service ``category``
+            query param only accepts one value, but a sector can map to many).
         """
-        collection = self._db.get_collection(self._collection_name)
+        sector_prefixes = _sector_prefixes(sector)
+        # No-supply sector → empty chart (deliberately not market-wide).
+        if sector_prefixes is not None and not sector_prefixes:
+            return JobDemandStatsResponse(
+                total_jobs=0, jobs_with_linked_skills=0, top_skills_in_demand=[]
+            )
 
-        # Province on `location`; Sector via the generated job.category map
-        # (postings have no sector field). total_jobs = filtered set (caption denom).
-        base_match: dict = {}
-        if location:
-            base_match["location"] = _province_location_match(location)
-        sector_constraint = job_category_match(sector)
-        if sector_constraint is not None:
-            base_match["category"] = sector_constraint
+        total_jobs = 0
+        jobs_with_skills = 0
+        skill_counts: Counter[str] = Counter()
+        cursor: Optional[str] = None
+        scanned = 0
 
-        # Coverage-caption denominator: every posting in the filter.
-        total_jobs = await collection.count_documents(base_match)
+        while True:
+            page = await self._job_repository.fetch_jobs_page(
+                cursor=cursor,
+                limit=_PAGE_SIZE,
+                location=location,
+            )
+            for job in page.items:
+                if sector_prefixes is not None and not _job_matches_sector(job, sector_prefixes):
+                    continue
+                total_jobs += 1
+                # Dedupe within a posting so a job listing the same skill twice
+                # counts once. Drop empty strings defensively.
+                unique_skills = {s for s in (job.skills or []) if isinstance(s, str) and s}
+                if unique_skills:
+                    jobs_with_skills += 1
+                    skill_counts.update(unique_skills)
 
-        # Diverges from JobService._extract_skills on purpose: it falls back to
-        # surface_form for unlinked skills; we DROP them (demand must be
-        # taxonomy-anchored) — dropped jobs still count in total_jobs/caption.
-        # Label resolved via an expression ($unwind makes positional
-        # linked_entities.0.label unreliable).
-        facet_results = await collection.aggregate([
-            {"$match": base_match},
-            {"$unwind": "$classification.entities"},
-            {"$match": {"classification.entities.entity_type": "skill"}},
-            {"$project": {
-                "job_key": {"$ifNull": ["$uuid", {"$toString": "$_id"}]},
-                "skill_label": {
-                    "$arrayElemAt": [
-                        {"$ifNull": ["$classification.entities.linked_entities.label", []]},
-                        0,
-                    ]
-                },
-            }},
-            # Keep only skill entities that actually linked to a non-empty label.
-            {"$match": {"skill_label": {"$type": "string", "$ne": ""}}},
-            # Dedupe per job: a posting listing the same skill twice counts once.
-            {"$group": {"_id": {"job_key": "$job_key", "skill_label": "$skill_label"}}},
-            {"$facet": {
-                "ranking": [
-                    {"$group": {"_id": "$_id.skill_label", "jobs_count": {"$sum": 1}}},
-                    # _id (skill label) is a stable tiebreak for equal counts.
-                    {"$sort": {"jobs_count": -1, "_id": 1}},
-                    {"$limit": limit},
-                ],
-                "jobs_with_linked_skills": [
-                    {"$group": {"_id": "$_id.job_key"}},
-                    {"$count": "n"},
-                ],
-            }},
-        ]).to_list(length=1)
+            scanned += len(page.items)
+            if not page.next_cursor or not page.items:
+                break
+            if scanned >= _MAX_JOBS_SCANNED:
+                logger.warning(
+                    "Job-demand scan hit the %s-job ceiling; results truncated",
+                    _MAX_JOBS_SCANNED,
+                )
+                break
+            cursor = page.next_cursor
 
-        facet = facet_results[0] if facet_results else {}
-
-        bucket = facet.get("jobs_with_linked_skills") or []
-        jobs_with_linked_skills = bucket[0]["n"] if bucket else 0
-
+        # Stable sort: highest count first, then label asc as tiebreak.
+        ranked = sorted(skill_counts.items(), key=lambda kv: (-kv[1], kv[0]))[:limit]
         top_skills_in_demand = [
-            JobDemandEntry(skill_label=r["_id"], jobs_count=r["jobs_count"])
-            for r in facet.get("ranking", [])
+            JobDemandEntry(skill_label=label, jobs_count=count) for label, count in ranked
         ]
 
         return JobDemandStatsResponse(
             total_jobs=total_jobs,
-            jobs_with_linked_skills=jobs_with_linked_skills,
+            jobs_with_linked_skills=jobs_with_skills,
             top_skills_in_demand=top_skills_in_demand,
         )
