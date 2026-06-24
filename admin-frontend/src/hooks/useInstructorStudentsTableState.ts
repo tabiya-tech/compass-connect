@@ -10,8 +10,8 @@ export type StudentsSortKey =
   | "year"
   | "lastLogin"
   | "lastActiveModuleId"
-  | "modulesExplored"
-  | "careerReady"
+  | "careerReadinessStarted"
+  | "careerReadinessCompleted"
   | "skillsDiscoveryStatus"
   | "careerExplorerMessagesSent";
 type SortDir = "asc" | "desc";
@@ -126,9 +126,9 @@ export function useInstructorStudentsTableState(
       if (key === "year") return normalizeYear(row.year);
       if (key === "lastLogin") return normalizeLastLogin(row.lastLogin);
       if (key === "lastActiveModuleId") return normalizeText(row.lastActiveModuleId);
-      if (key === "modulesExplored") return row.modulesExplored;
-      if (key === "careerReady") {
-        const ratio = fracRatio(row.careerReady);
+      if (key === "careerReadinessStarted") return row.careerReadinessStarted;
+      if (key === "careerReadinessCompleted") {
+        const ratio = fracRatio(row.careerReadinessCompleted);
         return Number.isNaN(ratio) ? null : ratio;
       }
       if (key === "skillsDiscoveryStatus") {

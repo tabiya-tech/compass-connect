@@ -58,8 +58,8 @@ const toInstructorStudentRow = (
   const gender = normalizeGender(toText(item.gender)) ?? PLACEHOLDER_SYMBOL;
   const lastActiveModuleId = toText(item.last_active_module) ?? PLACEHOLDER_SYMBOL;
 
-  const modulesExplored = item.modules_explored ?? 0;
-  const careerReady = item.career_readiness_modules_explored ?? 0;
+  const careerReadinessStarted = item.modules_explored ?? 0;
+  const careerReadinessCompleted = item.career_readiness_modules_explored ?? 0;
   return {
     id,
     studentName: name,
@@ -67,8 +67,8 @@ const toInstructorStudentRow = (
     qualificationType,
     year,
     gender,
-    modulesExplored,
-    careerReady: `${careerReady}/6`,
+    careerReadinessStarted,
+    careerReadinessCompleted: `${careerReadinessCompleted}/6`,
     skillsDiscoveryStatus: item.skills_discovery_status ?? "not_started",
     careerExplorerMessagesSent: item.career_explorer_messages_sent ?? null,
     lastLogin: formatLastLogin(item.last_login),
