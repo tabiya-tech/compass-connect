@@ -1,192 +1,169 @@
 """
 Tests for the job-demand analytics repository.
+
+The repo aggregates over the matching-service ``/jobs`` HTTP API (via
+``IJobRepository``); these tests fake that interface to exercise the
+pagination, filtering, and aggregation logic in isolation.
 """
-from typing import Any, Awaitable, Optional
+from typing import Optional
 
 import pytest
-from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.analytics.job_demand import sector_mapping
 from app.analytics.job_demand.repository import JobDemandAnalyticsRepository
 from app.analytics.job_demand.types import JobDemandStatsResponse
-from app.server_dependencies.database_collections import Collections
-
-_COLLECTION = Collections.JOBS
+from app.jobs.repository import IJobRepository, MatchingJobListItem, MatchingJobsPage, MatchingJobsStats
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+class _FakeJobRepository(IJobRepository):
+    """In-memory ``IJobRepository`` honoring the matching service's ``location``
+    query param (case-insensitive substring) and cursor pagination. Other filter
+    params are not exercised by the analytics repo and are accepted but ignored."""
 
-def _linked_skill(label: str) -> dict:
-    """A skill entity whose first linked entity carries the given label."""
-    return {"entity_type": "skill", "surface_form": label.lower(),
-            "linked_entities": [{"label": label}]}
+    def __init__(self, jobs: list[MatchingJobListItem], page_size: int = 100):
+        self._jobs = jobs
+        self._page_size = page_size
+        self.calls: list[dict] = []
+
+    async def fetch_jobs_page(
+        self,
+        *,
+        cursor: Optional[str] = None,
+        limit: int = 20,
+        search: Optional[str] = None,
+        category: Optional[str] = None,
+        employment_type: Optional[str] = None,
+        location: Optional[str] = None,
+        skills: Optional[str] = None,
+        days: Optional[int] = None,
+        include_total: bool = False,
+    ) -> MatchingJobsPage:
+        self.calls.append({"cursor": cursor, "limit": limit, "location": location})
+
+        filtered = self._jobs
+        if location:
+            needle = location.strip().lower()
+            filtered = [j for j in filtered if j.location and needle in j.location.lower()]
+
+        start = int(cursor) if cursor else 0
+        page_size = min(limit, self._page_size)
+        end = start + page_size
+        items = filtered[start:end]
+        next_cursor = str(end) if end < len(filtered) else None
+        return MatchingJobsPage(items=items, next_cursor=next_cursor, total=None)
+
+    async def fetch_stats(self) -> MatchingJobsStats:
+        return MatchingJobsStats(total=len(self._jobs), sectors=0, platforms=0)
 
 
-def _unlinked_skill(surface_form: str) -> dict:
-    """A skill entity the NEL step failed to link to the taxonomy."""
-    return {"entity_type": "skill", "surface_form": surface_form, "linked_entities": []}
-
-
-def _labelless_linked_skill() -> dict:
-    """A skill entity linked to an entry that has no usable label."""
-    return {"entity_type": "skill", "surface_form": "x", "linked_entities": [{"id": "no-label"}]}
-
-
-def _job(*, location: str, entities: Optional[list[dict]] = None,
-         uuid: Optional[str] = None, category: Optional[str] = None) -> dict:
-    doc: dict[str, Any] = {"title": "Some Job", "location": location}
-    if uuid is not None:
-        doc["uuid"] = uuid
-    if category is not None:
-        doc["category"] = category
-    if entities is not None:
-        doc["classification"] = {"entities": entities}
-    return doc
-
-
-# ---------------------------------------------------------------------------
-# Shared fixture
-# ---------------------------------------------------------------------------
-
-@pytest.fixture(scope="function")
-async def populated_repository(
-    in_memory_jobs_database: Awaitable[AsyncIOMotorDatabase],
-) -> JobDemandAnalyticsRepository:
-    """
-    Seeds a jobs collection covering every branch:
-
-      j1 (Lusaka, Lusaka, Zambia) : Python, SQL  + one unlinked
-      j2 (Lusaka)                 : Python (x2 -> dedupe), Excel
-      j3 (Copperbelt)             : Python
-      j4 (Lusaka)                 : no classification at all
-      j5 (Lusaka)                 : only an unlinked skill + a non-skill entity
-      j6 (Lusaka, no uuid)        : SQL
-      j7 (Lusaka, no uuid)        : Welding
-      j8 (Lusaka, no uuid)        : Welding
-      j9 (Lusaka)                 : skill linked to a label-less entry only
-    """
-    db = await in_memory_jobs_database
-
-    await db.get_collection(_COLLECTION).insert_many([
-        _job(uuid="j1", location="Lusaka, Lusaka, Zambia",
-             entities=[_linked_skill("Python"), _linked_skill("SQL"),
-                       _unlinked_skill("some raw phrase")]),
-        _job(uuid="j2", location="Lusaka",
-             entities=[_linked_skill("Python"), _linked_skill("Python"),
-                       _linked_skill("Excel")]),
-        _job(uuid="j3", location="Copperbelt", entities=[_linked_skill("Python")]),
-        _job(uuid="j4", location="Lusaka"),
-        _job(uuid="j5", location="Lusaka",
-             entities=[_unlinked_skill("raw"), {"entity_type": "occupation",
-                                                "linked_entities": [{"label": "Nurse"}]}]),
-        _job(location="Lusaka", entities=[_linked_skill("SQL")]),
-        _job(location="Lusaka", entities=[_linked_skill("Welding")]),
-        _job(location="Lusaka", entities=[_linked_skill("Welding")]),
-        _job(uuid="j9", location="Lusaka", entities=[_labelless_linked_skill()]),
-    ])
-
-    return JobDemandAnalyticsRepository(db, _COLLECTION)
+def _job(uuid: str, *, location: str = "Lusaka",
+         category: Optional[str] = None,
+         skills: Optional[list[str]] = None) -> MatchingJobListItem:
+    return MatchingJobListItem(
+        uuid=uuid,
+        location=location,
+        category=category,
+        skills=skills or [],
+    )
 
 
 # ---------------------------------------------------------------------------
-# Tests
+# Core aggregation
 # ---------------------------------------------------------------------------
 
 class TestGetJobDemandStats:
-    @pytest.mark.asyncio
-    async def test_total_jobs_counts_every_posting(
-        self, populated_repository: Awaitable[JobDemandAnalyticsRepository]
-    ):
-        repo = await populated_repository
-        result: JobDemandStatsResponse = await repo.get_job_demand_stats(limit=10)
-        assert result.total_jobs == 9  # every doc, incl. ones with no skills
+    @pytest.fixture()
+    def populated_repository(self) -> JobDemandAnalyticsRepository:
+        """
+        Seeds a job set covering every branch:
+
+          j1 (Lusaka, Lusaka, Zambia) : Python, SQL
+          j2 (Lusaka)                 : Python (x2 -> dedupe), Excel
+          j3 (Copperbelt)             : Python
+          j4 (Lusaka)                 : no skills
+          j5 (Lusaka)                 : empty-string skill only -> still 'no skills'
+          j6 (Lusaka)                 : SQL
+          j7 (Lusaka)                 : Welding
+          j8 (Lusaka)                 : Welding
+        """
+        jobs = [
+            _job("j1", location="Lusaka, Lusaka, Zambia", skills=["Python", "SQL"]),
+            _job("j2", location="Lusaka", skills=["Python", "Python", "Excel"]),
+            _job("j3", location="Copperbelt", skills=["Python"]),
+            _job("j4", location="Lusaka"),
+            _job("j5", location="Lusaka", skills=[""]),
+            _job("j6", location="Lusaka", skills=["SQL"]),
+            _job("j7", location="Lusaka", skills=["Welding"]),
+            _job("j8", location="Lusaka", skills=["Welding"]),
+        ]
+        return JobDemandAnalyticsRepository(_FakeJobRepository(jobs))
 
     @pytest.mark.asyncio
-    async def test_jobs_with_linked_skills_excludes_unlinked_and_labelless(
-        self, populated_repository: Awaitable[JobDemandAnalyticsRepository]
-    ):
-        repo = await populated_repository
-        result = await repo.get_job_demand_stats(limit=10)
-        # j1, j2, j3, j6, j7, j8 have a label-bearing linked skill.
-        # j4 (none), j5 (only unlinked), j9 (label-less) are excluded.
+    async def test_total_jobs_counts_every_posting(self, populated_repository):
+        result: JobDemandStatsResponse = await populated_repository.get_job_demand_stats(limit=10)
+        # Every posting in the scan window — including j4/j5 with no usable skills.
+        assert result.total_jobs == 8
+
+    @pytest.mark.asyncio
+    async def test_jobs_with_linked_skills_excludes_empty(self, populated_repository):
+        result = await populated_repository.get_job_demand_stats(limit=10)
+        # j4 (no skills), j5 (only empty-string) excluded; six others remain.
         assert result.jobs_with_linked_skills == 6
 
     @pytest.mark.asyncio
-    async def test_ranking_order_and_dedupe_per_job(
-        self, populated_repository: Awaitable[JobDemandAnalyticsRepository]
-    ):
-        repo = await populated_repository
-        result = await repo.get_job_demand_stats(limit=10)
+    async def test_ranking_order_and_dedupe_per_job(self, populated_repository):
+        result = await populated_repository.get_job_demand_stats(limit=10)
         ranking = [(e.skill_label, e.jobs_count) for e in result.top_skills_in_demand]
-        # Python: j1,j2,j3 = 3 (j2 lists it twice -> still 1 for that job)
-        # SQL: j1,j6 = 2 ; Welding: j7,j8 = 2 (uuid-less -> _id fallback keeps them distinct)
-        # Excel: j2 = 1 ; tie (SQL vs Welding) broken by label asc
+        # Python: j1,j2,j3 = 3 (j2 lists it twice -> still 1 for that job).
+        # SQL & Welding tie at 2 — label asc breaks the tie.
         assert ranking == [("Python", 3), ("SQL", 2), ("Welding", 2), ("Excel", 1)]
 
     @pytest.mark.asyncio
-    async def test_province_filter_uses_space_tolerant_match(
-        self, populated_repository: Awaitable[JobDemandAnalyticsRepository]
-    ):
-        repo = await populated_repository
-        result = await repo.get_job_demand_stats(limit=10, location="Lusaka")
-        # j3 (Copperbelt) drops out; "Lusaka" still matches "Lusaka, Lusaka, Zambia".
-        assert result.total_jobs == 8
-        assert result.jobs_with_linked_skills == 5  # j1,j2,j6,j7,j8
-        ranking = {e.skill_label: e.jobs_count for e in result.top_skills_in_demand}
-        assert ranking == {"Python": 2, "SQL": 2, "Welding": 2, "Excel": 1}
-        # equal counts -> stable alphabetical order
-        assert [e.skill_label for e in result.top_skills_in_demand] == [
-            "Python", "SQL", "Welding", "Excel"
-        ]
+    async def test_location_filter_passed_to_matching_service(self, populated_repository):
+        # WHEN filtering by Lusaka
+        result = await populated_repository.get_job_demand_stats(limit=10, location="Lusaka")
+        # THEN the matching service receives the location param and j3 (Copperbelt) drops out.
+        fake: _FakeJobRepository = populated_repository._job_repository  # type: ignore[assignment]
+        assert all(call["location"] == "Lusaka" for call in fake.calls)
+        assert result.total_jobs == 7
+        assert result.jobs_with_linked_skills == 5
 
     @pytest.mark.asyncio
-    async def test_limit_is_respected(
-        self, populated_repository: Awaitable[JobDemandAnalyticsRepository]
-    ):
-        repo = await populated_repository
-        result = await repo.get_job_demand_stats(limit=2)
+    async def test_limit_is_respected(self, populated_repository):
+        result = await populated_repository.get_job_demand_stats(limit=2)
         assert [e.skill_label for e in result.top_skills_in_demand] == ["Python", "SQL"]
 
     @pytest.mark.asyncio
-    async def test_empty_collection_returns_zeroes(
-        self, in_memory_jobs_database: Awaitable[AsyncIOMotorDatabase]
-    ):
-        db = await in_memory_jobs_database
-        repo = JobDemandAnalyticsRepository(db, _COLLECTION)
+    async def test_empty_collection_returns_zeroes(self):
+        repo = JobDemandAnalyticsRepository(_FakeJobRepository([]))
         result = await repo.get_job_demand_stats(limit=10)
         assert result.total_jobs == 0
         assert result.jobs_with_linked_skills == 0
         assert result.top_skills_in_demand == []
 
     @pytest.mark.asyncio
-    async def test_province_with_no_matching_jobs(
-        self, populated_repository: Awaitable[JobDemandAnalyticsRepository]
-    ):
-        repo = await populated_repository
-        result = await repo.get_job_demand_stats(limit=10, location="Western")
-        assert result.total_jobs == 0
-        assert result.jobs_with_linked_skills == 0
-        assert result.top_skills_in_demand == []
+    async def test_paginates_across_multiple_pages(self):
+        # Many pages worth of jobs given the repo's page size; ensure the loop
+        # follows the cursor and aggregates across pages.
+        from app.analytics.job_demand.repository import _PAGE_SIZE
+        total_jobs_to_seed = _PAGE_SIZE * 12 + 10  # 12 full pages + a partial
+        jobs = [_job(f"j{i}", skills=["Python"]) for i in range(total_jobs_to_seed)]
+        fake = _FakeJobRepository(jobs, page_size=_PAGE_SIZE)
+        repo = JobDemandAnalyticsRepository(fake)
+        result = await repo.get_job_demand_stats(limit=10)
+        # Expect ceil(total / page_size) page fetches.
+        expected_calls = (total_jobs_to_seed + _PAGE_SIZE - 1) // _PAGE_SIZE
+        assert len(fake.calls) == expected_calls
+        assert result.total_jobs == total_jobs_to_seed
+        assert result.jobs_with_linked_skills == total_jobs_to_seed
+        assert [(e.skill_label, e.jobs_count) for e in result.top_skills_in_demand] == [
+            ("Python", total_jobs_to_seed)
+        ]
 
-    @pytest.mark.asyncio
-    async def test_unlinked_skill_surface_form_is_NOT_counted_diverges_from_extract_skills(
-        self, populated_repository: Awaitable[JobDemandAnalyticsRepository]
-    ):
-        """Design lock: unlike JobService._extract_skills, unlinked skills get
-        no surface_form fallback — dropped from the ranking (still counted in
-        total_jobs). "some raw phrase"/"raw" must not rank; j5 (only unlinked)
-        excluded from jobs_with_linked_skills."""
-        repo = await populated_repository
-        result = await repo.get_job_demand_stats(limit=50)
-        ranked_labels = {e.skill_label for e in result.top_skills_in_demand}
-        assert "some raw phrase" not in ranked_labels
-        assert "raw" not in ranked_labels
-        # j5's only skill is unlinked -> it is NOT among the 6 linked jobs.
-        assert result.total_jobs == 9
-        assert result.jobs_with_linked_skills == 6
 
+# ---------------------------------------------------------------------------
+# Sector filter
+# ---------------------------------------------------------------------------
 
 class TestSectorFilter:
     @pytest.fixture(autouse=True)
@@ -199,10 +176,8 @@ class TestSectorFilter:
             "Tenders & RFPs": None,
         })
 
-    @pytest.fixture(scope="function")
-    async def sectored_repository(
-        self, in_memory_jobs_database: Awaitable[AsyncIOMotorDatabase]
-    ) -> JobDemandAnalyticsRepository:
+    @pytest.fixture()
+    def sectored_repository(self) -> JobDemandAnalyticsRepository:
         """
         Jobs spanning categories that map to different institution sectors:
 
@@ -210,58 +185,44 @@ class TestSectorFilter:
           b (Lusaka,     "IT & Telecoms")                  : Docker   -> ICT
           c (Copperbelt, "IT & Telecoms")                  : Python   -> ICT (other province)
           d (Lusaka,     "Banking & Financial Services")   : Excel    -> Finance & Insurance
-          e (Lusaka,     "Tenders & RFPs, IT & Telecoms")  : Python   -> leading token maps to null (excluded from all sectors)
-          f (Lusaka,     no category)                      : Python   -> excluded by any sector
+          e (Lusaka,     "Tenders & RFPs, IT & Telecoms")  : Python   -> leading token maps to null
+          f (Lusaka,     no category)                      : Python   -> no sector at all
         """
-        db = await in_memory_jobs_database
-        await db.get_collection(_COLLECTION).insert_many([
-            _job(uuid="a", location="Lusaka", category="IT & Telecoms, Software",
-                 entities=[_linked_skill("Python")]),
-            _job(uuid="b", location="Lusaka", category="IT & Telecoms",
-                 entities=[_linked_skill("Docker")]),
-            _job(uuid="c", location="Copperbelt", category="IT & Telecoms",
-                 entities=[_linked_skill("Python")]),
-            _job(uuid="d", location="Lusaka", category="Banking & Financial Services",
-                 entities=[_linked_skill("Excel")]),
-            _job(uuid="e", location="Lusaka", category="Tenders & RFPs, IT & Telecoms",
-                 entities=[_linked_skill("Python")]),
-            _job(uuid="f", location="Lusaka", entities=[_linked_skill("Python")]),
-        ])
-        return JobDemandAnalyticsRepository(db, _COLLECTION)
+        jobs = [
+            _job("a", location="Lusaka", category="IT & Telecoms, Software", skills=["Python"]),
+            _job("b", location="Lusaka", category="IT & Telecoms", skills=["Docker"]),
+            _job("c", location="Copperbelt", category="IT & Telecoms", skills=["Python"]),
+            _job("d", location="Lusaka", category="Banking & Financial Services", skills=["Excel"]),
+            _job("e", location="Lusaka", category="Tenders & RFPs, IT & Telecoms", skills=["Python"]),
+            _job("f", location="Lusaka", category=None, skills=["Python"]),
+        ]
+        return JobDemandAnalyticsRepository(_FakeJobRepository(jobs))
 
     @pytest.mark.asyncio
-    async def test_sector_filters_to_mapped_category_prefix(
-        self, sectored_repository: Awaitable[JobDemandAnalyticsRepository]
-    ):
-        repo = await sectored_repository
+    async def test_sector_filters_to_mapped_category_prefix(self, sectored_repository):
         # WHEN filtering by the ICT sector
-        result = await repo.get_job_demand_stats(limit=10, sector="ICT")
-        # THEN only a, b, c (category leads with "IT & Telecoms") count;
-        # d (Finance), e (leading token "Tenders & RFPs"), f (no category) drop.
+        result = await sectored_repository.get_job_demand_stats(limit=10, sector="ICT")
+        # THEN only a, b, c (leading token "IT & Telecoms") count; d/e/f drop.
         assert result.total_jobs == 3
         assert result.jobs_with_linked_skills == 3
         ranking = {e.skill_label: e.jobs_count for e in result.top_skills_in_demand}
         assert ranking == {"Python": 2, "Docker": 1}
 
     @pytest.mark.asyncio
-    async def test_sector_and_province_combine(
-        self, sectored_repository: Awaitable[JobDemandAnalyticsRepository]
-    ):
-        repo = await sectored_repository
+    async def test_sector_and_province_combine(self, sectored_repository):
         # WHEN filtering by ICT sector AND the Lusaka province
-        result = await repo.get_job_demand_stats(limit=10, location="Lusaka", sector="ICT")
+        result = await sectored_repository.get_job_demand_stats(
+            limit=10, location="Lusaka", sector="ICT"
+        )
         # THEN c (Copperbelt) also drops -> only a, b remain
         assert result.total_jobs == 2
         ranking = {e.skill_label: e.jobs_count for e in result.top_skills_in_demand}
         assert ranking == {"Python": 1, "Docker": 1}
 
     @pytest.mark.asyncio
-    async def test_no_supply_sector_returns_empty(
-        self, sectored_repository: Awaitable[JobDemandAnalyticsRepository]
-    ):
-        repo = await sectored_repository
+    async def test_no_supply_sector_returns_empty(self, sectored_repository):
         # WHEN filtering by a sector with no aligned job-category supply
-        result = await repo.get_job_demand_stats(limit=10, sector="Households")
+        result = await sectored_repository.get_job_demand_stats(limit=10, sector="Households")
         # THEN the chart is empty (not silently market-wide)
         assert result.total_jobs == 0
         assert result.jobs_with_linked_skills == 0
