@@ -1,155 +1,74 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 480"
-     role="img" aria-label="Abstract connected shapes and lines">
-  <title>Abstract network — Njira</title>
-
-  <!-- Background -->
-  <rect width="580" height="480" fill="#F3F1EE"/>
-
-  <!-- ── FAINT CONCENTRIC RINGS (structural guides) ── -->
-  <circle cx="290" cy="240" r="82"  fill="none" stroke="#002147" stroke-width="1" opacity="0.06"/>
-  <circle cx="290" cy="240" r="158" fill="none" stroke="#247066" stroke-width="1" opacity="0.05"/>
-
-  <!-- ── HEXAGON FRAMES (decorative outlines) ── -->
-  <!-- Large hex around center region -->
-  <polygon points="290,125 390,183 390,297 290,355 190,297 190,183"
-           fill="none" stroke="#002147" stroke-width="1" opacity="0.07"/>
-  <!-- Hex around NNW outer node -->
-  <polygon points="120,42 162,66 162,114 120,138 78,114 78,66"
-           fill="none" stroke="#247066" stroke-width="1" opacity="0.13"/>
-  <!-- Hex around NNE outer node -->
-  <polygon points="460,20 503,45 503,95 460,120 417,95 417,45"
-           fill="none" stroke="#7BB8FF" stroke-width="1" opacity="0.13"/>
-  <!-- Hex around SSE outer node -->
-  <polygon points="470,366 508,388 508,432 470,454 432,432 432,388"
-           fill="none" stroke="#91DCD2" stroke-width="1" opacity="0.15"/>
-
-  <!-- ── CURVED ARCS (top and bottom boundary) ── -->
-  <path d="M 120,90 Q 290,-10 460,70"
-        fill="none" stroke="#002147" stroke-width="1.2" opacity="0.12"/>
-  <path d="M 110,390 Q 290,490 470,410"
-        fill="none" stroke="#247066" stroke-width="1.2" opacity="0.12"/>
-
-  <!-- ── PENTAGON OUTLINE (outer ring boundary) ── -->
-  <polygon points="120,90 460,70 530,270 470,410 110,390"
-           fill="none" stroke="#002147" stroke-width="1.5" opacity="0.15" stroke-linejoin="round"/>
-
-  <!-- ── RADIAL SPOKES: center → outer nodes ── -->
-  <line x1="290" y1="240" x2="120" y2="90"  stroke="#002147" stroke-width="1.5" opacity="0.20"/>
-  <line x1="290" y1="240" x2="460" y2="70"  stroke="#002147" stroke-width="1.5" opacity="0.20"/>
-  <line x1="290" y1="240" x2="530" y2="270" stroke="#247066" stroke-width="1.5" opacity="0.20"/>
-  <line x1="290" y1="240" x2="470" y2="410" stroke="#247066" stroke-width="1.5" opacity="0.20"/>
-  <line x1="290" y1="240" x2="110" y2="390" stroke="#7BB8FF" stroke-width="1.5" opacity="0.20"/>
-
-  <!-- ── INNER DIAMOND RING ── -->
-  <polygon points="290,130 400,240 290,350 180,240"
-           fill="none" stroke="#247066" stroke-width="1.8" opacity="0.22" stroke-linejoin="round"/>
-
-  <!-- ── SPOKES: center → inner nodes ── -->
-  <line x1="290" y1="240" x2="290" y2="130" stroke="#002147" stroke-width="2"   opacity="0.26"/>
-  <line x1="290" y1="240" x2="400" y2="240" stroke="#002147" stroke-width="2"   opacity="0.26"/>
-  <line x1="290" y1="240" x2="290" y2="350" stroke="#247066" stroke-width="2"   opacity="0.26"/>
-  <line x1="290" y1="240" x2="180" y2="240" stroke="#247066" stroke-width="2"   opacity="0.26"/>
-
-  <!-- ── DASHED SECONDARY CONNECTIONS (outer → inner) ── -->
-  <line x1="120" y1="90"  x2="290" y2="130" stroke="#7BB8FF" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
-  <line x1="460" y1="70"  x2="290" y2="130" stroke="#7BB8FF" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
-  <line x1="460" y1="70"  x2="400" y2="240" stroke="#91DCD2" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
-  <line x1="530" y1="270" x2="400" y2="240" stroke="#91DCD2" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
-  <line x1="470" y1="410" x2="290" y2="350" stroke="#00D87B" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
-  <line x1="110" y1="390" x2="290" y2="350" stroke="#00D87B" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
-  <line x1="110" y1="390" x2="180" y2="240" stroke="#7BB8FF" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
-  <line x1="120" y1="90"  x2="180" y2="240" stroke="#7BB8FF" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
-
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- NODES                                          -->
-  <!-- ══════════════════════════════════════════════ -->
-
-  <!-- Central hub -->
-  <circle cx="290" cy="240" r="60" fill="#002147"/>
-  <circle cx="290" cy="240" r="44" fill="#247066"/>
-  <circle cx="290" cy="240" r="27" fill="#00D87B"/>
-  <circle cx="290" cy="240" r="11" fill="#D7FFEF"/>
-
-  <!-- Inner ring: North -->
-  <circle cx="290" cy="130" r="28" fill="#247066"/>
-  <circle cx="290" cy="130" r="17" fill="#91DCD2"/>
-  <circle cx="290" cy="130" r="7"  fill="#D7FFEF"/>
-
-  <!-- Inner ring: East -->
-  <circle cx="400" cy="240" r="26" fill="#7BB8FF"/>
-  <circle cx="400" cy="240" r="15" fill="#002147"/>
-  <circle cx="400" cy="240" r="6"  fill="#7BB8FF" opacity="0.55"/>
-
-  <!-- Inner ring: South -->
-  <circle cx="290" cy="350" r="26" fill="#247066"/>
-  <circle cx="290" cy="350" r="15" fill="#91DCD2"/>
-  <circle cx="290" cy="350" r="6"  fill="#D7FFEF"/>
-
-  <!-- Inner ring: West -->
-  <circle cx="180" cy="240" r="24" fill="#00D87B"/>
-  <circle cx="180" cy="240" r="14" fill="#002147"/>
-  <circle cx="180" cy="240" r="5"  fill="#00FF91"/>
-
-  <!-- Outer ring: NNW -->
-  <circle cx="120" cy="90"  r="38" fill="#002147"/>
-  <circle cx="120" cy="90"  r="24" fill="#7BB8FF"/>
-  <circle cx="120" cy="90"  r="11" fill="#D7FFEF"/>
-
-  <!-- Outer ring: NNE -->
-  <circle cx="460" cy="70"  r="42" fill="#247066"/>
-  <circle cx="460" cy="70"  r="26" fill="#91DCD2"/>
-  <circle cx="460" cy="70"  r="12" fill="#D7FFEF"/>
-
-  <!-- Outer ring: E -->
-  <circle cx="530" cy="270" r="30" fill="#7BB8FF"/>
-  <circle cx="530" cy="270" r="18" fill="#002147"/>
-  <circle cx="530" cy="270" r="8"  fill="#7BB8FF" opacity="0.50"/>
-
-  <!-- Outer ring: SSE -->
-  <circle cx="470" cy="410" r="34" fill="#91DCD2"/>
-  <circle cx="470" cy="410" r="20" fill="#247066"/>
-  <circle cx="470" cy="410" r="9"  fill="#D7FFEF"/>
-
-  <!-- Outer ring: SSW -->
-  <circle cx="110" cy="390" r="30" fill="#00D87B"/>
-  <circle cx="110" cy="390" r="18" fill="#002147"/>
-  <circle cx="110" cy="390" r="8"  fill="#00FF91"/>
-
-  <!-- ── MIDPOINT MARKERS on radial spokes ── -->
-  <circle cx="205" cy="165" r="5" fill="#002147" opacity="0.45"/>
-  <circle cx="375" cy="155" r="5" fill="#002147" opacity="0.45"/>
-  <circle cx="410" cy="255" r="5" fill="#247066" opacity="0.45"/>
-  <circle cx="380" cy="325" r="5" fill="#247066" opacity="0.45"/>
-  <circle cx="200" cy="315" r="5" fill="#7BB8FF" opacity="0.45"/>
-
-  <!-- ── DIAMOND OUTLINES (accent shapes) ── -->
-  <!-- Top-center floating diamond -->
-  <rect x="277" y="22" width="16" height="16" fill="none"
-        stroke="#002147" stroke-width="1.5" opacity="0.24"
-        transform="rotate(45, 285, 30)"/>
-  <!-- Right edge accent -->
-  <rect x="542" y="152" width="14" height="14" fill="none"
-        stroke="#7BB8FF" stroke-width="1.5" opacity="0.30"
-        transform="rotate(45, 549, 159)"/>
-  <!-- Left edge accent -->
-  <rect x="22" y="292" width="14" height="14" fill="none"
-        stroke="#00D87B" stroke-width="1.5" opacity="0.30"
-        transform="rotate(45, 29, 299)"/>
-  <!-- Bottom accent near SSE -->
-  <rect x="458" y="449" width="13" height="13" fill="none"
-        stroke="#91DCD2" stroke-width="1.5" opacity="0.30"
-        transform="rotate(45, 464, 455)"/>
-
-  <!-- ── TRIANGLE CORNER ACCENTS ── -->
-  <polygon points="42,448 58,420 74,448"
-           fill="none" stroke="#247066" stroke-width="1.5" opacity="0.24"/>
-  <polygon points="534,26 550,54 518,54"
-           fill="none" stroke="#7BB8FF" stroke-width="1.5" opacity="0.24"/>
-
-  <!-- ── CORNER DOTS ── -->
-  <circle cx="24"  cy="24"  r="5" fill="#91DCD2" opacity="0.28"/>
-  <circle cx="556" cy="24"  r="5" fill="#002147" opacity="0.18"/>
-  <circle cx="24"  cy="456" r="5" fill="#00D87B"  opacity="0.28"/>
-  <circle cx="556" cy="456" r="5" fill="#247066"  opacity="0.18"/>
-
+<svg width="580" height="480" viewBox="0 0 580 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path opacity="0.06" d="M290 322C335.287 322 372 285.287 372 240C372 194.713 335.287 158 290 158C244.713 158 208 194.713 208 240C208 285.287 244.713 322 290 322Z" stroke="#002147"/>
+<path opacity="0.05" d="M290 398C377.261 398 448 327.261 448 240C448 152.739 377.261 82 290 82C202.739 82 132 152.739 132 240C132 327.261 202.739 398 290 398Z" stroke="#247066"/>
+<path opacity="0.07" d="M290 125L390 183V297L290 355L190 297V183L290 125Z" stroke="#002147"/>
+<path opacity="0.13" d="M120 42L162 66V114L120 138L78 114V66L120 42Z" stroke="#247066"/>
+<path opacity="0.13" d="M460 20L503 45V95L460 120L417 95V45L460 20Z" stroke="#7BB8FF"/>
+<path opacity="0.15" d="M470 366L508 388V432L470 454L432 432V388L470 366Z" stroke="#91DCD2"/>
+<path opacity="0.12" d="M120 90C233.333 23.3333 346.667 16.6667 460 70" stroke="#002147" stroke-width="1.2"/>
+<path opacity="0.12" d="M110 390C230 456.667 350 463.333 470 410" stroke="#247066" stroke-width="1.2"/>
+<path opacity="0.15" d="M120 90L460 70L530 270L470 410L110 390L120 90Z" stroke="#002147" stroke-width="1.5" stroke-linejoin="round"/>
+<path opacity="0.2" d="M290 240L120 90" stroke="#002147" stroke-width="1.5"/>
+<path opacity="0.2" d="M290 240L460 70" stroke="#002147" stroke-width="1.5"/>
+<path opacity="0.2" d="M290 240L530 270" stroke="#247066" stroke-width="1.5"/>
+<path opacity="0.2" d="M290 240L470 410" stroke="#247066" stroke-width="1.5"/>
+<path opacity="0.2" d="M290 240L110 390" stroke="#7BB8FF" stroke-width="1.5"/>
+<path opacity="0.22" d="M290 130L400 240L290 350L180 240L290 130Z" stroke="#247066" stroke-width="1.8" stroke-linejoin="round"/>
+<path opacity="0.26" d="M290 240V130" stroke="#002147" stroke-width="2"/>
+<path opacity="0.26" d="M290 240H400" stroke="#002147" stroke-width="2"/>
+<path opacity="0.26" d="M290 240V350" stroke="#247066" stroke-width="2"/>
+<path opacity="0.26" d="M290 240H180" stroke="#247066" stroke-width="2"/>
+<path opacity="0.18" d="M120 90L290 130" stroke="#7BB8FF" stroke-dasharray="5 4"/>
+<path opacity="0.18" d="M460 70L290 130" stroke="#7BB8FF" stroke-dasharray="5 4"/>
+<path opacity="0.18" d="M460 70L400 240" stroke="#91DCD2" stroke-dasharray="5 4"/>
+<path opacity="0.18" d="M530 270L400 240" stroke="#91DCD2" stroke-dasharray="5 4"/>
+<path opacity="0.18" d="M470 410L290 350" stroke="#00D87B" stroke-dasharray="5 4"/>
+<path opacity="0.18" d="M110 390L290 350" stroke="#00D87B" stroke-dasharray="5 4"/>
+<path opacity="0.18" d="M110 390L180 240" stroke="#7BB8FF" stroke-dasharray="5 4"/>
+<path opacity="0.18" d="M120 90L180 240" stroke="#7BB8FF" stroke-dasharray="5 4"/>
+<path d="M290 300C323.137 300 350 273.137 350 240C350 206.863 323.137 180 290 180C256.863 180 230 206.863 230 240C230 273.137 256.863 300 290 300Z" fill="#002147"/>
+<path d="M290 284C314.301 284 334 264.301 334 240C334 215.699 314.301 196 290 196C265.699 196 246 215.699 246 240C246 264.301 265.699 284 290 284Z" fill="#247066"/>
+<path d="M290 267C304.912 267 317 254.912 317 240C317 225.088 304.912 213 290 213C275.088 213 263 225.088 263 240C263 254.912 275.088 267 290 267Z" fill="#00D87B"/>
+<path d="M290 251C296.075 251 301 246.075 301 240C301 233.925 296.075 229 290 229C283.925 229 279 233.925 279 240C279 246.075 283.925 251 290 251Z" fill="#D7FFEF"/>
+<path d="M290 158C305.464 158 318 145.464 318 130C318 114.536 305.464 102 290 102C274.536 102 262 114.536 262 130C262 145.464 274.536 158 290 158Z" fill="#247066"/>
+<path d="M290 147C299.389 147 307 139.389 307 130C307 120.611 299.389 113 290 113C280.611 113 273 120.611 273 130C273 139.389 280.611 147 290 147Z" fill="#91DCD2"/>
+<path d="M290 137C293.866 137 297 133.866 297 130C297 126.134 293.866 123 290 123C286.134 123 283 126.134 283 130C283 133.866 286.134 137 290 137Z" fill="#D7FFEF"/>
+<path d="M400 266C414.359 266 426 254.359 426 240C426 225.641 414.359 214 400 214C385.641 214 374 225.641 374 240C374 254.359 385.641 266 400 266Z" fill="#7BB8FF"/>
+<path d="M400 255C408.284 255 415 248.284 415 240C415 231.716 408.284 225 400 225C391.716 225 385 231.716 385 240C385 248.284 391.716 255 400 255Z" fill="#002147"/>
+<path opacity="0.55" d="M400 246C403.314 246 406 243.314 406 240C406 236.686 403.314 234 400 234C396.686 234 394 236.686 394 240C394 243.314 396.686 246 400 246Z" fill="#7BB8FF"/>
+<path d="M290 376C304.359 376 316 364.359 316 350C316 335.641 304.359 324 290 324C275.641 324 264 335.641 264 350C264 364.359 275.641 376 290 376Z" fill="#247066"/>
+<path d="M290 365C298.284 365 305 358.284 305 350C305 341.716 298.284 335 290 335C281.716 335 275 341.716 275 350C275 358.284 281.716 365 290 365Z" fill="#91DCD2"/>
+<path d="M290 356C293.314 356 296 353.314 296 350C296 346.686 293.314 344 290 344C286.686 344 284 346.686 284 350C284 353.314 286.686 356 290 356Z" fill="#D7FFEF"/>
+<path d="M180 264C193.255 264 204 253.255 204 240C204 226.745 193.255 216 180 216C166.745 216 156 226.745 156 240C156 253.255 166.745 264 180 264Z" fill="#00D87B"/>
+<path d="M180 254C187.732 254 194 247.732 194 240C194 232.268 187.732 226 180 226C172.268 226 166 232.268 166 240C166 247.732 172.268 254 180 254Z" fill="#002147"/>
+<path d="M180 245C182.761 245 185 242.761 185 240C185 237.239 182.761 235 180 235C177.239 235 175 237.239 175 240C175 242.761 177.239 245 180 245Z" fill="#00FF91"/>
+<path d="M120 128C140.987 128 158 110.987 158 90C158 69.0132 140.987 52 120 52C99.0132 52 82 69.0132 82 90C82 110.987 99.0132 128 120 128Z" fill="#002147"/>
+<path d="M120 114C133.255 114 144 103.255 144 90C144 76.7452 133.255 66 120 66C106.745 66 96 76.7452 96 90C96 103.255 106.745 114 120 114Z" fill="#7BB8FF"/>
+<path d="M120 101C126.075 101 131 96.0751 131 90C131 83.9249 126.075 79 120 79C113.925 79 109 83.9249 109 90C109 96.0751 113.925 101 120 101Z" fill="#D7FFEF"/>
+<path d="M460 112C483.196 112 502 93.196 502 70C502 46.804 483.196 28 460 28C436.804 28 418 46.804 418 70C418 93.196 436.804 112 460 112Z" fill="#247066"/>
+<path d="M460 96C474.359 96 486 84.3594 486 70C486 55.6406 474.359 44 460 44C445.641 44 434 55.6406 434 70C434 84.3594 445.641 96 460 96Z" fill="#91DCD2"/>
+<path d="M460 82C466.627 82 472 76.6274 472 70C472 63.3726 466.627 58 460 58C453.373 58 448 63.3726 448 70C448 76.6274 453.373 82 460 82Z" fill="#D7FFEF"/>
+<path d="M530 300C546.569 300 560 286.569 560 270C560 253.431 546.569 240 530 240C513.431 240 500 253.431 500 270C500 286.569 513.431 300 530 300Z" fill="#7BB8FF"/>
+<path d="M530 288C539.941 288 548 279.941 548 270C548 260.059 539.941 252 530 252C520.059 252 512 260.059 512 270C512 279.941 520.059 288 530 288Z" fill="#002147"/>
+<path opacity="0.5" d="M530 278C534.418 278 538 274.418 538 270C538 265.582 534.418 262 530 262C525.582 262 522 265.582 522 270C522 274.418 525.582 278 530 278Z" fill="#7BB8FF"/>
+<path d="M470 444C488.778 444 504 428.778 504 410C504 391.222 488.778 376 470 376C451.222 376 436 391.222 436 410C436 428.778 451.222 444 470 444Z" fill="#91DCD2"/>
+<path d="M470 430C481.046 430 490 421.046 490 410C490 398.954 481.046 390 470 390C458.954 390 450 398.954 450 410C450 421.046 458.954 430 470 430Z" fill="#247066"/>
+<path d="M470 419C474.971 419 479 414.971 479 410C479 405.029 474.971 401 470 401C465.029 401 461 405.029 461 410C461 414.971 465.029 419 470 419Z" fill="#D7FFEF"/>
+<path d="M110 420C126.569 420 140 406.569 140 390C140 373.431 126.569 360 110 360C93.4315 360 80 373.431 80 390C80 406.569 93.4315 420 110 420Z" fill="#00D87B"/>
+<path d="M110 408C119.941 408 128 399.941 128 390C128 380.059 119.941 372 110 372C100.059 372 92 380.059 92 390C92 399.941 100.059 408 110 408Z" fill="#002147"/>
+<path d="M110 398C114.418 398 118 394.418 118 390C118 385.582 114.418 382 110 382C105.582 382 102 385.582 102 390C102 394.418 105.582 398 110 398Z" fill="#00FF91"/>
+<path opacity="0.45" d="M205 170C207.761 170 210 167.761 210 165C210 162.239 207.761 160 205 160C202.239 160 200 162.239 200 165C200 167.761 202.239 170 205 170Z" fill="#002147"/>
+<path opacity="0.45" d="M375 160C377.761 160 380 157.761 380 155C380 152.239 377.761 150 375 150C372.239 150 370 152.239 370 155C370 157.761 372.239 160 375 160Z" fill="#002147"/>
+<path opacity="0.45" d="M380 330C382.761 330 385 327.761 385 325C385 322.239 382.761 320 380 320C377.239 320 375 322.239 375 325C375 327.761 377.239 330 380 330Z" fill="#247066"/>
+<path opacity="0.45" d="M200 320C202.761 320 205 317.761 205 315C205 312.239 202.761 310 200 310C197.239 310 195 312.239 195 315C195 317.761 197.239 320 200 320Z" fill="#7BB8FF"/>
+<path opacity="0.24" d="M296.314 30L285 18.6863L273.686 30L285 41.3137L296.314 30Z" stroke="#002147" stroke-width="1.5"/>
+<path opacity="0.3" d="M558.899 159L549 149.101L539.101 159L549 168.9L558.899 159Z" stroke="#7BB8FF" stroke-width="1.5"/>
+<path opacity="0.3" d="M38.8995 299L29 289.1L19.1005 299L29 308.899L38.8995 299Z" stroke="#00D87B" stroke-width="1.5"/>
+<path opacity="0.3" d="M473.192 455.707L464 446.515L454.808 455.707L464 464.899L473.192 455.707Z" stroke="#91DCD2" stroke-width="1.5"/>
+<path opacity="0.24" d="M42 448L58 420L74 448H42Z" stroke="#247066" stroke-width="1.5"/>
+<path opacity="0.24" d="M534 26L550 54H518L534 26Z" stroke="#7BB8FF" stroke-width="1.5"/>
+<path opacity="0.28" d="M24 29C26.7614 29 29 26.7614 29 24C29 21.2386 26.7614 19 24 19C21.2386 19 19 21.2386 19 24C19 26.7614 21.2386 29 24 29Z" fill="#91DCD2"/>
+<path opacity="0.18" d="M556 29C558.761 29 561 26.7614 561 24C561 21.2386 558.761 19 556 19C553.239 19 551 21.2386 551 24C551 26.7614 553.239 29 556 29Z" fill="#002147"/>
+<path opacity="0.28" d="M24 461C26.7614 461 29 458.761 29 456C29 453.239 26.7614 451 24 451C21.2386 451 19 453.239 19 456C19 458.761 21.2386 461 24 461Z" fill="#00D87B"/>
+<path opacity="0.18" d="M556 461C558.761 461 561 458.761 561 456C561 453.239 558.761 451 556 451C553.239 451 551 453.239 551 456C551 458.761 553.239 461 556 461Z" fill="#247066"/>
 </svg>
