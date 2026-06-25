@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 480"
+     role="img" aria-label="Abstract connected shapes and lines">
+  <title>Abstract network — Njira</title>
+
+  <!-- Background -->
+  <rect width="580" height="480" fill="#F3F1EE"/>
+
+  <!-- ── FAINT CONCENTRIC RINGS (structural guides) ── -->
+  <circle cx="290" cy="240" r="82"  fill="none" stroke="#002147" stroke-width="1" opacity="0.06"/>
+  <circle cx="290" cy="240" r="158" fill="none" stroke="#247066" stroke-width="1" opacity="0.05"/>
+
+  <!-- ── HEXAGON FRAMES (decorative outlines) ── -->
+  <!-- Large hex around center region -->
+  <polygon points="290,125 390,183 390,297 290,355 190,297 190,183"
+           fill="none" stroke="#002147" stroke-width="1" opacity="0.07"/>
+  <!-- Hex around NNW outer node -->
+  <polygon points="120,42 162,66 162,114 120,138 78,114 78,66"
+           fill="none" stroke="#247066" stroke-width="1" opacity="0.13"/>
+  <!-- Hex around NNE outer node -->
+  <polygon points="460,20 503,45 503,95 460,120 417,95 417,45"
+           fill="none" stroke="#7BB8FF" stroke-width="1" opacity="0.13"/>
+  <!-- Hex around SSE outer node -->
+  <polygon points="470,366 508,388 508,432 470,454 432,432 432,388"
+           fill="none" stroke="#91DCD2" stroke-width="1" opacity="0.15"/>
+
+  <!-- ── CURVED ARCS (top and bottom boundary) ── -->
+  <path d="M 120,90 Q 290,-10 460,70"
+        fill="none" stroke="#002147" stroke-width="1.2" opacity="0.12"/>
+  <path d="M 110,390 Q 290,490 470,410"
+        fill="none" stroke="#247066" stroke-width="1.2" opacity="0.12"/>
+
+  <!-- ── PENTAGON OUTLINE (outer ring boundary) ── -->
+  <polygon points="120,90 460,70 530,270 470,410 110,390"
+           fill="none" stroke="#002147" stroke-width="1.5" opacity="0.15" stroke-linejoin="round"/>
+
+  <!-- ── RADIAL SPOKES: center → outer nodes ── -->
+  <line x1="290" y1="240" x2="120" y2="90"  stroke="#002147" stroke-width="1.5" opacity="0.20"/>
+  <line x1="290" y1="240" x2="460" y2="70"  stroke="#002147" stroke-width="1.5" opacity="0.20"/>
+  <line x1="290" y1="240" x2="530" y2="270" stroke="#247066" stroke-width="1.5" opacity="0.20"/>
+  <line x1="290" y1="240" x2="470" y2="410" stroke="#247066" stroke-width="1.5" opacity="0.20"/>
+  <line x1="290" y1="240" x2="110" y2="390" stroke="#7BB8FF" stroke-width="1.5" opacity="0.20"/>
+
+  <!-- ── INNER DIAMOND RING ── -->
+  <polygon points="290,130 400,240 290,350 180,240"
+           fill="none" stroke="#247066" stroke-width="1.8" opacity="0.22" stroke-linejoin="round"/>
+
+  <!-- ── SPOKES: center → inner nodes ── -->
+  <line x1="290" y1="240" x2="290" y2="130" stroke="#002147" stroke-width="2"   opacity="0.26"/>
+  <line x1="290" y1="240" x2="400" y2="240" stroke="#002147" stroke-width="2"   opacity="0.26"/>
+  <line x1="290" y1="240" x2="290" y2="350" stroke="#247066" stroke-width="2"   opacity="0.26"/>
+  <line x1="290" y1="240" x2="180" y2="240" stroke="#247066" stroke-width="2"   opacity="0.26"/>
+
+  <!-- ── DASHED SECONDARY CONNECTIONS (outer → inner) ── -->
+  <line x1="120" y1="90"  x2="290" y2="130" stroke="#7BB8FF" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
+  <line x1="460" y1="70"  x2="290" y2="130" stroke="#7BB8FF" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
+  <line x1="460" y1="70"  x2="400" y2="240" stroke="#91DCD2" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
+  <line x1="530" y1="270" x2="400" y2="240" stroke="#91DCD2" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
+  <line x1="470" y1="410" x2="290" y2="350" stroke="#00D87B" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
+  <line x1="110" y1="390" x2="290" y2="350" stroke="#00D87B" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
+  <line x1="110" y1="390" x2="180" y2="240" stroke="#7BB8FF" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
+  <line x1="120" y1="90"  x2="180" y2="240" stroke="#7BB8FF" stroke-width="1" opacity="0.18" stroke-dasharray="5,4"/>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- NODES                                          -->
+  <!-- ══════════════════════════════════════════════ -->
+
+  <!-- Central hub -->
+  <circle cx="290" cy="240" r="60" fill="#002147"/>
+  <circle cx="290" cy="240" r="44" fill="#247066"/>
+  <circle cx="290" cy="240" r="27" fill="#00D87B"/>
+  <circle cx="290" cy="240" r="11" fill="#D7FFEF"/>
+
+  <!-- Inner ring: North -->
+  <circle cx="290" cy="130" r="28" fill="#247066"/>
+  <circle cx="290" cy="130" r="17" fill="#91DCD2"/>
+  <circle cx="290" cy="130" r="7"  fill="#D7FFEF"/>
+
+  <!-- Inner ring: East -->
+  <circle cx="400" cy="240" r="26" fill="#7BB8FF"/>
+  <circle cx="400" cy="240" r="15" fill="#002147"/>
+  <circle cx="400" cy="240" r="6"  fill="#7BB8FF" opacity="0.55"/>
+
+  <!-- Inner ring: South -->
+  <circle cx="290" cy="350" r="26" fill="#247066"/>
+  <circle cx="290" cy="350" r="15" fill="#91DCD2"/>
+  <circle cx="290" cy="350" r="6"  fill="#D7FFEF"/>
+
+  <!-- Inner ring: West -->
+  <circle cx="180" cy="240" r="24" fill="#00D87B"/>
+  <circle cx="180" cy="240" r="14" fill="#002147"/>
+  <circle cx="180" cy="240" r="5"  fill="#00FF91"/>
+
+  <!-- Outer ring: NNW -->
+  <circle cx="120" cy="90"  r="38" fill="#002147"/>
+  <circle cx="120" cy="90"  r="24" fill="#7BB8FF"/>
+  <circle cx="120" cy="90"  r="11" fill="#D7FFEF"/>
+
+  <!-- Outer ring: NNE -->
+  <circle cx="460" cy="70"  r="42" fill="#247066"/>
+  <circle cx="460" cy="70"  r="26" fill="#91DCD2"/>
+  <circle cx="460" cy="70"  r="12" fill="#D7FFEF"/>
+
+  <!-- Outer ring: E -->
+  <circle cx="530" cy="270" r="30" fill="#7BB8FF"/>
+  <circle cx="530" cy="270" r="18" fill="#002147"/>
+  <circle cx="530" cy="270" r="8"  fill="#7BB8FF" opacity="0.50"/>
+
+  <!-- Outer ring: SSE -->
+  <circle cx="470" cy="410" r="34" fill="#91DCD2"/>
+  <circle cx="470" cy="410" r="20" fill="#247066"/>
+  <circle cx="470" cy="410" r="9"  fill="#D7FFEF"/>
+
+  <!-- Outer ring: SSW -->
+  <circle cx="110" cy="390" r="30" fill="#00D87B"/>
+  <circle cx="110" cy="390" r="18" fill="#002147"/>
+  <circle cx="110" cy="390" r="8"  fill="#00FF91"/>
+
+  <!-- ── MIDPOINT MARKERS on radial spokes ── -->
+  <circle cx="205" cy="165" r="5" fill="#002147" opacity="0.45"/>
+  <circle cx="375" cy="155" r="5" fill="#002147" opacity="0.45"/>
+  <circle cx="410" cy="255" r="5" fill="#247066" opacity="0.45"/>
+  <circle cx="380" cy="325" r="5" fill="#247066" opacity="0.45"/>
+  <circle cx="200" cy="315" r="5" fill="#7BB8FF" opacity="0.45"/>
+
+  <!-- ── DIAMOND OUTLINES (accent shapes) ── -->
+  <!-- Top-center floating diamond -->
+  <rect x="277" y="22" width="16" height="16" fill="none"
+        stroke="#002147" stroke-width="1.5" opacity="0.24"
+        transform="rotate(45, 285, 30)"/>
+  <!-- Right edge accent -->
+  <rect x="542" y="152" width="14" height="14" fill="none"
+        stroke="#7BB8FF" stroke-width="1.5" opacity="0.30"
+        transform="rotate(45, 549, 159)"/>
+  <!-- Left edge accent -->
+  <rect x="22" y="292" width="14" height="14" fill="none"
+        stroke="#00D87B" stroke-width="1.5" opacity="0.30"
+        transform="rotate(45, 29, 299)"/>
+  <!-- Bottom accent near SSE -->
+  <rect x="458" y="449" width="13" height="13" fill="none"
+        stroke="#91DCD2" stroke-width="1.5" opacity="0.30"
+        transform="rotate(45, 464, 455)"/>
+
+  <!-- ── TRIANGLE CORNER ACCENTS ── -->
+  <polygon points="42,448 58,420 74,448"
+           fill="none" stroke="#247066" stroke-width="1.5" opacity="0.24"/>
+  <polygon points="534,26 550,54 518,54"
+           fill="none" stroke="#7BB8FF" stroke-width="1.5" opacity="0.24"/>
+
+  <!-- ── CORNER DOTS ── -->
+  <circle cx="24"  cy="24"  r="5" fill="#91DCD2" opacity="0.28"/>
+  <circle cx="556" cy="24"  r="5" fill="#002147" opacity="0.18"/>
+  <circle cx="24"  cy="456" r="5" fill="#00D87B"  opacity="0.28"/>
+  <circle cx="556" cy="456" r="5" fill="#247066"  opacity="0.18"/>
+
+</svg>
