@@ -365,7 +365,8 @@
         "careerExplorer": "Explorador de Carreiras",
         "prioritySectorsExplored": "Setores Prioritários Explorados",
         "lastLogin": "Último Acesso",
-        "lastActiveModule": "Último Módulo Ativo"
+        "lastActiveModule": "Último Módulo Ativo",
+        "treatmentGroup": "Grupo de Tratamento"
       },
       "filters": {
         "all": "Todos",

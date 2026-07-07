@@ -73,6 +73,7 @@ const toInstructorStudentRow = (
     careerExplorerMessagesSent: item.career_explorer_messages_sent ?? null,
     lastLogin: formatLastLogin(item.last_login),
     lastActiveModuleId,
+    treatmentGroup: toText(item.treatment_group),
   };
 };
 
