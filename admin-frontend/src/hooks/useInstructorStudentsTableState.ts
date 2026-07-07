@@ -13,7 +13,8 @@ export type StudentsSortKey =
   | "careerReadinessStarted"
   | "careerReadinessCompleted"
   | "skillsDiscoveryStatus"
-  | "careerExplorerMessagesSent";
+  | "careerExplorerMessagesSent"
+  | "treatmentGroup";
 type SortDir = "asc" | "desc";
 
 type UseInstructorStudentsTableStateOptions = {
@@ -88,6 +89,7 @@ export function useInstructorStudentsTableState(
   const [yearFilter, setYearFilter] = useState("all");
   const [lastLoginFilter, setLastLoginFilter] = useState("all");
   const [lastModuleFilter, setLastModuleFilter] = useState("all");
+  const [treatmentGroupFilter, setTreatmentGroupFilter] = useState("all");
   const [pageIndex, setPageIndex] = useState(0);
 
   const debouncedNameSearch = useDebouncedValue(nameSearch, 250);
@@ -101,6 +103,17 @@ export function useInstructorStudentsTableState(
     );
     return ["all", ...Array.from(new Set([...knownModuleIds, ...dynamic]))];
   }, [rows]);
+  const treatmentGroups = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          rows
+            .map((r) => (typeof r.treatmentGroup === "string" ? r.treatmentGroup.trim() : ""))
+            .filter((value) => value.length > 0)
+        )
+      ).sort(),
+    [rows]
+  );
 
   const filteredRows = useMemo(() => {
     const query = debouncedNameSearch.trim().toLowerCase();
@@ -109,11 +122,12 @@ export function useInstructorStudentsTableState(
       if (programme !== "all" && row.programme !== programme) return false;
       if (yearFilter !== "all" && row.year !== yearFilter) return false;
       if (lastModuleFilter !== "all" && row.lastActiveModuleId !== lastModuleFilter) return false;
+      if (treatmentGroupFilter !== "all" && (row.treatmentGroup ?? "") !== treatmentGroupFilter) return false;
 
       if (lastLoginFilter === "all") return true;
       return lastLoginDisplayMatchesFilter(row.lastLogin, lastLoginFilter);
     });
-  }, [debouncedNameSearch, lastLoginFilter, lastModuleFilter, programme, rows, yearFilter]);
+  }, [debouncedNameSearch, lastLoginFilter, lastModuleFilter, programme, rows, treatmentGroupFilter, yearFilter]);
 
   const sortedRows = useMemo(() => {
     if (!sortKey) {
@@ -135,6 +149,7 @@ export function useInstructorStudentsTableState(
         const order: Record<string, number> = { not_started: 0, in_progress: 1, completed: 2 };
         return order[row.skillsDiscoveryStatus] ?? 0;
       }
+      if (key === "treatmentGroup") return normalizeText(row.treatmentGroup ?? "");
       return row.careerExplorerMessagesSent;
     };
 
@@ -158,7 +173,16 @@ export function useInstructorStudentsTableState(
 
   useEffect(() => {
     setPageIndex(0);
-  }, [debouncedNameSearch, programme, yearFilter, lastLoginFilter, lastModuleFilter, sortKey, sortDir]);
+  }, [
+    debouncedNameSearch,
+    programme,
+    yearFilter,
+    lastLoginFilter,
+    lastModuleFilter,
+    treatmentGroupFilter,
+    sortKey,
+    sortDir,
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(sortedRows.length / pageSize));
   const safePageIndex = Math.min(pageIndex, totalPages - 1);
@@ -206,9 +230,12 @@ export function useInstructorStudentsTableState(
     setLastLoginFilter,
     lastModuleFilter,
     setLastModuleFilter,
+    treatmentGroupFilter,
+    setTreatmentGroupFilter,
     programmes,
     years,
     modules,
+    treatmentGroups,
     filteredRows,
     pagedRows,
     pageSize,

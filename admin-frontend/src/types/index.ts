@@ -41,6 +41,7 @@ export interface InstructorStudentRow {
   careerExplorerMessagesSent: number | null;
   lastLogin: string;
   lastActiveModuleId: string;
+  treatmentGroup: string | null;
 }
 
 export interface ModuleSummaryRow {

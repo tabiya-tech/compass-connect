@@ -366,7 +366,8 @@
         "careerExplorer": "Career Explorer",
         "prioritySectorsExplored": "Priority Sectors Explored",
         "lastLogin": "Last Login",
-        "lastActiveModule": "Last Active Module"
+        "lastActiveModule": "Last Active Module",
+        "treatmentGroup": "Treatment Group"
       },
       "filters": {
         "all": "All",

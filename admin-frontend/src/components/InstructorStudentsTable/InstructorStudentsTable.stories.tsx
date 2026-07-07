@@ -25,6 +25,7 @@ const storyInstructorStudentsFixture: InstructorStudentRow[] = [
     careerExplorerMessagesSent: 5,
     lastLogin: "Today",
     lastActiveModuleId: "career-explorer",
+    treatmentGroup: "T1",
   },
   {
     id: "student-2",
@@ -39,6 +40,7 @@ const storyInstructorStudentsFixture: InstructorStudentRow[] = [
     careerExplorerMessagesSent: 1,
     lastLogin: "2 days ago",
     lastActiveModuleId: "skills-discovery",
+    treatmentGroup: "T2",
   },
   {
     id: "student-3",
@@ -53,6 +55,7 @@ const storyInstructorStudentsFixture: InstructorStudentRow[] = [
     careerExplorerMessagesSent: null,
     lastLogin: "1 week ago",
     lastActiveModuleId: "workplace-readiness",
+    treatmentGroup: null,
   },
 ];
 

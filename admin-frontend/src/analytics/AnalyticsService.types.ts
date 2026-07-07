@@ -34,6 +34,7 @@ export interface StudentApiItem {
   career_explorer_messages_sent: number | null;
   last_login: string | null;
   last_active_module: string | null;
+  treatment_group: string | null;
 }
 
 export interface PaginatedResponse<T> {

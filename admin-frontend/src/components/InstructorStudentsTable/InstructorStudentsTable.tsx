@@ -44,9 +44,12 @@ const InstructorStudentsTable: React.FC<InstructorStudentsTableProps> = ({
     setLastLoginFilter,
     lastModuleFilter,
     setLastModuleFilter,
+    treatmentGroupFilter,
+    setTreatmentGroupFilter,
     programmes,
     years,
     modules,
+    treatmentGroups,
     filteredRows,
     pagedRows,
     pageSize,
@@ -131,6 +134,34 @@ const InstructorStudentsTable: React.FC<InstructorStudentsTableProps> = ({
       },
       render: (val, row) => <span style={{ textAlign: "center", display: "block", width: "100%" }}>{row.year}</span>,
     },
+    // Only surface the treatment group column/filter when at least one student is assigned to a group.
+    ...(treatmentGroups.length > 0
+      ? [
+          {
+            key: "treatmentGroup" as const,
+            label: t("instructorDashboard.studentsTable.headers.treatmentGroup").toUpperCase(),
+            sortable: true,
+            sortType: "text" as const,
+            align: "center" as const,
+            filter: {
+              options: [
+                { value: "all", label: allLabel },
+                ...treatmentGroups.map((group) => ({ value: group, label: group })),
+              ],
+              value: treatmentGroupFilter,
+              onChange: setTreatmentGroupFilter,
+            },
+            render: (_val: unknown, row: InstructorStudentRow) => {
+              const label = row.treatmentGroup ?? PLACEHOLDER_SYMBOL;
+              return (
+                <Typography variant="body2" noWrap title={label} sx={{ textAlign: "center", width: "100%" }}>
+                  {label}
+                </Typography>
+              );
+            },
+          },
+        ]
+      : []),
     {
       key: "lastLogin",
       label: t("instructorDashboard.studentsTable.headers.lastLogin").toUpperCase(),
