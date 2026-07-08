@@ -47,6 +47,7 @@ class User(BaseModel):
     career_explorer_messages_sent: Optional[int] = None
     last_login: Optional[str] = None
     last_active_module: Optional[str] = None
+    treatment_group: Optional[str] = None  # RCT treatment group, e.g. "T1" | "T2"
 
 
 class AdoptionTrendPoint(BaseModel):

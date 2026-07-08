@@ -2,7 +2,7 @@ import asyncio
 import base64
 import hashlib
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import Depends
@@ -328,6 +328,7 @@ class UsersRepository:
                 career_explorer_messages_sent=ce_messages_map.get(user_id),
                 last_login=last_login_map.get(user_id),
                 last_active_module=cr[2] if cr else None,
+                treatment_group=(d.get("experiments") or {}).get("treatment_group"),
             ))
 
         next_cursor = None

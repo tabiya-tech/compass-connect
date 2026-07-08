@@ -16,12 +16,20 @@ def _anonymize(user_id: str) -> str:
     return hashlib.md5(user_id.encode(), usedforsecurity=False).hexdigest()
 
 
-def _make_prefs(user_id: str, *, accepted_tc: str | None = "2024-01-01", sessions: list | None = None) -> dict:
+def _make_prefs(
+    user_id: str,
+    *,
+    accepted_tc: str | None = "2024-01-01",
+    sessions: list | None = None,
+    experiments: dict | None = None,
+) -> dict:
     doc: dict = {"user_id": user_id}
     if accepted_tc is not None:
         doc["accepted_tc"] = accepted_tc
     if sessions is not None:
         doc["sessions"] = sessions
+    if experiments is not None:
+        doc["experiments"] = experiments
     return doc
 
 
@@ -107,8 +115,8 @@ async def populated_repository(
 
     # USER_PREFERENCES (application_db)
     await app_db.get_collection(Collections.USER_PREFERENCES).insert_many([
-        _make_prefs("user-a", accepted_tc="2024-01-01", sessions=["session-a1"]),
-        _make_prefs("user-b", accepted_tc="2024-01-05", sessions=[]),
+        _make_prefs("user-a", accepted_tc="2024-01-01", sessions=["session-a1"], experiments={"treatment_group": "T1"}),
+        _make_prefs("user-b", accepted_tc="2024-01-05", sessions=[], experiments={"treatment_group": "T2"}),
         _make_prefs("user-c", accepted_tc=None, sessions=["session-c1"]),
     ])
 
@@ -176,6 +184,22 @@ class TestListUsersEnrichment:
         assert user_a.programme == "Engineering"
         assert user_a.year == "2"
         assert user_a.gender == "female"
+
+    @pytest.mark.asyncio
+    async def test_treatment_group_is_read_from_experiments(
+        self, populated_repository: Awaitable[UsersRepository]
+    ):
+        # GIVEN user-a is in treatment group T1, user-b in T2, and user-c has no experiments
+        repo = await populated_repository
+
+        # WHEN listing users
+        users, _, _ = await repo.list_users(limit=10)
+        by_id = {u.id: u for u in users}
+
+        # THEN treatment_group reflects experiments.treatment_group, or None when absent
+        assert by_id["user-a"].treatment_group == "T1"
+        assert by_id["user-b"].treatment_group == "T2"
+        assert by_id["user-c"].treatment_group is None
 
     @pytest.mark.asyncio
     async def test_active_flag_true_when_accepted_tc_set(
