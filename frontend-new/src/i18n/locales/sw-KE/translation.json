@@ -1097,8 +1097,11 @@
         }
       },
       "profileStrengthProgressAriaLabel": "Maendeleo ya nguvu ya wasifu",
-      "educationSkillsProgressAriaLabel": "Maendeleo ya ujuzi wa elimu",
-      "workSkillsProgressAriaLabel": "Maendeleo ya ujuzi wa kazi",
+      "profileStrengthExperienceCollection": "Ukusanyaji wa Uzoefu",
+      "profileStrengthSkillsDiscovery": "Ugunduzi wa Ujuzi",
+      "profileStrengthPreferences": "Kubaini Mapendeleo",
+      "profileStrengthCareerReadiness": "Kujiandaa kwa Kazi",
+      "profileStrengthCareerExplorer": "Mchunguzi wa Kazi",
       "viewMyCvSubtitle": "Pakua na kushiriki Ripoti Yako ya Ujuzi"
     },
     "modules": {

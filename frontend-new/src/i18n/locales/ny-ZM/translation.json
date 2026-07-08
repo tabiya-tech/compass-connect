@@ -1097,8 +1097,11 @@
         }
       },
       "profileStrengthProgressAriaLabel": "Mapambano a mphamvu ya profaili",
-      "educationSkillsProgressAriaLabel": "Mapambano a luso la maphunziro",
-      "workSkillsProgressAriaLabel": "Mapambano a luso la ntchito",
+      "profileStrengthExperienceCollection": "Kusonkhanitsa Zochitika",
+      "profileStrengthSkillsDiscovery": "Kupeza Luso",
+      "profileStrengthPreferences": "Kupeza Zokonda",
+      "profileStrengthCareerReadiness": "Kukonzekera Ntchito",
+      "profileStrengthCareerExplorer": "Kafukufuku wa Ntchito",
       "viewMyCvSubtitle": "Tsitsani ndi kugawana Malipoti Anu a Luso"
     },
     "modules": {

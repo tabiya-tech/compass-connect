@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Profile, ProfileProps } from "./Profile";
 import type { ModuleSummary } from "src/careerReadiness/types";
+import { ConversationPhase } from "src/chat/chatProgressbar/types";
 
 const makeModule = (id: string, status: ModuleSummary["status"]): ModuleSummary => ({
   id,
@@ -79,13 +80,14 @@ const createProfileState = (overrides?: Partial<ProfileProps>): ProfileProps => 
     ],
     totalExperiences: 2,
     exploredExperiences: 1,
+    experiences: [],
     modules: [
       makeModule("skills_discovery", "COMPLETED"),
       makeModule("career_discovery", "IN_PROGRESS"),
       makeModule("job_readiness", "UNLOCKED"),
       makeModule("career_explorer", "NOT_STARTED"),
     ],
-    skillsInterestsProgress: 75,
+    conversationPhase: { phase: ConversationPhase.DIVE_IN, percentage: 50, current: null, total: null },
     careerExplorerSectors: [],
 
     // Loading states
@@ -93,6 +95,7 @@ const createProfileState = (overrides?: Partial<ProfileProps>): ProfileProps => 
     isLoadingPreferences: false,
     isLoadingProfile: false,
     isLoadingSkills: false,
+    isLoadingProgress: false,
     isLoadingCareerExplorer: false,
   };
 

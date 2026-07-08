@@ -8,6 +8,7 @@ export interface FetchSkillsResult {
   educationSkills: Skill[];
   totalExperiences: number;
   exploredExperiences: number;
+  experiences: Experience[];
 }
 
 const aggregateTopSkills = (experiences: Experience[]): Skill[] => {
@@ -29,7 +30,7 @@ export async function fetchSkills(): Promise<FetchSkillsResult> {
   const sessions = userPreferences?.sessions || [];
 
   if (sessions.length === 0) {
-    return { workSkills: [], educationSkills: [], totalExperiences: 0, exploredExperiences: 0 };
+    return { workSkills: [], educationSkills: [], totalExperiences: 0, exploredExperiences: 0, experiences: [] };
   }
 
   // Fetch experiences for all sessions in parallel
@@ -55,5 +56,6 @@ export async function fetchSkills(): Promise<FetchSkillsResult> {
     educationSkills: [],
     totalExperiences,
     exploredExperiences,
+    experiences: allExperiences,
   };
 }

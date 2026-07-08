@@ -1097,8 +1097,11 @@
         }
       },
       "profileStrengthProgressAriaLabel": "Progreso de la fortaleza del perfil",
-      "educationSkillsProgressAriaLabel": "Progreso de habilidades educativas",
-      "workSkillsProgressAriaLabel": "Progreso de habilidades laborales",
+      "profileStrengthExperienceCollection": "Recopilación de experiencias",
+      "profileStrengthSkillsDiscovery": "Descubrimiento de habilidades",
+      "profileStrengthPreferences": "Obtención de preferencias",
+      "profileStrengthCareerReadiness": "Preparación profesional",
+      "profileStrengthCareerExplorer": "Explorador de carreras",
       "viewMyCvSubtitle": "Descargá y compartí tu Informe de Habilidades personalizado"
     },
     "modules": {

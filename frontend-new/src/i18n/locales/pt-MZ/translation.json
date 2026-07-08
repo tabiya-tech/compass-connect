@@ -1092,8 +1092,11 @@
         }
       },
       "profileStrengthProgressAriaLabel": "Progresso da força do perfil",
-      "educationSkillsProgressAriaLabel": "Progresso das competências de educação",
-      "workSkillsProgressAriaLabel": "Progresso das competências de trabalho"
+      "profileStrengthExperienceCollection": "Recolha de Experiências",
+      "profileStrengthSkillsDiscovery": "Descoberta de Competências",
+      "profileStrengthPreferences": "Obtenção de Preferências",
+      "profileStrengthCareerReadiness": "Preparação para a Carreira",
+      "profileStrengthCareerExplorer": "Explorador de Carreiras"
     },
     "modules": {
       "skillsDiscovery": "Construa o Seu Perfil",

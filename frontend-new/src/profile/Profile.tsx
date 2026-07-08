@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, useTheme, Stack } from "@mui/material";
-import { Skill } from "src/experiences/experienceService/experiences.types";
+import { Experience, Skill } from "src/experiences/experienceService/experiences.types";
 import { SecurityCard } from "./components/SecurityCard/SecurityCard";
 import { PreferencesCard } from "./components/PreferencesCard/PreferencesCard";
 import { ProfileCard } from "./components/ProfileCard/ProfileCard";
@@ -10,6 +10,8 @@ import { ModuleProgressCard } from "./components/ModuleProgressCard/ModuleProgre
 import CareerReadinessProgressBanner from "src/careerReadiness/components/CareerReadinessProgressBanner/CareerReadinessProgressBanner";
 import type { ModuleSummary } from "src/careerReadiness/types";
 import type { UserSectorEngagementItem } from "src/careerExplorer/services/CareerExplorerService";
+import type { CurrentPhase } from "src/chat/chatProgressbar/types";
+import { calculateProfileStrength } from "./utils/calculateProfileStrength";
 
 const uniqueId = "a7f8e4b2-9c3d-4a1e-8f6b-2d3e4a5b6c7d";
 
@@ -30,13 +32,15 @@ export interface ProfileProps {
   educationSkills: Skill[];
   totalExperiences: number;
   exploredExperiences: number;
+  experiences: Experience[];
   modules: ModuleSummary[];
-  skillsInterestsProgress: number;
+  conversationPhase: CurrentPhase | null;
   careerExplorerSectors: UserSectorEngagementItem[];
   isLoadingSecurity: boolean;
   isLoadingPreferences: boolean;
   isLoadingProfile: boolean;
   isLoadingSkills: boolean;
+  isLoadingProgress: boolean;
   isLoadingCareerExplorer: boolean;
 }
 
@@ -53,27 +57,29 @@ export const Profile: React.FC<ProfileProps> = ({
   educationSkills,
   totalExperiences,
   exploredExperiences,
+  experiences,
   modules,
-  skillsInterestsProgress: _skillsInterestsProgress,
+  conversationPhase,
   careerExplorerSectors,
   isLoadingSecurity,
   isLoadingPreferences,
   isLoadingProfile,
   isLoadingSkills,
+  isLoadingProgress,
   isLoadingCareerExplorer,
 }) => {
   const theme = useTheme();
-  const clampPercentage = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
 
-  // Education Skills are programme skills only
-  const educationProgress = clampPercentage(educationSkills.length > 0 ? 100 : 0);
-
-  // Work progress reflects explored experiences
-  const workProgress =
-    totalExperiences > 0 ? clampPercentage((exploredExperiences / totalExperiences) * 100) : clampPercentage(0);
-
-  // Overall Profile Strength equally weights Education Skills and Work & Other Skills
-  const overallProgress = clampPercentage((educationProgress + workProgress) / 2);
+  const profileStrength = calculateProfileStrength({
+    phase: conversationPhase?.phase ?? null,
+    phaseCurrent: conversationPhase?.current ?? null,
+    phaseTotal: conversationPhase?.total ?? null,
+    totalExperiences,
+    exploredExperiences,
+    experiences,
+    modules,
+    sectors: careerExplorerSectors,
+  });
 
   return (
     <Box
@@ -107,11 +113,7 @@ export const Profile: React.FC<ProfileProps> = ({
           }}
         >
           <Stack spacing={theme.fixedSpacing(theme.tabiyaSpacing.lg)}>
-            <ModuleProgressCard
-              overallProgress={overallProgress}
-              educationProgress={educationProgress}
-              workProgress={workProgress}
-            />
+            <ModuleProgressCard profileStrength={profileStrength} isLoading={isLoadingProgress || isLoadingSkills} />
             <CareerReadinessProgressBanner modules={modules} />
           </Stack>
 
