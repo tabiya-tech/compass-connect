@@ -54,21 +54,21 @@ exports[`Profile Component Rendering should render all profile sections with cor
                 <h5
                   class="MuiTypography-root MuiTypography-h5 css-u2godh-MuiTypography-root"
                 >
-                  0
+                  5
                   %
                 </h5>
                 <span
                   aria-label="Profile strength progress"
                   aria-valuemax="100"
                   aria-valuemin="0"
-                  aria-valuenow="0"
+                  aria-valuenow="5"
                   class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-15cohze-MuiLinearProgress-root"
                   data-testid="module-progress-0-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
                   role="progressbar"
                 >
                   <span
                     class="MuiLinearProgress-bar MuiLinearProgress-bar1 MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Determinate css-184k4oh-MuiLinearProgress-bar1"
-                    style="transform: translateX(-100%);"
+                    style="transform: translateX(-95%);"
                   />
                 </span>
               </div>
@@ -76,19 +76,20 @@ exports[`Profile Component Rendering should render all profile sections with cor
                 class="MuiBox-root css-160qnla"
               >
                 <div
-                  class="MuiBox-root css-1a1vzpo"
+                  class="MuiBox-root css-1euug3t"
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
-                    Education Skills
+                    Experience Collection
                   </p>
                   <span
-                    aria-label="Education skills progress"
+                    aria-label="Profile strength progress"
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
                     class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-1-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
                     role="progressbar"
                   >
                     <span
@@ -97,26 +98,27 @@ exports[`Profile Component Rendering should render all profile sections with cor
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
                   >
-                    0
+                    20
                     %
                   </p>
                 </div>
                 <div
-                  class="MuiBox-root css-1a1vzpo"
+                  class="MuiBox-root css-1euug3t"
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
-                    Work & Other Skills
+                    Skills Discovery
                   </p>
                   <span
-                    aria-label="Work skills progress"
+                    aria-label="Profile strength progress"
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
                     class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-2-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
                     role="progressbar"
                   >
                     <span
@@ -125,9 +127,96 @@ exports[`Profile Component Rendering should render all profile sections with cor
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
                   >
-                    0
+                    25
+                    %
+                  </p>
+                </div>
+                <div
+                  class="MuiBox-root css-1euug3t"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
+                  >
+                    Preference Elicitation
+                  </p>
+                  <span
+                    aria-label="Profile strength progress"
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="0"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-3-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
+                    role="progressbar"
+                  >
+                    <span
+                      class="MuiLinearProgress-bar MuiLinearProgress-bar1 MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Determinate css-184k4oh-MuiLinearProgress-bar1"
+                      style="transform: translateX(-100%);"
+                    />
+                  </span>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
+                  >
+                    20
+                    %
+                  </p>
+                </div>
+                <div
+                  class="MuiBox-root css-1euug3t"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
+                  >
+                    Career Readiness
+                  </p>
+                  <span
+                    aria-label="Profile strength progress"
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="17"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-4-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
+                    role="progressbar"
+                  >
+                    <span
+                      class="MuiLinearProgress-bar MuiLinearProgress-bar1 MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Determinate css-184k4oh-MuiLinearProgress-bar1"
+                      style="transform: translateX(-83.33333333333334%);"
+                    />
+                  </span>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
+                  >
+                    30
+                    %
+                  </p>
+                </div>
+                <div
+                  class="MuiBox-root css-1euug3t"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
+                  >
+                    Career Explorer
+                  </p>
+                  <span
+                    aria-label="Profile strength progress"
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="0"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-5-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
+                    role="progressbar"
+                  >
+                    <span
+                      class="MuiLinearProgress-bar MuiLinearProgress-bar1 MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Determinate css-184k4oh-MuiLinearProgress-bar1"
+                      style="transform: translateX(-100%);"
+                    />
+                  </span>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
+                  >
+                    5
                     %
                   </p>
                 </div>
@@ -549,19 +638,20 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                 class="MuiBox-root css-160qnla"
               >
                 <div
-                  class="MuiBox-root css-1a1vzpo"
+                  class="MuiBox-root css-1euug3t"
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
-                    Education Skills
+                    Experience Collection
                   </p>
                   <span
-                    aria-label="Education skills progress"
+                    aria-label="Profile strength progress"
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
                     class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-1-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
                     role="progressbar"
                   >
                     <span
@@ -570,26 +660,27 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
                   >
-                    0
+                    20
                     %
                   </p>
                 </div>
                 <div
-                  class="MuiBox-root css-1a1vzpo"
+                  class="MuiBox-root css-1euug3t"
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
-                    Work & Other Skills
+                    Skills Discovery
                   </p>
                   <span
-                    aria-label="Work skills progress"
+                    aria-label="Profile strength progress"
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
                     class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-2-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
                     role="progressbar"
                   >
                     <span
@@ -598,9 +689,96 @@ exports[`Profile Component Rendering should render correctly with partial data 1
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
                   >
-                    0
+                    25
+                    %
+                  </p>
+                </div>
+                <div
+                  class="MuiBox-root css-1euug3t"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
+                  >
+                    Preference Elicitation
+                  </p>
+                  <span
+                    aria-label="Profile strength progress"
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="0"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-3-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
+                    role="progressbar"
+                  >
+                    <span
+                      class="MuiLinearProgress-bar MuiLinearProgress-bar1 MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Determinate css-184k4oh-MuiLinearProgress-bar1"
+                      style="transform: translateX(-100%);"
+                    />
+                  </span>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
+                  >
+                    20
+                    %
+                  </p>
+                </div>
+                <div
+                  class="MuiBox-root css-1euug3t"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
+                  >
+                    Career Readiness
+                  </p>
+                  <span
+                    aria-label="Profile strength progress"
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="0"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-4-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
+                    role="progressbar"
+                  >
+                    <span
+                      class="MuiLinearProgress-bar MuiLinearProgress-bar1 MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Determinate css-184k4oh-MuiLinearProgress-bar1"
+                      style="transform: translateX(-100%);"
+                    />
+                  </span>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
+                  >
+                    30
+                    %
+                  </p>
+                </div>
+                <div
+                  class="MuiBox-root css-1euug3t"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
+                  >
+                    Career Explorer
+                  </p>
+                  <span
+                    aria-label="Profile strength progress"
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="0"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-5-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
+                    role="progressbar"
+                  >
+                    <span
+                      class="MuiLinearProgress-bar MuiLinearProgress-bar1 MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Determinate css-184k4oh-MuiLinearProgress-bar1"
+                      style="transform: translateX(-100%);"
+                    />
+                  </span>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
+                  >
+                    5
                     %
                   </p>
                 </div>
@@ -1022,19 +1200,20 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                 class="MuiBox-root css-160qnla"
               >
                 <div
-                  class="MuiBox-root css-1a1vzpo"
+                  class="MuiBox-root css-1euug3t"
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
-                    Education Skills
+                    Experience Collection
                   </p>
                   <span
-                    aria-label="Education skills progress"
+                    aria-label="Profile strength progress"
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
                     class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-1-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
                     role="progressbar"
                   >
                     <span
@@ -1043,26 +1222,27 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
                   >
-                    0
+                    20
                     %
                   </p>
                 </div>
                 <div
-                  class="MuiBox-root css-1a1vzpo"
+                  class="MuiBox-root css-1euug3t"
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
                   >
-                    Work & Other Skills
+                    Skills Discovery
                   </p>
                   <span
-                    aria-label="Work skills progress"
+                    aria-label="Profile strength progress"
                     aria-valuemax="100"
                     aria-valuemin="0"
                     aria-valuenow="0"
                     class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-2-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
                     role="progressbar"
                   >
                     <span
@@ -1071,9 +1251,96 @@ exports[`Profile Component Rendering should render with null data showing 'Not a
                     />
                   </span>
                   <p
-                    class="MuiTypography-root MuiTypography-body2 css-1nj15r2-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
                   >
-                    0
+                    25
+                    %
+                  </p>
+                </div>
+                <div
+                  class="MuiBox-root css-1euug3t"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
+                  >
+                    Preference Elicitation
+                  </p>
+                  <span
+                    aria-label="Profile strength progress"
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="0"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-3-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
+                    role="progressbar"
+                  >
+                    <span
+                      class="MuiLinearProgress-bar MuiLinearProgress-bar1 MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Determinate css-184k4oh-MuiLinearProgress-bar1"
+                      style="transform: translateX(-100%);"
+                    />
+                  </span>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
+                  >
+                    20
+                    %
+                  </p>
+                </div>
+                <div
+                  class="MuiBox-root css-1euug3t"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
+                  >
+                    Career Readiness
+                  </p>
+                  <span
+                    aria-label="Profile strength progress"
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="0"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-4-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
+                    role="progressbar"
+                  >
+                    <span
+                      class="MuiLinearProgress-bar MuiLinearProgress-bar1 MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Determinate css-184k4oh-MuiLinearProgress-bar1"
+                      style="transform: translateX(-100%);"
+                    />
+                  </span>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
+                  >
+                    30
+                    %
+                  </p>
+                </div>
+                <div
+                  class="MuiBox-root css-1euug3t"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-1tfvb7x-MuiTypography-root"
+                  >
+                    Career Explorer
+                  </p>
+                  <span
+                    aria-label="Profile strength progress"
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="0"
+                    class="MuiLinearProgress-root MuiLinearProgress-colorPrimary MuiLinearProgress-determinate css-h2qpkd-MuiLinearProgress-root"
+                    data-testid="module-progress-5-module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b"
+                    role="progressbar"
+                  >
+                    <span
+                      class="MuiLinearProgress-bar MuiLinearProgress-bar1 MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Determinate css-184k4oh-MuiLinearProgress-bar1"
+                      style="transform: translateX(-100%);"
+                    />
+                  </span>
+                  <p
+                    class="MuiTypography-root MuiTypography-body2 css-gkw1ej-MuiTypography-root"
+                  >
+                    5
                     %
                   </p>
                 </div>

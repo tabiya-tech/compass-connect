@@ -1,12 +1,14 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { ReconnectVersionContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import { fetchSkills } from "./utils/fetchSkills";
-import { Skill } from "src/experiences/experienceService/experiences.types";
+import { Experience, Skill } from "src/experiences/experienceService/experiences.types";
 import UserPreferencesStateService from "src/userPreferences/UserPreferencesStateService";
 import authenticationStateService from "src/auth/services/AuthenticationState.service";
 import UserMeService from "src/userMe/UserMeService";
+import ChatService from "src/chat/ChatService/ChatService";
 import type { UserSectorEngagementItem } from "src/careerExplorer/services/CareerExplorerService";
 import type { ModuleSummary } from "src/careerReadiness/types";
+import type { CurrentPhase } from "src/chat/chatProgressbar/types";
 
 export interface UserProfileData {
   name: string | null;
@@ -22,8 +24,10 @@ export interface UserProfileData {
   programmeSkills: string[];
   totalExperiences: number;
   exploredExperiences: number;
+  experiences: Experience[];
   modules: ModuleSummary[];
   skillsInterestsProgress: number;
+  conversationPhase: CurrentPhase | null;
   careerExplorerSectors: UserSectorEngagementItem[];
 }
 
@@ -95,8 +99,10 @@ export const useUserProfile = (): UseUserProfileResult => {
   const [programmeSkills, setProgrammeSkills] = useState<string[]>([]);
   const [totalExperiences, setTotalExperiences] = useState<number>(0);
   const [exploredExperiences, setExploredExperiences] = useState<number>(0);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
   const [modules, setModules] = useState<ModuleSummary[]>([]);
   const [skillsInterestsProgress, setSkillsInterestsProgress] = useState<number>(0);
+  const [conversationPhase, setConversationPhase] = useState<CurrentPhase | null>(null);
   const [careerExplorerSectors, setCareerExplorerSectors] = useState<UserSectorEngagementItem[]>([]);
 
   // Individual error states
@@ -218,6 +224,7 @@ export const useUserProfile = (): UseUserProfileResult => {
           setSkills(skillsResult.value.workSkills);
           setTotalExperiences(skillsResult.value.totalExperiences ?? 0);
           setExploredExperiences(skillsResult.value.exploredExperiences ?? 0);
+          setExperiences(skillsResult.value.experiences ?? []);
         }
       } else {
         const error = profileResult.reason as any;
@@ -234,6 +241,7 @@ export const useUserProfile = (): UseUserProfileResult => {
           setSkills(skillsResult.value.workSkills);
           setTotalExperiences(skillsResult.value.totalExperiences ?? 0);
           setExploredExperiences(skillsResult.value.exploredExperiences ?? 0);
+          setExperiences(skillsResult.value.experiences ?? []);
           setEducationSkills([]);
         }
       }
@@ -267,10 +275,23 @@ export const useUserProfile = (): UseUserProfileResult => {
     }
     try {
       const sessionId = UserPreferencesStateService.getInstance().getActiveSessionId();
+
       const progressResponse = await UserMeService.getInstance().getProgress(sessionId);
       setSkillsInterestsProgress(progressResponse.skills_interests_progress);
       setModules(progressResponse.career_readiness_modules);
       setCareerExplorerSectors(progressResponse.sector_engagement);
+
+      // Fetch the conversation phase from chat history for profile strength (non-fatal if missing).
+      let currentPhase: CurrentPhase | null = null;
+      if (sessionId != null) {
+        try {
+          const history = await ChatService.getInstance().getChatHistory(sessionId);
+          currentPhase = history.current_phase ?? null;
+        } catch (error) {
+          console.warn("Failed to fetch chat history for profile strength", error);
+        }
+      }
+      setConversationPhase(currentPhase);
     } catch (error) {
       console.error("Error fetching user progress:", error);
       if (opts.setLoading) {
@@ -309,8 +330,10 @@ export const useUserProfile = (): UseUserProfileResult => {
     programmeSkills,
     totalExperiences,
     exploredExperiences,
+    experiences,
     modules,
     skillsInterestsProgress,
+    conversationPhase,
     careerExplorerSectors,
   };
 

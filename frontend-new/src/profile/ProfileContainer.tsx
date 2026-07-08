@@ -16,6 +16,7 @@ const ProfileContainer: React.FC = () => {
     isLoadingPreferences,
     isLoadingProfile,
     isLoadingSkills,
+    isLoadingModules,
     isLoadingCareerExplorer,
     refreshModules,
   } = useUserProfileContext();
@@ -49,13 +50,15 @@ const ProfileContainer: React.FC = () => {
         educationSkills={profileData.educationSkills}
         totalExperiences={profileData.totalExperiences}
         exploredExperiences={profileData.exploredExperiences}
+        experiences={profileData.experiences}
         modules={profileData.modules}
-        skillsInterestsProgress={profileData.skillsInterestsProgress}
+        conversationPhase={profileData.conversationPhase}
         careerExplorerSectors={profileData.careerExplorerSectors}
         isLoadingSecurity={isLoadingSecurity}
         isLoadingPreferences={isLoadingPreferences}
         isLoadingProfile={isLoadingProfile}
         isLoadingSkills={isLoadingSkills}
+        isLoadingProgress={isLoadingModules}
         isLoadingCareerExplorer={isLoadingCareerExplorer}
       />
     </Box>

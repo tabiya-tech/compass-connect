@@ -1,5 +1,21 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { ModuleProgressCard } from "./ModuleProgressCard";
+import type { ProfileStrengthBreakdown } from "src/profile/utils/calculateProfileStrength";
+
+const getBreakdown = (
+  experienceCollection: number,
+  skillsDiscovery: number,
+  preferences: number,
+  careerReadiness: number,
+  careerExplorer: number
+): ProfileStrengthBreakdown => ({
+  experienceCollection: { points: experienceCollection, max: 20 },
+  skillsDiscovery: { points: skillsDiscovery, max: 25 },
+  preferences: { points: preferences, max: 20 },
+  careerReadiness: { points: careerReadiness, max: 30 },
+  careerExplorer: { points: careerExplorer, max: 5 },
+  overall: Math.round(experienceCollection + skillsDiscovery + preferences + careerReadiness + careerExplorer),
+});
 
 const meta: Meta<typeof ModuleProgressCard> = {
   title: "Profile/Components/ModuleProgressCard",
@@ -13,64 +29,37 @@ type Story = StoryObj<typeof ModuleProgressCard>;
 
 export const Default: Story = {
   args: {
-    overallProgress: 78,
-    educationProgress: 100,
-    workProgress: 55,
+    profileStrength: getBreakdown(15, 12.5, 0, 10, 5),
   },
 };
 
-export const SingleModule: Story = {
+export const NotStarted: Story = {
   args: {
-    overallProgress: 100,
-    educationProgress: 100,
-    workProgress: 100,
+    profileStrength: getBreakdown(0, 0, 0, 0, 0),
   },
 };
 
-export const AllCompleted: Story = {
+export const MidJourney: Story = {
   args: {
-    overallProgress: 100,
-    educationProgress: 100,
-    workProgress: 100,
+    profileStrength: getBreakdown(10, 8.33, 0, 5, 0),
   },
 };
 
-export const AllInProgress: Story = {
+export const ConversationFinished: Story = {
   args: {
-    overallProgress: 52,
-    educationProgress: 67,
-    workProgress: 38,
+    profileStrength: getBreakdown(20, 25, 20, 0, 0),
   },
 };
 
-export const JustStarted: Story = {
+export const FullyComplete: Story = {
   args: {
-    overallProgress: 10,
-    educationProgress: 0,
-    workProgress: 20,
+    profileStrength: getBreakdown(20, 25, 20, 30, 5),
   },
 };
 
-export const ManyModules: Story = {
+export const Loading: Story = {
   args: {
-    overallProgress: 85,
-    educationProgress: 100,
-    workProgress: 70,
-  },
-};
-
-export const LongModuleNames: Story = {
-  args: {
-    overallProgress: 63,
-    educationProgress: 67,
-    workProgress: 60,
-  },
-};
-
-export const NoModules: Story = {
-  args: {
-    overallProgress: 0,
-    educationProgress: 0,
-    workProgress: 0,
+    profileStrength: getBreakdown(0, 0, 0, 0, 0),
+    isLoading: true,
   },
 };

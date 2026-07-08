@@ -1091,8 +1091,11 @@
         }
       },
       "profileStrengthProgressAriaLabel": "Profile strength progress",
-      "educationSkillsProgressAriaLabel": "Education skills progress",
-      "workSkillsProgressAriaLabel": "Work skills progress",
+      "profileStrengthExperienceCollection": "Experience Collection",
+      "profileStrengthSkillsDiscovery": "Skills Discovery",
+      "profileStrengthPreferences": "Preference Elicitation",
+      "profileStrengthCareerReadiness": "Career Readiness",
+      "profileStrengthCareerExplorer": "Career Explorer",
       "viewMyCvSubtitle": "Download and share your personalized Skills Report"
     },
     "modules": {
