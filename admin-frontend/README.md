@@ -1,6 +1,6 @@
-# Compass Admin Frontend
+# Compass Connect Admin Frontend
 
-The Compass Admin Portal is a web application for managing and configuring the Compass platform. It provides administrators with tools to manage users, view analytics, and configure system settings.
+The Compass Connect Admin Portal is a web application for managing and configuring the Compass Connect platform. It provides administrators with tools to manage users, view analytics, and configure system settings.
 
 ## Prerequisites
 

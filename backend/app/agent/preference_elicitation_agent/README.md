@@ -2,7 +2,7 @@
 
 **Epic 2 - Deliverable D1, D2, D3**
 
-This package contains the implementation of the Preference Elicitation Agent for the Compass career guidance system.
+This package contains the implementation of the Preference Elicitation Agent for the Compass Connect career guidance system.
 
 ## Overview
 
@@ -146,7 +146,7 @@ COMPLETE
 
 ### Vignettes Configuration
 
-Vignettes are stored in `/compass/backend/app/config/vignettes.json`:
+Vignettes are stored in `/compass-connect/backend/app/config/vignettes.json`:
 
 ```json
 [
@@ -176,7 +176,7 @@ Vignettes are stored in `/compass/backend/app/config/vignettes.json`:
 
 ### Vignette Templates Configuration
 
-Vignette templates are stored in `/compass/backend/app/config/vignette_templates.json`:
+Vignette templates are stored in `/compass-connect/backend/app/config/vignette_templates.json`:
 
 ```json
 [
@@ -281,7 +281,7 @@ print(output.message_for_user)
 Run tests:
 
 ```bash
-cd compass/backend
+cd compass-connect/backend
 poetry run pytest app/agent/preference_elicitation_agent/test_preference_elicitation_agent.py -v
 ```
 
@@ -356,7 +356,7 @@ state = PreferenceElicitationAgentState(
 )
 ```
 
-**Full Compass Flow**:
+**Full Compass Connect Flow**:
 ```python
 # Copy from prior agent for consistency
 explored = app_state.explore_experiences_director_state.explored_experiences
@@ -436,7 +436,7 @@ class PreferenceElicitationAgentState:
     initial_experiences_snapshot: Optional[list[ExperienceEntity]] = None
     """
     Immutable snapshot of experiences at agent start.
-    Sources: CV upload, prior Compass session, or DB6
+    Sources: CV upload, prior Compass Connect session, or DB6
     """
 ```
 

@@ -1,6 +1,6 @@
 # Sensitive Data Fields Configuration
 
-This document describes the schema for configuring sensitive data fields collected from users in Compass.
+This document describes the schema for configuring sensitive data fields collected from users in Compass Connect.
 
 ## Overview
 

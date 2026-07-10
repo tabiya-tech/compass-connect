@@ -25,7 +25,7 @@
 
 ```bash
 # Navigate to backend directory
-cd compass/backend
+cd compass-connect/backend
 
 # Install dependencies
 poetry install --sync
@@ -1627,7 +1627,7 @@ export ADAPTIVE_FIM_THRESHOLD=25.0
 
 **Solution**:
 ```bash
-cd compass/backend
+cd compass-connect/backend
 poetry install --sync
 ```
 

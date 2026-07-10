@@ -3,9 +3,9 @@
 <img src="https://raw.githubusercontent.com/tabiya-tech/docs/refs/heads/main/.gitbook/assets/compass_logo_web_dark.png#gh-light-mode-only" alt="logo" width=300/>
 </h1>
 
-**Compass** is an AI chatbot designed to assist job-seekers in exploring and discovering their skills.
+**Compass Connect** is an AI chatbot designed to assist job-seekers in exploring and discovering their skills.
 
-Compass has two objectives: 
+Compass Connect has two objectives: 
 - Populate a digital skill wallet that captures the experience of job-seekers, including the
 skills inherent in their formal and informal work.
 - By doing so, guide job-seekers in exploring and discovering
@@ -28,20 +28,20 @@ their skills and interests based on their lived experiences.
 
 
 ## Architecture Overview
-The images below show a high level overview of the solution architecture of Compass.
+The images below show a high level overview of the solution architecture of Compass Connect.
 
-![Compass Architecture Overview](https://lucid.app/publicSegments/view/a1c21a2d-162b-4eae-b70a-f57b44181aa1/image.png)
+![Compass Connect Architecture Overview](https://lucid.app/publicSegments/view/a1c21a2d-162b-4eae-b70a-f57b44181aa1/image.png)
 
-![Compass Cloud Architecture](https://lucid.app/publicSegments/view/fb45c622-0edb-4257-84a3-6fc4996692f3/image.png)
+![Compass Connect Cloud Architecture](https://lucid.app/publicSegments/view/fb45c622-0edb-4257-84a3-6fc4996692f3/image.png)
 
-![Compass Backend Architecture](https://lucid.app/publicSegments/view/3e5323ab-786b-4d46-bb73-dd716cdd9ee0/image.png)
+![Compass Connect Backend Architecture](https://lucid.app/publicSegments/view/3e5323ab-786b-4d46-bb73-dd716cdd9ee0/image.png)
 
-![Compass AI Architecture](https://lucid.app/publicSegments/view/db45dc1c-b89e-4ae4-bd32-347092693844/image.png)
+![Compass Connect AI Architecture](https://lucid.app/publicSegments/view/db45dc1c-b89e-4ae4-bd32-347092693844/image.png)
 
 ## Why Contribute?
 
-- **Make an Impact:** Your contributions will directly improve the user experience and functionality of Compass, helping job-seekers explore and discover their skills more effectively.
-- **Help Achieve Our Goals:** By contributing, you are supporting Compass’s mission to populate digital skill wallets and guide job-seekers in understanding their skills and interests based on their lived experiences.
+- **Make an Impact:** Your contributions will directly improve the user experience and functionality of Compass Connect, helping job-seekers explore and discover their skills more effectively.
+- **Help Achieve Our Goals:** By contributing, you are supporting Compass Connect’s mission to populate digital skill wallets and guide job-seekers in understanding their skills and interests based on their lived experiences.
 
 ## Ways to Contribute
 
@@ -49,12 +49,12 @@ The images below show a high level overview of the solution architecture of Comp
 2. **Code Contributions:** Help enhance the codebase by submitting pull requests.
 3. **Write or Improve Tests:** We aim for 100% code coverage. You can help achieve this goal by writing or improving tests.
 4. **Documentation:** Improve project documentation by submitting pull requests. Clear documentation is crucial for new contributors.
-5. **Add a New Language**: Help make Compass accessible to more users by adding support for a new language. Follow the guidelines in [add-a-new-language.md](./add-a-new-language.md).
+5. **Add a New Language**: Help make Compass Connect accessible to more users by adding support for a new language. Follow the guidelines in [add-a-new-language.md](./add-a-new-language.md).
 6. **Support:** Give the project a star on GitHub—your support encourages us to keep improving!
 
 ## Contribution Guidelines
 
-🎉 Thank you for considering contributing to Tabiya Compass! 🎉
+🎉 Thank you for considering contributing to Tabiya Compass Connect! 🎉
 
 ### Code Formatting
 

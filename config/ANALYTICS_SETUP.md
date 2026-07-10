@@ -1,6 +1,6 @@
 # Analytics Setup Guide (GA4 + GTM)
 
-This guide walks through setting up Google Analytics 4 (GA4) and Google Tag Manager (GTM) for a Compass fork.
+This guide walks through setting up Google Analytics 4 (GA4) and Google Tag Manager (GTM) for a Compass Connect fork.
 The process is largely automated by `backend/scripts/analytics/setup_analytics.py`, but requires a few one-time manual steps first.
 
 ## How It Works
@@ -37,7 +37,7 @@ creating corresponding triggers/tags in GTM (either via the script or manually).
 
 ### SPA Page View Tracking (HashRouter)
 
-Compass uses React's `HashRouter`, so URLs look like `https://example.com/#/skills-interests`.
+Compass Connect uses React's `HashRouter`, so URLs look like `https://example.com/#/skills-interests`.
 GA4's default page view tracking only sees `/` as the page path because the hash fragment is not
 part of the URL path. The setup script handles this automatically by creating:
 
@@ -57,14 +57,14 @@ The GA4 Config tag has `sendPageView` disabled to avoid duplicate page views.
 
 ### 1. Create a GA4 Account
 
-Go to [analytics.google.com](https://analytics.google.com) and create an account (e.g., "Compass Analytics").
+Go to [analytics.google.com](https://analytics.google.com) and create an account (e.g., "Compass Connect Analytics").
 One account can hold properties for all forks.
 
 > **Note:** GA4 accounts are free and not tied to GCP billing.
 
 ### 2. Create a GTM Account
 
-Go to [tagmanager.google.com](https://tagmanager.google.com) and create an account (e.g., "Compass Tags").
+Go to [tagmanager.google.com](https://tagmanager.google.com) and create an account (e.g., "Compass Connect Tags").
 Same pattern: one account, containers per fork.
 
 > **Do NOT** manually create a container — the script creates one automatically.
@@ -133,7 +133,7 @@ python3 setup_analytics.py \
   --ga4-account-id <GA4_ACCOUNT_ID> \
   --gtm-account-id <GTM_ACCOUNT_ID> \
   --url "https://your-fork.compass.tabiya.tech" \
-  --property-name "Compass YourFork" \
+  --property-name "Compass Connect YourFork" \
   --config ../../../config/default.json \
   --credentials path/to/service_account_key.json
 ```
