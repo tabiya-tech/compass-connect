@@ -34,7 +34,7 @@ The dashboard self-creation flow requires an existing super admin to approve / p
 ```bash
 cd backend
 poetry run python scripts/admin/create_admin_user.py \
-  --name "Compass Super Admin" \
+  --name "Compass Connect Super Admin" \
   --email "superadmin@<env>.example.com" \
   --role super_admin \
   --tenant-id "$ADMIN_FIREBASE_TENANT_ID" \

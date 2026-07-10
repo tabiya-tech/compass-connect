@@ -13,7 +13,7 @@ The agent operates through distinct phases managed by specialized handlers:
 - **Action Planning**: Secures commitment and defines concrete next steps.
 
 ## Testing
-We have a comprehensive suite including unit, evaluation (scripted), and end-to-end tests. Run these commands from the `compass/backend` directory.
+We have a comprehensive suite including unit, evaluation (scripted), and end-to-end tests. Run these commands from the `compass-connect/backend` directory.
 
 ### 1. Unit Tests
 Tests internal routing, initialization, and error handling.

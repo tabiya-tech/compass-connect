@@ -1,4 +1,4 @@
-# Compass Language Guide
+# Compass Connect Language Guide
 
 This guide is divided into two main parts:
 
@@ -134,7 +134,7 @@ Supported languages are enabled via environment variables on both backend and fr
 
 ## Switching or Using Supported Languages
 
-This section explains how to enable or switch between languages that are already supported in Compass.
+This section explains how to enable or switch between languages that are already supported in Compass Connect.
 
 ### Overview
 

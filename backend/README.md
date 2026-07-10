@@ -1,6 +1,6 @@
-# Compass Backend
+# Compass Connect Backend
 
-FastAPI application serving the Compass career guidance API with AI-powered conversational agents.
+FastAPI application serving the Compass Connect career guidance API with AI-powered conversational agents.
 
 ## Prerequisites
 
@@ -53,7 +53,7 @@ poetry run python app/server.py
 
 ## Running the code locally
 
-The backend is a FastAPI app that serves the Compass API.
+The backend is a FastAPI app that serves the Compass Connect API.
 
 When running the code locally, the backend will use the credentials and the project set in the Google Cloud SDK.
 
@@ -149,7 +149,7 @@ The backend uses the following environment variables:
 - `GOOGLE_APPLICATION_CREDENTIALS`: The path to the service account key file.
 - `TAXONOMY_MONGODB_URI`: The URI of the MongoDB Atlas instance where the ESCO taxonomy data is stored.
 - `TAXONOMY_DATABASE_NAME`: The name of mongo db database where the ESCO taxonomy data with the embeddings is stored.
-- `TAXONOMY_MODEL_ID`: The model ID of the ESCO model in the compass taxonomy database.
+- `TAXONOMY_MODEL_ID`: The model ID of the ESCO model in the compass-connect taxonomy database.
 - `APPLICATION_MONGODB_URI`: The URI of the MongoDB Atlas instance for the application database.
 - `APPLICATION_DATABASE_NAME`: The name of mongo db database used by the application to store data.
 - `USERDATA_MONGODB_URI`: The URI of the MongoDB instance for the user data database.

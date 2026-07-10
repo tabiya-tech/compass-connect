@@ -1,13 +1,13 @@
 # Infrastructure as Code
 
-The infrastructure for Compass is managed using [Pulumi](https://www.pulumi.com/). The infrastructure is defined in code and can be deployed to Google Cloud
+The infrastructure for Compass Connect is managed using [Pulumi](https://www.pulumi.com/). The infrastructure is defined in code and can be deployed to Google Cloud
 Platform (GCP) using Pulumi.
 
 ## IaC Codebase Components
 
 ### Structural Diagram
-The diagram below shows a high level overview of the infrastructure architecture of the Compass project.
-![Compass IAC Structure Overview](https://lucid.app/publicSegments/view/fd859d0a-d6e4-44cc-8925-4e201941e77b/image.png)
+The diagram below shows a high level overview of the infrastructure architecture of the Compass Connect project.
+![Compass Connect IAC Structure Overview](https://lucid.app/publicSegments/view/fd859d0a-d6e4-44cc-8925-4e201941e77b/image.png)
 
 ### Keywords
 
