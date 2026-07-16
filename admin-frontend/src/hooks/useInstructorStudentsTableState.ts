@@ -237,6 +237,7 @@ export function useInstructorStudentsTableState(
     modules,
     treatmentGroups,
     filteredRows,
+    sortedRows,
     pagedRows,
     pageSize,
     totalItems: sortedRows.length,

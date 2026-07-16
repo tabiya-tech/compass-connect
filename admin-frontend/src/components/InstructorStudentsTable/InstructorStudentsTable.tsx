@@ -1,6 +1,7 @@
 import React from "react";
 import { Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import Papa from "papaparse";
 import { useTranslation } from "react-i18next";
 import { getModuleLabelKey, PLACEHOLDER_SYMBOL } from "src/constants";
 import { useInstructorStudentsTableState, type StudentsSortKey } from "src/hooks/useInstructorStudentsTableState";
@@ -13,6 +14,23 @@ export interface InstructorStudentsTableProps {
   hasMoreRows?: boolean;
   onLoadMoreRows?: () => Promise<void>;
 }
+
+interface CsvColumn<T> {
+  header: string;
+  getValue: (row: T) => string | number | null | undefined;
+}
+
+const downloadCsvFile = (filename: string, csvContent: string): void => {
+  const blob = new Blob([`﻿${csvContent}`], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
 
 const fracComplete = (s: string): boolean => {
   const m = s.trim().match(/^(\d+)\s*\/\s*(\d+)$/);
@@ -51,6 +69,7 @@ const InstructorStudentsTable: React.FC<InstructorStudentsTableProps> = ({
     modules,
     treatmentGroups,
     filteredRows,
+    sortedRows,
     pagedRows,
     pageSize,
     totalItems,
@@ -72,6 +91,64 @@ const InstructorStudentsTable: React.FC<InstructorStudentsTableProps> = ({
   const formatModuleLabel = (moduleId: string) => {
     const key = getModuleLabelKey(moduleId);
     return key ? t(key) : PLACEHOLDER_SYMBOL;
+  };
+
+  const handleDownloadCsv = () => {
+    const csvColumns: CsvColumn<InstructorStudentRow>[] = [
+      { header: t("instructorDashboard.studentsTable.headers.id"), getValue: (row) => row.id },
+      { header: t("instructorDashboard.studentsTable.headers.studentName"), getValue: (row) => row.studentName },
+      { header: t("instructorDashboard.studentsTable.headers.programme"), getValue: (row) => row.programme },
+      {
+        header: t("instructorDashboard.studentsTable.headers.qualificationType"),
+        getValue: (row) => row.qualificationType,
+      },
+      { header: t("instructorDashboard.studentsTable.headers.year"), getValue: (row) => row.year },
+      { header: t("instructorDashboard.studentsTable.headers.gender"), getValue: (row) => row.gender },
+      ...(treatmentGroups.length > 0
+        ? [
+            {
+              header: t("instructorDashboard.studentsTable.headers.treatmentGroup"),
+              getValue: (row: InstructorStudentRow) => row.treatmentGroup ?? "",
+            },
+          ]
+        : []),
+      { header: t("instructorDashboard.studentsTable.headers.lastLogin"), getValue: (row) => row.lastLogin },
+      {
+        header: t("instructorDashboard.studentsTable.headers.lastActiveModule"),
+        getValue: (row) => formatModuleLabel(row.lastActiveModuleId),
+      },
+      {
+        header: t("instructorDashboard.studentsTable.headers.careerReadinessStarted"),
+        getValue: (row) => row.careerReadinessStarted,
+      },
+      {
+        header: t("instructorDashboard.studentsTable.headers.careerReadinessCompleted"),
+        getValue: (row) => row.careerReadinessCompleted,
+      },
+      {
+        header: t("instructorDashboard.studentsTable.headers.skillsInterestsExplored"),
+        getValue: (row) => t(`instructorDashboard.studentsTable.statusLabels.${row.skillsDiscoveryStatus}`),
+      },
+      {
+        header: t("instructorDashboard.studentsTable.headers.careerExplorer"),
+        getValue: (row) =>
+          row.careerExplorerMessagesSent !== null && row.careerExplorerMessagesSent >= 2
+            ? t("instructorDashboard.studentsTable.statusLabels.started")
+            : t("instructorDashboard.studentsTable.statusLabels.not_started"),
+      },
+    ];
+
+    const csv = Papa.unparse({
+      fields: csvColumns.map((column) => column.header),
+      data: sortedRows.map((row) =>
+        csvColumns.map((column) => {
+          const value = column.getValue(row);
+          return value === null || value === undefined ? "" : String(value);
+        })
+      ),
+    });
+    const date = new Date().toISOString().slice(0, 10);
+    downloadCsvFile(`students_export_${date}.csv`, csv);
   };
 
   const columns: ColumnDef<InstructorStudentRow>[] = [
@@ -271,6 +348,11 @@ const InstructorStudentsTable: React.FC<InstructorStudentsTableProps> = ({
         ariaLabel: t("instructorDashboard.studentsTable.filters.searchAriaLabel"),
         value: nameSearch,
         onChange: setNameSearch,
+      }}
+      exportButton={{
+        label: t("instructorDashboard.studentsTable.downloadCsv"),
+        onExport: handleDownloadCsv,
+        disabled: loading || sortedRows.length === 0,
       }}
       skeletonRows={8}
       emptyMessage={filteredRows.length === 0 ? t("instructorDashboard.studentsTable.empty") : undefined}

@@ -361,7 +361,9 @@
     "studentsTable": {
       "ariaLabel": "Jedwali la wanafunzi wa mwalimu",
       "empty": "Hakuna wanafunzi wanaolingana na vichujio vya sasa.",
+      "downloadCsv": "Pakua CSV",
       "headers": {
+        "id": "ID",
         "studentName": "Jina la Mwanafunzi",
         "programme": "Mpango",
         "qualificationType": "Aina ya Sifa",

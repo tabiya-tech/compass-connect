@@ -353,7 +353,9 @@
     "studentsTable": {
       "ariaLabel": "Instructor students table",
       "empty": "No students match the current filters.",
+      "downloadCsv": "Download CSV",
       "headers": {
+        "id": "ID",
         "studentName": "Student Name",
         "programme": "Programme",
         "qualificationType": "Qualification Type",
