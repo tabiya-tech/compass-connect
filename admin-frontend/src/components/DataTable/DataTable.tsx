@@ -19,10 +19,12 @@ import {
   Popover,
   Divider,
   Pagination,
+  Button,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import DownloadIcon from "@mui/icons-material/Download";
 import { useTranslation } from "react-i18next";
 import { useSortableData } from "src/hooks/useSortableData";
 
@@ -40,6 +42,13 @@ export interface SearchConfig {
   ariaLabel?: string;
   value: string;
   onChange: (value: string) => void;
+}
+
+export interface ExportConfig {
+  label: string;
+  onExport: () => void;
+  /** When true, the export button is rendered but disabled (e.g. nothing to export or still loading) */
+  disabled?: boolean;
 }
 
 export interface ColumnDef<T> {
@@ -76,6 +85,8 @@ export interface DataTableProps<T extends { id: string }> {
   emptyMessage?: string;
   /** When provided, renders a search field above the table */
   search?: SearchConfig;
+  /** When provided, renders an export button at the end of the toolbar row above the table */
+  exportButton?: ExportConfig;
   // Pagination
   page?: number;
   totalPages?: number;
@@ -257,6 +268,7 @@ function DataTable<T extends { id: string }>({
   skeletonRows = 8,
   emptyMessage,
   search,
+  exportButton,
   page,
   totalPages,
   onPageChange,
@@ -469,16 +481,38 @@ function DataTable<T extends { id: string }>({
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
-      {search && (
-        <Box mb={theme.fixedSpacing(theme.tabiyaSpacing.sm)}>
-          <TextField
-            size="small"
-            placeholder={search.placeholder}
-            value={search.value}
-            onChange={(e) => search.onChange(e.target.value)}
-            slotProps={{ htmlInput: { "aria-label": search.ariaLabel } }}
-            sx={{ width: 280 }}
-          />
+      {(search || exportButton) && (
+        <Box
+          mb={theme.fixedSpacing(theme.tabiyaSpacing.sm)}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: theme.fixedSpacing(theme.tabiyaSpacing.sm),
+            flexWrap: "wrap",
+          }}
+        >
+          {search && (
+            <TextField
+              size="small"
+              placeholder={search.placeholder}
+              value={search.value}
+              onChange={(e) => search.onChange(e.target.value)}
+              slotProps={{ htmlInput: { "aria-label": search.ariaLabel } }}
+              sx={{ width: 280 }}
+            />
+          )}
+          {exportButton && (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<DownloadIcon />}
+              onClick={exportButton.onExport}
+              disabled={exportButton.disabled}
+              sx={{ ml: "auto" }}
+            >
+              {exportButton.label}
+            </Button>
+          )}
         </Box>
       )}
       <TableContainer

@@ -352,7 +352,9 @@
     "studentsTable": {
       "ariaLabel": "Tabela de estudantes do instrutor",
       "empty": "Nenhum estudante corresponde aos filtros atuais.",
+      "downloadCsv": "Descarregar CSV",
       "headers": {
+        "id": "ID",
         "studentName": "Nome do Estudante",
         "programme": "Programa",
         "qualificationType": "Tipo de Qualificação",

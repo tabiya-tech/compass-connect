@@ -361,7 +361,9 @@
     "studentsTable": {
       "ariaLabel": "Mesa de alumnos instructores",
       "empty": "Ningún estudiante coincide con los filtros actuales.",
+      "downloadCsv": "Descargar CSV",
       "headers": {
+        "id": "ID",
         "studentName": "Nombre del estudiante",
         "programme": "Programa",
         "qualificationType": "Tipo de Calificación",

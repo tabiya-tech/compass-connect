@@ -361,7 +361,9 @@
     "studentsTable": {
       "ariaLabel": "Gome la ophunzira a Mlangizi",
       "empty": "Palibe ophunzira omwe akufanana ndi zosefera pano.",
+      "downloadCsv": "Tsitsani CSV",
       "headers": {
+        "id": "ID",
         "studentName": "Dzina la Wophunzira",
         "programme": "Pulogalamu",
         "qualificationType": "Mtundu wa Mayeso",
