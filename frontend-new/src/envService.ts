@@ -41,6 +41,7 @@ export enum EnvVariables {
   FRONTEND_FAQ_TUTORIAL_VIDEO_URL = "FRONTEND_FAQ_TUTORIAL_VIDEO_URL",
   FRONTEND_ILLUSTRATIONS = "FRONTEND_ILLUSTRATIONS",
   FRONTEND_HIDE_PROGRAM_SKILLS = "FRONTEND_HIDE_PROGRAM_SKILLS",
+  GLOBAL_COUNTRY_NAME = "GLOBAL_COUNTRY_NAME",
 }
 
 export const requiredEnvVariables = [
@@ -223,6 +224,16 @@ export const getProductName = () => {
   }
 
   return envAppName;
+};
+
+export const getCountryName = () => {
+  const envCountryName = getEnv(EnvVariables.GLOBAL_COUNTRY_NAME);
+  if (!envCountryName) {
+    console.warn("Country name not set, keeping the default");
+    return "your country";
+  }
+
+  return envCountryName;
 };
 
 export const getBrowserTabTitle = () => getEnv(EnvVariables.FRONTEND_BROWSER_TAB_TITLE);

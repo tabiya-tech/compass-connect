@@ -19,6 +19,7 @@ Only options exposed in these sections are customizable. Core application logic,
 ## App Name & Tab Title
 
 - `branding.appName` — name displayed throughout the application
+- `branding.country` — country name shown in dashboard (e.g. "opportunities in Zambia"); defaults to "your country" when unset
 - `branding.browserTabTitle` — text shown in the browser tab
 
 ## SEO Metadata

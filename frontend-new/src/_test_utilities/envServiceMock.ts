@@ -15,6 +15,7 @@ jest.mock("src/envService", () => ({
   getSupportedLocales: jest.fn(() => JSON.stringify(["en-US"])),
   getDefaultLocale: jest.fn(() => "en-US"),
   getProductName: jest.fn(() => "mockProduct"),
+  getCountryName: jest.fn(() => "your country"),
   getBrowserTabTitle: jest.fn(() => "Mocked Browser Tab Title"),
   getMetaDescription: jest.fn(() => "Mocked Meta Description"),
   getSeoEnvVar: jest.fn(() => "{}"),

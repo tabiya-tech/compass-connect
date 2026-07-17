@@ -5,7 +5,7 @@ import { DEFAULT_LOCALE, FALL_BACK_LOCALE, Locale, SupportedLocales } from "./co
 import { constructLocaleResources } from "./utils";
 import { ConfigurationError } from "../error/commonErrors";
 import { parseEnvSupportedLocales } from "./languageContextMenu/parseEnvSupportedLocales";
-import { getProductName } from "src/envService";
+import { getProductName, getCountryName } from "src/envService";
 
 // --- Import translations ---
 import enGb from "./locales/en-GB/translation.json";
@@ -62,6 +62,9 @@ const envSupportedLocales = parseEnvSupportedLocales();
 // Get product name from environment variable
 const productName = getProductName();
 
+// Get the country name from the environment variable (defaults to a generic "your country")
+const countryName = getCountryName();
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -94,6 +97,7 @@ i18n
       escapeValue: false,
       defaultVariables: {
         appName: productName,
+        country: countryName,
       },
     },
   });
