@@ -5,6 +5,7 @@ import Sidebar from "src/theme/Sidebar/Sidebar";
 import { useWorkSkills } from "src/experiences/hooks/useWorkSkills";
 import { useExperiencesDrawer } from "src/experiences/ExperiencesDrawerProvider";
 import { useUserProfileContext } from "src/profile/UserProfileContext";
+import { getProgramSkillsVisibility } from "src/envService";
 import SectionTitle from "src/home/components/Sidebar/SectionTitle";
 import ChipList from "src/home/components/Sidebar/ChipList";
 import ViewCVCard from "src/home/components/Sidebar/ViewCVCard";
@@ -42,6 +43,8 @@ const HomeSidebar: React.FC<HomeSidebarProps> = ({ showViewCvButton = true }) =>
   const quaternaryBg = theme.palette.quaternary.main;
   const quaternaryText = theme.palette.quaternary.contrastText;
 
+  const isProgramSkillsVisible = getProgramSkillsVisibility();
+
   const handleViewCV = () => void openExperiencesDrawer();
 
   return (
@@ -60,20 +63,22 @@ const HomeSidebar: React.FC<HomeSidebarProps> = ({ showViewCvButton = true }) =>
           expandButtonTestId={DATA_TEST_ID.HOME_SIDEBAR_SKILLS_FROM_WORK_EXPAND_BUTTON}
         />
       </Box>
-      <Box>
-        <SectionTitle>{t("home.sidebar.home.skillsFromTEVET")}</SectionTitle>
-        <ChipList
-          chips={programmeSkills}
-          chipBgColor={quaternaryBg}
-          chipTextColor={quaternaryText}
-          chipBorderRadius="6px"
-          accentColor={quaternaryBg}
-          emptyText={t("home.sidebar.home.programmeSkillsEmpty")}
-          emptyTestId={DATA_TEST_ID.HOME_SIDEBAR_PROGRAMME_SKILLS_EMPTY}
-          chipTestId={DATA_TEST_ID.HOME_SIDEBAR_PROGRAMME_SKILLS_CHIP}
-          expandButtonTestId={DATA_TEST_ID.HOME_SIDEBAR_PROGRAMME_SKILLS_EXPAND_BUTTON}
-        />
-      </Box>
+      {isProgramSkillsVisible && (
+        <Box>
+          <SectionTitle>{t("home.sidebar.home.skillsFromTEVET")}</SectionTitle>
+          <ChipList
+            chips={programmeSkills}
+            chipBgColor={quaternaryBg}
+            chipTextColor={quaternaryText}
+            chipBorderRadius="6px"
+            accentColor={quaternaryBg}
+            emptyText={t("home.sidebar.home.programmeSkillsEmpty")}
+            emptyTestId={DATA_TEST_ID.HOME_SIDEBAR_PROGRAMME_SKILLS_EMPTY}
+            chipTestId={DATA_TEST_ID.HOME_SIDEBAR_PROGRAMME_SKILLS_CHIP}
+            expandButtonTestId={DATA_TEST_ID.HOME_SIDEBAR_PROGRAMME_SKILLS_EXPAND_BUTTON}
+          />
+        </Box>
+      )}
       {showViewCvButton && (
         <Box>
           <SectionTitle>{t("home.sidebar.home.myExperience")}</SectionTitle>

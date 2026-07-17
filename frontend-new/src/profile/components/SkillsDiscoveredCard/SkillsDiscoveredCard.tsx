@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Typography, Skeleton, Chip, useTheme, Divider } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { Skill } from "src/experiences/experienceService/experiences.types";
+import { getProgramSkillsVisibility } from "src/envService";
 
 const uniqueId = "skills-discovered-card-c8f4a5b6-9d1e-2f3a-4b5c-6d7e8f9a1b2c";
 
@@ -129,6 +130,10 @@ export const SkillsDiscoveredCard: React.FC<SkillsDiscoveredCardProps> = ({
 
   const educationSubtitle = [program, school].filter(Boolean).join(" \u00B7 ");
 
+  // "Education Skills" is the profile-page view of the program-skills section;
+  // shown together with its dashboard and chat-sidebar counterparts via FRONTEND_HIDE_PROGRAM_SKILLS.
+  const isProgramSkillsVisible = getProgramSkillsVisibility();
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: theme.fixedSpacing(theme.tabiyaSpacing.sm) }}>
       <Typography
@@ -153,25 +158,29 @@ export const SkillsDiscoveredCard: React.FC<SkillsDiscoveredCardProps> = ({
         }}
         data-testid={DATA_TEST_ID.SKILLS_CARD}
       >
-        <SkillSection
-          title={t("home.profile.educationSkills")}
-          subtitle={educationSubtitle}
-          skills={educationSkills}
-          emptyText={t("home.profile.noEducationSkillsYet")}
-          isLoading={isLoading}
-          startIndex={0}
-          chipBgColor={theme.palette.tertiary.light}
-          chipTextColor={theme.palette.common.black}
-        />
+        {isProgramSkillsVisible && (
+          <>
+            <SkillSection
+              title={t("home.profile.educationSkills")}
+              subtitle={educationSubtitle}
+              skills={educationSkills}
+              emptyText={t("home.profile.noEducationSkillsYet")}
+              isLoading={isLoading}
+              startIndex={0}
+              chipBgColor={theme.palette.tertiary.light}
+              chipTextColor={theme.palette.common.black}
+            />
 
-        <Divider sx={{ my: theme.fixedSpacing(theme.tabiyaSpacing.md) }} />
+            <Divider sx={{ my: theme.fixedSpacing(theme.tabiyaSpacing.md) }} />
+          </>
+        )}
 
         <SkillSection
           title={t("home.profile.workSkills")}
           skills={skills}
           emptyText={t("home.profile.noSkillsYet")}
           isLoading={isLoading}
-          startIndex={educationSkills.length}
+          startIndex={isProgramSkillsVisible ? educationSkills.length : 0}
           chipBgColor={theme.palette.accent.light}
           chipTextColor={theme.palette.secondary.main}
           emptyTestId={DATA_TEST_ID.SKILLS_EMPTY}
