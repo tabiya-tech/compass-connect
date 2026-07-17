@@ -1,6 +1,6 @@
 from dataclasses import field
 from datetime import datetime
-from typing import Mapping, Any, TypeAlias, Union
+from typing import Mapping, Any, TypeAlias, Union, Optional
 
 from pydantic import BaseModel, Field, model_validator, json
 
@@ -55,7 +55,7 @@ class UserPreferencesRepositoryUpdateRequest(BaseModel):
     UUID - The client ID (UUID) assigned to the device client (Browser).
     """
 
-    experiments: Experiments = Field(default_factory=dict)
+    experiments: Optional[Experiments] = None
     """
     experiments - A dictionary mapping experiment namespaces to their configuration
     Each experiment can have either a simple string value or a nested configuration.
@@ -95,7 +95,7 @@ class UserPreferencesUpdateRequest(BaseModel):
     UUID - The client ID (UUID) assigned to the device client (Browser).
     """
 
-    experiments: Experiments = Field(default_factory=dict)
+    experiments: Optional[Experiments] = None
     """
     experiments - A dictionary mapping experiment namespaces to their configuration
     Each experiment can have either a simple string value or a nested configuration.
