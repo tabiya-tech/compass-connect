@@ -30,6 +30,8 @@ import {
   getSkillsReportOutputConfigEnvVar,
   getFaqTutorialVideoUrl,
   getPartnerLogos,
+  getCountryName,
+  getProgramSkillsVisibility,
 } from "./envService";
 import { getRandomString } from "./_test_utilities/specialCharacters";
 
@@ -271,5 +273,67 @@ describe("Ensure Required Environment Variables", () => {
 
     // THEN expect no warning to be logged
     expect(console.warn).not.toHaveBeenCalled();
+  });
+});
+
+describe("GLOBAL_COUNTRY_NAME Getter (getCountryName) tests", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("should return the default 'your country' and warn when GLOBAL_COUNTRY_NAME is not set", () => {
+    // GIVEN the GLOBAL_COUNTRY_NAME environment variable is not set
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: {},
+      writable: true,
+    });
+
+    // WHEN getCountryName is called
+    const actualCountryName = getCountryName();
+
+    // THEN expect it to return the generic default
+    expect(actualCountryName).toBe("your country");
+    // AND expect a warning to have been logged
+    expect(console.warn).toHaveBeenCalledWith("Country name not set, keeping the default");
+  });
+
+  test("should return the configured value when GLOBAL_COUNTRY_NAME is set", () => {
+    // GIVEN the GLOBAL_COUNTRY_NAME environment variable is set to a base64 encoded value
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: {
+        GLOBAL_COUNTRY_NAME: btoa("Zambia"),
+      },
+      writable: true,
+    });
+
+    // WHEN getCountryName is called
+    const actualCountryName = getCountryName();
+
+    // THEN expect it to return the decoded value without warning
+    expect(actualCountryName).toBe("Zambia");
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+});
+
+describe("FRONTEND_HIDE_PROGRAM_SKILLS Getter (getProgramSkillsVisibility) tests", () => {
+  test.each([
+    ["unset", {}, true],
+    ["empty", { FRONTEND_HIDE_PROGRAM_SKILLS: btoa("") }, true],
+    ["'false'", { FRONTEND_HIDE_PROGRAM_SKILLS: btoa("false") }, true],
+    ["'true'", { FRONTEND_HIDE_PROGRAM_SKILLS: btoa("true") }, false],
+    ["'TRUE' (case-insensitive)", { FRONTEND_HIDE_PROGRAM_SKILLS: btoa("TRUE") }, false],
+    ["a non-boolean value", { FRONTEND_HIDE_PROGRAM_SKILLS: btoa("something") }, true],
+  ])("should resolve visibility correctly when the flag is %s", (_description, config, expectedVisibility) => {
+    // GIVEN the FRONTEND_HIDE_PROGRAM_SKILLS environment variable is in the given state
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: config,
+      writable: true,
+    });
+
+    // WHEN getProgramSkillsVisibility is called
+    const actualVisibility = getProgramSkillsVisibility();
+
+    // THEN expect it to reflect whether the section should be shown
+    expect(actualVisibility).toBe(expectedVisibility);
   });
 });

@@ -310,7 +310,7 @@
           "feature1Title": "Senzani mphamvu zanu",
           "feature1Body": "Dziwani nzeru zimene muli nazo kale — kuchokera ku maphunziro anu, ntchito yanu, ndi moyo wanu.",
           "feature2Title": "Mangani CV yovumbulika",
-          "feature2Body": "Pangani CV yaukadaulo yomwe imagwirizana ndi zomwe ogwira ntchito ku Zambia akufuna.",
+          "feature2Body": "Pangani CV yaukadaulo yomwe imagwirizana ndi zomwe ogwira ntchito ku {{country}} akufuna.",
           "feature3Title": "Pezani njila yanu",
           "feature3Body": "Yang'anani ntchito zofunika, mutsekese zofunikira, ndipo linganizani ndi mwayi woona wa ntchito."
         },
@@ -984,7 +984,7 @@
     "dashboard": "Malo Anu a Ntchito",
     "backToDashboard": "Bwererani ku dashibodi",
     "welcomeBack": "Takulandirani, {{name}}",
-    "subtitle": "{{appName}} ndi mlatho pakati pa zomwe mwaphunzira ndi komwe mukupita. Lankhulani ndi AI kuti mupeze luso lanu, mukonzekere mafunso antchito, ndikufufuza njila za ntchito ku Zambia.",
+    "subtitle": "{{appName}} ndi mlatho pakati pa zomwe mwaphunzira ndi komwe mukupita. Lankhulani ndi AI kuti mupeze luso lanu, mukonzekere mafunso antchito, ndikufufuza njila za ntchito ku {{country}}.",
     "profileStrength": "Mphamvu ya mbiri yanu ndi {{progress}}%.",
     "profileStrengthHint": "Ndi chiyambi chabwino — yesani Luso ndi Zomwe Ndimakonda kuti mudziwe zambiri za zomwe mukudziwa ndikusangalala nazo.",
     "seeProfile": "Onani mbiri →",
@@ -993,7 +993,7 @@
     "hero": {
       "headline1": "Tiyeni tipeze",
       "headline2": "Maluso & mphamvu zanu",
-      "body": "{{appName}} yanu yowongolera kuchokera ku luso kupita kuntchito yanu yoyamba. Yambani pozindikira zomwe mumabweretsa - kenako fufuzani ntchito, konzekerani ntchito, ndikupeza mwayi weniweni ku Zambia.",
+      "body": "{{appName}} yanu yowongolera kuchokera ku luso kupita kuntchito yanu yoyamba. Yambani pozindikira zomwe mumabweretsa - kenako fufuzani ntchito, konzekerani ntchito, ndikupeza mwayi weniweni ku {{country}}.",
       "illustrationAlt": "Munthu ali pachikwangwani panjila, kuyang'ana njila zantchito"
     },
     "cta": {
@@ -1004,7 +1004,7 @@
       "explorePathsDesc": "Fufuzani magawo ndi ntchito zomwe mukukondwera nazo - malipiro, njila za ziyeneretso, mapulogalamu a maphunziro, ndi olemba ntchito akuluakulu.",
       "explorePathsCta": "Fufuzani njila za ntchito",
       "jobMatchesTitle": "Ntchito zogwirizana",
-      "jobMatchesDesc": "Mwayi weniweni ku Zambia yonse, wogwirizana ndi zomwe mungathe kuchita pano.",
+      "jobMatchesDesc": "Mwayi weniweni ku {{country}} yonse, wogwirizana ndi zomwe mungathe kuchita pano.",
       "jobMatchesCta": "Fufuzani ntchito zanu"
     },
     "jobReadySection": {
@@ -1115,7 +1115,7 @@
       "jobReadinessDesc": "Phunzirani luso lofunikira la ntchito kudzera mu ma module otsogoleredwa ndi AI — kuyambira kulemba CV mpaka kuchita mafunso oyeserera.",
       "careerExplorerDesc": "Fufuzani njila za ntchito mu Mphamvu, Migodi, Ulimi ndi zina — ndi chidziwitso cha malipiro ndi njila zoyenera.",
       "knowledgeHubDesc": "Fufuzani mbiri ya magawo, malipiro, ndi njila za maphunziro a TEVET pamalo amodzi.",
-      "jobMatchingDesc": "Onani momwe luso lanu limafanana ndi maudindo a ntchito enieni ndikufufuza chidziwitso cha msika wa ntchito ku Zambia.",
+      "jobMatchingDesc": "Onani momwe luso lanu limafanana ndi maudindo a ntchito enieni ndikufufuza chidziwitso cha msika wa ntchito ku {{country}}.",
       "continue": "Pitirizani",
       "completed": "Zatha",
       "soon": "Posachedwa",
@@ -1126,7 +1126,7 @@
       "termsOfUse": "Malamulo a Ntchito",
       "accessibility": "Kufikira",
       "contact": "Lumikizani",
-      "collaboration": "{{appName}} ndi chida chaulere cha malangizo a ntchito choperekedwa ndi Unduna wa Ukadaulo ndi Sayansi ku Zambia, chomangidwa mogwirizana ndi World Bank Group ndi Tabiya.",
+      "collaboration": "{{appName}} ndi chida chaulere cha malangizo a ntchito choperekedwa ndi Unduna wa Ukadaulo ndi Sayansi ku {{country}}, chomangidwa mogwirizana ndi World Bank Group ndi Tabiya.",
       "compassConnectLine1": "Iyi ndi ntchito yosonyeza ya Compass Connect — chida cha malangizo a ntchito chosintha ndi cholera mwaufulu, chomangidwa ndi <tabiyaLink>Tabiya</tabiyaLink>.",
       "compassConnectLine2": "Chomangidwa pa <compassLink>Compass</compassLink>, chida cha Tabiya chosakanizira ndi anthu ofunafuna ntchito.",
       "worldBankLogoAlt": "Chizindikiro cha Gulu la World Bank",

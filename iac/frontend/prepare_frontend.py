@@ -168,6 +168,7 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
 
     # branding
     global_product_name: Optional[str] = getenv("GLOBAL_PRODUCT_NAME", False, False)
+    global_country_name: Optional[str] = getenv("GLOBAL_COUNTRY_NAME", False, False)
     frontend_browser_tab_title: Optional[str] = getenv("FRONTEND_BROWSER_TAB_TITLE", False, False)
     frontend_meta_description: Optional[str] = getenv("FRONTEND_META_DESCRIPTION", False, False)
     frontend_logo_url: Optional[str] = getenv("FRONTEND_LOGO_URL", False, False)
@@ -229,6 +230,7 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
         "FRONTEND_SUPPORTED_LOCALES": base64_encode(supported_locales),
         "FRONTEND_DEFAULT_LOCALE": base64_encode(default_locale),
         "GLOBAL_PRODUCT_NAME": base64_encode(global_product_name),
+        "GLOBAL_COUNTRY_NAME": base64_encode(global_country_name or ""),
         "FRONTEND_BROWSER_TAB_TITLE": base64_encode(frontend_browser_tab_title),
         "FRONTEND_META_DESCRIPTION": base64_encode(frontend_meta_description),
         "FRONTEND_LOGO_URL": base64_encode(frontend_logo_url),

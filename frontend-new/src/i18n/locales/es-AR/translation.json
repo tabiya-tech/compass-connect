@@ -310,7 +310,7 @@
           "feature1Title": "Descubrí tus fortalezas",
           "feature1Body": "Descubrí qué habilidades ya tenés — de tu formación, tu trabajo y tu vida.",
           "feature2Title": "Creá un CV que destaque",
-          "feature2Body": "Creá un CV profesional adaptado a lo que buscan los empleadores en Zambia.",
+          "feature2Body": "Creá un CV profesional adaptado a lo que buscan los empleadores en {{country}}.",
           "feature3Title": "Encontrá tu camino",
           "feature3Body": "Explorá carreras demandadas, entendé qué calificaciones necesitás y conectate con ofertas reales."
         },
@@ -1086,7 +1086,7 @@
     "hero": {
       "headline1": "Descubramos",
       "headline2": "Tus habilidades y fortalezas",
-      "body": "Tu camino guiado desde las habilidades hasta tu primer empleo. Empezá descubriendo lo que aportás: después explorá carreras, desarrollá tu preparación laboral y encontrá oportunidades reales en Zambia.",
+      "body": "Tu camino guiado desde las habilidades hasta tu primer empleo. Empezá descubriendo lo que aportás: después explorá carreras, desarrollá tu preparación laboral y encontrá oportunidades reales en {{country}}.",
       "illustrationAlt": "Persona en un poste de señales en un camino, explorando direcciones profesionales"
     },
     "cta": {
@@ -1097,7 +1097,7 @@
       "explorePathsDesc": "Explorá los sectores y carreras que te interesan: salarios, trayectorias de calificación, programas de formación y principales empleadores.",
       "explorePathsCta": "Explorar trayectorias profesionales",
       "jobMatchesTitle": "Coincidencias de empleo",
-      "jobMatchesDesc": "Vacantes reales en Zambia, ajustadas a lo que podés hacer ahora mismo.",
+      "jobMatchesDesc": "Vacantes reales en {{country}}, ajustadas a lo que podés hacer ahora mismo.",
       "jobMatchesCta": "Explorá tus empleos"
     },
     "jobReadySection": {
@@ -1208,7 +1208,7 @@
       "jobReadinessDesc": "Desarrollá habilidades esenciales para el trabajo a través de módulos guiados por IA — desde redacción de CV hasta práctica de entrevistas.",
       "careerExplorerDesc": "Explorá caminos profesionales en Energía, Minería, Agricultura y más — con datos salariales y rutas de calificación.",
       "knowledgeHubDesc": "Explorá perfiles sectoriales, referencias salariales y rutas de calificación TEVET en un solo lugar.",
-      "jobMatchingDesc": "Mirá cómo tus habilidades coinciden con ofertas de trabajo reales y explorá información del mercado laboral en Zambia.",
+      "jobMatchingDesc": "Mirá cómo tus habilidades coinciden con ofertas de trabajo reales y explorá información del mercado laboral en {{country}}.",
       "continue": "Continuar",
       "completed": "Completado",
       "soon": "Pronto",
@@ -1219,7 +1219,7 @@
       "termsOfUse": "Términos de Uso",
       "accessibility": "Accesibilidad",
       "contact": "Contacto",
-      "collaboration": "{{appName}} es una herramienta gratuita de orientación profesional ofrecida por el Ministerio de Tecnología y Ciencia de Zambia, desarrollada en colaboración con el Grupo del Banco Mundial y Tabiya.",
+      "collaboration": "{{appName}} es una herramienta gratuita de orientación profesional ofrecida por el Ministerio de Tecnología y Ciencia de {{country}}, desarrollada en colaboración con el Grupo del Banco Mundial y Tabiya.",
       "compassConnectLine1": "Esta es una implementación de demostración de Compass Connect — una herramienta de orientación profesional personalizable y de código abierto, desarrollada por <tabiyaLink>Tabiya</tabiyaLink>.",
       "compassConnectLine2": "Construida sobre <compassLink>Compass</compassLink>, la herramienta conversacional de código abierto de Tabiya para personas en búsqueda de empleo.",
       "worldBankLogoAlt": "Logo del Grupo Banco Mundial",

@@ -310,7 +310,7 @@
           "feature1Title": "Discover your strengths",
           "feature1Body": "Find out what skills you already have — from your training, your work, and your life.",
           "feature2Title": "Build a CV that gets noticed",
-          "feature2Body": "Create a professional CV tailored to what employers in Zambia are looking for.",
+          "feature2Body": "Create a professional CV tailored to what employers in {{country}} are looking for.",
           "feature3Title": "Find your path",
           "feature3Body": "Explore in-demand careers, understand what qualifications you need, and match to real job openings."
         },
@@ -978,7 +978,7 @@
     "dashboard": "Your Career Hub",
     "backToDashboard": "Back to dashboard",
     "welcomeBack": "Welcome back, {{name}}",
-    "subtitle": "{{appName}} is the bridge between what you've learned and where you're headed. Chat with AI to surface your skills, prep for interviews, and explore real career routes across Zambia.",
+    "subtitle": "{{appName}} is the bridge between what you've learned and where you're headed. Chat with AI to surface your skills, prep for interviews, and explore real career routes across {{country}}.",
     "profileStrength": "Your current profile strength is {{progress}}%.",
     "profileStrengthHint": "That's a strong start — try My Skills & Interests to surface more about what you know and enjoy.",
     "seeProfile": "See profile →",
@@ -987,7 +987,7 @@
     "hero": {
       "headline1": "Let's discover",
       "headline2": "Your skills & strengths",
-      "body": "Your guided path from skills to your first job. Start by discovering what you bring to the table — then explore careers, build career readiness, and find real opportunities in Zambia.",
+      "body": "Your guided path from skills to your first job. Start by discovering what you bring to the table — then explore careers, build career readiness, and find real opportunities in {{country}}.",
       "illustrationAlt": "Person at a signpost on a path, exploring career directions"
     },
     "cta": {
@@ -998,7 +998,7 @@
       "explorePathsDesc": "Explore the sectors and careers you are interested in - salaries, qualifications pathways, training programs, top employers.",
       "explorePathsCta": "Explore Career Paths",
       "jobMatchesTitle": "Job Matches",
-      "jobMatchesDesc": "Real openings across Zambia, matched to what you can do right now.",
+      "jobMatchesDesc": "Real openings across {{country}}, matched to what you can do right now.",
       "jobMatchesCta": "Browse your jobs"
     },
     "jobReadySection": {
@@ -1109,7 +1109,7 @@
       "jobReadinessDesc": "Build job readiness through guided AI modules — from understanding your professional identity and CV writing to interviews, workplace readiness, and entrepreneurship.",
       "careerExplorerDesc": "Explore career pathways in Energy, Mining, Agriculture and more — with salary data and qualification routes.",
       "knowledgeHubDesc": "Explore sector profiles, salary benchmarks, and TEVET qualification pathways all in one place.",
-      "jobMatchingDesc": "See how your skills match to real job openings and explore labour market insights across Zambia.",
+      "jobMatchingDesc": "See how your skills match to real job openings and explore labour market insights across {{country}}.",
       "continue": "Continue",
       "completed": "Completed",
       "soon": "Soon",
@@ -1120,7 +1120,7 @@
       "termsOfUse": "Terms of Use",
       "accessibility": "Accessibility",
       "contact": "Contact",
-      "collaboration": "{{appName}} is a free career guidance tool offered by the Zambia Ministry of Technology and Science, built in partnership with the World Bank Group and Tabiya.",
+      "collaboration": "{{appName}} is a free career guidance tool offered by the {{country}} Ministry of Technology and Science, built in partnership with the World Bank Group and Tabiya.",
       "compassConnectLine1": "This is a demo deployment of Compass Connect — a customizable, open-source career guidance tool built by <tabiyaLink>Tabiya</tabiyaLink>.",
       "compassConnectLine2": "Built on <compassLink>Compass</compassLink>, Tabiya's open-source conversational tool for jobseekers.",
       "worldBankLogoAlt": "World Bank Group Logo",

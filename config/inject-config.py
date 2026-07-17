@@ -27,6 +27,7 @@ BACKEND_ENV_MAP: Dict[str, str] = {
 
 FRONTEND_ENV_MAP: Dict[str, str] = {
     'GLOBAL_PRODUCT_NAME': 'branding.appName',
+    'GLOBAL_COUNTRY_NAME': 'branding.country',
     'FRONTEND_BROWSER_TAB_TITLE': 'branding.browserTabTitle',
     'FRONTEND_META_DESCRIPTION': 'branding.metaDescription',
     'FRONTEND_LOGO_URL': 'branding.assets.logo',

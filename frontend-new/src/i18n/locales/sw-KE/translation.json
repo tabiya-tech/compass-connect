@@ -310,7 +310,7 @@
           "feature1Title": "Gundua nguvu zako",
           "feature1Body": "Jua ni ujuzi gani tayari una nao — kutoka mafunzo yako, kazi yako, na maisha yako.",
           "feature2Title": "Unda CV inayoonekana",
-          "feature2Body": "Unda CV ya kitaalamu inayolingana na kinachotafutwa na waajiri Zambia.",
+          "feature2Body": "Unda CV ya kitaalamu inayolingana na kinachotafutwa na waajiri {{country}}.",
           "feature3Title": "Pata njia yako",
           "feature3Body": "Chunguza kazi zinazohitajika, elewa sifa zipi unazohitaji, na linganisha na nafasi halisi za kazi."
         },
@@ -984,7 +984,7 @@
     "dashboard": "Kituo Chako cha Kazi",
     "backToDashboard": "Rudi kwenye dashibodi",
     "welcomeBack": "Karibu tena, {{name}}",
-    "subtitle": "{{appName}} ni daraja kati ya ulichojifunza na unakoelekea. Zungumza na AI ili kugundua ujuzi wako, kujiandaa kwa mahojiano, na kuchunguza njia za kazi nchini Zambia.",
+    "subtitle": "{{appName}} ni daraja kati ya ulichojifunza na unakoelekea. Zungumza na AI ili kugundua ujuzi wako, kujiandaa kwa mahojiano, na kuchunguza njia za kazi nchini {{country}}.",
     "profileStrength": "Nguvu ya wasifu wako sasa ni {{progress}}%.",
     "profileStrengthHint": "Ni mwanzo mzuri — jaribu Ujuzi na Mapendeleo Yangu ili kugundua zaidi kuhusu unachokijua na kufurahia.",
     "seeProfile": "Tazama wasifu →",
@@ -993,7 +993,7 @@
     "hero": {
       "headline1": "Hebu tugundue",
       "headline2": "Ujuzi wako na nguvu zako",
-      "body": "Njia yako iliyoongozwa kutoka kwa ujuzi hadi kazi yako ya kwanza. Anza kwa kugundua unachokileta — kisha chunguza kazi, jenga utayari wa kazi, na upate fursa halisi nchini Zambia.",
+      "body": "Njia yako iliyoongozwa kutoka kwa ujuzi hadi kazi yako ya kwanza. Anza kwa kugundua unachokileta — kisha chunguza kazi, jenga utayari wa kazi, na upate fursa halisi nchini {{country}}.",
       "illustrationAlt": "Mtu kwenye kigango cha njia, akichunguza mwelekeo wa kazi"
     },
     "cta": {
@@ -1004,7 +1004,7 @@
       "explorePathsDesc": "Chunguza sekta na kazi unazovutiwa nazo - mishahara, njia za sifa, programu za mafunzo, waajiri wakuu.",
       "explorePathsCta": "Chunguza njia za kazi",
       "jobMatchesTitle": "Kazi zinazolingana",
-      "jobMatchesDesc": "Nafasi halisi kote Zambia, zinalingana na unachoweza kufanya sasa hivi.",
+      "jobMatchesDesc": "Nafasi halisi kote {{country}}, zinalingana na unachoweza kufanya sasa hivi.",
       "jobMatchesCta": "Vinjari kazi zako"
     },
     "jobReadySection": {
@@ -1115,7 +1115,7 @@
       "jobReadinessDesc": "Jenga ujuzi muhimu wa kazi kupitia moduli zinazoongozwa na AI — kutoka kuandika CV hadi mazoezi ya mahojiano.",
       "careerExplorerDesc": "Chunguza njia za kazi katika Nishati, Madini, Kilimo na zaidi — na data ya mishahara na njia za sifa.",
       "knowledgeHubDesc": "Chunguza wasifu wa sekta, viwango vya mishahara, na njia za sifa za TEVET mahali pamoja.",
-      "jobMatchingDesc": "Angalia jinsi ujuzi wako unavyolingana na nafasi za kazi halisi na chunguza maarifa ya soko la ajira nchini Zambia.",
+      "jobMatchingDesc": "Angalia jinsi ujuzi wako unavyolingana na nafasi za kazi halisi na chunguza maarifa ya soko la ajira nchini {{country}}.",
       "continue": "Endelea",
       "completed": "Imekamilika",
       "soon": "Hivi Karibuni",
@@ -1126,7 +1126,7 @@
       "termsOfUse": "Sheria za Matumizi",
       "accessibility": "Ufikiaji",
       "contact": "Wasiliana",
-      "collaboration": "{{appName}} ni zana ya bure ya mwongozo wa kazi inayotolewa na Wizara ya Teknolojia na Sayansi ya Zambia, iliyojengwa kwa ushirikiano na Kundi la Benki ya Dunia na Tabiya.",
+      "collaboration": "{{appName}} ni zana ya bure ya mwongozo wa kazi inayotolewa na Wizara ya Teknolojia na Sayansi ya {{country}}, iliyojengwa kwa ushirikiano na Kundi la Benki ya Dunia na Tabiya.",
       "compassConnectLine1": "Hii ni utumaji wa maonyesho wa Compass Connect — zana ya mwongozo wa kazi inayoweza kubinafsishwa ya chanzo wazi, iliyojengwa na <tabiyaLink>Tabiya</tabiyaLink>.",
       "compassConnectLine2": "Imejengwa juu ya <compassLink>Compass</compassLink>, zana ya mazungumzo ya chanzo wazi ya Tabiya kwa watafuta kazi.",
       "worldBankLogoAlt": "Nembo ya Kundi la Benki ya Dunia",

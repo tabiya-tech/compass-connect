@@ -310,7 +310,7 @@
           "feature1Title": "Descubra os seus pontos fortes",
           "feature1Body": "Descubra que competências já possui — da sua formação, do seu trabalho e da sua vida.",
           "feature2Title": "Construa um CV que seja notado",
-          "feature2Body": "Crie um CV profissional adaptado ao que os empregadores em Moçambique procuram.",
+          "feature2Body": "Crie um CV profissional adaptado ao que os empregadores em {{country}} procuram.",
           "feature3Title": "Encontre o seu caminho",
           "feature3Body": "Explore carreiras com grande procura, compreenda de que qualificações necessita e encontre ofertas de emprego reais."
         },
@@ -978,7 +978,7 @@
     "dashboard": "O Seu Centro de Carreira",
     "backToDashboard": "Voltar ao painel principal",
     "welcomeBack": "Bem-vindo de volta, {{name}}",
-    "subtitle": "O {{appName}} é a ponte entre o que aprendeu e para onde se dirige. Converse com a IA para destacar as suas competências, preparar-se para entrevistas e explorar rotas de carreira reais em Moçambique.",
+    "subtitle": "O {{appName}} é a ponte entre o que aprendeu e para onde se dirige. Converse com a IA para destacar as suas competências, preparar-se para entrevistas e explorar rotas de carreira reais em {{country}}.",
     "profileStrength": "A força atual do seu perfil é de {{progress}}%.",
     "profileStrengthHint": "É um bom começo — experimente Minhas Competências e Interesses para destacar mais sobre o que sabe e de que gosta.",
     "seeProfile": "Ver perfil →",
@@ -987,7 +987,7 @@
     "hero": {
       "headline1": "Vamos descobrir",
       "headline2": "As suas competências e pontos fortes",
-      "body": "O seu caminho guiado das competências para o seu primeiro emprego. Comece por descobrir o que traz consigo — depois explore carreiras, desenvolva a preparação para a carreira e encontre oportunidades reais em Moçambique.",
+      "body": "O seu caminho guiado das competências para o seu primeiro emprego. Comece por descobrir o que traz consigo — depois explore carreiras, desenvolva a preparação para a carreira e encontre oportunidades reais em {{country}}.",
       "illustrationAlt": "Pessoa num sinal de sinalização num caminho, explorando direções de carreira"
     },
     "cta": {
@@ -998,7 +998,7 @@
       "explorePathsDesc": "Explore os setores e carreiras em que está interessado - salários, percursos de qualificação, programas de formação, principais empregadores.",
       "explorePathsCta": "Explorar Percursos de Carreira",
       "jobMatchesTitle": "Correspondências de Emprego",
-      "jobMatchesDesc": "Ofertas reais em todo o Moçambique, correspondentes ao que pode fazer agora.",
+      "jobMatchesDesc": "Ofertas reais em todo o {{country}}, correspondentes ao que pode fazer agora.",
       "jobMatchesCta": "Explorar os seus empregos"
     },
     "jobReadySection": {
@@ -1109,7 +1109,7 @@
       "jobReadinessDesc": "Desenvolva a preparação para o emprego através de módulos guiados por IA — desde a compreensão da sua identidade profissional e escrita de CV até entrevistas, preparação para o local de trabalho e empreendedorismo.",
       "careerExplorerDesc": "Explore o percurso de carreira em Energia em Moçambique — com qualificações CNQP, principais empregadores e oportunidades de formação.",
       "knowledgeHubDesc": "Explore perfis setoriais, referências salariais e percursos de qualificação CNQP, tudo num só lugar.",
-      "jobMatchingDesc": "Veja como as suas competências correspondem a ofertas de emprego reais e explore perspetivas do mercado de trabalho em Moçambique.",
+      "jobMatchingDesc": "Veja como as suas competências correspondem a ofertas de emprego reais e explore perspetivas do mercado de trabalho em {{country}}.",
       "continue": "Continuar",
       "completed": "Concluído",
       "soon": "Em breve",
@@ -1120,7 +1120,7 @@
       "termsOfUse": "Termos de Utilização",
       "accessibility": "Acessibilidade",
       "contact": "Contacto",
-      "collaboration": "{{appName}} é uma ferramenta gratuita de orientação profissional oferecida pelo Ministério da Educação e Cultura de Moçambique, desenvolvida em parceria com o Grupo Banco Mundial e a Tabiya.",
+      "collaboration": "{{appName}} é uma ferramenta gratuita de orientação profissional oferecida pelo Ministério da Educação e Cultura de {{country}}, desenvolvida em parceria com o Grupo Banco Mundial e a Tabiya.",
       "compassConnectLine1": "Esta é uma implementação de demonstração do Compass Connect — uma ferramenta de orientação profissional personalizável e de código aberto, desenvolvida pela <tabiyaLink>Tabiya</tabiyaLink>.",
       "compassConnectLine2": "Construída sobre o <compassLink>Compass</compassLink>, a ferramenta conversacional de código aberto da Tabiya para candidatos a emprego.",
       "worldBankLogoAlt": "Logótipo do Grupo Banco Mundial",

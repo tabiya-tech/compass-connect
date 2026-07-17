@@ -99,6 +99,8 @@ window.tabiyaConfig = {
   // #       Branding Settings
   // ################################################################
   GLOBAL_PRODUCT_NAME: btoa("Compass"),
+  // Country name shown in user-facing dashboard copy (optional; defaults to "your country" if unset)
+  GLOBAL_COUNTRY_NAME: btoa("Zambia"),
   FRONTEND_BROWSER_TAB_TITLE: btoa("Compass"),
   FRONTEND_META_DESCRIPTION: btoa(
     "Welcome to Compass! An AI-powered career assistant that helps jobseekers identify and showcase their skills."
