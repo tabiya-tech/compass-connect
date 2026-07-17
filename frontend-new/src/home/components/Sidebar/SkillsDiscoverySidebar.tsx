@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Box, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import Sidebar from "src/theme/Sidebar/Sidebar";
+import { getProgramSkillsVisibility } from "src/envService";
 import SidebarService from "src/home/components/Sidebar/SidebarService";
 import type { SkillsData } from "src/home/components/Sidebar/SidebarService";
 import ChatProgressBar from "src/chat/chatProgressbar/ChatProgressBar";
@@ -84,10 +85,11 @@ const SkillsDiscoverySidebar: React.FC<SkillsDiscoverySidebarProps> = ({ current
     };
   }, [load, refreshToken]);
 
+  const isProgramSkillsVisible = getProgramSkillsVisibility();
   const workSkills = data?.skills ?? [];
   const hasMore = workSkills.length > COLLAPSE_AFTER;
   const visibleWorkSkills = hasMore && !expanded ? workSkills.slice(0, COLLAPSE_AFTER) : workSkills;
-  const hasAnySkills = workSkills.length > 0 || programmeSkills.length > 0;
+  const hasAnySkills = workSkills.length > 0 || (isProgramSkillsVisible && programmeSkills.length > 0);
 
   return (
     <Sidebar title={t("home.sidebar.skillsDiscovery.title")} width="100%">
@@ -189,7 +191,7 @@ const SkillsDiscoverySidebar: React.FC<SkillsDiscoverySidebarProps> = ({ current
           )}
 
           {/* Programme skills */}
-          {programmeSkills.length > 0 && (
+          {isProgramSkillsVisible && programmeSkills.length > 0 && (
             <Box>
               <Box sx={subsectionLabelSx}>{t("home.sidebar.skillsDiscovery.fromTEVET")}</Box>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>

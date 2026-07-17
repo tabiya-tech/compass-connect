@@ -31,6 +31,7 @@ jest.mock("src/envService", () => ({
   getGtmEnabled: jest.fn(() => "false"),
   getChatAvatarUrl: jest.fn(() => ""),
   getFaqTutorialVideoUrl: jest.fn(() => ""),
+  getProgramSkillsVisibility: jest.fn(() => true),
   getIllustrationUrls: jest.fn(() => ({
     loginHero: { src: "/climber.svg" },
     loginFeature1: { src: "/conversation.svg" },

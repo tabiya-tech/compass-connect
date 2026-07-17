@@ -85,6 +85,10 @@ window.tabiyaConfig = {
   // CV Upload feature flag (optional, defaults to false if not set)
   GLOBAL_ENABLE_CV_UPLOAD: btoa("true"),
 
+  // Hides the program-skills section in 3 places: home dashboard sidebar, build your profile
+  // chat sidebar, and (as "Education Skills") the profile page. Shown by default; "true" to hide.
+  FRONTEND_HIDE_PROGRAM_SKILLS: btoa("false"),
+
   // Optional features settings.
   // ################################################################
   // #       Optional Features settings

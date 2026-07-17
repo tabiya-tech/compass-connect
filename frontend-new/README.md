@@ -68,6 +68,7 @@ To develop this application locally, follow these steps:
      - `FRONTEND_DISABLE_REGISTRATION`: (**Optional**) A boolean value to disable the registration entirely.
      - `FRONTEND_DISABLE_SOCIAL_AUTH`: (**Optional**) A boolean value to disable social authentication options on the login and registration pages.
      - `FRONTEND_FEATURES`: (**optional**) A JSON like dictionary with the features enabled status and configurations specific to each feature.
+     - `FRONTEND_HIDE_PROGRAM_SKILLS`: (**Optional**) A boolean value to hide the program-skills section in 3 places: the home dashboard sidebar, the skills-discovery chat sidebar, and (as "Education Skills") the profile page. Shown by default; set to `true` to hide it in all three.
      - `FRONTEND_SUPPORTED_LOCALES`:(**Mandatory**) A JSON array of enabled locale codes (e.g., ["en-GB", "en-US","es-ES","es-AR", "fr-FR"]). Refer to the constant [SupportedLocales](./src/i18n/constants.ts#SupportedLocales) for more about the supported locales. They must follow [IETF BCP 47](https://www.ietf.org/rfc/bcp/bcp47.txt) format.
      - `FRONTEND_DEFAULT_LOCALE`:(**Mandatory**) Default UI language to use if the user preference is not set. It must be one of the supported locales.
 

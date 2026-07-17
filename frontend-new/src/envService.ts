@@ -40,6 +40,7 @@ export enum EnvVariables {
   FRONTEND_GTM_ENABLED = "FRONTEND_GTM_ENABLED",
   FRONTEND_FAQ_TUTORIAL_VIDEO_URL = "FRONTEND_FAQ_TUTORIAL_VIDEO_URL",
   FRONTEND_ILLUSTRATIONS = "FRONTEND_ILLUSTRATIONS",
+  FRONTEND_HIDE_PROGRAM_SKILLS = "FRONTEND_HIDE_PROGRAM_SKILLS",
 }
 
 export const requiredEnvVariables = [
@@ -237,6 +238,9 @@ export const getGtmContainerId = () => getEnv(EnvVariables.FRONTEND_GTM_CONTAINE
 export const getGtmEnabled = () => getEnv(EnvVariables.FRONTEND_GTM_ENABLED);
 
 export const getFaqTutorialVideoUrl = () => getEnv(EnvVariables.FRONTEND_FAQ_TUTORIAL_VIDEO_URL);
+
+export const getProgramSkillsVisibility = () =>
+  getEnv(EnvVariables.FRONTEND_HIDE_PROGRAM_SKILLS).toLowerCase() !== "true";
 
 export const getLogoUrl = () => getEnv(EnvVariables.FRONTEND_LOGO_URL);
 
