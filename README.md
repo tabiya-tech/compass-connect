@@ -1,6 +1,6 @@
 <h1 align="center">
-<img src="https://raw.githubusercontent.com/tabiya-tech/docs/refs/heads/main/.gitbook/assets/compass_logo_web_light.png#gh-dark-mode-only" alt="logo" width=300/>
-<img src="https://raw.githubusercontent.com/tabiya-tech/docs/refs/heads/main/.gitbook/assets/compass_logo_web_dark.png#gh-light-mode-only" alt="logo" width=300/>
+<img src="https://raw.githubusercontent.com/tabiya-tech/compass-connect/refs/heads/main/frontend-new/public/compass-connect-logo-light.svg#gh-dark-mode-only" alt="logo" width=400/>
+<img src="https://raw.githubusercontent.com/tabiya-tech/compass-connect/refs/heads/main/frontend-new/public/compass-connect-logo-dark.svg#gh-light-mode-only" alt="logo" width=400/>
 </h1>
 
 **Compass Connect** is an AI chatbot designed to assist job-seekers in exploring and discovering their skills.
