@@ -1,6 +1,7 @@
 import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import {
   Autocomplete,
+  AutocompleteInputChangeReason,
   Box,
   CircularProgress,
   Container,
@@ -138,6 +139,33 @@ const sanitize = (data: SensitivePersonalData): SensitivePersonalData => {
 
 const INSTITUTION_SEARCH_MIN_CHARS = 2;
 const INSTITUTION_SEARCH_DEBOUNCE_MS = 400;
+const INSTITUTION_LIST_MAX = 10; // Default list shown before typing
+const INSTITUTION_SEARCH_PAGE_SIZE = 200; // Page size when paging through search results
+
+// Fetches every match for a search, following the cursor until has_more is false.
+// Returns null if isStale() becomes true mid-fetch, so a superseded search can be ignored.
+async function fetchAllInstitutions(keywords: string, isStale: () => boolean): Promise<InstitutionSummary[] | null> {
+  const results: InstitutionSummary[] = [];
+  let cursor: string | undefined;
+
+  while (true) {
+    if (isStale()) return null;
+    const page = await InstitutionService.getInstance().searchInstitutions(
+      keywords,
+      INSTITUTION_SEARCH_PAGE_SIZE,
+      cursor
+    );
+
+    results.push(...page.data);
+    if (!page.meta.has_more) return results;
+
+    cursor = page.meta.next_cursor ?? undefined;
+    if (!cursor) {
+      console.error("Institution search reported more results but returned no cursor; stopping pagination early");
+      return results;
+    }
+  }
+}
 
 const SCHOOL_YEAR_VALUES = ["Year 1", "Year 2", "Year 3", "Year 4"] as const;
 
@@ -180,6 +208,7 @@ const SensitiveDataForm: React.FC = () => {
 
   // Institution autocomplete state
   const [institutionOptions, setInstitutionOptions] = useState<InstitutionSummary[]>([]);
+  const [defaultInstitutionOptions, setDefaultInstitutionOptions] = useState<InstitutionSummary[]>([]);
   const [institutionLoading, setInstitutionLoading] = useState(false);
 
   // Programmes dropdown state
@@ -216,13 +245,24 @@ const SensitiveDataForm: React.FC = () => {
 
   // --- Institution search with debounce ---
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Bumped on every keystroke so a slower, earlier paginated search can't overwrite a newer one.
+  const searchRequestIdRef = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, []);
 
   const handleInstitutionInputChange = useCallback(
-    (_event: React.SyntheticEvent, value: string) => {
+    (_event: React.SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => {
       setInstitutionInputValue(value);
 
-      // Clear institution & programme when user clears or changes input
-      if (!value) {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      searchRequestIdRef.current += 1;
+
+      // Only actual typing/clearing should invalidate the selection, not MUI syncing the text.
+      if (reason === "input" || reason === "clear") {
         setSelectedInstitution(null);
         setSelectedProgramme(null);
         setProgrammes([]);
@@ -230,27 +270,32 @@ const SensitiveDataForm: React.FC = () => {
         setFieldValid("programme", false);
       }
 
-      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      if (!value) {
+        setInstitutionOptions(defaultInstitutionOptions);
+        return;
+      }
 
       if (value.length < INSTITUTION_SEARCH_MIN_CHARS) {
         setInstitutionOptions([]);
         return;
       }
 
+      const requestId = searchRequestIdRef.current;
+      const isStale = () => requestId !== searchRequestIdRef.current;
       searchTimerRef.current = setTimeout(async () => {
         setInstitutionLoading(true);
         try {
-          const result = await InstitutionService.getInstance().searchInstitutions(value, 10);
-          setInstitutionOptions(result.data);
+          const results = await fetchAllInstitutions(value, isStale);
+          if (results) setInstitutionOptions(results);
         } catch (e) {
           console.error("Institution search failed", e);
-          setInstitutionOptions([]);
+          if (!isStale()) setInstitutionOptions([]);
         } finally {
-          setInstitutionLoading(false);
+          if (!isStale()) setInstitutionLoading(false);
         }
       }, INSTITUTION_SEARCH_DEBOUNCE_MS);
     },
-    [setFieldValid]
+    [setFieldValid, defaultInstitutionOptions]
   );
 
   const handleInstitutionSelect = useCallback(
@@ -435,6 +480,31 @@ const SensitiveDataForm: React.FC = () => {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Once we know the user isn't locked to a pilot institution, load a browsable list of
+  // institutions up front so the dropdown isn't empty until the user starts typing.
+  useEffect(() => {
+    if (assignmentLoading || assignedInstitution) return;
+    let cancelled = false;
+    const requestIdAtStart = searchRequestIdRef.current;
+    (async () => {
+      setInstitutionLoading(true);
+      try {
+        const result = await InstitutionService.getInstance().searchInstitutions("", INSTITUTION_LIST_MAX);
+        if (cancelled) return;
+        setDefaultInstitutionOptions(result.data);
+        // Only show it if the user hasn't started typing a search yet.
+        if (searchRequestIdRef.current === requestIdAtStart) setInstitutionOptions(result.data);
+      } catch (e) {
+        console.error("Failed to load institution list", e);
+      } finally {
+        if (!cancelled) setInstitutionLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [assignmentLoading, assignedInstitution]);
+
   const whiteBandContent = (
     <Container
       maxWidth="sm"
@@ -550,6 +620,9 @@ const SensitiveDataForm: React.FC = () => {
                   isOptionEqualToValue={(option, value) => option.name === value.name}
                   onInputChange={handleInstitutionInputChange}
                   onChange={handleInstitutionSelect}
+                  slotProps={{
+                    listbox: { sx: { maxHeight: 280, overflowY: "auto" } },
+                  }}
                   noOptionsText={
                     institutionInputValue.length < INSTITUTION_SEARCH_MIN_CHARS
                       ? t("sensitiveData.components.sensitiveDataForm.fields.typeAtLeastXChars")
@@ -608,6 +681,9 @@ const SensitiveDataForm: React.FC = () => {
                 onChange={(_event, programme) => {
                   setSelectedProgramme(programme ?? null);
                   setFieldValid("programme", !!programme);
+                }}
+                slotProps={{
+                  listbox: { sx: { maxHeight: 280, overflowY: "auto" } },
                 }}
                 noOptionsText={
                   !selectedInstitution

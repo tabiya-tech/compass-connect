@@ -69,8 +69,9 @@ export default class InstitutionService {
     return InstitutionService.instance;
   }
 
-  async searchInstitutions(keywords: string, limit: number = 10): Promise<InstitutionsApiResponse> {
+  async searchInstitutions(keywords: string, limit: number = 10, cursor?: string): Promise<InstitutionsApiResponse> {
     const query = new URLSearchParams({ keywords, limit: String(limit) });
+    if (cursor) query.set("cursor", cursor);
     const url = `${this.baseUrl}?${query.toString()}`;
     const errorFactory = getRestAPIErrorFactory(SERVICE_NAME, "searchInstitutions", "GET", url);
 
