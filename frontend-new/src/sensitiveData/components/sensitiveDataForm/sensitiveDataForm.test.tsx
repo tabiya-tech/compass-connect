@@ -106,7 +106,9 @@ describe("Sensitive Data Form", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockSearchInstitutions = jest.fn().mockResolvedValue({ data: [SAMPLE_INSTITUTION] });
+    mockSearchInstitutions = jest
+      .fn()
+      .mockResolvedValue({ data: [SAMPLE_INSTITUTION], meta: { limit: 10, has_more: false, next_cursor: null } });
     mockGetProgrammes = jest.fn().mockResolvedValue({ programmes: SAMPLE_PROGRAMMES });
 
     jest.spyOn(InstitutionService, "getInstance").mockReturnValue({
@@ -639,9 +641,23 @@ describe("Sensitive Data Form", () => {
       // AND the user types in the institution field
       await typeDebouncedInput(institutionInput, "Un");
 
-      // THEN the institution service should be called
+      // THEN the institution service should be called with no cap on the search results
       await waitFor(() => {
-        expect(mockSearchInstitutions).toHaveBeenCalledWith("Un", 10);
+        expect(mockSearchInstitutions).toHaveBeenCalledWith("Un", 200, undefined);
+      });
+    });
+
+    it("should load a small browsable institution list once the field is enabled", async () => {
+      // GIVEN a form is rendered
+      componentRender();
+
+      // WHEN the pilot assignment fetch completes and the institution field is enabled
+      const institutionInput = await screen.findByLabelText(/Institution/i);
+      await waitFor(() => expect(institutionInput).not.toBeDisabled());
+
+      // THEN the institution service should have been called to load a small default-browsable list
+      await waitFor(() => {
+        expect(mockSearchInstitutions).toHaveBeenCalledWith("", 10);
       });
     });
 
@@ -654,10 +670,14 @@ describe("Sensitive Data Form", () => {
       const institutionInput = await screen.findByLabelText(/Institution/i);
       await waitFor(() => expect(institutionInput).not.toBeDisabled());
 
+      // AND the default-browsable list has loaded
+      await waitFor(() => expect(mockSearchInstitutions).toHaveBeenCalledWith("", 10));
+      mockSearchInstitutions.mockClear();
+
       // AND the user types only 1 character
       await user.type(institutionInput, "U");
 
-      // THEN the institution service should not be called
+      // THEN the institution service should not be called again
       expect(mockSearchInstitutions).not.toHaveBeenCalled();
     });
 
@@ -722,6 +742,7 @@ describe("Sensitive Data Form", () => {
       // AND an institution with no province
       mockSearchInstitutions.mockResolvedValue({
         data: [{ name: "No Province Uni", reg_no: "REG002", province: null }],
+        meta: { limit: 10, has_more: false, next_cursor: null },
       });
       mockGetProgrammes.mockResolvedValue({ programmes: [{ name: "Law" }] });
 
