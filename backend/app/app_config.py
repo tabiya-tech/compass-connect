@@ -7,6 +7,7 @@ from app.countries import Country
 from app.i18n.language_config import LanguageConfig
 from app.users.cv.constants import DEFAULT_MAX_UPLOADS_PER_USER, DEFAULT_RATE_LIMIT_PER_MINUTE
 from app.version.types import Version
+from common_libs.observability.config import TracingConfig
 from features.types import FeatureSetupConfig
 
 _APPLICATION_NOT_CONFIGURED_ERROR_MESSAGE = "Application configuration is not setup."
@@ -120,6 +121,12 @@ class ApplicationConfig(BaseModel):
     """
     The Firebase tenant ID for admin user management operations.
     Loaded from the ADMIN_FIREBASE_TENANT_ID environment variable.
+    """
+
+    tracing_config: TracingConfig = Field(default_factory=TracingConfig)
+    """
+    The LLM tracing (Langfuse) configuration. Disabled by default; see
+    `common_libs.observability.config.parse_tracing_config` for how it is loaded from the environment.
     """
 
     @model_validator(mode='after')

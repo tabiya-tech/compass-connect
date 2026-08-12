@@ -28,6 +28,7 @@ from app.agent.simple_llm_agent.prompt_response_template import (
 from app.career_readiness.types import ConversationMode, TopicStatusRecord
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_types import ConversationContext
+from common_libs.observability.decorators import traced_agent
 from common_libs.llm.generative_models import GeminiGenerativeLLM
 from common_libs.llm.models_utils import LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG
 from common_libs.llm.schema_builder import with_response_schema
@@ -448,6 +449,9 @@ class CareerReadinessAgent:
     def system_instructions(self) -> str:
         return self._base_system_instructions
 
+    # This agent does not subclass Agent (it uses composition and bypasses the AgentDirector), so the
+    # observation and the agent_type context variable have to be applied explicitly here.
+    @traced_agent(AgentType.CAREER_READINESS_AGENT.value)
     async def execute(self, user_input: AgentInput, context: ConversationContext,
                       current_topic_status: list[TopicStatusRecord] | None = None) -> CareerReadinessAgentOutput:
         """

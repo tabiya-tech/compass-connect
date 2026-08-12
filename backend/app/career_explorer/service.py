@@ -18,7 +18,9 @@ from app.career_explorer.types import (
 )
 from app.metrics.services.service import IMetricsService
 from app.metrics.types import SectorEngagementEvent
+from app.observability.module_types import TraceModule
 from app.user_profile.service import IUserProfileService
+from common_libs.observability.tracing import start_trace, update_observation
 
 
 class CareerExplorerService:
@@ -39,6 +41,26 @@ class CareerExplorerService:
         return await self._repository.get_or_create_conversation(user_id, _get_welcome_message(), metadata=_get_welcome_metadata())
 
     async def send_message(self, user_id: str, user_input: str) -> CareerExplorerConversationResponse:
+        # The root trace for one Career Explorer turn. A deployment that does not mount
+        # add_career_explorer_routes never reaches this code, so it emits no Career Explorer traces.
+        # A user has exactly one Career Explorer conversation, keyed by their user id in the
+        # repository, so the user id *is* this conversation's id. It is reported as the session — with
+        # the module suffixed, so it cannot collide with another module's session for the same user —
+        # so that the turns of one conversation are grouped in the Langfuse session view.
+        # The Career Explorer routes do not set the observability context variables, so the user is
+        # passed explicitly rather than picked up from the request context.
+        with start_trace(
+                name="career_explorer.turn",
+                module=TraceModule.CAREER_EXPLORER.value,
+                user_id=user_id,
+                session_id=f"{user_id}-career-explorer",
+                input=user_input,
+        ) as trace:
+            response = await self._send_message(user_id, user_input)
+            update_observation(trace, output=[message.message for message in response.messages])
+            return response
+
+    async def _send_message(self, user_id: str, user_input: str) -> CareerExplorerConversationResponse:
         conv = await self._repository.find_by_user(user_id)
         if conv is None:
             raise ValueError("Conversation not found")

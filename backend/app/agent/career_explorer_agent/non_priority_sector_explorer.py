@@ -34,8 +34,10 @@ from app.i18n.translation_service import t
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from common_libs.llm.generative_models import GeminiGenerativeLLM
 from common_libs.llm.utils import extract_grounding_metadata_from_genai_response
-from common_libs.llm.models_utils import DEFAULT_VERTEX_API_GEN_AI_REGION, LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG
+from common_libs.llm.models_utils import DEFAULT_VERTEX_API_GEN_AI_REGION, LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG, \
+    llm_input_to_traceable
 from common_libs.llm.schema_builder import with_response_schema
+from common_libs.observability.tracing import traced_observation, update_observation
 
 
 def _build_non_priority_instructions() -> str:
@@ -251,27 +253,49 @@ class NonPrioritySectorExplorer:
         raw_text: str | None = None
 
         # Stage 1: Google Search grounded call -- produces free-text answer
-        try:
-            response = await client.aio.models.generate_content(
+        # This is one of the two LLM call sites that bypass BasicLLM, so it needs its own explicit
+        # generation observation; the chokepoint instrumentation does not see it.
+        with traced_observation(
+                name="non_priority_sector_explorer.grounded_search",
+                as_type="generation",
+                input=llm_input_to_traceable(llm_input),
                 model=AgentsConfig.default_model,
-                contents=contents,
-                config=stage1_config,
-            )
-            llm_stats.append(
-                LLMStats(
-                    prompt_token_count=getattr(response.usage_metadata, "prompt_token_count", 0) or 0,
-                    response_token_count=getattr(response.usage_metadata, "candidates_token_count", 0) or 0,
-                    response_time_in_sec=0,
+                model_parameters={"temperature": stage1_config.temperature},
+                metadata={"grounding": "google_search", "stage": 1},
+        ) as generation:
+            try:
+                response = await client.aio.models.generate_content(
+                    model=AgentsConfig.default_model,
+                    contents=contents,
+                    config=stage1_config,
                 )
-            )
-            raw_text = response.text
-            self._logger.debug("Stage 1 raw response (first 500 chars): %.500s", raw_text)
-            grounding_metadata = extract_grounding_metadata_from_genai_response(response)
-        except Exception as e:  # pylint: disable=broad-except
-            self._logger.exception("Stage 1 (Google Search) LLM call failed: %s", e)
-            llm_stats.append(
-                LLMStats(error=str(e), prompt_token_count=0, response_token_count=0, response_time_in_sec=0)
-            )
+                prompt_token_count = getattr(response.usage_metadata, "prompt_token_count", 0) or 0
+                response_token_count = getattr(response.usage_metadata, "candidates_token_count", 0) or 0
+                llm_stats.append(
+                    LLMStats(
+                        prompt_token_count=prompt_token_count,
+                        response_token_count=response_token_count,
+                        response_time_in_sec=0,
+                    )
+                )
+                raw_text = response.text
+                self._logger.debug("Stage 1 raw response (first 500 chars): %.500s", raw_text)
+                grounding_metadata = extract_grounding_metadata_from_genai_response(response)
+                update_observation(
+                    generation,
+                    output=raw_text,
+                    usage_details={
+                        "input": prompt_token_count,
+                        "output": response_token_count,
+                        "total": prompt_token_count + response_token_count,
+                    },
+                )
+            except Exception as e:  # pylint: disable=broad-except
+                self._logger.exception("Stage 1 (Google Search) LLM call failed: %s", e)
+                llm_stats.append(
+                    LLMStats(error=str(e), prompt_token_count=0, response_token_count=0, response_time_in_sec=0)
+                )
+                update_observation(generation, level="ERROR", status_message=str(e))
 
         if grounding_metadata:
             self._logger.info(
