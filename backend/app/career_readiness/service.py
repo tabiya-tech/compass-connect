@@ -49,6 +49,8 @@ from app.conversation_memory.conversation_memory_types import (
     ConversationTurn,
 )
 from app.i18n.translation_service import t
+from app.observability.module_types import TraceModule, sub_module_label
+from common_libs.observability.tracing import start_trace, update_observation
 
 
 SILENCE_MESSAGE = "(silence)"
@@ -465,9 +467,32 @@ class CareerReadinessService(ICareerReadinessService):
         conversation = await self._get_conversation_or_raise(conversation_id)
         self._validate_access(conversation, user_id, module_id)
 
-        if conversation.conversation_mode == ConversationMode.SUPPORT:
-            return await self._handle_support_message(module, conversation, user_input)
-        return await self._handle_instruction_message(module, conversation, user_input)
+        # The root trace for one Career Readiness turn. `module_id` here is the *content* module
+        # (cv-development, interview-preparation, ...), which is a level below the trace module, so
+        # it is reported as the `sub_module` rather than overwriting the module.
+        # Career Readiness conversations are not Build Your Profile sessions, and its routes do not
+        # set the observability context variables, so the user and the session are passed explicitly
+        # — otherwise a turn would carry neither and the Langfuse session view would be empty. The
+        # session spans the user's whole Career Readiness journey rather than a single conversation,
+        # so the modules they work through are one session, split by `sub_module`; the individual
+        # conversation stays available as trace metadata.
+        with start_trace(
+                name="career_readiness.turn",
+                module=TraceModule.CAREER_READINESS.value,
+                sub_module=sub_module_label(module_id),
+                user_id=user_id,
+                session_id=f"{user_id}-career-readiness",
+                input=user_input,
+                tags=[f"mode:{conversation.conversation_mode.value}"],
+                metadata={"module_id": module_id, "conversation_id": conversation_id},
+        ) as trace:
+            if conversation.conversation_mode == ConversationMode.SUPPORT:
+                response = await self._handle_support_message(module, conversation, user_input)
+            else:
+                response = await self._handle_instruction_message(module, conversation, user_input)
+
+            update_observation(trace, output=[message.message for message in response.messages])
+            return response
 
     async def _handle_instruction_message(
         self, module: ModuleConfig,
