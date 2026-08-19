@@ -13,14 +13,15 @@ from app.analytics.skills_supply.routes import add_skills_supply_analytics_route
 from app.analytics.sector_engagement.routes import add_sector_engagement_routes
 from app.analytics.career_explorer.routes import add_career_explorer_analytics_routes
 from app.analytics.reach.routes import add_reach_routes
-from app.users.auth import Authentication
+from app.users.auth import Authentication, ApiKeyAuth
 
 logger = logging.getLogger(__name__)
 
 
-def add_analytics_routes(app: FastAPI, auth: Authentication):
+def add_analytics_routes(app: FastAPI, auth: Authentication, api_key_auth: ApiKeyAuth):
+    # Students accepts either an admin/institution-staff JWT or a server-to-server api key.
     users_router = APIRouter(prefix="/students", tags=["analytics", "users"])
-    add_users_routes(users_router, auth)
+    add_users_routes(users_router, auth, api_key_auth)
     app.include_router(users_router)
 
     analytics_router = APIRouter(prefix="/analytics", tags=["analytics"])
