@@ -516,7 +516,7 @@ add_metrics_routes(app)
 ############################################
 # Add analytics dashboard routes
 ############################################
-add_analytics_routes(app, auth)
+add_analytics_routes(app, auth, api_key_auth)
 
 ############################################
 # Add TEVETA knowledge hub routes
