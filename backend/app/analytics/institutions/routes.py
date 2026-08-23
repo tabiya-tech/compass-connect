@@ -8,13 +8,18 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.analytics.institutions.repository import InstitutionRepository, get_institution_repository
+from app.analytics.institutions.types import InstitutionSummary, InstitutionsResponse
 from app.analytics.types import Institution, InstitutionFilterOptions, PaginatedListMeta, PaginatedListResponse
 from app.constants.errors import HTTPErrorResponse
 from app.server_dependencies.database_collections import Collections
 from app.server_dependencies.db_dependencies import CompassDBProvider
-from app.users.auth import Authentication, UserInfo
+from app.users.auth import ApiKeyAuth, Authentication, UserInfo
+from app.users.access_role import decode_institution_id
 
 logger = logging.getLogger(__name__)
+
+
+_api_key_auth = ApiKeyAuth()
 
 
 def add_institutions_routes(router: APIRouter, auth: Authentication):
@@ -105,3 +110,54 @@ def add_institutions_routes(router: APIRouter, auth: Authentication):
             raise HTTPException(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail="Unexpected error"
             ) from e
+
+    @router.get(
+        "/institutions/summary",
+        response_model=InstitutionsResponse,
+        dependencies=[Depends(_api_key_auth)],
+        responses={HTTPStatus.UNAUTHORIZED: {"model": HTTPErrorResponse}},
+        description=(
+            "Per-institution analytics summary for the compass-analytics dashboard. "
+            "Server-to-server endpoint authenticated with an x-api-key header. "
+            "Pass institution_ids as a comma-separated list of base64url-encoded institution IDs "
+            "to scope to a subset; omit to return all institutions."
+        ),
+    )
+    async def get_institutions_summary(
+        institution_ids: Optional[str] = Query(
+            default=None,
+            description="Comma-separated base64url-encoded institution IDs to scope to; omit for all",
+        ),
+        repository: InstitutionRepository = Depends(get_institution_repository),
+    ) -> InstitutionsResponse:
+        # Decode the CSV institution_ids to names, which is the key used internally.
+        requested_names: Optional[set[str]] = None
+        if institution_ids:
+            requested_names = set()
+            for encoded_id in institution_ids.split(","):
+                encoded_id = encoded_id.strip()
+                if encoded_id:
+                    try:
+                        requested_names.add(decode_institution_id(encoded_id))
+                    except Exception:  # pylint: disable=broad-except
+                        logger.warning("Could not decode institution_id: %s", encoded_id)
+
+        all_items, _, _ = await repository.list_institutions()
+
+        summaries = []
+        for inst in all_items:
+            if requested_names is not None and inst.name not in requested_names:
+                continue
+            summaries.append(InstitutionSummary(
+                institution_id=inst.id,
+                institution_name=inst.name,
+                registered_users=inst.students or 0,
+                active_users_7d=inst.active_7_days or 0,
+                skills_discovery_started_pct=inst.skills_discovery_started_pct,
+                skills_discovery_completed_pct=inst.skills_discovery_completed_pct,
+                career_readiness_started_pct=inst.career_readiness_started_pct,
+                career_readiness_completed_pct=inst.career_readiness_completed_pct,
+                career_explorer_started_pct=inst.career_explorer_started_pct,
+            ))
+
+        return InstitutionsResponse(institutions=summaries)
