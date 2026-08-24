@@ -36,8 +36,8 @@ def add_reach_routes(router: APIRouter):
         ),
     )
     async def get_reach(
-        start_date: date = Query(..., description="Start of date range (inclusive)"),
-        end_date: date = Query(..., description="End of date range (inclusive)"),
+        start_date: date = Query(..., description="Start of date range (inclusive)", examples=["YYYY-MM-DD"]),
+        end_date: date = Query(..., description="End of date range (inclusive)", examples=["YYYY-MM-DD"]),
         granularity: str = Query(default="day", description="Time bucket size: day | week | month"),
         institution: Optional[str] = Query(default=None, description="Institution id to scope to"),
         repository: ReachRepository = Depends(get_reach_repository),
