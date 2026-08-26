@@ -2,11 +2,14 @@ import hashlib
 import logging
 import statistics
 from datetime import datetime, timedelta
+from typing import Optional
 
 from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.analytics.modules.types import JobReadinessResponse, SubModuleProgress
 from app.analytics.stats.repository import DashboardStatsRepository
+from app.career_readiness.module_loader import get_module_registry
 from app.metrics.constants import EventType
 from app.server_dependencies.database_collections import Collections
 from app.server_dependencies.db_dependencies import CompassDBProvider
@@ -240,3 +243,86 @@ async def get_module_analytics_repository(
     metrics_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_metrics_db),
 ) -> ModuleAnalyticsRepository:
     return ModuleAnalyticsRepository(application_db, userdata_db, metrics_db)
+
+
+class JobReadinessAnalyticsRepository:
+    def __init__(self, application_db: AsyncIOMotorDatabase, userdata_db: AsyncIOMotorDatabase):
+        self._application_db = application_db
+        self._userdata_db = userdata_db
+
+    async def _resolve_user_ids(self, institution_names: Optional[list[str]]) -> Optional[set[str]]:
+        if not institution_names:
+            return None
+
+        filter_expr: dict
+        if len(institution_names) == 1:
+            filter_expr = {"data.institution_name": {"$eq": institution_names[0]}}
+        else:
+            filter_expr = {"data.institution_name": {"$in": institution_names}}
+
+        docs = await self._userdata_db.get_collection(
+            Collections.PLAIN_PERSONAL_DATA
+        ).find(filter_expr, {"user_id": 1}).to_list(length=None)
+        return {d["user_id"] for d in docs if d.get("user_id")}
+
+    async def _count_registered_users(self, user_ids: Optional[set[str]]) -> int:
+        if user_ids is not None:
+            return len(user_ids)
+        return await self._application_db.get_collection(
+            Collections.USER_PREFERENCES
+        ).count_documents({})
+
+    async def _get_per_module_stats(self, user_ids: Optional[set[str]]) -> list[dict]:
+        pipeline: list[dict] = []
+        if user_ids is not None:
+            pipeline.append({"$match": {"user_id": {"$in": list(user_ids)}}})
+        pipeline.append({
+            "$group": {
+                "_id": "$module_id",
+                "started_count": {"$sum": 1},
+                "completed_count": {
+                    "$sum": {"$cond": [{"$eq": ["$quiz_passed", True]}, 1, 0]}
+                },
+            }
+        })
+        return await self._application_db.get_collection(
+            Collections.CAREER_READINESS_CONVERSATIONS
+        ).aggregate(pipeline).to_list(length=None)
+
+    async def _count_users_who_started_any(self, user_ids: Optional[set[str]]) -> int:
+        pipeline: list[dict] = []
+        if user_ids is not None:
+            pipeline.append({"$match": {"user_id": {"$in": list(user_ids)}}})
+        pipeline.extend([
+            {"$group": {"_id": "$user_id"}},
+            {"$count": "total"},
+        ])
+        result = await self._application_db.get_collection(
+            Collections.CAREER_READINESS_CONVERSATIONS
+        ).aggregate(pipeline).to_list(length=1)
+        return result[0]["total"] if result else 0
+
+    async def get_job_readiness(self, institution_names: Optional[list[str]]) -> JobReadinessResponse:
+        user_ids = await self._resolve_user_ids(institution_names)
+        total_users = await self._count_registered_users(user_ids)
+        users_started = await self._count_users_who_started_any(user_ids)
+
+        started_percentage = round(users_started / total_users * 100, 1) if total_users > 0 else 0.0
+
+        module_stats_by_id = {m["_id"]: m for m in await self._get_per_module_stats(user_ids)}
+
+        registry = get_module_registry()
+        sub_modules = [
+            SubModuleProgress(
+                id=module.id,
+                name=module.title,
+                started=module_stats_by_id.get(module.id, {}).get("started_count", 0),
+                completed=module_stats_by_id.get(module.id, {}).get("completed_count", 0),
+            )
+            for module in registry.get_all_modules()
+        ]
+
+        return JobReadinessResponse(
+            started_percentage=started_percentage,
+            sub_modules=sub_modules,
+        )

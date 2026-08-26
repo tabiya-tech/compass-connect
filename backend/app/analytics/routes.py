@@ -12,8 +12,8 @@ from app.analytics.skills_discovery.routes import add_skills_discovery_analytics
 from app.analytics.skills_supply.routes import add_skills_supply_analytics_routes
 from app.analytics.sector_engagement.routes import add_sector_engagement_routes
 from app.analytics.career_explorer.routes import add_career_explorer_analytics_routes
-from app.analytics.reach.routes import add_reach_routes
 from app.analytics.modules.routes import add_module_analytics_routes
+from app.analytics.reach.routes import add_reach_routes
 from app.users.auth import Authentication
 
 logger = logging.getLogger(__name__)
@@ -36,5 +36,5 @@ def add_analytics_routes(app: FastAPI, auth: Authentication):
     add_career_explorer_analytics_routes(analytics_router, auth)
     # Reach and module analytics are server-to-server (api-key auth), not admin-JWT like the routes above.
     add_reach_routes(analytics_router)
-    add_module_analytics_routes(analytics_router)
+    add_module_analytics_routes(analytics_router)  # registers both /modules/build-your-profile and /modules/job-readiness
     app.include_router(analytics_router)
