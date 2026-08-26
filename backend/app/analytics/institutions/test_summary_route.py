@@ -92,8 +92,8 @@ class TestGetInstitutionsSummary:
         assert actual_response.status_code == HTTPStatus.FORBIDDEN
         mocked_repository.list_institutions.assert_not_called()
 
-    def test_filters_to_requested_institution_ids(self, client_with_mocks):
-        client, _ = client_with_mocks
+    def test_passes_decoded_names_to_repository_when_institution_ids_given(self, client_with_mocks):
+        client, mocked_repository = client_with_mocks
         lusaka_id = _encode_id("Lusaka College")
 
         # WHEN institution_ids is scoped to one institution
@@ -101,17 +101,26 @@ class TestGetInstitutionsSummary:
             f"/analytics/institutions/summary?institution_ids={lusaka_id}", headers=_API_KEY_HEADER
         )
 
-        # THEN only that institution appears in the response
+        # THEN the repository is called with the decoded names set
         assert actual_response.status_code == HTTPStatus.OK
-        institutions = actual_response.json()["institutions"]
-        assert len(institutions) == 1
-        assert institutions[0]["institution_name"] == "Lusaka College"
+        mocked_repository.list_institutions.assert_called_once_with(names={"Lusaka College"})
+
+    def test_passes_none_names_to_repository_when_no_institution_ids_given(self, client_with_mocks):
+        client, mocked_repository = client_with_mocks
+
+        # WHEN no institution_ids filter is provided
+        actual_response = client.get("/analytics/institutions/summary", headers=_API_KEY_HEADER)
+
+        # THEN the repository is called with names=None (fetch all)
+        assert actual_response.status_code == HTTPStatus.OK
+        mocked_repository.list_institutions.assert_called_once_with(names=None)
 
     def test_returns_empty_list_when_institution_id_matches_nothing(self, client_with_mocks):
-        client, _ = client_with_mocks
+        client, mocked_repository = client_with_mocks
         unknown_id = _encode_id("Unknown School")
+        mocked_repository.list_institutions = AsyncMock(return_value=([], None, False))
 
-        # WHEN institution_ids references an institution not in the list
+        # WHEN institution_ids references an institution not in the DB
         actual_response = client.get(
             f"/analytics/institutions/summary?institution_ids={unknown_id}", headers=_API_KEY_HEADER
         )
