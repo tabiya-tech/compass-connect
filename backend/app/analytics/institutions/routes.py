@@ -142,12 +142,10 @@ def add_institutions_routes(router: APIRouter, auth: Authentication):
                     except Exception:  # pylint: disable=broad-except
                         logger.warning("Could not decode institution_id: %s", encoded_id)
 
-        all_items, _, _ = await repository.list_institutions()
+        all_items, _, _ = await repository.list_institutions(names=requested_names)
 
         summaries = []
         for inst in all_items:
-            if requested_names is not None and inst.name not in requested_names:
-                continue
             summaries.append(InstitutionSummary(
                 institution_id=inst.id,
                 institution_name=inst.name,
