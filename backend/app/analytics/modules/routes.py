@@ -17,8 +17,12 @@ from app.analytics.modules.types import (
     BuildYourProfileSummary,
     ConversationPhaseReach,
     JobReadinessResponse,
+    JobsResponse,
+    JobsSummary,
 )
 from app.constants.errors import HTTPErrorResponse
+from app.jobs.get_job_service import get_job_service
+from app.jobs.service import IJobService
 from app.server_dependencies.db_dependencies import CompassDBProvider
 from app.users.access_role import decode_institution_id
 from app.users.auth import ApiKeyAuth
@@ -131,6 +135,25 @@ def add_module_analytics_routes(router: APIRouter) -> None:
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 detail="Unexpected error fetching job readiness analytics",
             ) from exc
+
+    @router.get(
+        "/modules/jobs",
+        response_model=JobsResponse,
+        dependencies=[Depends(_api_key_auth)],
+        responses={HTTPStatus.INTERNAL_SERVER_ERROR: {"model": HTTPErrorResponse}},
+        description="Jobs module summary — jobs currently in the classifier feed.",
+    )
+    async def get_jobs_module(
+        job_service: IJobService = Depends(get_job_service),
+    ) -> JobsResponse:
+        try:
+            stats = await job_service.get_job_stats()
+        except Exception as exc:
+            raise HTTPException(
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                detail="Failed to fetch job stats",
+            ) from exc
+        return JobsResponse(summary=JobsSummary(jobs_sourced=stats.total))
 
 
 # Alias kept for callers that registered the old name before this module was extended.

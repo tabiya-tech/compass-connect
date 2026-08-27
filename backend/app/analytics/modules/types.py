@@ -54,3 +54,11 @@ class JobReadinessResponse(BaseModel):
 
     class Config:
         extra = "forbid"
+
+
+class JobsSummary(BaseModel):
+    jobs_sourced: int
+
+
+class JobsResponse(BaseModel):
+    summary: JobsSummary
