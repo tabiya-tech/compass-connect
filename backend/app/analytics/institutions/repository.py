@@ -79,10 +79,11 @@ class InstitutionsRepository:
         sorted_items = sorted(items, key=lambda inst: inst.name.lower())
         return sorted(sorted_items, key=_numeric_key(selector_map[safe_sort_by]), reverse=reverse)
 
-    async def _get_institution_names(self) -> list[str]:
+    async def _get_institution_names(self, names: Optional[set[str]] = None) -> list[str]:
         """Fetch the canonical sorted list of institution names from the institutions collection."""
+        query = {"name": {"$in": list(names)}} if names is not None else {}
         docs = await self._institutions_collection.find(
-            {}, projection={"_id": 0, "name": 1}
+            query, projection={"_id": 0, "name": 1}
         ).sort("name", 1).to_list(length=None)
         return [d["name"] for d in docs if d.get("name")]
 
@@ -127,8 +128,9 @@ class InstitutionsRepository:
         limit: int = 20,
         sort_by: Optional[str] = None,
         sort_dir: str = "asc",
+        names: Optional[set[str]] = None,
     ) -> tuple[list[Institution], Optional[str], bool]:
-        institution_names = await self._get_institution_names()
+        institution_names = await self._get_institution_names(names=names)
 
         # Apply province filter: province info is per-user, not per-institution in this model.
         # We skip province filtering at the institution level since the canonical list
