@@ -4,15 +4,22 @@ from http import HTTPStatus
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.analytics.modules.repository import ModuleAnalyticsRepository, get_module_analytics_repository
+from app.analytics.modules.repository import (
+    JobReadinessAnalyticsRepository,
+    ModuleAnalyticsRepository,
+    get_module_analytics_repository,
+)
 from app.analytics.modules.types import (
     BuildYourProfileResponse,
     BuildYourProfileSeriesPoint,
     BuildYourProfileSummary,
     ConversationPhaseReach,
+    JobReadinessResponse,
 )
 from app.constants.errors import HTTPErrorResponse
+from app.server_dependencies.db_dependencies import CompassDBProvider
 from app.users.access_role import decode_institution_id
 from app.users.auth import ApiKeyAuth
 
@@ -27,7 +34,14 @@ def _decode_institution_ids(institution_ids: Optional[str]) -> Optional[list[str
     return [decode_institution_id(encoded) for encoded in institution_ids.split(",") if encoded]
 
 
-def add_module_analytics_routes(router: APIRouter):
+async def _get_job_readiness_repository(
+    application_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_application_db),
+    userdata_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_userdata_db),
+) -> JobReadinessAnalyticsRepository:
+    return JobReadinessAnalyticsRepository(application_db, userdata_db)
+
+
+def add_module_analytics_routes(router: APIRouter) -> None:
     @router.get(
         "/modules/build-your-profile",
         response_model=BuildYourProfileResponse,
@@ -58,7 +72,6 @@ def add_module_analytics_routes(router: APIRouter):
                 detail="granularity must be 'day', 'week' or 'month'",
             )
 
-        # None means all institutions.
         institution_names = _decode_institution_ids(institution_ids)
 
         start_dt = datetime.combine(start_date, time.min).replace(tzinfo=timezone.utc)
@@ -75,3 +88,50 @@ def add_module_analytics_routes(router: APIRouter):
             series=[BuildYourProfileSeriesPoint(**p) for p in raw["series"]],
             phases=[ConversationPhaseReach(**p) for p in raw["phases"]],
         )
+
+    @router.get(
+        "/modules/job-readiness",
+        response_model=JobReadinessResponse,
+        dependencies=[Depends(_api_key_auth)],
+        responses={
+            HTTPStatus.BAD_REQUEST: {"model": HTTPErrorResponse},
+            HTTPStatus.UNAUTHORIZED: {"model": HTTPErrorResponse},
+        },
+        description=(
+            "Job Readiness (career readiness) module analytics for the compass-analytics dashboard. "
+            "Server-to-server endpoint authenticated with an x-api-key header. "
+            "Pass institution_ids as a comma-separated list of base64url-encoded institution IDs "
+            "to scope to a subset; omit to return all institutions."
+        ),
+    )
+    async def get_job_readiness(
+        institution_ids: Optional[str] = Query(
+            default=None,
+            description="Comma-separated base64url-encoded institution IDs; omit for all",
+        ),
+        repository: JobReadinessAnalyticsRepository = Depends(_get_job_readiness_repository),
+    ) -> JobReadinessResponse:
+        institution_names: Optional[list[str]] = None
+        if institution_ids:
+            institution_names = []
+            for encoded_id in institution_ids.split(","):
+                encoded_id = encoded_id.strip()
+                if not encoded_id:
+                    continue
+                try:
+                    institution_names.append(decode_institution_id(encoded_id))
+                except Exception:  # pylint: disable=broad-except
+                    logger.warning("Could not decode institution_id: %s", encoded_id)
+
+        try:
+            return await repository.get_job_readiness(institution_names or None)
+        except Exception as exc:
+            logger.exception(exc)
+            raise HTTPException(
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                detail="Unexpected error fetching job readiness analytics",
+            ) from exc
+
+
+# Alias kept for callers that registered the old name before this module was extended.
+add_modules_analytics_routes = add_module_analytics_routes
