@@ -1,7 +1,7 @@
 import hashlib
 import logging
 import statistics
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import Depends
@@ -326,3 +326,171 @@ class JobReadinessAnalyticsRepository:
             started_percentage=started_percentage,
             sub_modules=sub_modules,
         )
+
+
+class CareerExplorerModuleRepository:
+    def __init__(
+        self,
+        application_db: AsyncIOMotorDatabase,
+        userdata_db: AsyncIOMotorDatabase,
+        metrics_db: AsyncIOMotorDatabase,
+        career_explorer_db: AsyncIOMotorDatabase,
+    ):
+        self._prefs = application_db.get_collection(Collections.USER_PREFERENCES)
+        self._plain_data = userdata_db.get_collection(Collections.PLAIN_PERSONAL_DATA)
+        self._metrics = metrics_db.get_collection(Collections.COMPASS_METRICS)
+        self._ce_conversations = career_explorer_db.get_collection(Collections.CAREER_EXPLORER_CONVERSATIONS)
+
+    async def _resolve_user_ids(self, institution_names: Optional[list[str]]) -> Optional[set[str]]:
+        """The user_ids in scope, or None for "every institution" — the contract the other repos here use."""
+        if not institution_names:
+            return None
+        docs = await self._plain_data.find(
+            {f"data.{PLAIN_DATA_SCHOOL_KEY}": {"$in": institution_names}}, {"user_id": 1}
+        ).to_list(length=None)
+        return {d["user_id"] for d in docs if d.get("user_id")}
+
+    @staticmethod
+    def _started_within(start_date: datetime, end_date: datetime) -> dict:
+        return {
+            "$or": [
+                {"created_at": {"$gte": datetime_to_mongo_date(start_date), "$lte": datetime_to_mongo_date(end_date)}},
+                {
+                    "created_at": {
+                        "$gte": start_date.astimezone(timezone.utc).isoformat(),
+                        "$lte": end_date.astimezone(timezone.utc).isoformat(),
+                    }
+                },
+            ]
+        }
+
+    @staticmethod
+    def _engagement_match(start_date: datetime, end_date: datetime, anon_ids: Optional[list[str]]) -> dict:
+        match: dict = {
+            "event_type": {"$eq": EventType.SECTOR_ENGAGEMENT.value},
+            "timestamp": {"$gte": datetime_to_mongo_date(start_date), "$lte": datetime_to_mongo_date(end_date)},
+        }
+        if anon_ids is not None:
+            match["anonymized_user_id"] = {"$in": anon_ids}
+        return match
+
+    async def _count_registered_students(self, user_ids: Optional[set[str]]) -> int:
+        if user_ids is not None:
+            return len(user_ids)
+        return await self._prefs.count_documents({})
+
+    async def _count_started_users(
+        self, user_ids: Optional[set[str]], start_date: datetime, end_date: datetime
+    ) -> int:
+        pipeline: list[dict] = []
+        if user_ids is not None:
+            pipeline.append({"$match": {"user_id": {"$in": list(user_ids)}}})
+        pipeline.append({"$match": self._started_within(start_date, end_date)})
+        pipeline.extend([
+            {"$group": {"_id": "$user_id"}},
+            {"$match": {"_id": {"$ne": None}}},
+            {"$count": "total"},
+        ])
+        result = await self._ce_conversations.aggregate(pipeline).to_list(length=1)
+        return result[0]["total"] if result else 0
+
+    async def _count_returned_users(self, match: dict) -> int:
+        pipeline = [
+            {"$match": match},
+            # A SECTOR_ENGAGEMENT document always means at least one inquiry, even where a legacy
+            # document predates the counter.
+            {"$group": {"_id": "$anonymized_user_id", "total_inquiries": {"$sum": {"$ifNull": ["$inquiry_count", 1]}}}},
+            {"$match": {"total_inquiries": {"$gte": 2}}},
+            {"$count": "total"},
+        ]
+        result = await self._metrics.aggregate(pipeline).to_list(length=1)
+        return result[0]["total"] if result else 0
+
+    async def _count_users_by_priority(self, match: dict, *, is_priority: bool) -> int:
+        priority_match = {"is_priority": True} if is_priority else {"is_priority": {"$ne": True}}
+        pipeline = [
+            {"$match": {**match, **priority_match}},
+            {"$group": {"_id": "$anonymized_user_id"}},
+            {"$count": "total"},
+        ]
+        result = await self._metrics.aggregate(pipeline).to_list(length=1)
+        return result[0]["total"] if result else 0
+
+    async def _sector_stats(self, match: dict) -> list[dict]:
+        pipeline = [
+            {"$match": match},
+            {"$group": {
+                "_id": "$sector_name",
+                "is_priority": {"$first": "$is_priority"},
+                "total_inquiries": {"$sum": {"$ifNull": ["$inquiry_count", 1]}},
+                "unique_users": {"$addToSet": "$anonymized_user_id"},
+            }},
+            {"$project": {
+                "_id": 0,
+                "sector_name": "$_id",
+                "is_priority": {"$ifNull": ["$is_priority", False]},
+                "total_inquiries": 1,
+                "unique_users": {"$size": "$unique_users"},
+            }},
+            {"$sort": {"total_inquiries": -1}},
+        ]
+        return await self._metrics.aggregate(pipeline).to_list(length=None)
+
+    @staticmethod
+    def _empty_response() -> dict:
+        return {
+            "total_registered_students": 0,
+            "started": {"count": 0, "percentage": 0.0},
+            "returned_2_plus": {"count": 0, "percentage": 0.0},
+            "priority_sector_users": 0,
+            "non_priority_sector_users": 0,
+            "top_sectors": [],
+        }
+
+    async def get_career_explorer(
+        self,
+        *,
+        start_date: datetime,
+        end_date: datetime,
+        institution_names: Optional[list[str]] = None,
+    ) -> dict:
+        user_ids = await self._resolve_user_ids(institution_names)
+        # An institution filter matching nobody is a real, empty answer — not "everyone".
+        if user_ids is not None and not user_ids:
+            return self._empty_response()
+
+        total_students = await self._count_registered_students(user_ids)
+        started_count = await self._count_started_users(user_ids, start_date, end_date)
+
+        anon_ids = [_anonymize(uid) for uid in user_ids] if user_ids is not None else None
+        engagement_match = self._engagement_match(start_date, end_date, anon_ids)
+
+        returned_count = await self._count_returned_users(engagement_match)
+        priority_users = await self._count_users_by_priority(engagement_match, is_priority=True)
+        non_priority_users = await self._count_users_by_priority(engagement_match, is_priority=False)
+        top_sectors = await self._sector_stats(engagement_match)
+
+        return {
+            "total_registered_students": total_students,
+            "started": {
+                "count": started_count,
+                "percentage": round(started_count / total_students * 100, 1) if total_students > 0 else 0.0,
+            },
+            # A share of those who started, not of everyone registered.
+            "returned_2_plus": {
+                "count": returned_count,
+                "percentage": round(returned_count / started_count * 100, 1) if started_count > 0 else 0.0,
+            },
+            "priority_sector_users": priority_users,
+            "non_priority_sector_users": non_priority_users,
+            "top_sectors": top_sectors,
+        }
+
+
+async def get_career_explorer_module_repository(
+    application_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_application_db),
+    userdata_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_userdata_db),
+    metrics_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_metrics_db),
+    career_explorer_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_career_explorer_db),
+) -> CareerExplorerModuleRepository:
+    return CareerExplorerModuleRepository(application_db, userdata_db, metrics_db, career_explorer_db)
