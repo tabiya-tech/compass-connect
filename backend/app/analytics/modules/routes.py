@@ -6,10 +6,13 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.analytics.career_explorer.types import CareerExplorerStatsResponse
 from app.analytics.modules.repository import (
+    CareerExplorerModuleRepository,
     JobReadinessAnalyticsRepository,
-    ModuleAnalyticsRepository,
+    get_career_explorer_module_repository,
     get_module_analytics_repository,
+    ModuleAnalyticsRepository,
 )
 from app.analytics.modules.types import (
     BuildYourProfileResponse,
@@ -101,12 +104,6 @@ def add_module_analytics_routes(router: APIRouter) -> None:
             HTTPStatus.BAD_REQUEST: {"model": HTTPErrorResponse},
             HTTPStatus.UNAUTHORIZED: {"model": HTTPErrorResponse},
         },
-        description=(
-            "Job Readiness (career readiness) module analytics for the compass-analytics dashboard. "
-            "Server-to-server endpoint authenticated with an x-api-key header. "
-            "Pass institution_ids as a comma-separated list of base64url-encoded institution IDs "
-            "to scope to a subset; omit to return all institutions."
-        ),
     )
     async def get_job_readiness(
         institution_ids: Optional[str] = Query(
@@ -154,6 +151,56 @@ def add_module_analytics_routes(router: APIRouter) -> None:
                 detail="Failed to fetch job stats",
             ) from exc
         return JobsResponse(summary=JobsSummary(jobs_sourced=stats.total))
+
+    @router.get(
+        "/modules/career-explorer",
+        response_model=CareerExplorerStatsResponse,
+        dependencies=[Depends(_api_key_auth)],
+        responses={
+            HTTPStatus.BAD_REQUEST: {"model": HTTPErrorResponse},
+            HTTPStatus.UNAUTHORIZED: {"model": HTTPErrorResponse},
+        },
+    )
+    async def get_career_explorer(
+        start_date: date = Query(..., description="Start of date range, inclusive (yyyy-MM-dd)", examples=["YYYY-MM-DD"]),
+        end_date: date = Query(..., description="End of date range, inclusive (yyyy-MM-dd)", examples=["YYYY-MM-DD"]),
+        granularity: str = Query(default="day", description="Time bucket size: day | week | month"),
+        institution_ids: Optional[str] = Query(
+            default=None, description="Comma-separated, base64url-encoded institution ids to scope to"
+        ),
+        repository: CareerExplorerModuleRepository = Depends(get_career_explorer_module_repository),
+    ) -> CareerExplorerStatsResponse:
+        if start_date > end_date:
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail="start_date must be before or equal to end_date",
+            )
+        if granularity not in ("day", "week", "month"):
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail="granularity must be 'day', 'week' or 'month'",
+            )
+
+        # None means all institutions.
+        institution_names = _decode_institution_ids(institution_ids)
+
+        start_dt = datetime.combine(start_date, time.min).replace(tzinfo=timezone.utc)
+        end_dt = datetime.combine(end_date, time.max).replace(tzinfo=timezone.utc)
+
+        try:
+            raw = await repository.get_career_explorer(
+                start_date=start_dt,
+                end_date=end_dt,
+                institution_names=institution_names,
+            )
+        except Exception as exc:
+            logger.exception(exc)
+            raise HTTPException(
+                status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                detail="Unexpected error fetching career explorer analytics",
+            ) from exc
+
+        return CareerExplorerStatsResponse(**raw)
 
 
 # Alias kept for callers that registered the old name before this module was extended.

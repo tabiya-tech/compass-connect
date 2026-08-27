@@ -1,6 +1,3 @@
-"""
-Tests for the Build Your Profile module analytics repository.
-"""
 import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Awaitable
@@ -8,7 +5,7 @@ from typing import Awaitable
 import pytest
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from app.analytics.modules.repository import ModuleAnalyticsRepository
+from app.analytics.modules.repository import CareerExplorerModuleRepository, ModuleAnalyticsRepository
 from app.metrics.constants import EventType
 from app.server_dependencies.database_collections import Collections
 from common_libs.time_utilities import datetime_to_mongo_date
@@ -42,14 +39,6 @@ async def populated_repository(
     in_memory_userdata_database: Awaitable[AsyncIOMotorDatabase],
     in_memory_metrics_database: Awaitable[AsyncIOMotorDatabase],
 ) -> ModuleAnalyticsRepository:
-    """
-    Data layout:
-      - 3 registered students: user-a, user-b, user-c
-      - user-a, user-b belong to "Test School"; user-c belongs to "Other School"
-      - user-a: session 1001, started + ENDED 30 minutes later on Jan 1 (completed, downloaded a report)
-      - user-b: session 1002, started (INTRO) on Jan 2, never ends (in progress)
-      - user-c: session 2001, started + ENDED on Jan 1 (Other School, used to prove institution scoping)
-    """
     app_db = await in_memory_application_database
     userdata_db = await in_memory_userdata_database
     metrics_db = await in_memory_metrics_database
@@ -266,3 +255,190 @@ class TestBuildYourProfileFunnel:
             {"id": "skills", "reached": 2},
             {"id": "completed", "reached": 1},
         ]
+
+
+def _sector_event(user_id: str, sector: str, is_priority: bool, inquiries: int, ts: datetime) -> dict:
+    return {
+        "event_type": EventType.SECTOR_ENGAGEMENT.value,
+        "anonymized_user_id": _anon(user_id),
+        "sector_name": sector,
+        "is_priority": is_priority,
+        "inquiry_count": inquiries,
+        "timestamp": datetime_to_mongo_date(ts),
+    }
+
+
+def _conversation(user_id: str, created_at: datetime, *, as_string: bool = False) -> dict:
+    return {
+        "user_id": user_id,
+        "created_at": created_at.astimezone(timezone.utc).isoformat() if as_string
+        else datetime_to_mongo_date(created_at),
+        "updated_at": datetime_to_mongo_date(created_at),
+    }
+
+
+_JAN_1 = datetime(2026, 1, 1, 10, 0, tzinfo=timezone.utc)
+_JAN_2 = datetime(2026, 1, 2, 9, 0, tzinfo=timezone.utc)
+_MAR_1 = datetime(2026, 3, 1, 9, 0, tzinfo=timezone.utc)
+_WINDOW_START = datetime(2026, 1, 1, 0, 0, tzinfo=timezone.utc)
+_WINDOW_END = datetime(2026, 1, 31, 23, 59, 59, 999999, tzinfo=timezone.utc)
+
+
+@pytest.fixture(scope="function")
+async def career_explorer_repository(
+    in_memory_application_database: Awaitable[AsyncIOMotorDatabase],
+    in_memory_userdata_database: Awaitable[AsyncIOMotorDatabase],
+    in_memory_metrics_database: Awaitable[AsyncIOMotorDatabase],
+    in_memory_career_explorer_database: Awaitable[AsyncIOMotorDatabase],
+) -> CareerExplorerModuleRepository:
+    app_db = await in_memory_application_database
+    userdata_db = await in_memory_userdata_database
+    metrics_db = await in_memory_metrics_database
+    ce_db = await in_memory_career_explorer_database
+
+    await app_db.get_collection(Collections.USER_PREFERENCES).insert_many([
+        {"user_id": "user-a"}, {"user_id": "user-b"}, {"user_id": "user-c"},
+    ])
+    await userdata_db.get_collection(Collections.PLAIN_PERSONAL_DATA).insert_many([
+        {"user_id": "user-a", "data": {"institution_name": "Test School"}},
+        {"user_id": "user-b", "data": {"institution_name": "Test School"}},
+        {"user_id": "user-c", "data": {"institution_name": "Other School"}},
+    ])
+    await ce_db.get_collection(Collections.CAREER_EXPLORER_CONVERSATIONS).insert_many([
+        _conversation("user-a", _JAN_1),
+        _conversation("user-b", _JAN_2, as_string=True),
+        _conversation("user-c", _MAR_1),
+    ])
+    await metrics_db.get_collection(Collections.COMPASS_METRICS).insert_many([
+        _sector_event("user-a", "Healthcare", True, 3, _JAN_1),
+        _sector_event("user-b", "Technology", False, 1, _JAN_2),
+        _sector_event("user-c", "Healthcare", True, 2, _MAR_1),
+    ])
+
+    return CareerExplorerModuleRepository(app_db, userdata_db, metrics_db, ce_db)
+
+
+class TestCareerExplorerCounts:
+    @pytest.mark.asyncio
+    async def test_should_count_everyone_who_started_in_the_window_however_their_date_was_stored(
+        self, career_explorer_repository: Awaitable[CareerExplorerModuleRepository]
+    ):
+        # GIVEN two January conversations, one with a BSON-date created_at and one with an ISO string
+        repo = await career_explorer_repository
+
+        # WHEN the January window is aggregated across every institution
+        actual = await repo.get_career_explorer(start_date=_WINDOW_START, end_date=_WINDOW_END)
+
+        # THEN both are counted, and the March one is not
+        assert actual["started"]["count"] == 2
+        assert actual["total_registered_students"] == 3
+        # AND the share is of everyone registered
+        assert actual["started"]["percentage"] == round(2 / 3 * 100, 1)
+
+    @pytest.mark.asyncio
+    async def test_should_count_only_the_explorers_who_came_back(
+        self, career_explorer_repository: Awaitable[CareerExplorerModuleRepository]
+    ):
+        # GIVEN user-a asked 3 times in January and user-b asked once
+        repo = await career_explorer_repository
+
+        # WHEN the January window is aggregated
+        actual = await repo.get_career_explorer(start_date=_WINDOW_START, end_date=_WINDOW_END)
+
+        # THEN only user-a counts as returning, as a share of those who started
+        assert actual["returned_2_plus"]["count"] == 1
+        assert actual["returned_2_plus"]["percentage"] == 50.0
+
+    @pytest.mark.asyncio
+    async def test_should_split_explorers_by_whether_their_sector_is_a_priority(
+        self, career_explorer_repository: Awaitable[CareerExplorerModuleRepository]
+    ):
+        # GIVEN user-a in a priority sector and user-b outside one
+        repo = await career_explorer_repository
+
+        # WHEN the January window is aggregated
+        actual = await repo.get_career_explorer(start_date=_WINDOW_START, end_date=_WINDOW_END)
+
+        # THEN each lands on its own side of the split
+        assert actual["priority_sector_users"] == 1
+        assert actual["non_priority_sector_users"] == 1
+
+    @pytest.mark.asyncio
+    async def test_should_rank_sectors_by_the_inquiries_they_drew(
+        self, career_explorer_repository: Awaitable[CareerExplorerModuleRepository]
+    ):
+        # GIVEN Healthcare drew 3 inquiries in January and Technology 1
+        repo = await career_explorer_repository
+
+        # WHEN the January window is aggregated
+        actual = await repo.get_career_explorer(start_date=_WINDOW_START, end_date=_WINDOW_END)
+
+        # THEN the busiest sector leads, carrying its priority flag and its distinct-user count
+        assert [s["sector_name"] for s in actual["top_sectors"]] == ["Healthcare", "Technology"]
+        assert actual["top_sectors"][0] == {
+            "sector_name": "Healthcare",
+            "is_priority": True,
+            "total_inquiries": 3,
+            "unique_users": 1,
+        }
+
+
+class TestCareerExplorerScoping:
+    @pytest.mark.asyncio
+    async def test_should_count_only_the_institutions_asked_for(
+        self, career_explorer_repository: Awaitable[CareerExplorerModuleRepository]
+    ):
+        # GIVEN user-c belongs to Other School
+        repo = await career_explorer_repository
+
+        # WHEN only Test School is in scope, over a window wide enough to include March
+        actual = await repo.get_career_explorer(
+            start_date=_WINDOW_START,
+            end_date=datetime(2026, 12, 31, 23, 59, 59, 999999, tzinfo=timezone.utc),
+            institution_names=["Test School"],
+        )
+
+        # THEN Other School's explorer is left out of every figure
+        assert actual["total_registered_students"] == 2
+        assert actual["started"]["count"] == 2
+        assert actual["top_sectors"] == [
+            {"sector_name": "Healthcare", "is_priority": True, "total_inquiries": 3, "unique_users": 1},
+            {"sector_name": "Technology", "is_priority": False, "total_inquiries": 1, "unique_users": 1},
+        ]
+
+    @pytest.mark.asyncio
+    async def test_should_return_zeroes_for_an_institution_nobody_belongs_to(
+        self, career_explorer_repository: Awaitable[CareerExplorerModuleRepository]
+    ):
+        # GIVEN an institution with no registered students
+        repo = await career_explorer_repository
+
+        # WHEN it is the only one in scope
+        actual = await repo.get_career_explorer(
+            start_date=_WINDOW_START, end_date=_WINDOW_END, institution_names=["Nobody Here"]
+        )
+
+        # THEN the answer is a real, empty one rather than silently widening to everyone
+        assert actual["total_registered_students"] == 0
+        assert actual["started"] == {"count": 0, "percentage": 0.0}
+        assert actual["returned_2_plus"] == {"count": 0, "percentage": 0.0}
+        assert actual["top_sectors"] == []
+
+    @pytest.mark.asyncio
+    async def test_should_leave_out_activity_outside_the_window(
+        self, career_explorer_repository: Awaitable[CareerExplorerModuleRepository]
+    ):
+        # GIVEN every recorded conversation and inquiry falls outside February
+        repo = await career_explorer_repository
+
+        # WHEN February alone is aggregated
+        actual = await repo.get_career_explorer(
+            start_date=datetime(2026, 2, 1, tzinfo=timezone.utc),
+            end_date=datetime(2026, 2, 28, 23, 59, 59, 999999, tzinfo=timezone.utc),
+        )
+
+        # THEN nobody is reported as active, though the roster is still counted
+        assert actual["total_registered_students"] == 3
+        assert actual["started"]["count"] == 0
+        assert actual["returned_2_plus"]["count"] == 0
+        assert actual["top_sectors"] == []
