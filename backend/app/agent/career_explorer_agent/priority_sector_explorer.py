@@ -21,7 +21,7 @@ from app.agent.prompt_template.quick_reply_prompt import QUICK_REPLY_PROMPT
 from app.agent.simple_llm_agent.prompt_response_template import get_conversation_finish_instructions, get_json_response_instructions
 from app.app_config import get_application_config
 from app.i18n.translation_service import t
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG
 from common_libs.llm.schema_builder import with_response_schema
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
@@ -225,7 +225,7 @@ class PrioritySectorExplorer:
             preview = chunk.text[:200] + "..." if len(chunk.text) > 200 else chunk.text
             self._logger.info("  Chunk %d [%s] (score=%.4f): %s", i + 1, chunk.sector, chunk.score, preview.replace("\n", " "))
 
-        llm = GeminiGenerativeLLM(system_instructions=full_instructions, config=self._llm_config)
+        llm = get_llm(system_instructions=full_instructions, config=self._llm_config)
         response_instructions = get_json_response_instructions()
         if should_nudge_priority:
             response_instructions += (

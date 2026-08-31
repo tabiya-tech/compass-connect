@@ -14,7 +14,7 @@ import logging
 
 from app.agent.llm_caller import LLMCaller
 from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import (
     LLMConfig,
     LOW_TEMPERATURE_GENERATION_CONFIG,
@@ -223,7 +223,7 @@ class MetadataExtractor:
             generation_config=LOW_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
         )
 
-        self._metadata_llm = GeminiGenerativeLLM(
+        self._metadata_llm = get_llm(
             system_instructions=system_instructions,
             config=llm_config
         )

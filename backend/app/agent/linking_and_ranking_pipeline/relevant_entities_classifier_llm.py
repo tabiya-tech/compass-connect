@@ -15,8 +15,8 @@ from app.agent.penalty import get_penalty, get_penalty_for_multiple_errors
 from app.agent.prompt_template import get_language_style
 from app.agent.prompt_template.format_prompt import replace_placeholders_with_indent
 from app.vector_search.esco_entities import BaseEntity
-from common_libs.llm.generative_models import GeminiGenerativeLLM
-from common_libs.llm.models_utils import LLMConfig, get_config_variation, JSON_GENERATION_CONFIG
+from common_libs.llm.factory import get_llm
+from common_libs.llm.models_utils import LLM, LLMConfig, get_config_variation, JSON_GENERATION_CONFIG
 from common_libs.retry import Retry
 
 T = TypeVar('T', bound=BaseEntity)
@@ -185,7 +185,7 @@ class RelevantEntitiesClassifierLLM(Generic[T]):
             self,
             *,
             batch_number: int,
-            llm: GeminiGenerativeLLM,
+            llm: LLM,
             job_titles: list[str],
             responsibilities: list[str],
             entities_to_classify: list[T]
@@ -316,13 +316,13 @@ class RelevantEntitiesClassifierLLM(Generic[T]):
             llm_stats=llm_stats), result_penalty, _return_error
 
     @staticmethod
-    def _get_llm(entity_type: Literal['skill', 'occupation'], temperature_config: dict) -> GeminiGenerativeLLM:
+    def _get_llm(entity_type: Literal['skill', 'occupation'], temperature_config: dict) -> LLM:
         """
         Get the LLM to use for clustering.
         As we do not know how the RelevantEntitiesClassifierLLM will be used in the async context,
         and to any avoid race conditions, we create a new LLM instance for each call.
         """
-        return GeminiGenerativeLLM(
+        return get_llm(
             system_instructions=RelevantEntitiesClassifierLLM._get_system_instructions(
                 entity_type_singular=entity_type),
             config=LLMConfig(

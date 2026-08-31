@@ -18,7 +18,7 @@ from app.agent.preference_elicitation_agent.types import (
     PreferenceVector
 )
 from app.agent.llm_caller import LLMCaller
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import (
     LLMConfig,
     LOW_TEMPERATURE_GENERATION_CONFIG,
@@ -216,7 +216,7 @@ class PreferenceExtractor:
             generation_config=LOW_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
         )
 
-        self._extraction_llm = GeminiGenerativeLLM(
+        self._extraction_llm = get_llm(
             system_instructions=_EXTRACTION_SYSTEM_INSTRUCTIONS,
             config=llm_config
         )
@@ -687,7 +687,7 @@ class ExperiencePreferenceExtractor:
             generation_config=LOW_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
         )
 
-        self._llm = GeminiGenerativeLLM(
+        self._llm = get_llm(
             system_instructions=_EXPERIENCE_EXTRACTION_SYSTEM_INSTRUCTIONS,
             config=llm_config
         )
