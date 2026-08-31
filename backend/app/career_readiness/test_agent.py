@@ -107,7 +107,7 @@ class TestBuildSupportModeInstructions:
         assert '"finished"' not in actual_instructions
 
 
-@patch("app.career_readiness.agent.GeminiGenerativeLLM")
+@patch("app.career_readiness.agent.get_llm")
 class TestCareerReadinessAgent:
     """Tests for the CareerReadinessAgent class."""
 
