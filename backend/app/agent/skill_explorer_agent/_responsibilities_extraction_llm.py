@@ -9,7 +9,7 @@ from app.agent.experience.experience_entity import ResponsibilitiesData
 from app.agent.llm_caller import LLMCaller
 from app.agent.prompt_template import sanitize_input, get_language_style
 from app.conversation_memory.conversation_memory_types import ConversationContext
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig, JSON_GENERATION_CONFIG, ZERO_TEMPERATURE_GENERATION_CONFIG
 from common_libs.llm.schema_builder import with_response_schema
 
@@ -39,7 +39,7 @@ class ResponsibilitiesExtractionResponse(BaseModel):
 class _ResponsibilitiesExtractionLLM:
     def __init__(self, logger: logging.Logger):
         self._llm_caller = LLMCaller[ResponsibilitiesExtractionResponse](model_response_type=ResponsibilitiesExtractionResponse)
-        self.llm = GeminiGenerativeLLM(
+        self.llm = get_llm(
             system_instructions=_ResponsibilitiesExtractionLLM._create_extraction_system_instructions(),
             config=LLMConfig(
                 generation_config=ZERO_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG | {

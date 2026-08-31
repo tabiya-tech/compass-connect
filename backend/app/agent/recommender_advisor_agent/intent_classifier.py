@@ -15,7 +15,7 @@ from app.agent.recommender_advisor_agent.types import ConversationPhase
 from app.agent.recommender_advisor_agent.llm_response_models import UserIntentClassification
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.models_utils import LLM
 
 
 class IntentClassifier:
@@ -41,7 +41,7 @@ class IntentClassifier:
         state: RecommenderAdvisorAgentState,
         context: ConversationContext,
         phase: ConversationPhase,
-        llm: GeminiGenerativeLLM,
+        llm: LLM,
         logger: logging.Logger
     ) -> Tuple[UserIntentClassification | None, list[LLMStats]]:
         """

@@ -32,7 +32,7 @@ from app.agent.llm_caller import LLMCaller
 from app.app_config import get_application_config
 from app.i18n.translation_service import t
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.utils import extract_grounding_metadata_from_genai_response
 from common_libs.llm.models_utils import DEFAULT_VERTEX_API_GEN_AI_REGION, LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG, \
     llm_input_to_traceable
@@ -189,7 +189,7 @@ class NonPrioritySectorExplorer:
         self, raw_text: str, llm_stats: list[LLMStats]
     ) -> ModelResponse | None:
         """Stage 2: reformat raw Stage-1 text into a structured ModelResponse using response_schema."""
-        llm = GeminiGenerativeLLM(
+        llm = get_llm(
             system_instructions=_REFORMAT_SYSTEM_INSTRUCTIONS,
             config=self._reformat_llm_config,
         )

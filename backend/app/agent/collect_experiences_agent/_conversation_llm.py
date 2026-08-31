@@ -20,7 +20,7 @@ from app.conversation_memory.conversation_memory_types import ConversationContex
 from app.countries import Country
 from app.i18n.locale_date_format import get_locale_date_format, format_date_value_for_locale
 from app.i18n.translation_service import t
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig, LLMResponse, get_config_variation, LLMInput
 from common_libs.llm.schema_builder import with_response_schema
 from common_libs.retry import Retry
@@ -229,7 +229,7 @@ class _ConversationLLM:
         if first_time_visit:
             # If this is the first time the user has visited the agent, the agent should get to the point
             # and not introduce itself or ask how the user is doing.
-            llm = GeminiGenerativeLLM(config=LLMConfig(
+            llm = get_llm(config=LLMConfig(
                 generation_config=temperature_config | with_response_schema(_ConversationLLMResponse)
             ))
             llm_input = _ConversationLLM._get_first_time_generative_prompt(
@@ -245,7 +245,7 @@ class _ConversationLLM:
                                                                             unexplored_types=unexplored_types,
                                                                             explored_types=explored_types,
                                                                             last_referenced_experience_index=last_referenced_experience_index)
-            llm = GeminiGenerativeLLM(
+            llm = get_llm(
                 system_instructions=system_instructions,
                 config=LLMConfig(
                     language_model_name=AgentsConfig.deep_reasoning_model,

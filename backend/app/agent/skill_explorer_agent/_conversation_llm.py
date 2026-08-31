@@ -12,7 +12,7 @@ from app.conversation_memory.conversation_memory_types import ConversationContex
 from app.countries import Country
 from app.i18n.translation_service import t
 from app.agent.persona_detector import PersonaType, get_persona_prompt_section
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig, LLMResponse, get_config_variation, LLMInput
 from common_libs.retry import Retry
 
@@ -106,7 +106,7 @@ class _ConversationLLM:
             # While earlier mitigations helped reduce this issue, they are no longer required, though we are keeping them for now
             # in case they prove useful in the future.
 
-            llm = GeminiGenerativeLLM(
+            llm = get_llm(
                 config=LLMConfig(
                     generation_config=temperature_config
                 ))
@@ -129,7 +129,7 @@ class _ConversationLLM:
                 experience_index=experience_index,
                 rich_response=rich_response,
                 work_type=work_type)
-            llm = GeminiGenerativeLLM(
+            llm = get_llm(
                 system_instructions=system_instructions,
                 config=LLMConfig(
                     generation_config=temperature_config

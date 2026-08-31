@@ -8,7 +8,7 @@ from app.agent.llm_caller import LLMCaller
 from app.agent.penalty import get_penalty
 from app.agent.prompt_template import sanitize_input
 from app.observability.module_types import TraceModule
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig, JSON_GENERATION_CONFIG, get_config_variation
 from common_libs.observability.tracing import start_trace, update_observation
 from common_libs.retry import Retry
@@ -106,7 +106,7 @@ class CVExperienceExtractor:
             temperature_cfg = get_config_variation(start_temperature=0.0, end_temperature=0.3,
                                                    start_top_p=0.9, end_top_p=1.0,
                                                    attempt=attempt, max_retries=max_retries)
-            llm = GeminiGenerativeLLM(
+            llm = get_llm(
                 system_instructions=self._json_system_instructions(),
                 config=LLMConfig(
                     generation_config=temperature_cfg | JSON_GENERATION_CONFIG | {

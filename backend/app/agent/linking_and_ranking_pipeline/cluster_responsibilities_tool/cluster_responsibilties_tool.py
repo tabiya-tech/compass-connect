@@ -9,8 +9,8 @@ from app.agent.agent_types import LLMStats
 from app.agent.llm_caller import LLMCaller
 from app.agent.penalty import get_penalty, get_penalty_for_multiple_errors
 from app.agent.prompt_template.format_prompt import replace_placeholders_with_indent
-from common_libs.llm.generative_models import GeminiGenerativeLLM
-from common_libs.llm.models_utils import LLMConfig, get_config_variation
+from common_libs.llm.factory import get_llm
+from common_libs.llm.models_utils import LLM, LLMConfig, get_config_variation
 from common_libs.llm.schema_builder import with_response_schema
 from common_libs.retry import Retry
 
@@ -84,13 +84,13 @@ def _get_prompt(responsibilities: list[str], number_of_clusters: int = 5):
                                             number_of_clusters=f"{number_of_clusters}")
 
 
-def _get_llm(temperature_config: dict) -> GeminiGenerativeLLM:
+def _get_llm(temperature_config: dict) -> LLM:
     """
     Get the LLM to use for clustering.
     As we do not know how the ClusterResponsibilitiesTool will be used in the async context,
     and to any avoid race conditions, we create a new LLM instance for each call.
     """
-    return GeminiGenerativeLLM(
+    return get_llm(
         system_instructions=_get_system_instructions(),
         config=LLMConfig(generation_config=temperature_config | with_response_schema(ClusterResponsibilitiesLLMResponse))
     )
@@ -137,7 +137,7 @@ class ClusterResponsibilitiesTool:
     async def _internal_execute(
             self,
             *,
-            llm: GeminiGenerativeLLM,
+            llm: LLM,
             responsibilities: list[str],
             number_of_clusters: int = 5
     ) -> tuple[ClusterResponsibilitiesResponse, float, BaseException | None]:

@@ -15,7 +15,7 @@ from app.agent.recommender_advisor_agent.llm_response_models import Conversation
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.models_utils import LLM
 from app.vector_search.esco_entities import OccupationEntity
 from app.vector_search.similarity_search_service import SimilaritySearchService
 from app.i18n.translation_service import t
@@ -31,7 +31,7 @@ class BasePhaseHandler(ABC):
     
     def __init__(
         self,
-        conversation_llm_provider: Callable[[], GeminiGenerativeLLM],
+        conversation_llm_provider: Callable[[], LLM],
         conversation_caller: LLMCaller[ConversationResponse],
         occupation_search_service: Optional[SimilaritySearchService[OccupationEntity]] = None,
         skills_pivot_handler: Optional['SkillsPivotPhaseHandler'] = None,
@@ -57,7 +57,7 @@ class BasePhaseHandler(ABC):
         self.logger = logger or logging.getLogger(self.__class__.__name__)
 
     @property
-    def _conversation_llm(self) -> GeminiGenerativeLLM:
+    def _conversation_llm(self) -> LLM:
         """
         The conversation LLM for the current request locale.
 

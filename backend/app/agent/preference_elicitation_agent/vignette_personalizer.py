@@ -26,6 +26,7 @@ from app.i18n.translation_service import get_i18n_manager
 from app.i18n.types import Locale
 from common_libs.llm.models_utils import (
     BasicLLM,
+    LLM,
     LLMConfig,
     LOW_TEMPERATURE_GENERATION_CONFIG,
     JSON_GENERATION_CONFIG
@@ -104,7 +105,7 @@ class VignettePersonalizer:
         self._templates_by_category: dict[str, list[VignetteTemplate]] = {}
 
         # Create LLM with system instructions for vignette generation
-        from common_libs.llm.generative_models import GeminiGenerativeLLM
+        from common_libs.llm.factory import get_llm
 
         country_name = country_of_user.value if country_of_user != Country.UNSPECIFIED else "the user's"
         country_context = self._build_country_context(country_of_user)
@@ -200,7 +201,7 @@ Example Output:
         # time and emit vignette content in the wrong language. Memoized per locale.
         self._system_instructions_base = system_instructions
         self._llm_config = llm_config
-        self._llm_by_locale: dict[Locale, "GeminiGenerativeLLM"] = {}
+        self._llm_by_locale: dict[Locale, LLM] = {}
 
         # Load templates from config
         if templates_config_path is None:
@@ -363,7 +364,7 @@ Example Output:
             }
         )
 
-    def _get_llm(self) -> "GeminiGenerativeLLM":
+    def _get_llm(self) -> LLM:
         """
         Get the vignette-generation LLM, built on request for the current locale.
 
@@ -371,13 +372,13 @@ Example Output:
         so the generated vignette content matches the user's language. The result is memoized per
         locale so the LLM is not rebuilt on every call within the same conversation.
         """
-        from common_libs.llm.generative_models import GeminiGenerativeLLM
+        from common_libs.llm.factory import get_llm
 
         locale = get_i18n_manager().get_locale()
         llm = self._llm_by_locale.get(locale)
         if llm is None:
             system_instructions = f"{get_language_style(with_locale=True, for_json_output=True)}\n\n{self._system_instructions_base}"
-            llm = GeminiGenerativeLLM(
+            llm = get_llm(
                 system_instructions=system_instructions,
                 config=self._llm_config
             )

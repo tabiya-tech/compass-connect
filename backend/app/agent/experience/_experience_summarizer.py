@@ -12,8 +12,8 @@ from app.agent.prompt_template import get_language_style
 from app.agent.prompt_template.format_prompt import replace_placeholders_with_indent
 from app.countries import Country, get_country_glossary
 from app.vector_search.esco_entities import SkillEntity
-from common_libs.llm.generative_models import GeminiGenerativeLLM
-from common_libs.llm.models_utils import LLMConfig, get_config_variation
+from common_libs.llm.factory import get_llm
+from common_libs.llm.models_utils import LLM, LLMConfig, get_config_variation
 from common_libs.llm.schema_builder import with_response_schema
 from common_libs.retry import Retry
 
@@ -139,8 +139,8 @@ class ExperienceSummarizer:
         )
 
     @staticmethod
-    def get_llm(*, country_of_user: Country, temperature_config: dict) -> GeminiGenerativeLLM:
-        return GeminiGenerativeLLM(
+    def get_llm(*, country_of_user: Country, temperature_config: dict):
+        return get_llm(
             system_instructions=ExperienceSummarizer.get_system_instructions(country_of_user=country_of_user),
             config=LLMConfig(generation_config=temperature_config | with_response_schema(ExperienceSummarizerResponse))
         )
@@ -199,7 +199,7 @@ class ExperienceSummarizer:
 
     async def _internal_execute(
             self, *,
-            llm: GeminiGenerativeLLM,
+            llm: LLM,
             prompt: str,
     ) -> tuple[str, float, BaseException | None]:
         llm_response, llm_stats = await self._llm_caller.call_llm(

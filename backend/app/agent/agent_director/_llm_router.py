@@ -11,8 +11,8 @@ from app.agent.penalty import get_penalty
 from app.agent.prompt_template import get_language_style
 from app.agent.prompt_template.format_prompt import replace_placeholders_with_indent
 from app.conversation_memory.conversation_memory_types import ConversationContext
-from common_libs.llm.generative_models import GeminiGenerativeLLM
-from common_libs.llm.models_utils import get_config_variation, LLMConfig
+from common_libs.llm.factory import get_llm
+from common_libs.llm.models_utils import LLM, get_config_variation, LLMConfig
 from common_libs.llm.schema_builder import with_response_schema
 from common_libs.retry import Retry
 
@@ -142,7 +142,7 @@ class LLMRouter:
                                                       start_top_p=0.8, end_top_p=1,
                                                       attempt=attempt, max_retries=max_retries)
 
-            llm = GeminiGenerativeLLM(config=LLMConfig(language_model_name=AgentsConfig.deep_reasoning_model,
+            llm = get_llm(config=LLMConfig(language_model_name=AgentsConfig.deep_reasoning_model,
                                                        generation_config=temperature_config | with_response_schema(RouterModelResponse) | {
                                                            # Set a reasonable, but low value for the output tokens to avoid the repetition trap
                                                            "max_output_tokens": 3000,
@@ -163,7 +163,7 @@ class LLMRouter:
         return result
 
     async def _execute_internal(self, *,
-                                llm: GeminiGenerativeLLM,
+                                llm: LLM,
                                 user_input: AgentInput,
                                 phase: ConversationPhase,
                                 context: ConversationContext) -> tuple[AgentType, float, BaseException | None]:

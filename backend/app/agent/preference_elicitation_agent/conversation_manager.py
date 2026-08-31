@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 from app.agent.llm_caller import LLMCaller
 from app.agent.preference_elicitation_agent.types import PreferenceVector
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import (
     LLMConfig,
     LOW_TEMPERATURE_GENERATION_CONFIG,
@@ -88,7 +88,7 @@ class ConversationManager:
         )
 
         conversation_system_instructions = self._build_conversation_system_instructions()
-        self._conversation_llm = GeminiGenerativeLLM(
+        self._conversation_llm = get_llm(
             system_instructions=conversation_system_instructions,
             config=llm_config
         )
@@ -187,7 +187,7 @@ Your task: Generate 3-5 natural, conversational bullet points summarizing what m
 Generate a summary that captures what's UNIQUE about this user's preferences.
 """
 
-        summary_llm = GeminiGenerativeLLM(
+        summary_llm = get_llm(
             system_instructions="""
 You are a career guidance assistant summarizing user preferences.
 Be brief, specific, and conversational.

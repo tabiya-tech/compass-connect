@@ -8,7 +8,7 @@ from app.agent.llm_caller import LLMCaller
 from app.agent.prompt_template import sanitize_input
 from app.agent.prompt_template.format_prompt import replace_placeholders_with_indent
 from app.conversation_memory.conversation_memory_types import ConversationContext
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig, JSON_GENERATION_CONFIG, ZERO_TEMPERATURE_GENERATION_CONFIG
 from common_libs.llm.schema_builder import with_response_schema
 from ...conversation_memory.conversation_formatter import ConversationHistoryFormatter
@@ -71,7 +71,7 @@ class _SentenceDecompositionLLM:
 
     def __init__(self, logger: logging.Logger):
         self._llm_caller_first_pass = LLMCaller[_SentenceDecompositionFirstPassResponse](model_response_type=_SentenceDecompositionFirstPassResponse)
-        self.llm_first_pass = GeminiGenerativeLLM(
+        self.llm_first_pass = get_llm(
             system_instructions=_SentenceDecompositionLLM._create_first_pass_system_instructions(),
             config=LLMConfig(
                 generation_config=ZERO_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG | {
@@ -80,7 +80,7 @@ class _SentenceDecompositionLLM:
                 } | with_response_schema(_SentenceDecompositionFirstPassResponse)
             ))
         self._llm_caller_second_pass = LLMCaller[_SentenceDecompositionResponse](model_response_type=_SentenceDecompositionResponse)
-        self.llm_second_pass = GeminiGenerativeLLM(
+        self.llm_second_pass = get_llm(
             system_instructions=_SentenceDecompositionLLM._create_second_pass_system_instructions(),
             config=LLMConfig(
                 generation_config=ZERO_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG | {
