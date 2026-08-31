@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from app.agent.llm_caller import LLMCaller
 from app.i18n.types import Locale
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig
 from common_libs.llm.schema_builder import with_response_schema
 from common_libs.observability.decorators import traced_tool
@@ -20,7 +20,7 @@ class TranslationTool:
     def __init__(self, target_locale: Locale):
         self._target_locale = target_locale
         self._llm_caller: LLMCaller[_Output] = LLMCaller[_Output](model_response_type=_Output)
-        self._llm = GeminiGenerativeLLM(
+        self._llm = get_llm(
             config=LLMConfig(generation_config=with_response_schema(_Output))
         )
 

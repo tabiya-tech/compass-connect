@@ -18,7 +18,7 @@ from app.conversation_memory.conversation_memory_types import ConversationContex
 from app.countries import Country
 from app.i18n.translation_service import t
 from app.app_config import get_application_config
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import get_config_variation, LLMConfig
 from common_libs.llm.schema_builder import with_response_schema
 from common_libs.retry import Retry
@@ -215,7 +215,7 @@ class WelcomeAgent(Agent):
         model_response: WelcomeAgentLLMResponse | None
         llm_stats_list: list[LLMStats]
 
-        llm = GeminiGenerativeLLM(
+        llm = get_llm(
             system_instructions=WelcomeAgent.get_system_instructions(state),
             config=LLMConfig(
                 generation_config=temperature_config | with_response_schema(WelcomeAgentLLMResponse)

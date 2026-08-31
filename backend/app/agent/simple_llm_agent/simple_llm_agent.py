@@ -15,7 +15,7 @@ from common_libs.llm.schema_builder import with_response_schema
 
 class SimpleLLMAgent(Agent):
     """
-    This is a simple stateless agent that uses the GeminiGenerativeLLM to respond to the user input in a conversation.
+    This is a simple stateless agent that uses the configured LLM to respond to the user input in a conversation.
     """
 
     def __init__(self, *,

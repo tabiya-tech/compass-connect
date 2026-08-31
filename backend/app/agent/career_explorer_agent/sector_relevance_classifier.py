@@ -16,7 +16,7 @@ from app.app_config import get_application_config
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.i18n.translation_service import get_i18n_manager
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig, ZERO_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG
 from common_libs.llm.schema_builder import with_response_schema
 
@@ -120,7 +120,7 @@ class SectorRelevanceClassifier:
         context: ConversationContext,
         existing_sectors: list[str] | None = None,
     ) -> tuple[SectorRelevance, str | None, bool, str, list[LLMStats], list[SectorMention]]:
-        llm = GeminiGenerativeLLM(
+        llm = get_llm(
             system_instructions=_build_classifier_instructions(existing_sectors),
             config=self._llm_config,
         )

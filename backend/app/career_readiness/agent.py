@@ -29,8 +29,8 @@ from app.career_readiness.types import ConversationMode, TopicStatusRecord
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_types import ConversationContext
 from common_libs.observability.decorators import traced_agent
-from common_libs.llm.generative_models import GeminiGenerativeLLM
-from common_libs.llm.models_utils import LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG
+from common_libs.llm.factory import get_llm
+from common_libs.llm.models_utils import LLM, LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG
 from common_libs.llm.schema_builder import with_response_schema
 
 
@@ -402,7 +402,7 @@ class CareerReadinessAgent:
     """
     AI agent that coaches users on a specific career readiness module.
 
-    Uses composition — wraps a GeminiGenerativeLLM + LLMCaller rather than
+    Uses composition — wraps a LLM + LLMCaller rather than
     inheriting from Agent/SimpleLLMAgent, because this agent operates outside
     the AgentDirector pipeline.
     """
@@ -441,9 +441,9 @@ class CareerReadinessAgent:
         """Build system instructions with user profile context if available."""
         return append_user_ctx(self._base_system_instructions)
 
-    def _get_llm(self) -> GeminiGenerativeLLM:
+    def _get_llm(self) -> LLM:
         """Create LLM with the base system instructions (the per-turn state block is attached to the user input, not here)."""
-        return GeminiGenerativeLLM(system_instructions=self._system_instructions, config=self._config)
+        return get_llm(system_instructions=self._system_instructions, config=self._config)
 
     @property
     def system_instructions(self) -> str:
