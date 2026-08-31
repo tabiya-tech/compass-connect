@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from common_libs.llm.models_utils import LLM, LLMInput, LLMResponse
 from common_libs.retry import RetryConfigWithExponentialBackOff, DEFAULT_RETRY_CONFIG_WITH_EXP_BACKOFF, Retry
 
+_USE_THINKING = os.getenv("LOCAL_LLM_THINK", "").lower() in ("1", "true", "yes")
+
 
 class LocalLLMConfig(BaseModel):
     language_model_name: str = os.getenv("LOCAL_LLM_MODEL_NAME", "qwen2.5:7b")
@@ -20,8 +22,10 @@ class LocalLLMConfig(BaseModel):
 
 class LocalOpenAICompatibleLLM(LLM):
     """
-    Wraps a locally-running model that exposes an OpenAI-compatible
-    /v1/chat/completions endpoint (ollama, llama.cpp --server, lm-studio, etc.).
+    Wraps a locally-running model via the native ollama /api/chat endpoint.
+
+    Uses ollama's native API (not /v1/chat/completions) so that think:false
+    is respected, disabling qwen3's slow chain-of-thought reasoning mode.
 
     Extends LLM directly rather than BasicLLM to avoid triggering vertexai.init().
     Does not include traced_observation tracing.
@@ -32,11 +36,11 @@ class LocalOpenAICompatibleLLM(LLM):
                  config: LocalLLMConfig = LocalLLMConfig()):
         self.logger = logging.getLogger(self.__class__.__name__)
         self._retry_config = config.retry_config
-        self._resource_name = f"{config.base_url}/v1/chat/completions"
         self._base_url = config.base_url
         self._model_name = config.language_model_name
         self._generation_config = dict(config.generation_config)
         self._system_instructions = system_instructions
+        self._resource_name = f"{config.base_url}/api/chat"
 
     async def generate_content(self, llm_input: LLMInput | str) -> LLMResponse:
         async def _call() -> LLMResponse:
@@ -46,28 +50,34 @@ class LocalOpenAICompatibleLLM(LLM):
 
     async def _internal_generate_content(self, llm_input: LLMInput | str) -> LLMResponse:
         messages = self._build_messages(llm_input)
+        options = {k: v for k, v in self._generation_config.items()
+                   if k in ("temperature", "top_p", "num_predict", "frequency_penalty")}
+        # ollama uses num_predict instead of max_tokens
+        if "max_tokens" in self._generation_config and "num_predict" not in options:
+            options["num_predict"] = self._generation_config["max_tokens"]
+
         payload = {
             "model": self._model_name,
             "messages": messages,
-            **{k: v for k, v in self._generation_config.items()
-               if k in ("temperature", "top_p", "max_tokens", "frequency_penalty")},
+            "stream": False,
+            "think": _USE_THINKING,
+            "options": options,
         }
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 self._resource_name,
                 json=payload,
                 headers={"Content-Type": "application/json"},
-                timeout=120.0,
+                timeout=300.0,
             )
             response.raise_for_status()
             data = response.json()
 
-        text = data["choices"][0]["message"]["content"]
-        usage = data.get("usage", {})
+        text = data["message"]["content"]
         return LLMResponse(
             text=text,
-            prompt_token_count=usage.get("prompt_tokens", 0),
-            response_token_count=usage.get("completion_tokens", 0),
+            prompt_token_count=data.get("prompt_eval_count", 0),
+            response_token_count=data.get("eval_count", 0),
             grounding_metadata=None,
         )
 
@@ -83,7 +93,7 @@ class LocalOpenAICompatibleLLM(LLM):
             messages.append({"role": "user", "content": llm_input})
         else:
             for turn in llm_input.turns:
-                # Compass uses "model" for assistant turns; OpenAI uses "assistant"
+                # Compass uses "model" for assistant turns; ollama uses "assistant"
                 role = "assistant" if turn.role == "model" else turn.role
                 messages.append({"role": role, "content": turn.content})
         return messages
