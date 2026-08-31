@@ -22,7 +22,7 @@ def get_llm(*,
         anthropic_config = AnthropicLLMConfig(
             generation_config={
                 k: v for k, v in config.generation_config.items()
-                if k in ("temperature", "top_p", "max_tokens", "response_mime_type")
+                if k in ("temperature", "top_p", "max_tokens", "response_mime_type", "response_schema")
             }
         )
         return AnthropicLLM(
