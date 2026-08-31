@@ -63,6 +63,10 @@ class LocalOpenAICompatibleLLM(LLM):
             "think": _USE_THINKING,
             "options": options,
         }
+        # Gemini uses response_mime_type:"application/json" to enforce JSON output;
+        # ollama uses a top-level "format":"json" field for the same purpose.
+        if self._generation_config.get("response_mime_type") == "application/json":
+            payload["format"] = "json"
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 self._resource_name,
