@@ -50,6 +50,12 @@ class AnthropicLLM(LLM):
         system = self._build_system()
         messages = self._build_messages(llm_input)
 
+        extra_body = {}
+        if "temperature" in self._generation_config:
+            extra_body["temperature"] = self._generation_config["temperature"]
+        if "top_p" in self._generation_config:
+            extra_body["top_p"] = self._generation_config["top_p"]
+
         kwargs = {
             "model": self._model_name,
             "messages": messages,
@@ -57,14 +63,8 @@ class AnthropicLLM(LLM):
         }
         if system:
             kwargs["system"] = system
-
-        temp = self._generation_config.get("temperature")
-        if temp is not None:
-            kwargs["temperature"] = temp
-
-        top_p = self._generation_config.get("top_p")
-        if top_p is not None:
-            kwargs["top_p"] = top_p
+        if extra_body:
+            kwargs["extra_body"] = extra_body
 
         client = anthropic.AsyncAnthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
         response = await client.messages.create(**kwargs)
