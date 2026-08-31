@@ -29,7 +29,7 @@ class TestRecommenderAdvisorAgent:
 
     @pytest.fixture
     def agent(self, mock_db6_client, mock_node2vec_client, mock_occupation_search_service):
-        with patch('app.agent.recommender_advisor_agent.agent.GeminiGenerativeLLM') as mock_llm_cls:
+        with patch('app.agent.recommender_advisor_agent.agent.get_llm') as mock_llm_cls:
             agent = RecommenderAdvisorAgent(
                 db6_client=mock_db6_client,
                 node2vec_client=mock_node2vec_client,

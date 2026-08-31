@@ -11,8 +11,8 @@ _USE_THINKING = os.getenv("LOCAL_LLM_THINK", "").lower() in ("1", "true", "yes")
 
 
 class LocalLLMConfig(BaseModel):
-    language_model_name: str = os.getenv("LOCAL_LLM_MODEL_NAME", "qwen2.5:7b")
-    base_url: str = os.getenv("LOCAL_LLM_BASE_URL", "http://localhost:11434")
+    language_model_name: str = "qwen2.5:7b"
+    base_url: str = "http://localhost:11434"
     generation_config: dict = {"temperature": 0.1, "top_p": 0.95, "max_tokens": 4096}
     retry_config: RetryConfigWithExponentialBackOff = DEFAULT_RETRY_CONFIG_WITH_EXP_BACKOFF
 

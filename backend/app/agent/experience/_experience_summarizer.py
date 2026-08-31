@@ -139,7 +139,7 @@ class ExperienceSummarizer:
         )
 
     @staticmethod
-    def get_llm(*, country_of_user: Country, temperature_config: dict):
+    def get_llm(*, country_of_user: Country, temperature_config: dict) -> LLM:
         return get_llm(
             system_instructions=ExperienceSummarizer.get_system_instructions(country_of_user=country_of_user),
             config=LLMConfig(generation_config=temperature_config | with_response_schema(ExperienceSummarizerResponse))

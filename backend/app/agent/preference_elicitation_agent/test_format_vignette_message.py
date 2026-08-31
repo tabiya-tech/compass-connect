@@ -20,7 +20,7 @@ from app.agent.preference_elicitation_agent.types import Vignette, VignetteOptio
 def agent():
     """Agent instance with all external dependencies mocked out."""
     with patch(
-        "app.agent.preference_elicitation_agent.agent.GeminiGenerativeLLM"
+        "app.agent.preference_elicitation_agent.agent.get_llm"
     ), patch(
         "app.agent.preference_elicitation_agent.agent.VignetteEngine"
     ), patch(
