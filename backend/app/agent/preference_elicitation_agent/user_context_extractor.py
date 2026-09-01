@@ -79,7 +79,7 @@ class UserContextExtractor:
         self._base_llm = llm
 
         # Create LLM with system instructions for context extraction
-        from common_libs.llm.generative_models import GeminiGenerativeLLM
+        from common_libs.llm.factory import get_llm
 
         country_examples = self._build_country_examples(country_of_user)
 
@@ -124,7 +124,7 @@ Example Output:
             generation_config=LOW_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
         )
 
-        self._llm = GeminiGenerativeLLM(
+        self._llm = get_llm(
             system_instructions=system_instructions,
             config=llm_config
         )

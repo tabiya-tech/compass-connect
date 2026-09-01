@@ -8,14 +8,14 @@ from app.agent.simple_llm_agent.prompt_response_template import get_json_respons
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.i18n.translation_service import t
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG
 from common_libs.llm.schema_builder import with_response_schema
 
 
 class SimpleLLMAgent(Agent):
     """
-    This is a simple stateless agent that uses the GeminiGenerativeLLM to respond to the user input in a conversation.
+    This is a simple stateless agent that uses the configured LLM to respond to the user input in a conversation.
     """
 
     def __init__(self, *,
@@ -29,7 +29,7 @@ class SimpleLLMAgent(Agent):
         # We should pass the system instructions to the LLM
         # Passing the system instructions as a user part manually in the content,
         # does not seem to work well with the model as it does follow the instructions correctly.
-        self._llm = GeminiGenerativeLLM(system_instructions=system_instructions, config=config)
+        self._llm = get_llm(system_instructions=system_instructions, config=config)
         self._llm_caller: LLMCaller[ModelResponse] = LLMCaller[ModelResponse](model_response_type=ModelResponse)
 
     async def execute(self, user_input: AgentInput, context: ConversationContext) -> AgentOutput:

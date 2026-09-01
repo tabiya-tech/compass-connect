@@ -73,8 +73,9 @@ from app.agent.simple_llm_agent.prompt_response_template import get_json_respons
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.agent.experience.experience_entity import ExperienceEntity
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import (
+    LLM,
     LLMConfig,
     LOW_TEMPERATURE_GENERATION_CONFIG,
     JSON_GENERATION_CONFIG
@@ -244,20 +245,20 @@ class PreferenceElicitationAgent(Agent):
         # Conversation LLM for natural dialogue.
         # The system instructions are language-dependent (resolved from the per-request locale),
         # so the LLM is constructed lazily on request and memoized per locale rather than at __init__.
-        self._conversation_llm_by_locale: dict["Locale", GeminiGenerativeLLM] = {}
+        self._conversation_llm_by_locale: dict["Locale", LLM] = {}
         self._conversation_caller: LLMCaller[ConversationResponse] = LLMCaller[ConversationResponse](
             model_response_type=ConversationResponse
         )
 
         # GATE LLM — same low-temperature config, no domain system instructions
         # (the full vignette history is passed in the prompt each call)
-        self._gate_llm = GeminiGenerativeLLM(config=llm_config)
+        self._gate_llm = get_llm(config=llm_config)
         self._gate_caller: LLMCaller[GateAnalysis] = LLMCaller[GateAnalysis](
             model_response_type=GateAnalysis
         )
 
         # Shared LLM for vignette personalization and context extraction
-        self._shared_llm = GeminiGenerativeLLM(config=llm_config)
+        self._shared_llm = get_llm(config=llm_config)
 
         # Initialize vignette engine with personalization support
         # Note: use_offline_with_personalization overrides use_personalized_vignettes
@@ -1892,7 +1893,7 @@ Vignettes Completed: {pv.n_vignettes_completed}
 
         return "\n".join(summary_parts)
 
-    def _get_conversation_llm(self) -> GeminiGenerativeLLM:
+    def _get_conversation_llm(self) -> LLM:
         """
         Get the conversation LLM, constructing it on request for the current locale.
 
@@ -1900,14 +1901,11 @@ Vignettes Completed: {pv.n_vignettes_completed}
         locale (resolved from the user_language context variable). Constructing the LLM lazily
         ensures the prompt language matches the user's current locale. The result is memoized
         per locale so we don't rebuild it on every LLM call within the same conversation.
-
-        Returns:
-            A GeminiGenerativeLLM with system instructions for the current locale.
         """
         locale = get_i18n_manager().get_locale()
         llm = self._conversation_llm_by_locale.get(locale)
         if llm is None:
-            llm = GeminiGenerativeLLM(
+            llm = get_llm(
                 system_instructions=self._build_conversation_system_instructions(),
                 config=self._llm_config,
             )
