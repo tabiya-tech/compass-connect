@@ -160,7 +160,7 @@ class LLMCaller(Generic[RESPONSE_T]):
             try:
                 model_response = extract_json(response_text, self._model_response_type)
                 success = True
-                logger.info("LLM call completed")
+                logger.info("LLM call completed (model=%s)", getattr(llm, "_model_name", type(llm).__name__))
             except ExtractJSONError as e:
                 log_message = f"Attempt {attempt_count} failed to extract JSON caused by: {e}"
                 llm_stats.error = log_message

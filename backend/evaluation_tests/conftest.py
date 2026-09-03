@@ -99,6 +99,10 @@ def setup_multi_locale_app_config():
             admin_firebase_tenant_id="temp-tenant-id",
             matching_service_url="https://test-matching-service",
             matching_service_api_key="test-matching-api-key",
+            llm_provider=os.getenv("LLM_PROVIDER", "gemini"),
+            llm_model_name=os.getenv("LLM_MODEL_NAME") or None,
+            anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
+            ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
         )
     else:
         config = current.model_copy(update={"language_config": language_config})
