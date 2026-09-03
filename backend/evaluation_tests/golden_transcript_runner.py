@@ -8,6 +8,7 @@ import argparse
 import asyncio
 import json
 import logging
+import os
 from pathlib import Path
 
 from app.app_config import set_application_config, ApplicationConfig
@@ -51,6 +52,10 @@ def _ensure_test_app_config():
         features={},
         language_config=language_config,
         app_name="Compass",
+        llm_provider=os.getenv("LLM_PROVIDER", "gemini"),
+        llm_model_name=os.getenv("LLM_MODEL_NAME") or None,
+        anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
+        ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
     )
     set_application_config(config)
     reset_date_format_cache()
