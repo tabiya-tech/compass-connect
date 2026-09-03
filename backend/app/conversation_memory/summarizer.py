@@ -3,7 +3,7 @@ from textwrap import dedent
 
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_types import ConversationContext
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig, HIGH_TEMPERATURE_GENERATION_CONFIG
 from common_libs.observability.decorators import traced_tool
 
@@ -28,7 +28,7 @@ class Summarizer:
             Your response will be in a raw formatted non markdown text 
             It should be no longer than 100 words.
             """)
-        self._llm = GeminiGenerativeLLM(config=LLMConfig(generation_config=HIGH_TEMPERATURE_GENERATION_CONFIG))
+        self._llm = get_llm(config=LLMConfig(generation_config=HIGH_TEMPERATURE_GENERATION_CONFIG))
         self._logger = logging.getLogger(self.__class__.__name__)
 
     @traced_tool("conversation_memory.summarize")

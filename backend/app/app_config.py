@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -11,6 +11,8 @@ from common_libs.observability.config import TracingConfig
 from features.types import FeatureSetupConfig
 
 _APPLICATION_NOT_CONFIGURED_ERROR_MESSAGE = "Application configuration is not setup."
+
+LLMProvider = Literal["gemini", "anthropic", "ollama"]
 
 
 class ApplicationConfig(BaseModel):
@@ -129,13 +131,41 @@ class ApplicationConfig(BaseModel):
     `common_libs.observability.config.parse_tracing_config` for how it is loaded from the environment.
     """
 
+    llm_provider: LLMProvider = "gemini"
+    """
+    Which LLM backend to use for all agents.
+      - "gemini"     → Vertex AI / Gemini (default; requires GOOGLE_APPLICATION_CREDENTIALS)
+      - "anthropic"  → Anthropic Claude API (requires ANTHROPIC_API_KEY)
+      - "ollama"     → Local model via ollama (requires ollama running; see OLLAMA_BASE_URL)
+    Set via LLM_PROVIDER environment variable.
+    """
+
+    llm_model_name: Optional[str] = None
+    """
+    Override the model name for the selected provider.
+    When unset, each provider uses its own default (gemini: gemini-2.5-flash-lite,
+    anthropic: claude-sonnet-4-6, ollama: qwen2.5:7b).
+    Set via LLM_MODEL_NAME environment variable.
+    """
+
+    anthropic_api_key: Optional[str] = None
+    """
+    API key for the Anthropic Claude API. Required when llm_provider is "anthropic".
+    Set via ANTHROPIC_API_KEY environment variable. Treated as a secret — never logged.
+    """
+
+    ollama_base_url: str = "http://localhost:11434"
+    """
+    Base URL for the ollama server. Only used when llm_provider is "ollama".
+    Set via OLLAMA_BASE_URL environment variable.
+    """
+
     @model_validator(mode='after')
     def check_cv_upload_configurations(self) -> "ApplicationConfig":
-        # Check that the CV upload configurations are valid.
-        # If the cv upload feature is enabled, then the cv_storage bucket should be provided
         if self.enable_cv_upload and not self.cv_storage_bucket:
             raise ValueError("The cv_storage_bucket must be provided when the cv upload feature is enabled.")
-
+        if self.llm_provider == "anthropic" and not self.anthropic_api_key:
+            raise ValueError("ANTHROPIC_API_KEY must be set when LLM_PROVIDER=anthropic.")
         return self
 
 

@@ -16,8 +16,8 @@ from app.agent.prompt_template import sanitize_input
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_types import ConversationContext
 from app.i18n.locale_date_format import get_locale_date_format, format_date_value_for_locale
-from common_libs.llm.generative_models import GeminiGenerativeLLM
-from common_libs.llm.models_utils import LLMConfig, ZERO_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG, \
+from common_libs.llm.factory import get_llm
+from common_libs.llm.models_utils import LLM, LLMConfig, ZERO_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG, \
     get_config_variation
 from common_libs.llm.schema_builder import with_response_schema
 from common_libs.retry import Retry
@@ -90,12 +90,12 @@ class TemporalAndWorkTypeClassifierTool:
             date_format_year=date_formats.year_only,
         )
 
-    def _get_llm(self, temperature_config: Optional[dict] = None) -> GeminiGenerativeLLM:
+    def _get_llm(self, temperature_config: Optional[dict] = None) -> LLM:
         # if no temperature config provided, use the default one.
         if temperature_config is None:
             temperature_config = {}
 
-        return GeminiGenerativeLLM(
+        return get_llm(
             system_instructions=self._get_system_instructions(),
             config=LLMConfig(
                 language_model_name=AgentsConfig.deep_reasoning_model,
@@ -142,7 +142,7 @@ class TemporalAndWorkTypeClassifierTool:
 
     async def _internal_execute(self,
                                 *,
-                                llm: GeminiGenerativeLLM,
+                                llm: LLM,
                                 prompt: str) -> tuple[ExtractedData, list[LLMStats], float, BaseException | None]:
 
         # Penalities, the higher the level, the more severe the penalty.

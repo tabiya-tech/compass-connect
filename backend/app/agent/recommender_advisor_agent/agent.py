@@ -49,8 +49,9 @@ from app.agent.prompt_template.quick_reply_prompt import QUICK_REPLY_PROMPT
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.i18n.translation_service import t, get_i18n_manager
 from app.i18n.types import Locale
-from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import (
+    LLM,
     LLMConfig,
     LOW_TEMPERATURE_GENERATION_CONFIG,
     MEDIUM_TEMPERATURE_GENERATION_CONFIG,
@@ -120,7 +121,7 @@ class RecommenderAdvisorAgent(Agent):
             generation_config=MEDIUM_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
         )
         self._llm_config = llm_config
-        self._conversation_llm_by_locale: dict[Locale, GeminiGenerativeLLM] = {}
+        self._conversation_llm_by_locale: dict[Locale, LLM] = {}
 
         # Initialize LLM callers
         self._conversation_caller: LLMCaller[ConversationResponse] = LLMCaller[ConversationResponse](
@@ -242,7 +243,7 @@ class RecommenderAdvisorAgent(Agent):
         self._action_handler._wrapup_handler = self._wrapup_handler
 
     
-    def _get_conversation_llm(self) -> GeminiGenerativeLLM:
+    def _get_conversation_llm(self) -> LLM:
         """
         Get the conversation LLM, constructing it on request for the current locale.
 
@@ -251,14 +252,11 @@ class RecommenderAdvisorAgent(Agent):
         ensures the prompt language matches the user's current locale. The result is memoized
         per locale so we don't rebuild it on every LLM call within the same conversation, while
         still letting two calls in different languages each get their own correctly-localized LLM.
-
-        Returns:
-            A GeminiGenerativeLLM with system instructions for the current locale.
         """
         locale = get_i18n_manager().get_locale()
         llm = self._conversation_llm_by_locale.get(locale)
         if llm is None:
-            llm = GeminiGenerativeLLM(
+            llm = get_llm(
                 system_instructions=self._build_conversation_system_instructions(),
                 config=self._llm_config,
             )

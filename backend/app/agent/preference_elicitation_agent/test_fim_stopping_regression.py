@@ -374,7 +374,7 @@ async def test_agent_adaptive_phase_not_skipped():
         pytest.skip("Offline vignette files not generated")
 
     # Build agent — mock the LLMs to avoid real API calls
-    with patch("app.agent.preference_elicitation_agent.agent.GeminiGenerativeLLM"):
+    with patch("app.agent.preference_elicitation_agent.agent.get_llm"):
         agent = PreferenceElicitationAgent(
             use_personalized_vignettes=False,
             use_offline_with_personalization=True,

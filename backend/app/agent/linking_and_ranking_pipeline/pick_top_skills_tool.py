@@ -11,8 +11,8 @@ from app.agent.llm_caller import LLMCaller
 from app.agent.penalty import get_penalty, get_penalty_for_multiple_errors
 from app.agent.prompt_template.format_prompt import replace_placeholders_with_indent
 from app.vector_search.esco_entities import BaseEntity, SkillEntity
-from common_libs.llm.generative_models import GeminiGenerativeLLM
-from common_libs.llm.models_utils import LLMConfig, JSON_GENERATION_CONFIG, get_config_variation
+from common_libs.llm.factory import get_llm
+from common_libs.llm.models_utils import LLM, LLMConfig, JSON_GENERATION_CONFIG, get_config_variation
 from common_libs.retry import Retry
 
 T = TypeVar('T', bound=BaseEntity)
@@ -48,13 +48,13 @@ class PickTopSkillsToolOutput(BaseModel):
     llm_stats: list[LLMStats]
 
 
-def _get_llm(temperature_config: dict) -> GeminiGenerativeLLM:
+def _get_llm(temperature_config: dict) -> LLM:
     """
     Get the LLM to use for clustering.
     As we do not know how the PickTopSkillsTool will be used in the async context,
     and to avoid any race conditions, we create a new LLM instance for each call.
     """
-    return GeminiGenerativeLLM(
+    return get_llm(
         system_instructions=PickTopSkillsTool.get_system_instructions(),
         config=LLMConfig(generation_config=temperature_config | JSON_GENERATION_CONFIG)
     )
@@ -123,7 +123,7 @@ class PickTopSkillsTool:
     async def _internal_execute(
             self,
             *,
-            llm: GeminiGenerativeLLM,
+            llm: LLM,
             job_titles: list[str],
             responsibilities_group_name: str,
             responsibilities: list[str],

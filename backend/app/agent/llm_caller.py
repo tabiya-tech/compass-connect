@@ -2,12 +2,11 @@ import logging
 import time
 from typing import Generic, TypeVar, Type, Tuple
 
-from google.cloud.aiplatform_v1 import GenerationConfig
 from pydantic import BaseModel
 
 from app.agent.agent_types import LLMStats
 from common_libs.llm.generative_models import GeminiGenerativeLLM
-from common_libs.llm.models_utils import LLMInput, llm_input_to_traceable
+from common_libs.llm.models_utils import LLM, LLMInput, llm_input_to_traceable
 from common_libs.observability.tracing import record_score, traced_observation, update_observation
 from common_libs.text_formatters.extract_json import extract_json, ExtractJSONError
 from app.context_vars import llm_call_duration_ms_ctx_var
@@ -38,7 +37,7 @@ class LLMCaller(Generic[RESPONSE_T]):
         self._model_response_type: Type[RESPONSE_T] = model_response_type
 
     async def call_llm(self, *,
-                       llm: GeminiGenerativeLLM,
+                       llm: LLM,
                        llm_input: LLMInput | str,
                        logger: logging.Logger,
                        output_metadata: dict | None = None,
@@ -95,7 +94,7 @@ class LLMCaller(Generic[RESPONSE_T]):
             return model_response, llm_stats_list
 
     async def _call_llm_with_retries(self, *,
-                                     llm: GeminiGenerativeLLM,
+                                     llm: LLM,
                                      llm_input: LLMInput | str,
                                      logger: logging.Logger,
                                      output_metadata: dict | None = None,
@@ -108,10 +107,14 @@ class LLMCaller(Generic[RESPONSE_T]):
         attempt_count = 0
         model_response: RESPONSE_T | None = None
 
-        # This is a hack as we do not have access to the model config any more.
-        generation_config: GenerationConfig = llm._model._generation_config._raw_generation_config
-        original_frequency_penalty = generation_config.frequency_penalty
-        original_temperature = generation_config.temperature  # usually for json we use 0.0
+        # Gemini-specific: mutate frequency_penalty/temperature to escape repetition traps.
+        # Non-Gemini LLMs skip this — retries still fire but sampling params won't change.
+        generation_config = (
+            llm._model._generation_config._raw_generation_config  # pylint: disable=protected-access
+            if isinstance(llm, GeminiGenerativeLLM) else None
+        )
+        original_frequency_penalty = generation_config.frequency_penalty if generation_config is not None else 0.0
+        original_temperature = generation_config.temperature if generation_config is not None else 0.0
 
         while not success and attempt_count < _MAX_ATTEMPTS:
             attempt_count += 1
@@ -157,20 +160,21 @@ class LLMCaller(Generic[RESPONSE_T]):
             try:
                 model_response = extract_json(response_text, self._model_response_type)
                 success = True
-                logger.info("LLM call completed")
+                logger.info("LLM call completed (model=%s)", getattr(llm, "_model_name", type(llm).__name__))
             except ExtractJSONError as e:
                 log_message = f"Attempt {attempt_count} failed to extract JSON caused by: {e}"
                 llm_stats.error = log_message
                 logger.warning("Raw LLM response text (first 500 chars): %s", response_text[:500] if response_text else "None")
                 logger.warning("Raw LLM response text length: %d characters", len(response_text) if response_text else 0)
-                logger.warning("Response token count: %d, Max output tokens: %d", llm_stats.response_token_count, generation_config.max_output_tokens)
+                if generation_config is not None:
+                    logger.warning("Response token count: %d, Max output tokens: %d", llm_stats.response_token_count, generation_config.max_output_tokens)
                 if attempt_count == _MAX_ATTEMPTS:
                     # The agent failed to respond with a JSON object after the last attempt,
                     logger.error(log_message)
                     # And set the response to the model output and hope that the caller can handle it
                 else:
                     logger.warning(log_message)
-                    if llm_stats.response_token_count == generation_config.max_output_tokens:
+                    if generation_config is not None and llm_stats.response_token_count == generation_config.max_output_tokens:
                         # Most-likely we run into a "repetition trap". This happens often with prompts that have Chain Of Thought reasoning tasks.
                         # We will increase the frequency_penalty and the temperature and return the model to avoid repetition.
                         # However, higher frequency_penalty might cause the model to penalize punctuation and JSON format characters,
@@ -201,10 +205,9 @@ class LLMCaller(Generic[RESPONSE_T]):
             finally:
                 llm_stats_list.append(llm_stats)
 
-        # Reset the frequency_penalty to the original value
-        generation_config.frequency_penalty = original_frequency_penalty
-        # Reset the temperature to the original value
-        generation_config.temperature = original_temperature
+        if generation_config is not None:
+            generation_config.frequency_penalty = original_frequency_penalty
+            generation_config.temperature = original_temperature
         
         # Note: We intentionally do NOT reset llm_call_duration_ms_ctx_var here.
         # The duration should remain set so that observability logs in calling code
