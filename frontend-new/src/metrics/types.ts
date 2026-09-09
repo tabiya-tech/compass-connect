@@ -10,6 +10,7 @@ export enum EventType {
   NETWORK_INFORMATION = 200005,
   UI_INTERACTION = 200006,
   VERIFY_EMAIL_PAGE_VIEWED = 200007,
+  JOB_VIEWED = 200008,
 }
 
 interface BaseMetricsEvent {
@@ -73,6 +74,14 @@ export interface VerifyEmailPageViewedEvent extends BaseMetricsEvent {
   timestamp: string;
 }
 
+/** A user opened a single job listing. `job_id` is the listing's uuid, not a table row key. */
+export interface JobViewedEvent extends BaseMetricsEvent {
+  event_type: EventType.JOB_VIEWED;
+  user_id: string;
+  job_id: string;
+  timestamp: string;
+}
+
 export type MetricsEventUnion =
   | CVDownloadedEvent
   | DemographicsEvent
@@ -80,7 +89,8 @@ export type MetricsEventUnion =
   | UserLocationEvent
   | NetworkInformationEvent
   | UIInteractionEvent
-  | VerifyEmailPageViewedEvent;
+  | VerifyEmailPageViewedEvent
+  | JobViewedEvent;
 
 export type SavableMetricsEventUnion = MetricsEventUnion & {
   client_id: string; // The client ID to associate with the event

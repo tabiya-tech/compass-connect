@@ -494,3 +494,102 @@ async def get_career_explorer_module_repository(
     career_explorer_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_career_explorer_db),
 ) -> CareerExplorerModuleRepository:
     return CareerExplorerModuleRepository(application_db, userdata_db, metrics_db, career_explorer_db)
+
+
+class JobsModuleAnalyticsRepository:
+    """
+    The per-jobseeker half of the Jobs module summary, aggregated from metric_events.
+
+    jobs_sourced comes from the matching service and is handled by the route; everything here
+    is about what jobseekers did: JOB_MATCHES_GENERATED (one document per matched profile) and
+    JOB_VIEWED (one document per user/listing pair).
+    """
+
+    def __init__(
+        self,
+        application_db: AsyncIOMotorDatabase,
+        userdata_db: AsyncIOMotorDatabase,
+        metrics_db: AsyncIOMotorDatabase,
+    ):
+        self._prefs = application_db.get_collection(Collections.USER_PREFERENCES)
+        self._plain_data = userdata_db.get_collection(Collections.PLAIN_PERSONAL_DATA)
+        self._metrics = metrics_db.get_collection(Collections.COMPASS_METRICS)
+
+    async def _resolve_user_ids(self, institution_names: Optional[list[str]]) -> Optional[set[str]]:
+        """The user_ids in scope, or None for "every institution" — the contract the other repos here use."""
+        if not institution_names:
+            return None
+        docs = await self._plain_data.find(
+            {f"data.{PLAIN_DATA_SCHOOL_KEY}": {"$in": institution_names}}, {"user_id": 1}
+        ).to_list(length=None)
+        return {d["user_id"] for d in docs if d.get("user_id")}
+
+    async def _count_registered_users(self, user_ids: Optional[set[str]]) -> int:
+        if user_ids is not None:
+            return len(user_ids)
+        return await self._prefs.count_documents({})
+
+    @staticmethod
+    def _event_match(event_type: EventType, anon_ids: Optional[list[str]]) -> dict:
+        match: dict = {"event_type": {"$eq": event_type.value}}
+        if anon_ids is not None:
+            match["anonymized_user_id"] = {"$in": anon_ids}
+        return match
+
+    async def _count_distinct_users(self, match: dict) -> int:
+        pipeline = [
+            {"$match": match},
+            {"$group": {"_id": "$anonymized_user_id"}},
+            {"$count": "total"},
+        ]
+        result = await self._metrics.aggregate(pipeline).to_list(length=1)
+        return result[0]["total"] if result else 0
+
+    async def _jobs_viewed_per_user(self, match: dict) -> float:
+        """Distinct listings opened, averaged over the jobseekers who opened at least one."""
+        pipeline = [
+            {"$match": match},
+            {"$group": {"_id": "$anonymized_user_id", "jobs": {"$addToSet": "$job_id"}}},
+            {"$group": {"_id": None, "viewers": {"$sum": 1}, "jobs_viewed": {"$sum": {"$size": "$jobs"}}}},
+        ]
+        result = await self._metrics.aggregate(pipeline).to_list(length=1)
+        if not result or not result[0]["viewers"]:
+            return 0.0
+        return round(result[0]["jobs_viewed"] / result[0]["viewers"], 1)
+
+    async def get_jobs_engagement(self, institution_names: Optional[list[str]] = None) -> dict:
+        """profiles_with_matches, its share of registered users, and jobs viewed per viewer."""
+        user_ids = await self._resolve_user_ids(institution_names)
+        # An institution filter matching nobody is a real, empty answer — not "everyone".
+        if user_ids is not None and not user_ids:
+            return {
+                "profiles_with_matches": 0,
+                "profiles_with_matches_percentage": 0.0,
+                "jobs_viewed_per_user": 0.0,
+            }
+
+        anon_ids = [_anonymize(uid) for uid in user_ids] if user_ids is not None else None
+        total_users = await self._count_registered_users(user_ids)
+
+        matched_profiles = await self._count_distinct_users(
+            self._event_match(EventType.JOB_MATCHES_GENERATED, anon_ids)
+        )
+        jobs_viewed_per_user = await self._jobs_viewed_per_user(
+            self._event_match(EventType.JOB_VIEWED, anon_ids)
+        )
+
+        return {
+            "profiles_with_matches": matched_profiles,
+            "profiles_with_matches_percentage": (
+                round(matched_profiles / total_users * 100, 1) if total_users > 0 else 0.0
+            ),
+            "jobs_viewed_per_user": jobs_viewed_per_user,
+        }
+
+
+async def get_jobs_module_analytics_repository(
+    application_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_application_db),
+    userdata_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_userdata_db),
+    metrics_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_metrics_db),
+) -> JobsModuleAnalyticsRepository:
+    return JobsModuleAnalyticsRepository(application_db, userdata_db, metrics_db)

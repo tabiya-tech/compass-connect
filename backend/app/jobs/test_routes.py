@@ -18,6 +18,9 @@ from app.jobs import routes as jobs_routes_module
 from app.jobs.get_job_service import get_job_service
 from app.jobs.routes import add_jobs_routes
 from app.jobs.service import IJobService, JobDocument, JobStats
+from app.metrics.constants import EventType
+from app.metrics.services.get_metrics_service import get_metrics_service
+from app.metrics.services.service import IMetricsService
 from app.programme_skills.repository import ProgrammeSkillsRepository
 from app.user_profile.repository import UserProfileRepository
 from common_libs.test_utilities.mock_auth import MockAuth
@@ -136,8 +139,12 @@ _MatchedFixtureMocks = dict
 
 
 @pytest.fixture(scope="function")
-def matched_client(monkeypatch) -> tuple[TestClient, _MatchedFixtureMocks]:
-    """Build a TestClient with the /jobs/matched route registered and all dependencies mocked."""
+def matched_client(monkeypatch, setup_application_config) -> tuple[TestClient, _MatchedFixtureMocks]:
+    """Build a TestClient with the /jobs/matched route registered and all dependencies mocked.
+
+    `setup_application_config` is required because the route builds a metric event, and every
+    metric event stamps itself with the environment name and version from the application config.
+    """
     # Mock the user profile repository (returns a programme + province)
     mock_user_profile_repo = AsyncMock(spec=UserProfileRepository)
     mock_user_profile_repo.get_latest_session_id.return_value = 42
@@ -157,6 +164,9 @@ def matched_client(monkeypatch) -> tuple[TestClient, _MatchedFixtureMocks]:
     # Mock the job service (the matched route no longer uses it, but it is still
     # registered as an app dependency by add_jobs_routes).
     mock_job_service = AsyncMock(spec=IJobService)
+
+    # Mock the metrics service — the matched route records a JOB_MATCHES_GENERATED event.
+    mock_metrics_service = AsyncMock(spec=IMetricsService)
 
     # Mock the matching service (returns an empty CompassMatchingResult by default).
     # Despite the variable name (kept stable for existing assertions), this is a
@@ -183,12 +193,16 @@ def matched_client(monkeypatch) -> tuple[TestClient, _MatchedFixtureMocks]:
     def _override_get_job_service() -> IJobService:
         return mock_job_service
 
+    def _override_get_metrics_service() -> IMetricsService:
+        return mock_metrics_service
+
     auth = MockAuth()
     app = FastAPI()
     app.dependency_overrides[jobs_routes_module._get_user_profile_repository] = _override_user_profile_repo
     app.dependency_overrides[jobs_routes_module._get_programme_skills_repository] = _override_programme_skills_repo
     app.dependency_overrides[get_job_preferences_service] = _override_get_prefs_service
     app.dependency_overrides[get_job_service] = _override_get_job_service
+    app.dependency_overrides[get_metrics_service] = _override_get_metrics_service
 
     add_jobs_routes(app, auth)
     client = TestClient(app)
@@ -199,6 +213,7 @@ def matched_client(monkeypatch) -> tuple[TestClient, _MatchedFixtureMocks]:
         "prefs_service": mock_prefs_service,
         "job_service": mock_job_service,
         "matching_client": mock_matching_client,
+        "metrics_service": mock_metrics_service,
         "auth_user": auth.mocked_user,
     }
 
@@ -358,3 +373,67 @@ class TestMatchedJobsRoute:
         assert actual_response.status_code == HTTPStatus.OK
         assert actual_response.json() == {"matches": [], "skills_source": "none"}
         mocks["matching_client"].generate_recommendations.assert_not_awaited()
+
+    def test_records_a_job_matches_generated_event_when_matches_are_returned(
+        self, matched_client: tuple[TestClient, _MatchedFixtureMocks]
+    ):
+        # GIVEN the user has a programme and the matching service returns two opportunities
+        client, mocks = matched_client
+        mocks["user_profile_repo"].get_explored_experience_entities.return_value = None
+        mocks["programme_skills_repo"].find_by_programme_name.return_value = _given_programme_skills_doc()
+        mocks["matching_client"].generate_recommendations.return_value = CompassMatchingResult(
+            user_id="mock-user",
+            algorithm_version="v1",
+            opportunities=[
+                CompassOpportunity(uuid="id-1", rank=1, opportunity_title="Cook", url="https://example.com/1"),
+                CompassOpportunity(uuid="id-2", rank=2, opportunity_title="Baker", url="https://example.com/2"),
+            ],
+        )
+
+        # WHEN GET /jobs/matched is called
+        actual_response = client.get("/jobs/matched")
+
+        # THEN a JOB_MATCHES_GENERATED event is recorded for the authenticated user, carrying the match count
+        assert actual_response.status_code == HTTPStatus.OK
+        mocks["metrics_service"].record_event.assert_awaited_once()
+        actual_event = mocks["metrics_service"].record_event.call_args.args[0]
+        assert actual_event.event_type == EventType.JOB_MATCHES_GENERATED
+        assert actual_event.user_id == mocks["auth_user"].user_id
+        assert actual_event.matches_count == 2
+
+    def test_records_no_event_when_the_matching_service_returns_nothing(
+        self, matched_client: tuple[TestClient, _MatchedFixtureMocks]
+    ):
+        # GIVEN the user has a programme but the matching service returns no opportunities
+        client, mocks = matched_client
+        mocks["user_profile_repo"].get_explored_experience_entities.return_value = None
+        mocks["programme_skills_repo"].find_by_programme_name.return_value = _given_programme_skills_doc()
+
+        # WHEN GET /jobs/matched is called
+        actual_response = client.get("/jobs/matched")
+
+        # THEN the profile is not counted as matched
+        assert actual_response.status_code == HTTPStatus.OK
+        assert actual_response.json()["matches"] == []
+        mocks["metrics_service"].record_event.assert_not_awaited()
+
+    def test_still_returns_matches_when_recording_the_event_fails(
+        self, matched_client: tuple[TestClient, _MatchedFixtureMocks]
+    ):
+        # GIVEN matches are found but recording the metric event blows up
+        client, mocks = matched_client
+        mocks["user_profile_repo"].get_explored_experience_entities.return_value = None
+        mocks["programme_skills_repo"].find_by_programme_name.return_value = _given_programme_skills_doc()
+        mocks["matching_client"].generate_recommendations.return_value = CompassMatchingResult(
+            user_id="mock-user",
+            algorithm_version="v1",
+            opportunities=[CompassOpportunity(uuid="id-1", rank=1, opportunity_title="Cook", url="https://x/1")],
+        )
+        mocks["metrics_service"].record_event = AsyncMock(side_effect=Exception("metrics down"))
+
+        # WHEN GET /jobs/matched is called
+        actual_response = client.get("/jobs/matched")
+
+        # THEN the jobseeker still gets their matches — analytics never degrades the product
+        assert actual_response.status_code == HTTPStatus.OK
+        assert len(actual_response.json()["matches"]) == 1

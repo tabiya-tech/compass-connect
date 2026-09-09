@@ -152,6 +152,39 @@ class SectorEngagementEvent(AbstractUserAccountEvent):
         extra = "forbid"
 
 
+@final
+class JobMatchesGeneratedEvent(AbstractUserAccountEvent):
+    """
+    A metric event representing the matching service returning at least one job match for a user.
+
+    Emitted from GET /jobs/matched only when the response carries matches, so the count of
+    these events is the count of profiles that have ever been matched to a job.
+    """
+    matches_count: int
+    """
+    matches_count - how many matches were returned by the most recent matching run for this user
+    """
+
+    def __init__(
+        self,
+        *,
+        user_id: str,
+        matches_count: int,
+        client_id: str | None = None,
+        relevant_experiments: dict[str, str] | None = None,
+    ):
+        super().__init__(
+            user_id=user_id,
+            client_id=client_id,
+            event_type=EventType.JOB_MATCHES_GENERATED,
+            matches_count=matches_count,
+            relevant_experiments=relevant_experiments or {},
+        )
+
+    class Config:
+        extra = "forbid"
+
+
 class AbstractConversationEvent(AbstractUserAccountEvent):
     """
     Abstract base class for a metric event representing a conversation event. It is not meant to be instantiated directly.
@@ -744,6 +777,40 @@ class NetworkInformationEvent(AbstractUserAccountEvent):
             event_type=EventType.NETWORK_INFORMATION,
             effective_connection_type=effective_connection_type,
             connection_type=connection_type,
+            relevant_experiments=relevant_experiments or {}
+        )
+
+    class Config:
+        extra = "forbid"
+
+
+class JobViewedEvent(AbstractUserAccountEvent):
+    """
+    A Frontend only metric event representing a user opening a single job listing.
+
+    One document is kept per (user, job): re-opening the same listing bumps `view_count`
+    rather than adding a row, so "jobs viewed per user" counts distinct listings, not clicks.
+    """
+    job_id: str
+    """
+    job_id - the uuid of the job listing that was opened
+    """
+
+    def __init__(
+        self,
+        *,
+        user_id: str,
+        job_id: str,
+        timestamp: str,
+        client_id: str | None = None,
+        relevant_experiments: dict[str, str] = None,
+    ):
+        super().__init__(
+            user_id=user_id,
+            client_id=client_id,
+            event_type=EventType.JOB_VIEWED,
+            job_id=job_id,
+            timestamp=datetime.fromisoformat(timestamp).astimezone(timezone.utc),
             relevant_experiments=relevant_experiments or {}
         )
 

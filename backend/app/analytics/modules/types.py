@@ -57,7 +57,23 @@ class JobReadinessResponse(BaseModel):
 
 
 class JobsSummary(BaseModel):
+    """
+    Headline figures for the Jobs module.
+
+    jobs_sourced counts the whole classifier feed and is never institution-scoped; the other
+    three are per-jobseeker and follow the requested institution scope.
+
+    profiles_with_matches: distinct jobseekers the matching service has returned at least one
+    job for, ever.
+    profiles_with_matches_percentage: that count as a share of registered users in scope.
+    jobs_viewed_per_user: distinct job listings opened, averaged over the jobseekers who opened
+    at least one — an intensity figure among visitors, not across everyone registered.
+    """
+
     jobs_sourced: int
+    profiles_with_matches: int = 0
+    profiles_with_matches_percentage: float = 0.0
+    jobs_viewed_per_user: float = 0.0
 
 
 class JobsResponse(BaseModel):

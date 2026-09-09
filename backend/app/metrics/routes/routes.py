@@ -13,7 +13,8 @@ from app.metrics.constants import EventType
 from app.metrics.services.get_metrics_service import get_metrics_service
 from app.metrics.services.service import IMetricsService
 from app.metrics.types import AbstractCompassMetricEvent, CVDownloadedEvent, DeviceSpecificationEvent, \
-    DemographicsEvent, UserLocationEvent, NetworkInformationEvent, UIInteractionEvent, VerifyEmailPageViewedEvent
+    DemographicsEvent, UserLocationEvent, NetworkInformationEvent, UIInteractionEvent, VerifyEmailPageViewedEvent, \
+    JobViewedEvent
 
 
 class _PayloadTooLargeErrorResponse(HTTPErrorResponse):
@@ -63,6 +64,8 @@ def _construct_metric_event(request: _MetricRequest) -> AbstractCompassMetricEve
         return UIInteractionEvent(**event_data)
     elif request.event_type == EventType.VERIFY_EMAIL_PAGE_VIEWED:
         return VerifyEmailPageViewedEvent(**event_data)
+    elif request.event_type == EventType.JOB_VIEWED:
+        return JobViewedEvent(**event_data)
     else:
         raise ValueError(f"Unknown event type: {request.event_type}")
 

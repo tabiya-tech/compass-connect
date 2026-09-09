@@ -10,7 +10,9 @@ from app.analytics.career_explorer.types import CareerExplorerStatsResponse
 from app.analytics.modules.repository import (
     CareerExplorerModuleRepository,
     JobReadinessAnalyticsRepository,
+    JobsModuleAnalyticsRepository,
     get_career_explorer_module_repository,
+    get_jobs_module_analytics_repository,
     get_module_analytics_repository,
     ModuleAnalyticsRepository,
 )
@@ -138,19 +140,35 @@ def add_module_analytics_routes(router: APIRouter) -> None:
         response_model=JobsResponse,
         dependencies=[Depends(_api_key_auth)],
         responses={HTTPStatus.INTERNAL_SERVER_ERROR: {"model": HTTPErrorResponse}},
-        description="Jobs module summary — jobs currently in the classifier feed.",
+        description=(
+            "Jobs module summary — the classifier feed size, plus how many jobseekers have been "
+            "matched to a job and how many listings a jobseeker who browses opens."
+        ),
     )
     async def get_jobs_module(
+        institution_ids: Optional[str] = Query(
+            default=None, description="Comma-separated, base64url-encoded institution ids to scope to"
+        ),
         job_service: IJobService = Depends(get_job_service),
+        repository: JobsModuleAnalyticsRepository = Depends(get_jobs_module_analytics_repository),
     ) -> JobsResponse:
+        # jobs_sourced counts the whole feed, so it ignores the institution scope; the
+        # per-jobseeker figures below honour it.
+        institution_names = _decode_institution_ids(institution_ids)
+
+        # One failure fails the whole summary: the caller degrades all four figures together
+        # rather than showing a real jobs_sourced beside silently zeroed engagement.
         try:
             stats = await job_service.get_job_stats()
+            engagement = await repository.get_jobs_engagement(institution_names)
         except Exception as exc:
+            logger.exception(exc)
             raise HTTPException(
                 status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 detail="Failed to fetch job stats",
             ) from exc
-        return JobsResponse(summary=JobsSummary(jobs_sourced=stats.total))
+
+        return JobsResponse(summary=JobsSummary(jobs_sourced=stats.total, **engagement))
 
     @router.get(
         "/modules/career-explorer",

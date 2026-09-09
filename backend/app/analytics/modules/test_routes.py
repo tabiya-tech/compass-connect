@@ -17,8 +17,10 @@ from starlette.testclient import TestClient
 from app.analytics.modules.repository import (
     CareerExplorerModuleRepository,
     JobReadinessAnalyticsRepository,
+    JobsModuleAnalyticsRepository,
     ModuleAnalyticsRepository,
     get_career_explorer_module_repository,
+    get_jobs_module_analytics_repository,
     get_module_analytics_repository,
 )
 from app.analytics.modules.routes import (
@@ -31,7 +33,7 @@ from app.jobs.service import IJobService, JobStats
 
 TestClientWithMocks = tuple[TestClient, ModuleAnalyticsRepository]
 TestClientWithJobReadinessMocks = tuple[TestClient, JobReadinessAnalyticsRepository]
-TestClientWithJobServiceMock = tuple[TestClient, AsyncMock]
+TestClientWithJobServiceMock = tuple[TestClient, AsyncMock, AsyncMock]
 CareerExplorerClientWithMocks = tuple[TestClient, CareerExplorerModuleRepository]
 
 _CE_PARAMS = "start_date=2026-01-01&end_date=2026-06-30"
@@ -50,6 +52,13 @@ _GIVEN_CAREER_EXPLORER = {
 }
 
 _PARAMS = "start_date=2026-01-01&end_date=2026-01-03"
+
+# What the jobs engagement repository reports when nobody has been matched or viewed anything.
+_NO_JOBS_ENGAGEMENT = {
+    "profiles_with_matches": 0,
+    "profiles_with_matches_percentage": 0.0,
+    "jobs_viewed_per_user": 0.0,
+}
 _API_KEY_HEADER = {"x-api-key": "some-key"}
 
 _GIVEN_BYP = {
@@ -115,15 +124,18 @@ def client_with_job_readiness_mocks() -> Generator[TestClientWithJobReadinessMoc
 @pytest.fixture(scope="function")
 def client_with_job_service_mock() -> Generator[TestClientWithJobServiceMock, None, None]:
     mocked_job_service = AsyncMock(spec=IJobService)
+    mocked_jobs_repository = AsyncMock(spec=JobsModuleAnalyticsRepository)
+    mocked_jobs_repository.get_jobs_engagement = AsyncMock(return_value=_NO_JOBS_ENGAGEMENT)
 
     app = FastAPI()
     app.dependency_overrides[get_job_service] = lambda: mocked_job_service
+    app.dependency_overrides[get_jobs_module_analytics_repository] = lambda: mocked_jobs_repository
 
     router = APIRouter(prefix="/analytics", tags=["analytics"])
     add_modules_analytics_routes(router)
     app.include_router(router)
 
-    yield TestClient(app, raise_server_exceptions=False), mocked_job_service
+    yield TestClient(app, raise_server_exceptions=False), mocked_job_service, mocked_jobs_repository
 
 
 @pytest.fixture(scope="function")
@@ -347,20 +359,67 @@ class TestGetJobReadiness:
 class TestGetJobsModule:
     def test_returns_200_with_jobs_sourced_from_the_job_service(self, client_with_job_service_mock: TestClientWithJobServiceMock):
         # GIVEN the job service returns aggregate job stats
-        client, mocked_job_service = client_with_job_service_mock
+        client, mocked_job_service, _ = client_with_job_service_mock
         mocked_job_service.get_job_stats = AsyncMock(return_value=JobStats(total=12_345, sectors=8, platforms=3))
+        # AND nobody has been matched to a job or viewed one yet
 
         # WHEN the endpoint is called with a valid x-api-key header
         actual_response = client.get("/analytics/modules/jobs", headers=_API_KEY_HEADER)
 
         # THEN the response is OK with jobs_sourced taken from the job service's total
         assert actual_response.status_code == HTTPStatus.OK
-        assert actual_response.json() == {"summary": {"jobs_sourced": 12_345}}
+        assert actual_response.json() == {
+            "summary": {
+                "jobs_sourced": 12_345,
+                "profiles_with_matches": 0,
+                "profiles_with_matches_percentage": 0.0,
+                "jobs_viewed_per_user": 0.0,
+            }
+        }
         mocked_job_service.get_job_stats.assert_awaited_once_with()
+
+    def test_returns_the_engagement_figures_from_the_repository(self, client_with_job_service_mock: TestClientWithJobServiceMock):
+        # GIVEN the job service returns aggregate job stats
+        client, mocked_job_service, mocked_jobs_repository = client_with_job_service_mock
+        mocked_job_service.get_job_stats = AsyncMock(return_value=JobStats(total=12_345, sectors=8, platforms=3))
+        # AND jobseekers have been matched to jobs and have opened listings
+        given_engagement = {
+            "profiles_with_matches": 842,
+            "profiles_with_matches_percentage": 18.4,
+            "jobs_viewed_per_user": 3.7,
+        }
+        mocked_jobs_repository.get_jobs_engagement = AsyncMock(return_value=given_engagement)
+
+        # WHEN the endpoint is called with a valid x-api-key header
+        actual_response = client.get("/analytics/modules/jobs", headers=_API_KEY_HEADER)
+
+        # THEN the response carries every engagement figure alongside jobs_sourced
+        assert actual_response.status_code == HTTPStatus.OK
+        assert actual_response.json() == {"summary": {"jobs_sourced": 12_345, **given_engagement}}
+
+    def test_scopes_the_engagement_figures_to_the_requested_institutions(
+        self, client_with_job_service_mock: TestClientWithJobServiceMock
+    ):
+        # GIVEN the job service returns aggregate job stats
+        client, mocked_job_service, mocked_jobs_repository = client_with_job_service_mock
+        mocked_job_service.get_job_stats = AsyncMock(return_value=JobStats(total=10, sectors=1, platforms=1))
+        # AND an institution scope is requested
+        given_institution_ids = ",".join(
+            [_encode_institution_id("Lusaka College"), _encode_institution_id("Ndola Institute")]
+        )
+
+        # WHEN the endpoint is called with that scope
+        actual_response = client.get(
+            f"/analytics/modules/jobs?institution_ids={given_institution_ids}", headers=_API_KEY_HEADER
+        )
+
+        # THEN the repository is asked for exactly those institutions
+        assert actual_response.status_code == HTTPStatus.OK
+        mocked_jobs_repository.get_jobs_engagement.assert_awaited_once_with(["Lusaka College", "Ndola Institute"])
 
     def test_returns_403_when_no_api_key(self, client_with_job_service_mock: TestClientWithJobServiceMock):
         # GIVEN no x-api-key header
-        client, mocked_job_service = client_with_job_service_mock
+        client, mocked_job_service, _ = client_with_job_service_mock
         mocked_job_service.get_job_stats = AsyncMock()
 
         # WHEN the endpoint is called without authentication
@@ -372,13 +431,26 @@ class TestGetJobsModule:
 
     def test_returns_500_when_job_service_raises(self, client_with_job_service_mock: TestClientWithJobServiceMock):
         # GIVEN the job service raises an unexpected error
-        client, mocked_job_service = client_with_job_service_mock
+        client, mocked_job_service, _ = client_with_job_service_mock
         mocked_job_service.get_job_stats = AsyncMock(side_effect=Exception("matching service down"))
 
         # WHEN the endpoint is called
         actual_response = client.get("/analytics/modules/jobs", headers=_API_KEY_HEADER)
 
         # THEN expect an internal server error
+        assert actual_response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+
+    def test_returns_500_when_the_engagement_repository_raises(self, client_with_job_service_mock: TestClientWithJobServiceMock):
+        # GIVEN the job service works but the engagement aggregation fails
+        client, mocked_job_service, mocked_jobs_repository = client_with_job_service_mock
+        mocked_job_service.get_job_stats = AsyncMock(return_value=JobStats(total=12_345, sectors=8, platforms=3))
+        mocked_jobs_repository.get_jobs_engagement = AsyncMock(side_effect=Exception("metrics db down"))
+
+        # WHEN the endpoint is called
+        actual_response = client.get("/analytics/modules/jobs", headers=_API_KEY_HEADER)
+
+        # THEN expect an internal server error, so the caller degrades all four figures together
+        # rather than showing a real jobs_sourced beside silently zeroed engagement
         assert actual_response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
 

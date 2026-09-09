@@ -135,6 +135,35 @@ class MetricsRepository(IMetricsRepository):
                         },
                         upsert=True,
                     ))
+                case EventType.JOB_MATCHES_GENERATED:
+                    #  One document per user — the endpoint re-runs matching on every visit, and
+                    #  "profiles with matches" counts profiles, not matching runs.
+                    commands.append(UpdateOne(
+                        {
+                            "event_type": {"$eq": EventType.JOB_MATCHES_GENERATED.value},
+                            "anonymized_user_id": {"$eq": event.anonymized_user_id},
+                        },
+                        {
+                            "$set": self._to_db_doc(event),
+                            "$inc": {"match_generation_count": 1},
+                        },
+                        upsert=True,
+                    ))
+                case EventType.JOB_VIEWED:
+                    #  One document per (user, job) — re-opening the same listing bumps the count
+                    #  rather than adding a row, so "jobs viewed per user" counts distinct listings.
+                    commands.append(UpdateOne(
+                        {
+                            "event_type": {"$eq": EventType.JOB_VIEWED.value},
+                            "anonymized_user_id": {"$eq": event.anonymized_user_id},
+                            "job_id": {"$eq": event.job_id},
+                        },
+                        {
+                            "$set": self._to_db_doc(event),
+                            "$inc": {"view_count": 1},
+                        },
+                        upsert=True,
+                    ))
                 case _:
                     commands.append(InsertOne(self._to_db_doc(event)))
         return await self.collection.bulk_write(commands)

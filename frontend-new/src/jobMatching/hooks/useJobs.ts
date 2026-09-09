@@ -11,6 +11,7 @@ const nextId = () => String(++_rowCounter);
 function mapDocToRow(doc: JobApiDocument): JobRow {
   return {
     id: nextId(),
+    jobUuid: doc.uuid,
     jobTitle: doc.title ?? "",
     company: doc.employer ?? "",
     category: doc.category ?? "",

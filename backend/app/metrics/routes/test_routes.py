@@ -22,7 +22,8 @@ from app.metrics.types import (
     DemographicsEvent,
     DeviceSpecificationEvent,
     UserLocationEvent,
-    UIInteractionEvent
+    UIInteractionEvent,
+    JobViewedEvent
 )
 
 from common_libs.test_utilities.mock_auth import MockAuth
@@ -97,6 +98,16 @@ def get_ui_interaction_request() -> dict:
         "timestamp": datetime.now().isoformat(),
         "relevant_experiments": {"exp1": "group1", "exp2": "group2"},
         "details": {"foo1": "bar1", "foo2": "bar2"}
+    }
+
+
+def get_job_viewed_request() -> dict:
+    """Helper method to create a job viewed event request"""
+    return {
+        "event_type": EventType.JOB_VIEWED.value,
+        "user_id": get_random_user_id(),
+        "job_id": get_random_printable_string(10),
+        "timestamp": datetime.now().isoformat()
     }
 
 
@@ -183,13 +194,15 @@ class TestMetricsRoutes:
             (get_device_specification_request, DeviceSpecificationEvent, EventType.DEVICE_SPECIFICATION),
             (get_user_location_request, UserLocationEvent, EventType.USER_LOCATION),
             (get_ui_interaction_request, UIInteractionEvent, EventType.UI_INTERACTION),
+            (get_job_viewed_request, JobViewedEvent, EventType.JOB_VIEWED),
         ],
         ids=[
             "CV Downloaded",
             "Demographics",
             "Device Specification",
             "User Location",
-            "UI Interaction"
+            "UI Interaction",
+            "Job Viewed"
         ]
     )
     @pytest.mark.asyncio
@@ -267,13 +280,15 @@ class TestMetricsRoutes:
             (get_device_specification_request, DeviceSpecificationEvent, EventType.DEVICE_SPECIFICATION),
             (get_user_location_request, UserLocationEvent, EventType.USER_LOCATION),
             (get_ui_interaction_request, UIInteractionEvent, EventType.UI_INTERACTION),
+            (get_job_viewed_request, JobViewedEvent, EventType.JOB_VIEWED),
         ],
         ids=[
             "CV Downloaded",
             "Demographics",
             "Device Specification",
             "User Location",
-            "UI Interaction"
+            "UI Interaction",
+            "Job Viewed"
         ]
     )
     @pytest.mark.asyncio

@@ -65,7 +65,10 @@ export interface JobsApiResponse {
 
 /** Normalised row used by the table and detail modal. */
 export interface JobRow {
+  /** Table row key. Synthetic and per-fetch — never send it anywhere, use `jobUuid` for that. */
   id: string;
+  /** The listing's uuid, when the API returned one. Stable across users and page loads. */
+  jobUuid?: string;
   jobTitle: string;
   company: string;
   category: string;
