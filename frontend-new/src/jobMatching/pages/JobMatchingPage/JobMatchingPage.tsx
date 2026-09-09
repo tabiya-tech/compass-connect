@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { IsOnlineContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import { routerPaths } from "src/app/routerPaths";
+import AuthenticationStateService from "src/auth/services/AuthenticationState.service";
+import { MetricsError } from "src/error/commonErrors";
 import { isConnectionError } from "src/error/restAPIError/isConnectionError";
 import Footer from "src/home/components/Footer/Footer";
 import DataTable from "src/jobMatching/components/DataTable/DataTable";
@@ -13,6 +15,8 @@ import { useJobs, PAGE_SIZE } from "src/jobMatching/hooks/useJobs";
 import { useMatchedJobs } from "src/jobMatching/hooks/useMatchedJobs";
 import JobService from "src/jobMatching/services/JobService";
 import type { JobFilters, JobRow } from "src/jobMatching/types";
+import MetricsService from "src/metrics/metricsService";
+import { EventType } from "src/metrics/types";
 import PrimaryButton from "src/theme/PrimaryButton/PrimaryButton";
 import BackLink from "src/navigation/BackLink/BackLink";
 
@@ -147,9 +151,32 @@ const JobMatchingPage: React.FC = () => {
     [datasetFilterValues.location, browseFilters.location]
   );
 
+  /**
+   * Opening the detail is what counts as viewing a listing, on both tabs — it is the point
+   * where the user actually reads the job. Fire-and-forget: a metrics problem must never stop
+   * the modal from opening. Listings the API returned without a uuid are skipped, since the
+   * row's `id` is a per-fetch table key that would not aggregate into anything meaningful.
+   */
+  const recordJobViewed = (job: JobRow) => {
+    const userId = AuthenticationStateService.getInstance().getUser()?.id;
+    if (!userId || !job.jobUuid) return;
+
+    try {
+      MetricsService.getInstance().sendMetricsEvent({
+        event_type: EventType.JOB_VIEWED,
+        user_id: userId,
+        job_id: job.jobUuid,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error(new MetricsError("Failed to send job viewed metrics", error));
+    }
+  };
+
   const handleRowClick = (job: JobRow) => {
     setSelectedJob(job);
     setModalOpen(true);
+    recordJobViewed(job);
   };
 
   const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / PAGE_SIZE);

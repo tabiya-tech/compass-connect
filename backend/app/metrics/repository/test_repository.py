@@ -11,7 +11,8 @@ from app.metrics.types import ConversationPhaseLiteral, ConversationPhaseEvent, 
     MessageReactionCreatedEvent, ConversationTurnEvent, \
     FeedbackProvidedEvent, FeedbackTypeLiteral, FeedbackRatingValueEvent, \
     CVFormatLiteral, CVDownloadedEvent, DeviceSpecificationEvent, UserLocationEvent, ExperienceDiscoveredEvent, \
-    ExperienceExploredEvent, UIInteractionEvent, ExperienceChangedEvent, SkillChangedEvent, SectorEngagementEvent
+    ExperienceExploredEvent, UIInteractionEvent, ExperienceChangedEvent, SkillChangedEvent, SectorEngagementEvent, \
+    JobMatchesGeneratedEvent, JobViewedEvent
 from common_libs.test_utilities import get_random_user_id, get_random_session_id, get_random_printable_string
 from common_libs.time_utilities import mongo_date_to_datetime, truncate_microseconds, get_now
 
@@ -165,6 +166,21 @@ def get_sector_engagement_event(*, sector_name: str | None = None, is_priority: 
         user_id=get_random_user_id(),
         sector_name=sector_name or get_random_printable_string(10),
         is_priority=is_priority,
+    )
+
+
+def get_job_matches_generated_event(*, matches_count: int = 3):
+    return JobMatchesGeneratedEvent(
+        user_id=get_random_user_id(),
+        matches_count=matches_count,
+    )
+
+
+def get_job_viewed_event(*, job_id: str | None = None):
+    return JobViewedEvent(
+        user_id=get_random_user_id(),
+        job_id=job_id or get_random_printable_string(10),
+        timestamp=get_now().isoformat(),
     )
 
 
@@ -788,6 +804,102 @@ class TestRecordEvent:
                 _assert_metric_event_fields_match(given_second_event.model_dump(), actual_second_stored_event)
                 # AND the inquiry count is incremented to 2
                 assert actual_second_stored_event["inquiry_count"] == 2
+
+        class TestJobMatchesGeneratedEvent:
+            @pytest.mark.asyncio
+            async def test_upsert_keeps_one_document_per_user_and_counts_the_runs(
+                    self,
+                    get_metrics_repository: Awaitable[MetricsRepository],
+                    setup_application_config: ApplicationConfig
+            ):
+                # GIVEN a job matches generated event for a user
+                given_event = get_job_matches_generated_event(matches_count=3)
+                repository = await get_metrics_repository
+
+                # WHEN the event is recorded
+                await repository.record_event([given_event])
+
+                # THEN the event is recorded once, with the run counted
+                assert await repository.collection.count_documents({}) == 1
+                actual_stored_event = await repository.collection.find_one({})
+                _assert_metric_event_fields_match(given_event.model_dump(), actual_stored_event)
+                assert actual_stored_event["match_generation_count"] == 1
+
+                # WHEN the same user is matched again, with a different number of matches
+                given_second_event = get_job_matches_generated_event(matches_count=5)
+                given_second_event.anonymized_user_id = given_event.anonymized_user_id
+                await repository.record_event([given_second_event])
+
+                # THEN the profile is still a single document — profiles are counted, not matching runs
+                assert await repository.collection.count_documents({}) == 1
+                actual_second_stored_event = await repository.collection.find_one({})
+                # AND the latest match count is kept, and the run counter incremented
+                assert actual_second_stored_event["matches_count"] == 5
+                assert actual_second_stored_event["match_generation_count"] == 2
+
+            @pytest.mark.asyncio
+            async def test_records_one_document_per_matched_user(
+                    self,
+                    get_metrics_repository: Awaitable[MetricsRepository],
+                    setup_application_config: ApplicationConfig
+            ):
+                # GIVEN two job matches generated events for two different users
+                given_events = [get_job_matches_generated_event(), get_job_matches_generated_event()]
+                repository = await get_metrics_repository
+
+                # WHEN both events are recorded
+                await repository.record_event(given_events)
+
+                # THEN each matched profile gets its own document
+                assert await repository.collection.count_documents({}) == 2
+
+        class TestJobViewedEvent:
+            @pytest.mark.asyncio
+            async def test_reopening_the_same_listing_increments_the_view_count(
+                    self,
+                    get_metrics_repository: Awaitable[MetricsRepository],
+                    setup_application_config: ApplicationConfig
+            ):
+                # GIVEN a job viewed event
+                given_event = get_job_viewed_event(job_id="job-uuid-1")
+                repository = await get_metrics_repository
+
+                # WHEN the event is recorded
+                await repository.record_event([given_event])
+
+                # THEN the event is recorded once, with the view counted
+                assert await repository.collection.count_documents({}) == 1
+                actual_stored_event = await repository.collection.find_one({})
+                _assert_metric_event_fields_match(given_event.model_dump(), actual_stored_event)
+                assert actual_stored_event["view_count"] == 1
+
+                # WHEN the same user opens the same listing again
+                given_second_event = get_job_viewed_event(job_id="job-uuid-1")
+                given_second_event.anonymized_user_id = given_event.anonymized_user_id
+                await repository.record_event([given_second_event])
+
+                # THEN no second document is added — distinct listings are what is counted
+                assert await repository.collection.count_documents({}) == 1
+                actual_second_stored_event = await repository.collection.find_one({})
+                assert actual_second_stored_event["view_count"] == 2
+
+            @pytest.mark.asyncio
+            async def test_a_second_listing_by_the_same_user_is_its_own_document(
+                    self,
+                    get_metrics_repository: Awaitable[MetricsRepository],
+                    setup_application_config: ApplicationConfig
+            ):
+                # GIVEN one user opening two different listings
+                given_first_event = get_job_viewed_event(job_id="job-uuid-1")
+                given_second_event = get_job_viewed_event(job_id="job-uuid-2")
+                given_second_event.anonymized_user_id = given_first_event.anonymized_user_id
+                repository = await get_metrics_repository
+
+                # WHEN both events are recorded
+                await repository.record_event([given_first_event, given_second_event])
+
+                # THEN each (user, listing) pair gets its own document
+                assert await repository.collection.count_documents({}) == 2
 
 
 class TestGetSectorNamesForUser:

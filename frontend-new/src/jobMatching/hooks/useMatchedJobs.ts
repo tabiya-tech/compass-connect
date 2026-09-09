@@ -13,6 +13,7 @@ function mapMatchedDocToRow(doc: MatchedJobApiDocument): JobRow {
     typeof doc.final_score === "number" ? Math.max(0, Math.min(100, Math.round(doc.final_score * 100))) : undefined;
   return {
     id: nextId(),
+    jobUuid: doc.uuid,
     jobTitle: doc.opportunity_title ?? "",
     company: doc.employer ?? "",
     category: doc.category ?? "",

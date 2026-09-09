@@ -30,6 +30,9 @@ from app.jobs.service import (
     MatchedJobsResponse,
     SkillsSource,
 )
+from app.metrics.services.get_metrics_service import get_metrics_service
+from app.metrics.services.service import IMetricsService
+from app.metrics.types import JobMatchesGeneratedEvent
 from app.programme_skills.repository import ProgrammeSkillsRepository
 from app.server_dependencies.database_collections import Collections
 from app.server_dependencies.db_dependencies import CompassDBProvider
@@ -271,6 +274,7 @@ def add_jobs_routes(app: FastAPI, authentication: Optional[Authentication] = Non
             job_preferences_service: IJobPreferencesService = Depends(get_job_preferences_service),
             user_profile_repo: UserProfileRepository = Depends(_get_user_profile_repository),
             programme_skills_repo: ProgrammeSkillsRepository = Depends(_get_programme_skills_repository),
+            metrics_service: IMetricsService = Depends(get_metrics_service),
             limit: Annotated[int, Query(ge=1, le=100, description="Max results")] = 20,
         ):
             try:
@@ -346,6 +350,19 @@ def add_jobs_routes(app: FastAPI, authentication: Optional[Authentication] = Non
                     skills_source,
                     len(results),
                 )
+
+                # Only a run that actually produced matches marks the profile as matched — this is
+                # what `profiles_with_matches` counts. Recording is fire-and-forget: the service
+                # swallows its own failures, and building the event is guarded here so a metrics
+                # problem can never turn a good set of matches into a 500.
+                if results:
+                    try:
+                        await metrics_service.record_event(
+                            JobMatchesGeneratedEvent(user_id=user_info.user_id, matches_count=len(results))
+                        )
+                    except Exception:  # pylint: disable=broad-except
+                        logger.exception("Failed to record the job matches generated event for user %s", user_info.user_id)
+
                 return MatchedJobsResponse(matches=results, skills_source=skills_source)
 
             except HTTPException:
