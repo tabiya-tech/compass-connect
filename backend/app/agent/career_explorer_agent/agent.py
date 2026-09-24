@@ -5,8 +5,10 @@ from app.agent.agent import Agent
 from app.agent.agent_types import AgentInput, AgentOutput, AgentType, LLMStats, AgentOutputWithReasoning
 from app.app_config import get_application_config
 from app.i18n.translation_service import t
+from app.observability.module_types import TraceSubModule
+from common_libs.observability.tracing import annotate_trace, record_score
 
-from .sector_relevance_classifier import SectorRelevance, SectorRelevanceClassifier
+from .sector_relevance_classifier import SectorClassificationResult, SectorRelevance, SectorRelevanceClassifier
 from .priority_sector_explorer import PrioritySectorExplorer
 from .non_priority_sector_explorer import NonPrioritySectorExplorer
 from .sector_search_service import SectorSearchService
@@ -62,6 +64,29 @@ def _construct_output(
     )
 
 
+def _annotate_trace_with_classification(classification: SectorClassificationResult) -> None:
+    """
+    Report the sector classifier's verdict as the turn's sub module, so Career Explorer traces can be
+    broken down by priority and non-priority sector.
+
+    A failed classification falls back to the non-priority explorer, but is reported as its own sub
+    module, tagged, and scored, so the messages the classifier struggles with can be found in Langfuse.
+    """
+    if classification.classification_failed:
+        annotate_trace(
+            sub_module=TraceSubModule.SECTOR_CLASSIFIER_FAILED.value,
+            tags=["sector_classifier:failed"],
+            metadata={"sector_classifier_fallback": TraceSubModule.NON_PRIORITY_SECTOR.value},
+        )
+        record_score(name="sector_classifier_failed", value=1,
+                     comment="No usable classification; fell back to the non-priority sector explorer")
+        return
+
+    sub_module = (TraceSubModule.PRIORITY_SECTOR if classification.relevance == SectorRelevance.PRIORITY_SECTOR
+                  else TraceSubModule.NON_PRIORITY_SECTOR)
+    annotate_trace(sub_module=sub_module.value, metadata={"sector_name": classification.sector_name})
+
+
 class CareerExplorerAgent(Agent):
     def __init__(self, sector_search_service: SectorSearchService):
         super().__init__(
@@ -90,9 +115,11 @@ class CareerExplorerAgent(Agent):
                 metadata=_get_welcome_metadata(),
             )
 
-        relevance, sector_name, is_priority, reasoning, classifier_stats, all_sectors = await self._classifier.classify(
+        classification = await self._classifier.classify(
             user_input=msg, context=context, existing_sectors=existing_sectors
         )
+        _annotate_trace_with_classification(classification)
+        relevance, sector_name, is_priority, reasoning, classifier_stats, all_sectors, _ = classification
 
         self._logger.info(
             "Routing to %s explorer (reasoning: %s)",

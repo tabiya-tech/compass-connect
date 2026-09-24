@@ -6,6 +6,7 @@ or non-priority sectors. Replaces RAG score threshold to avoid embedding bias.
 import logging
 from enum import Enum
 from textwrap import dedent
+from typing import NamedTuple
 
 from pydantic import BaseModel, Field
 
@@ -44,6 +45,17 @@ class SectorRelevanceClassification(BaseModel):
 
     class Config:
         extra = "forbid"
+
+
+class SectorClassificationResult(NamedTuple):
+    relevance: SectorRelevance
+    sector_name: str | None
+    is_priority: bool
+    reasoning: str
+    llm_stats: list[LLMStats]
+    all_sectors: list[SectorMention]
+    classification_failed: bool = False
+    """True when the LLM gave no usable answer and the result is the NON_PRIORITY_SECTOR fallback."""
 
 
 def _build_classifier_instructions(existing_sectors: list[str] | None = None) -> str:
@@ -119,7 +131,7 @@ class SectorRelevanceClassifier:
         user_input: str,
         context: ConversationContext,
         existing_sectors: list[str] | None = None,
-    ) -> tuple[SectorRelevance, str | None, bool, str, list[LLMStats], list[SectorMention]]:
+    ) -> SectorClassificationResult:
         llm = get_llm(
             system_instructions=_build_classifier_instructions(existing_sectors),
             config=self._llm_config,
@@ -135,7 +147,15 @@ class SectorRelevanceClassifier:
         )
         if result is None:
             self._logger.warning("Sector relevance classification failed, defaulting to NON_PRIORITY_SECTOR")
-            return SectorRelevance.NON_PRIORITY_SECTOR, None, False, "", stats, []
+            return SectorClassificationResult(
+                relevance=SectorRelevance.NON_PRIORITY_SECTOR,
+                sector_name=None,
+                is_priority=False,
+                reasoning="",
+                llm_stats=stats,
+                all_sectors=[],
+                classification_failed=True,
+            )
         reasoning = (result.reasoning or "")[:MAX_REASONING_LENGTH]
         self._logger.info(
             "Sector relevance for '%s': %s, sector_name=%s, is_priority=%s (%s)",
@@ -145,4 +165,11 @@ class SectorRelevanceClassifier:
             result.is_priority,
             reasoning,
         )
-        return result.relevance, result.sector_name, result.is_priority, reasoning, stats, result.all_sectors
+        return SectorClassificationResult(
+            relevance=result.relevance,
+            sector_name=result.sector_name,
+            is_priority=result.is_priority,
+            reasoning=reasoning,
+            llm_stats=stats,
+            all_sectors=result.all_sectors,
+        )
