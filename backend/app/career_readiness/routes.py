@@ -35,8 +35,11 @@ from app.constants.errors import HTTPErrorResponse
 from app.context_vars import user_profile_context_var, user_language_ctx_var
 from app.i18n.translation_service import get_i18n_manager
 from app.conversations.constants import MAX_MESSAGE_LENGTH
+from app.observability.treatment_group import bind_treatment_group
 from app.server_dependencies.db_dependencies import CompassDBProvider
 from app.users.auth import Authentication, UserInfo
+from app.users.get_user_preferences_repository import get_user_preferences_repository
+from app.users.repositories import IUserPreferenceRepository
 from app.users.plain_personal_data.routes import get_plain_personal_data_service
 from app.users.plain_personal_data.service import (
     IPlainPersonalDataService,
@@ -232,6 +235,7 @@ def add_career_readiness_routes(app: FastAPI, authentication: Authentication):
         plain_personal_data_service: IPlainPersonalDataService = Depends(
             get_plain_personal_data_service
         ),
+        user_preferences_repository: IUserPreferenceRepository = Depends(get_user_preferences_repository),
     ):
         if len(body.user_input) > MAX_MESSAGE_LENGTH:
             logger.warning(
@@ -252,6 +256,9 @@ def add_career_readiness_routes(app: FastAPI, authentication: Authentication):
                 user_profile_context_var.set(
                     format_plain_personal_data_for_prompt(plain_personal_data)
                 )
+
+            # Tag the turn's trace with the user's treatment group
+            await bind_treatment_group(user_info.user_id, user_preferences_repository)
 
             return await service.send_message(
                 user_info.user_id, module_id, conversation_id, body.user_input

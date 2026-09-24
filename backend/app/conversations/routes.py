@@ -37,6 +37,7 @@ from app.conversations.service import (
 from app.conversations.types import ConversationInput, ConversationResponse
 from app.errors.constants import NO_PERMISSION_FOR_SESSION
 from app.errors.errors import UnauthorizedSessionAccessError
+from app.observability.treatment_group import set_treatment_group
 from app.job_preferences.get_job_preferences_service import get_job_preferences_service
 from app.job_preferences.service import IJobPreferencesService
 from app.metrics.application_state_metrics_recorder.recorder import (
@@ -180,6 +181,8 @@ def add_conversation_routes(app: FastAPI, authentication: Authentication):
 
             # set the client_id in the context variable.
             client_id_ctx_var.set(current_user_preferences.client_id)
+            # and the treatment group, so the turn's trace is tagged with it
+            set_treatment_group(current_user_preferences.experiments)
 
             # Set user profile context from plain personal data
             plain_personal_data = await plain_personal_data_service.get(user_id)

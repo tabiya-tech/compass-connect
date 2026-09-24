@@ -378,10 +378,21 @@ All keys are optional; see `common_libs/observability/config.py` for the authori
   therefore groups a user's whole journey rather than one content module at a time; the individual
   conversation id stays on the trace as metadata. The session is also the sampling key, so a sampled
   session stays sampled for its whole life; a CV upload, which has no session, is sampled on the user.
-- **Sub modules** come from the counseling sub-phase for Build your Profile and from the content
-  module for Career Readiness (see `app/observability/module_types.py`). Career Readiness labels are
-  derived from the module id rather than its title, because titles are localised and a Portuguese
-  deployment must not report a different sub module from an English one.
+- **Sub modules** come from the counseling sub-phase for Build your Profile, from the content
+  module for Career Readiness, and from the sector classifier's verdict for Career Explorer
+  (see `app/observability/module_types.py`). Career Readiness labels are derived from the module id
+  rather than its title, because titles are localised and a Portuguese deployment must not report a
+  different sub module from an English one.
+- **Career Explorer sub modules** are `Priority Sector`, `Non Priority Sector` and
+  `Sector Classifier Failed`. They are set once the classifier has run, part way through the turn,
+  with `annotate_trace`. A failed classification still falls back to the non-priority explorer, but
+  is reported as its own sub module, tagged `sector_classifier:failed`, and scored
+  `sector_classifier_failed`, so the messages the classifier struggles with can be filtered on.
+- **The treatment group** (`T1`, `T2`, from `user_preferences.experiments.treatment_group`) is tagged
+  `treatment_group:<group>` and carried as trace metadata, for users that are in one. The routes that
+  open a trace bind it to the request (`app/observability/treatment_group.py`).
+- **The conversation phase** is reported as its name (`INTRO`, `COUNSELING`, `CHECKOUT`, `ENDED`) in
+  the observation metadata and the log records, rather than as its enum value.
 - **One agent observation per agent execution**, named after the agent type. Applied automatically to
   every `Agent` subclass via `Agent.__init_subclass__`, and explicitly on `CareerReadinessAgent`,
   which bypasses the agent director.

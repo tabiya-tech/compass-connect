@@ -4,6 +4,7 @@ Tests for the career readiness routes.
 from datetime import datetime, timezone
 from http import HTTPStatus
 from typing import Optional
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 import pytest_mock
@@ -22,6 +23,7 @@ from app.career_readiness.errors import (
 from app.career_readiness.routes import add_career_readiness_routes, get_career_readiness_service
 from app.career_readiness.service import ICareerReadinessService
 from app.users.plain_personal_data.routes import get_plain_personal_data_service
+from app.users.get_user_preferences_repository import get_user_preferences_repository
 from app.users.plain_personal_data.service import IPlainPersonalDataService
 from app.users.plain_personal_data.types import PlainPersonalData
 from app.career_readiness.types import (
@@ -143,6 +145,9 @@ def client_with_mocks(setup_application_config) -> TestClientWithMocks:
     app = FastAPI()
     app.dependency_overrides[get_career_readiness_service] = lambda: mock_service
     app.dependency_overrides[get_plain_personal_data_service] = lambda: mock_plain_personal_data_service
+    mock_user_preferences_repository = MagicMock()
+    mock_user_preferences_repository.get_experiments_by_user_id = AsyncMock(return_value={})
+    app.dependency_overrides[get_user_preferences_repository] = lambda: mock_user_preferences_repository
 
     add_career_readiness_routes(app, authentication=mock_auth)
 

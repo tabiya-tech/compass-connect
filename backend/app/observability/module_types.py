@@ -4,9 +4,9 @@ The "module" and "sub module" dimensions that LLM traces are grouped by.
 A `TraceModule` is a *suite area* of Compass Connect (Build Your Profile, Career Readiness,
 Career Explorer, ...). A `sub_module` is the named area *within* it that produced the work: the
 counseling sub-phase for Build Your Profile, the content module (`CV Development`,
-`Interview Preparation`, ...) for Career Readiness. The Career Readiness content module is
-deliberately *not* the trace module — a Career Readiness turn carries
-`module=Career Readiness` and `sub_module=CV Development`.
+`Interview Preparation`, ...) for Career Readiness, the sector classifier's verdict for Career
+Explorer. The Career Readiness content module is deliberately *not* the trace module — a Career
+Readiness turn carries `module=Career Readiness` and `sub_module=CV Development`.
 
 Both dimensions are human readable, exactly as they read in the Langfuse UI: title case, spaces
 rather than underscores, no slugs.
@@ -80,6 +80,23 @@ class TraceSubModule(Enum):
     RECOMMENDER_ADVISOR = "Recommender Advisor"
     """
     The Build Your Profile job-recommendation sub-phase.
+    """
+
+    PRIORITY_SECTOR = "Priority Sector"
+    """
+    A Career Explorer turn the sector classifier routed to the priority sector explorer.
+    """
+
+    NON_PRIORITY_SECTOR = "Non Priority Sector"
+    """
+    A Career Explorer turn the sector classifier routed to the non-priority sector explorer.
+    """
+
+    SECTOR_CLASSIFIER_FAILED = "Sector Classifier Failed"
+    """
+    A Career Explorer turn the sector classifier could not classify. It falls back to the
+    non-priority sector explorer, but is reported apart from `NON_PRIORITY_SECTOR` so that the
+    failures, and the messages that caused them, can be looked at on their own.
     """
 
 
