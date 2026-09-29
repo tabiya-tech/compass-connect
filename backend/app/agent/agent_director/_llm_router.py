@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from app.agent.agent_director.abstract_agent_director import ConversationPhase
 from app.agent.agent_types import AgentType, AgentInput
-from app.agent.config import AgentsConfig
+from app.agent.config import ModelTier
 from app.agent.llm_caller import LLMCaller
 from app.agent.penalty import get_penalty
 from app.agent.prompt_template import get_language_style
@@ -142,7 +142,7 @@ class LLMRouter:
                                                       start_top_p=0.8, end_top_p=1,
                                                       attempt=attempt, max_retries=max_retries)
 
-            llm = get_llm(config=LLMConfig(language_model_name=AgentsConfig.deep_reasoning_model,
+            llm = get_llm(config=LLMConfig(model_tier=ModelTier.REASONING,
                                                        generation_config=temperature_config | with_response_schema(RouterModelResponse) | {
                                                            # Set a reasonable, but low value for the output tokens to avoid the repetition trap
                                                            "max_output_tokens": 3000,

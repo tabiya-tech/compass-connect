@@ -19,10 +19,9 @@ class GeminiGenerativeLLM(BasicLLM):
                  config: LLMConfig = LLMConfig(),
                  tools: list[Tool] | None = None):
         super().__init__(config=config)
-        self._model_name = config.language_model_name
 
         model_kwargs = dict(
-            model_name=config.language_model_name,
+            model_name=self._model_name,
             system_instruction=system_instructions,
             generation_config=GenerationConfig.from_dict(config.generation_config),
             safety_settings=list(config.safety_settings),

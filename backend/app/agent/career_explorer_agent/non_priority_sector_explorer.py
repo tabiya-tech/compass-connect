@@ -22,7 +22,7 @@ from google.genai import types
 from google.genai.types import GenerateContentConfig, GoogleSearch, HttpOptions, Tool, GroundingMetadata
 
 from app.agent.agent_types import LLMStats, LLMQuickReplyOption
-from app.agent.config import AgentsConfig
+from app.agent.config import ModelTier
 from app.agent.prompt_template.agent_prompt_template import STD_AGENT_CHARACTER
 from app.agent.prompt_template.locale_style import get_language_style
 from app.agent.prompt_template.quick_reply_prompt import QUICK_REPLY_PROMPT
@@ -35,7 +35,7 @@ from app.conversation_memory.conversation_formatter import ConversationHistoryFo
 from common_libs.llm.factory import get_llm
 from common_libs.llm.utils import extract_grounding_metadata_from_genai_response
 from common_libs.llm.models_utils import DEFAULT_VERTEX_API_GEN_AI_REGION, LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG, \
-    llm_input_to_traceable
+    llm_input_to_traceable, resolve_model_name
 from common_libs.llm.schema_builder import with_response_schema
 from common_libs.observability.tracing import traced_observation, update_observation
 
@@ -248,6 +248,9 @@ class NonPrioritySectorExplorer:
             temperature=1.0,
         )
 
+        # Google Search grounding is Gemini-only, so resolve the Gemini model whatever the configured provider is.
+        stage1_model = resolve_model_name(tier=ModelTier.DEFAULT, provider="gemini")
+
         llm_stats: list[LLMStats] = []
         grounding_metadata: GroundingMetadata | None = None
         raw_text: str | None = None
@@ -259,13 +262,13 @@ class NonPrioritySectorExplorer:
                 name="non_priority_sector_explorer.grounded_search",
                 as_type="generation",
                 input=llm_input_to_traceable(llm_input),
-                model=AgentsConfig.default_model,
+                model=stage1_model,
                 model_parameters={"temperature": stage1_config.temperature},
                 metadata={"grounding": "google_search", "stage": 1},
         ) as generation:
             try:
                 response = await client.aio.models.generate_content(
-                    model=AgentsConfig.default_model,
+                    model=stage1_model,
                     contents=contents,
                     config=stage1_config,
                 )

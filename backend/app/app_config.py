@@ -140,12 +140,26 @@ class ApplicationConfig(BaseModel):
     Set via LLM_PROVIDER environment variable.
     """
 
-    llm_model_name: Optional[str] = None
+    llm_default_model: Optional[str] = None
     """
-    Override the model name for the selected provider.
+    The model for the default tier (ModelTier.DEFAULT) of the selected provider.
     When unset, each provider uses its own default (gemini: gemini-2.5-flash-lite,
     anthropic: claude-sonnet-4-6, ollama: qwen2.5:7b).
-    Set via LLM_MODEL_NAME environment variable.
+    Set via LLM_DEFAULT_MODEL environment variable.
+    """
+
+    llm_reasoning_model: Optional[str] = None
+    """
+    The model for the reasoning tier (ModelTier.REASONING) of the selected provider.
+    When unset, gemini uses gemini-2.5-flash; other providers fall back to llm_default_model.
+    Set via LLM_REASONING_MODEL environment variable.
+    """
+
+    llm_deep_reasoning_model: Optional[str] = None
+    """
+    The model for the deep reasoning tier (ModelTier.DEEP_REASONING) of the selected provider.
+    When unset, gemini uses gemini-2.5-pro; other providers fall back to llm_reasoning_model, then llm_default_model.
+    Set via LLM_DEEP_REASONING_MODEL environment variable.
     """
 
     anthropic_api_key: Optional[str] = None

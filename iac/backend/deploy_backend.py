@@ -54,6 +54,13 @@ class BackendServiceConfig:
     langfuse_public_key: Optional[str]
     langfuse_secret_key: Optional[str | pulumi.Output[str]]
     tracing_config: Optional[str]
+    # LLM provider and per-tier models. All optional; unset deploys on the Gemini 2.5 defaults.
+    # The Anthropic API key must be provisioned as a secret, never as a plain environment value.
+    llm_provider: Optional[str]
+    llm_default_model: Optional[str]
+    llm_reasoning_model: Optional[str]
+    llm_deep_reasoning_model: Optional[str]
+    anthropic_api_key: Optional[str | pulumi.Output[str]]
     enable_metrics: str
     default_country_of_user: str
     gcp_oauth_client_id: str
@@ -473,6 +480,21 @@ def _deploy_cloud_run_service(
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="BACKEND_TRACING_CONFIG",
                             value=backend_service_cfg.tracing_config),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="LLM_PROVIDER",
+                            value=backend_service_cfg.llm_provider),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="LLM_DEFAULT_MODEL",
+                            value=backend_service_cfg.llm_default_model),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="LLM_REASONING_MODEL",
+                            value=backend_service_cfg.llm_reasoning_model),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="LLM_DEEP_REASONING_MODEL",
+                            value=backend_service_cfg.llm_deep_reasoning_model),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="ANTHROPIC_API_KEY",
+                            value=backend_service_cfg.anthropic_api_key),
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="BACKEND_ENABLE_METRICS",
                             value=backend_service_cfg.enable_metrics),

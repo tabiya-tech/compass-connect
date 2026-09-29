@@ -1,6 +1,7 @@
 import logging
 import os
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 import vertexai
 from dotenv import load_dotenv
@@ -9,9 +10,12 @@ from pydantic import BaseModel
 
 from vertexai.generative_models import HarmCategory, HarmBlockThreshold, SafetySetting
 
-from app.agent.config import AgentsConfig
+from app.agent.config import GEMINI_DEFAULT_MODELS, ModelTier
 from common_libs.observability.tracing import traced_observation, update_observation
 from common_libs.retry import RetryConfigWithExponentialBackOff, DEFAULT_RETRY_CONFIG_WITH_EXP_BACKOFF, Retry
+
+if TYPE_CHECKING:
+    from app.app_config import LLMProvider
 
 logger = logging.getLogger(__name__)
 
@@ -146,11 +150,75 @@ def get_config_variation(
     }
 
 
+_NON_GEMINI_DEFAULT_MODELS: dict[str, str] = {
+    "anthropic": "claude-sonnet-4-6",
+    "ollama": "qwen2.5:7b",
+}
+"""
+The model used for every tier of a non-Gemini provider when no tier's environment variable is set.
+"""
+
+_NON_GEMINI_FALLBACK_TIERS: dict[ModelTier, list[ModelTier]] = {
+    ModelTier.DEFAULT: [],
+    ModelTier.REASONING: [ModelTier.DEFAULT],
+    ModelTier.DEEP_REASONING: [ModelTier.REASONING, ModelTier.DEFAULT],
+}
+"""
+For a non-Gemini provider, the tiers whose model is used, in order, when a tier's environment variable is not set.
+"""
+
+
+def resolve_model_name(*, tier: ModelTier, provider: "LLMProvider") -> str:
+    """
+    Resolve the model name to use for a tier of a provider, in order:
+      1. The tier's environment variable (LLM_DEFAULT_MODEL, LLM_REASONING_MODEL, LLM_DEEP_REASONING_MODEL).
+      2. For non-Gemini providers only, the environment variable of the next tier down that is set
+         (deep reasoning -> reasoning -> default).
+      3. The provider's built-in default for the tier.
+
+    The environment variables only apply when `provider` is the configured LLM_PROVIDER, so that
+    Gemini-only call sites never get a model name meant for another provider.
+
+    Reads ApplicationConfig at call time so that tests can swap config without reimporting this module.
+    When the ApplicationConfig is not set (e.g. scripts, unit tests), the built-in defaults are used.
+    """
+    from app.app_config import get_application_config
+
+    try:
+        app_config = get_application_config()
+    except RuntimeError:
+        app_config = None
+
+    if app_config is not None and app_config.llm_provider == provider:
+        configured_models = {
+            ModelTier.DEFAULT: app_config.llm_default_model,
+            ModelTier.REASONING: app_config.llm_reasoning_model,
+            ModelTier.DEEP_REASONING: app_config.llm_deep_reasoning_model,
+        }
+        # Gemini falls back to its own 2.5 default for the tier rather than to another tier's model.
+        tiers_to_try = [tier] if provider == "gemini" else [tier, *_NON_GEMINI_FALLBACK_TIERS[tier]]
+        for candidate_tier in tiers_to_try:
+            if configured_models[candidate_tier]:
+                return configured_models[candidate_tier]
+
+    if provider == "gemini":
+        return GEMINI_DEFAULT_MODELS[tier]
+    return _NON_GEMINI_DEFAULT_MODELS[provider]
+
+
 class LLMConfig(BaseModel):
     """
     Configuration for the LLM.
     """
-    language_model_name: str = AgentsConfig.default_model
+    model_tier: ModelTier = ModelTier.DEFAULT
+    """
+    The capability tier of the model to use. The model name is resolved from it when the LLM is created,
+    see `resolve_model_name`.
+    """
+    language_model_name: str | None = None
+    """
+    An explicit, provider-specific model name. When set, it is used as-is instead of resolving `model_tier`.
+    """
     location: str = DEFAULT_VERTEX_API_GEN_AI_REGION
     generation_config: dict = DEFAULT_GENERATION_CONFIG
     safety_settings: frozenset[SafetySetting] = DEFAULT_SAFETY_SETTINGS
@@ -163,6 +231,10 @@ class LLMConfig(BaseModel):
         arbitrary_types_allowed = True
         """
         Allow arbitrary types for the model as the generation_config is a custom class.
+        """
+        protected_namespaces = ()
+        """
+        Allow the model_tier field, which would otherwise clash with pydantic's reserved "model_" prefix.
         """
 
 
@@ -246,7 +318,8 @@ class BasicLLM(LLM):
         self._resource_name = ""
         # Kept so that the observability layer can report which model and parameters produced a
         # generation. The concrete wrappers hand the same values to the underlying Vertex model.
-        self._model_name = config.language_model_name
+        self._model_name = config.language_model_name or resolve_model_name(tier=config.model_tier,
+                                                                             provider="gemini")
         self._generation_config = config.generation_config
 
     async def generate_content(self, llm_input: LLMInput | str) -> LLMResponse:
