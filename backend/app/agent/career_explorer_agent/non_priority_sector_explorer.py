@@ -249,7 +249,7 @@ class NonPrioritySectorExplorer:
         )
 
         # Google Search grounding is Gemini-only, so resolve the Gemini model whatever the configured provider is.
-        stage1_model = resolve_model_name(tier=ModelTier.DEFAULT, provider="gemini")
+        grounded_search_model = resolve_model_name(tier=ModelTier.DEFAULT, provider="gemini")
 
         llm_stats: list[LLMStats] = []
         grounding_metadata: GroundingMetadata | None = None
@@ -262,13 +262,13 @@ class NonPrioritySectorExplorer:
                 name="non_priority_sector_explorer.grounded_search",
                 as_type="generation",
                 input=llm_input_to_traceable(llm_input),
-                model=stage1_model,
+                model=grounded_search_model,
                 model_parameters={"temperature": stage1_config.temperature},
                 metadata={"grounding": "google_search", "stage": 1},
         ) as generation:
             try:
                 response = await client.aio.models.generate_content(
-                    model=stage1_model,
+                    model=grounded_search_model,
                     contents=contents,
                     config=stage1_config,
                 )
