@@ -1,6 +1,6 @@
 import logging
 
-from common_libs.llm.models_utils import LLM, LLMConfig
+from common_libs.llm.models_utils import LLM, LLMConfig, resolve_model_name
 
 logger = logging.getLogger(__name__)
 
@@ -12,8 +12,8 @@ def get_llm(*,
     Return an LLM instance for the provider configured in ApplicationConfig.
 
     Provider is set via LLM_PROVIDER env var (gemini | anthropic | ollama).
-    Model name is set via LLM_MODEL_NAME env var; when absent, each provider
-    falls back to its own default.
+    The model name is resolved from config.model_tier (see resolve_model_name),
+    unless config.language_model_name is set explicitly.
 
     Reads ApplicationConfig at call time so that tests can swap config without
     reimporting this module.
@@ -25,7 +25,6 @@ def get_llm(*,
 
     app_config = get_application_config()
     provider = app_config.llm_provider
-    model_override = app_config.llm_model_name
 
     if provider == "anthropic":
         # Map Gemini-specific generation_config keys to what AnthropicLLM understands.
@@ -41,7 +40,8 @@ def get_llm(*,
             or 4096
         )
         anthropic_config = AnthropicLLMConfig(
-            language_model_name=model_override or "claude-sonnet-4-6",
+            language_model_name=config.language_model_name or resolve_model_name(tier=config.model_tier,
+                                                                                 provider="anthropic"),
             generation_config=anthropic_gen,
         )
         return AnthropicLLM(
@@ -52,7 +52,8 @@ def get_llm(*,
 
     if provider == "ollama":
         local_config = LocalLLMConfig(
-            language_model_name=model_override or "qwen2.5:7b",
+            language_model_name=config.language_model_name or resolve_model_name(tier=config.model_tier,
+                                                                                 provider="ollama"),
             base_url=app_config.ollama_base_url,
             generation_config=dict(config.generation_config),
         )
@@ -61,9 +62,7 @@ def get_llm(*,
             config=local_config,
         )
 
-    # Default: Gemini / Vertex AI
-    if model_override:
-        config = config.model_copy(update={"language_model_name": model_override})
+    # Default: Gemini / Vertex AI. The model name is resolved by BasicLLM.
     return GeminiGenerativeLLM(
         system_instructions=system_instructions,
         config=config,

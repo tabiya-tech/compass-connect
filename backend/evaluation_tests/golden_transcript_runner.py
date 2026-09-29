@@ -52,8 +52,10 @@ def _ensure_test_app_config():
         features={},
         language_config=language_config,
         app_name="Compass",
-        llm_provider=os.getenv("LLM_PROVIDER", "gemini"),
-        llm_model_name=os.getenv("LLM_MODEL_NAME") or None,
+        llm_provider=os.getenv("LLM_PROVIDER") or "gemini",
+        llm_default_model=os.getenv("LLM_DEFAULT_MODEL") or None,
+        llm_reasoning_model=os.getenv("LLM_REASONING_MODEL") or None,
+        llm_deep_reasoning_model=os.getenv("LLM_DEEP_REASONING_MODEL") or None,
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
         ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
     )

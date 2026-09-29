@@ -11,7 +11,7 @@ from typing import NamedTuple
 from pydantic import BaseModel, Field
 
 from app.agent.agent_types import LLMStats
-from app.agent.config import AgentsConfig
+from app.agent.config import ModelTier
 from app.agent.llm_caller import LLMCaller
 from app.app_config import get_application_config
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
@@ -118,7 +118,7 @@ def _build_classifier_instructions(existing_sectors: list[str] | None = None) ->
 class SectorRelevanceClassifier:
     def __init__(self):
         self._llm_config = LLMConfig(
-            language_model_name=AgentsConfig.deep_reasoning_model,
+            model_tier=ModelTier.REASONING,
             generation_config=ZERO_TEMPERATURE_GENERATION_CONFIG
             | JSON_GENERATION_CONFIG
             | with_response_schema(SectorRelevanceClassification),

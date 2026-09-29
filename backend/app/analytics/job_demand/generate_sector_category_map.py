@@ -19,10 +19,11 @@ from pathlib import Path
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
+from app.agent.config import ModelTier
 from app.analytics.job_demand.sector_mapping import category_leading_token
 from app.teveta.loader import get_institution_sectors
 from common_libs.llm.generative_models import GeminiGenerativeLLM
-from common_libs.llm.models_utils import JSON_GENERATION_CONFIG, LLMConfig
+from common_libs.llm.models_utils import JSON_GENERATION_CONFIG, LLMConfig, resolve_model_name
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -108,7 +109,8 @@ async def main() -> None:
     logger.info("Classifying %d category tokens into %d sectors (%d jobs)",
                 len(tokens), len(sectors), total_jobs)
 
-    cfg = LLMConfig(generation_config=JSON_GENERATION_CONFIG)
+    cfg = LLMConfig(language_model_name=resolve_model_name(tier=ModelTier.DEFAULT, provider="gemini"),
+                    generation_config=JSON_GENERATION_CONFIG)
     mapping = await _classify(sectors, tokens, cfg)
     artifact = _build_artifact(sectors, token_counts, mapping, total_jobs,
                                cfg.language_model_name)

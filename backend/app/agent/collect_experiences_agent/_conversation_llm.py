@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.agent.agent_types import AgentInput, AgentOutput, AgentType, LLMStats, LLMQuickReplyOption
 from app.agent.collect_experiences_agent._types import CollectedData
-from app.agent.config import AgentsConfig
+from app.agent.config import ModelTier
 from app.agent.experience import ExperienceEntity
 from app.agent.experience.work_type import WORK_TYPE_DEFINITIONS_FOR_PROMPT, WorkType, get_storage_work_types_for_phase
 from app.agent.penalty import get_penalty
@@ -248,7 +248,7 @@ class _ConversationLLM:
             llm = get_llm(
                 system_instructions=system_instructions,
                 config=LLMConfig(
-                    language_model_name=AgentsConfig.deep_reasoning_model,
+                    model_tier=ModelTier.REASONING,
                     generation_config=temperature_config | with_response_schema(_ConversationLLMResponse)
                 ))
             # Drop the first message from the conversation history, which is the welcome message from the welcome agent.
