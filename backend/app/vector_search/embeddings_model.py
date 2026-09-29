@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Coroutine, Any
 
 import vertexai
+from google.cloud.aiplatform import initializer as aiplatform_initializer
 from vertexai.language_models import TextEmbeddingInput, TextEmbeddingModel, TextEmbedding
 
 from common_libs.retry import Retry
@@ -47,15 +48,23 @@ class GoogleEmbeddingService(EmbeddingService):
         super().__init__(service_name="GOOGLE-VERTEX-AI", model_name=model_name)
         # Embeddings run in their own region, separate from the generative-AI region, because
         # legacy embedding models (e.g. text-embedding-005) are not published in the global
-        # publisher catalog. Resolving via vertexai.init(location=...) before from_pretrained
-        # binds the returned model to that regional endpoint for all subsequent embed calls.
+        # publisher catalog.
         self.region = os.getenv("VERTEX_API_EMBEDDINGS_REGION")
         if not self.region:
             raise ValueError("Environment variable 'VERTEX_API_EMBEDDINGS_REGION' is not set.")
         self.logger.info(f"Constructing {self.__class__.__name__} with model: {model_name} and region: {self.region}")
 
+        # vertexai.init() is process-wide and shared with the Gemini models (see BasicLLM), so leaving the
+        # embeddings region set would send every Gemini model created afterwards to that region.
+        previous_location = aiplatform_initializer.global_config.location
         vertexai.init(location=self.region)
-        self.model = TextEmbeddingModel.from_pretrained(model_name)
+        try:
+            self.model = TextEmbeddingModel.from_pretrained(model_name)
+            # Otherwise the SDK creates the client on the first call, with whatever location is set by then.
+            # noinspection PyProtectedMember
+            _ = self.model._endpoint._prediction_async_client  # pylint: disable=protected-access
+        finally:
+            vertexai.init(location=previous_location)
 
     async def embed(self, text: str) -> list[float]:
         """
@@ -83,8 +92,6 @@ class GoogleEmbeddingService(EmbeddingService):
         empty_indices = [idx for idx, txt in enumerate(text_list) if not isinstance(txt, str) or not txt.strip()]
         if empty_indices:
             raise ValueError(f"embed_batch received empty texts at indices: {empty_indices}")
-        # make sure we are in the correct region
-        vertexai.init(location=self.region)
 
         # https://cloud.google.com/vertex-ai/generative-ai/docs/embeddings/get-text-embeddings#supported-models
         # As of 14 August 2024, the maximum batch size is 250 of us-central1, and in other regions it is 5
