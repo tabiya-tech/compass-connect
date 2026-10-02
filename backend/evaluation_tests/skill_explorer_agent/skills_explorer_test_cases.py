@@ -70,7 +70,7 @@ test_cases = [
                 start="2018",
                 end="2020"
             ),
-            work_type=WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK
+            work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT
         ),
         country_of_user=Country.UNSPECIFIED,
         expected_responsibilities=[],
@@ -96,7 +96,7 @@ test_cases = [
                 start="2018",
                 end="2020"
             ),
-            work_type=WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK
+            work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT
         ),
         country_of_user=Country.KENYA,
         expected_responsibilities=[]
@@ -182,7 +182,7 @@ test_cases = [
                 start="2015",
                 end="2022"
             ),
-            work_type=WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK
+            work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT
         ),
         country_of_user=Country.ARGENTINA,
         expected_responsibilities=['Limpiar el lugar', 'Manejar la guita', 'Tratar con proveedores', 'Contabilidad básica', 'Venta de productos', 'Empaquetar pedidos'],

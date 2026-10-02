@@ -3,7 +3,10 @@ import pytest
 from app.agent.agent_types import AgentInput
 from app.agent.qna_agent import QnaAgent
 from app.app_config import get_application_config
+from app.i18n.translation_service import get_i18n_manager
+from app.i18n.types import Locale
 from common_libs.llm.generative_models import GeminiGenerativeLLM
+from app.agent.config import ModelTier
 from common_libs.llm.models_utils import LLMConfig
 from evaluation_tests.conversation_libs.conversation_generator import generate
 from evaluation_tests.conversation_libs.conversation_test_function import LLMSimulatedUser
@@ -13,8 +16,14 @@ from evaluation_tests.conversation_libs.evaluators.evaluation_result import Conv
 from evaluation_tests.conversation_libs.fake_conversation_context import FakeConversationContext
 
 
+@pytest.fixture(autouse=True)
+def set_locale():
+    """ The QnA agent builds its prompt for the user's locale, so a locale must be set. """
+    get_i18n_manager().set_locale(Locale.EN_US)
+
+
 async def _evaluate_with_llm(prompt: str) -> str:
-    llm = GeminiGenerativeLLM(config=LLMConfig(model_name="gemini-1.5-pro-preview-0409"))
+    llm = GeminiGenerativeLLM(config=LLMConfig(model_tier=ModelTier.DEEP_REASONING))
     return (await llm.generate_content(prompt)).text
 
 

@@ -25,7 +25,7 @@ from app.agent.recommender_advisor_agent.prompts import (
 from app.agent.recommender_advisor_agent.intent_classifier import IntentClassifier
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
-from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
+from app.agent.simple_llm_agent.prompt_response_template import get_response_instructions
 from app.i18n.translation_service import t
 
 
@@ -148,7 +148,7 @@ class ExplorationPhaseHandler(BasePhaseHandler):
         )
 
         # Build prompt for LLM
-        full_prompt = context_block + get_career_exploration_prompt() + get_json_response_instructions()
+        full_prompt = context_block + get_career_exploration_prompt() + get_response_instructions()
 
         # Call LLM to generate exploration
         response, llm_stats = await self._call_llm(full_prompt, user_input, context, rec)

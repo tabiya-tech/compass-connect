@@ -1,5 +1,6 @@
+from types import SimpleNamespace
 from typing import Optional
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -26,11 +27,11 @@ def _set_llm_config(config: ApplicationConfig, *,
 
 class TestResolveModelName:
     @pytest.mark.parametrize("given_tier, expected_model", [
-        (ModelTier.DEFAULT, "gemini-2.5-flash-lite"),
-        (ModelTier.REASONING, "gemini-2.5-flash"),
-        (ModelTier.DEEP_REASONING, "gemini-2.5-pro"),
+        (ModelTier.DEFAULT, "gemini-3.5-flash-lite"),
+        (ModelTier.REASONING, "gemini-3.8-flash"),
+        (ModelTier.DEEP_REASONING, "gemini-3.1-pro-preview"),
     ])
-    def test_gemini_uses_gemini_2_5_defaults_when_no_model_is_set(self, setup_application_config,
+    def test_gemini_uses_gemini_defaults_when_no_model_is_set(self, setup_application_config,
                                                                   given_tier: ModelTier, expected_model: str):
         # GIVEN the gemini provider is configured without any tier models
         _set_llm_config(setup_application_config, provider="gemini")
@@ -38,7 +39,7 @@ class TestResolveModelName:
         # WHEN the model name for the given tier is resolved
         actual_model = resolve_model_name(tier=given_tier, provider="gemini")
 
-        # THEN expect the gemini 2.5 default for the tier
+        # THEN expect the gemini default for the tier
         assert actual_model == expected_model
 
     @pytest.mark.parametrize("given_tier, expected_model", [
@@ -62,9 +63,9 @@ class TestResolveModelName:
         assert actual_model == expected_model
 
     @pytest.mark.parametrize("given_reasoning_model, given_tier, expected_model", [
-        (None, ModelTier.REASONING, "gemini-2.5-flash"),
-        (None, ModelTier.DEEP_REASONING, "gemini-2.5-pro"),
-        ("given-reasoning", ModelTier.DEEP_REASONING, "gemini-2.5-pro"),
+        (None, ModelTier.REASONING, "gemini-3.8-flash"),
+        (None, ModelTier.DEEP_REASONING, "gemini-3.1-pro-preview"),
+        ("given-reasoning", ModelTier.DEEP_REASONING, "gemini-3.1-pro-preview"),
     ])
     def test_gemini_does_not_fall_back_to_another_tier(self, setup_application_config,
                                                        given_reasoning_model: Optional[str],
@@ -77,7 +78,7 @@ class TestResolveModelName:
         # WHEN the model name for a tier without a model is resolved
         actual_model = resolve_model_name(tier=given_tier, provider="gemini")
 
-        # THEN expect the gemini 2.5 default for the tier, not another tier's model
+        # THEN expect the gemini default for the tier, not another tier's model
         assert actual_model == expected_model
 
     @pytest.mark.parametrize("given_tier", list(ModelTier))
@@ -143,9 +144,9 @@ class TestResolveModelName:
         assert actual_model == expected_model
 
     @pytest.mark.parametrize("given_tier, expected_model", [
-        (ModelTier.DEFAULT, "gemini-2.5-flash-lite"),
-        (ModelTier.REASONING, "gemini-2.5-flash"),
-        (ModelTier.DEEP_REASONING, "gemini-2.5-pro"),
+        (ModelTier.DEFAULT, "gemini-3.5-flash-lite"),
+        (ModelTier.REASONING, "gemini-3.8-flash"),
+        (ModelTier.DEEP_REASONING, "gemini-3.1-pro-preview"),
     ])
     def test_ignores_the_models_of_another_provider(self, setup_application_config,
                                                     given_tier: ModelTier, expected_model: str):
@@ -158,13 +159,13 @@ class TestResolveModelName:
         # WHEN the model name for the given tier is resolved for gemini (e.g. a gemini-only call site)
         actual_model = resolve_model_name(tier=given_tier, provider="gemini")
 
-        # THEN expect the gemini 2.5 default for the tier
+        # THEN expect the gemini default for the tier
         assert actual_model == expected_model
 
     @pytest.mark.parametrize("given_tier, expected_model", [
-        (ModelTier.DEFAULT, "gemini-2.5-flash-lite"),
-        (ModelTier.REASONING, "gemini-2.5-flash"),
-        (ModelTier.DEEP_REASONING, "gemini-2.5-pro"),
+        (ModelTier.DEFAULT, "gemini-3.5-flash-lite"),
+        (ModelTier.REASONING, "gemini-3.8-flash"),
+        (ModelTier.DEEP_REASONING, "gemini-3.1-pro-preview"),
     ])
     def test_uses_the_defaults_when_the_application_config_is_not_set(self, given_tier: ModelTier,
                                                                       expected_model: str):
@@ -174,7 +175,7 @@ class TestResolveModelName:
         # WHEN the model name for the given tier is resolved
         actual_model = resolve_model_name(tier=given_tier, provider="gemini")
 
-        # THEN expect the gemini 2.5 default for the tier
+        # THEN expect the gemini default for the tier
         assert actual_model == expected_model
 
 
@@ -213,23 +214,28 @@ class TestGetLLM:
 
 class TestGeminiGenerativeLLM:
     @pytest.mark.parametrize("given_config, expected_model", [
-        (LLMConfig(), "gemini-2.5-flash-lite"),
+        (LLMConfig(), "gemini-3.5-flash-lite"),
         (LLMConfig(model_tier=ModelTier.DEEP_REASONING), "given-deep-reasoning"),
         (LLMConfig(model_tier=ModelTier.DEEP_REASONING, language_model_name="given-explicit-model"),
          "given-explicit-model"),
     ])
-    def test_gemini_model_is_resolved_on_creation(self, setup_application_config,
-                                                  given_config: LLMConfig, expected_model: str):
+    @pytest.mark.asyncio
+    async def test_gemini_model_is_resolved_on_creation(self, setup_application_config,
+                                                        given_config: LLMConfig, expected_model: str):
         # GIVEN the gemini provider is configured with only a deep reasoning model
         _set_llm_config(setup_application_config, provider="gemini", deep_reasoning_model="given-deep-reasoning")
 
         # WHEN a gemini llm is created for the given config
-        with patch("common_libs.llm.models_utils._init_once"), \
-                patch("common_libs.llm.generative_models.GenerativeModel") as mock_generative_model:
-            actual_llm = GeminiGenerativeLLM(config=given_config)
+        actual_llm = GeminiGenerativeLLM(config=given_config)
+        # AND content is generated
+        mock_client = MagicMock()
+        mock_client.aio.interactions.create = AsyncMock(
+            return_value=SimpleNamespace(output_text="foo", steps=[], usage=None))
+        with patch("common_libs.llm.generative_models.get_genai_client", return_value=mock_client):
+            await actual_llm.generate_content("foo")
 
-        # THEN expect the underlying model to be created with the resolved model name
-        assert mock_generative_model.call_args.kwargs["model_name"] == expected_model
+        # THEN expect the request to be sent to the resolved model
+        assert mock_client.aio.interactions.create.call_args.kwargs["model"] == expected_model
         # AND the llm to report the same model name (used for tracing)
         # noinspection PyProtectedMember
         assert actual_llm._model_name == expected_model  # pylint: disable=protected-access

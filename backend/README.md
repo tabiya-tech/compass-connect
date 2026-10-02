@@ -544,13 +544,14 @@ For more details, see [app/agent/preference_elicitation_agent/README.md](app/age
 ### AI & Embeddings
 
 - `VERTEX_API_EMBEDDINGS_REGION` - Vertex AI region for embedding models (must be a regional location, e.g. `us-central1`)
-- `VERTEX_API_GEN_AI_REGION` - Vertex AI region for generative-AI calls (regional or `global`, default: `us-central1`)
+- `VERTEX_API_GEN_AI_REGION` - Vertex AI region for generative-AI calls (regional or `global`, default: `global`). The default and reasoning Gemini 3.x models are only available in `global`
 - `EMBEDDINGS_SERVICE_NAME` - Embeddings service provider
 - `EMBEDDINGS_MODEL_NAME` - Model for generating embeddings
 - `LLM_PROVIDER` - LLM backend for all agents: `gemini` (default), `anthropic` or `ollama`
-- `LLM_DEFAULT_MODEL` - Model for the default tier (gemini default: `gemini-2.5-flash-lite`)
-- `LLM_REASONING_MODEL` - Model for the reasoning tier (gemini default: `gemini-2.5-flash`)
-- `LLM_DEEP_REASONING_MODEL` - Model for the deep reasoning tier (gemini default: `gemini-2.5-pro`)
+- `LLM_DEFAULT_MODEL` - Model for the default tier (gemini default: `gemini-3.5-flash-lite`)
+- `LLM_REASONING_MODEL` - Model for the reasoning tier (gemini default: `gemini-3.8-flash`)
+- `LLM_DEEP_REASONING_MODEL` - Model for the deep reasoning tier (gemini default: `gemini-3.1-pro-preview`)
+  - Gemini models are called through the google-genai Interactions API, which only supports `gemini-3.5-flash-lite`, `gemini-3.8-flash` and `gemini-3.1-pro-preview` (the 2.5 models are rejected)
   - For `anthropic` and `ollama`, an unset tier falls back to the next tier down that is set (`LLM_DEEP_REASONING_MODEL` → `LLM_REASONING_MODEL` → `LLM_DEFAULT_MODEL`), then to the provider default (`claude-sonnet-4-6` / `qwen2.5:7b`)
 - `ANTHROPIC_API_KEY` - Anthropic API key, required when `LLM_PROVIDER=anthropic`
 - `OLLAMA_BASE_URL` - Ollama server URL when `LLM_PROVIDER=ollama` (default: `http://localhost:11434`)

@@ -104,7 +104,7 @@ async def setup_collect_experiences_agent() -> tuple[
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.repeat(3)
 async def test_recap_contains_only_structured_fields(
         caplog: LogCaptureFixture,

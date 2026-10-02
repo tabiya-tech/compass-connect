@@ -11,14 +11,14 @@ Answers are sourced in priority order:
 import logging
 from textwrap import dedent
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.agent.agent_types import LLMStats, LLMQuickReplyOption
 from app.agent.llm_caller import LLMCaller
 from app.agent.prompt_template.locale_style import get_language_style
 from app.agent.prompt_template.agent_prompt_template import STD_AGENT_CHARACTER
 from app.agent.prompt_template.quick_reply_prompt import QUICK_REPLY_PROMPT
-from app.agent.simple_llm_agent.prompt_response_template import get_conversation_finish_instructions, get_json_response_instructions
+from app.agent.simple_llm_agent.prompt_response_template import get_conversation_finish_instructions, get_response_instructions
 from app.app_config import get_application_config
 from app.i18n.translation_service import t
 from common_libs.llm.factory import get_llm
@@ -30,10 +30,14 @@ from .sector_search_service import SectorChunkEntity, SectorSearchService
 
 
 class _PrioritySectorResponse(BaseModel):
-    reasoning: str
-    finished: bool
-    message: str
-    quick_reply_options: list[LLMQuickReplyOption] | None = None
+    reasoning: str = Field(description="A step by step explanation of how the user's message relates to your instructions and the retrieved content, "
+                                       "why you set the finished flag to the specific value and why you chose the message. "
+                                       "In the form of \"..., therefore I will set the finished flag to true|false, and I will ...\".")
+    finished: bool = Field(description="Set to true only when the user explicitly indicates they are done or want to exit, false otherwise.")
+    message: str = Field(description="Your message to the user, ending with a nudge, see the '# Keeping the Conversation Going (CRITICAL)'.")
+    quick_reply_options: list[LLMQuickReplyOption] | None = Field(
+        default=None,
+        description="Optional quick-reply button options, see the '#Quick Reply Options'.")
 
     class Config:
         extra = "forbid"
@@ -226,7 +230,7 @@ class PrioritySectorExplorer:
             self._logger.info("  Chunk %d [%s] (score=%.4f): %s", i + 1, chunk.sector, chunk.score, preview.replace("\n", " "))
 
         llm = get_llm(system_instructions=full_instructions, config=self._llm_config)
-        response_instructions = get_json_response_instructions()
+        response_instructions = get_response_instructions()
         if should_nudge_priority:
             response_instructions += (
                 "\n\n[TURN-SPECIFIC REMINDER] On THIS reply, after your topic-local follow-up, "

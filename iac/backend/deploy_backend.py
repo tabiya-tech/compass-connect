@@ -54,7 +54,7 @@ class BackendServiceConfig:
     langfuse_public_key: Optional[str]
     langfuse_secret_key: Optional[str | pulumi.Output[str]]
     tracing_config: Optional[str]
-    # LLM provider and per-tier models. All optional; unset deploys on the Gemini 2.5 defaults.
+    # LLM provider and per-tier models. All optional; unset deploys on the Gemini defaults.
     # The Anthropic API key must be provisioned as a secret, never as a plain environment value.
     llm_provider: Optional[str]
     llm_default_model: Optional[str]

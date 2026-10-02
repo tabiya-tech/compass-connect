@@ -1,6 +1,6 @@
 """
 Explorer for non-priority sectors using Google Search grounding. Answers about careers outside priority sectors.
-Uses google-genai SDK (Tool with google_search) as vertexai's google_search_retrieval is deprecated.
+Uses the google_search tool of the google-genai Interactions API (see GeminiGenerativeLLM).
 
 Two-stage design
 ----------------
@@ -14,12 +14,9 @@ Stage 2 (structured reformat call): takes the raw Stage-1 text and reformats it 
 
 import json
 import logging
-import os
 from textwrap import dedent
 
-from google import genai
-from google.genai import types
-from google.genai.types import GenerateContentConfig, GoogleSearch, HttpOptions, Tool, GroundingMetadata
+from google.genai.types import GroundingMetadata
 
 from app.agent.agent_types import LLMStats, LLMQuickReplyOption
 from app.agent.config import ModelTier
@@ -33,11 +30,10 @@ from app.app_config import get_application_config
 from app.i18n.translation_service import t
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from common_libs.llm.factory import get_llm
-from common_libs.llm.utils import extract_grounding_metadata_from_genai_response
-from common_libs.llm.models_utils import DEFAULT_VERTEX_API_GEN_AI_REGION, LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG, \
-    llm_input_to_traceable, resolve_model_name
+from common_libs.llm.generative_models import GeminiGenerativeLLM
+from common_libs.llm.models_utils import LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG, \
+    resolve_model_name
 from common_libs.llm.schema_builder import with_response_schema
-from common_libs.observability.tracing import traced_observation, update_observation
 
 
 def _build_non_priority_instructions() -> str:
@@ -108,25 +104,16 @@ _SYSTEM_INSTRUCTIONS_CLOSING_TAG = "\n        </system_instructions>\n"
 
 
 _REFORMAT_SYSTEM_INSTRUCTIONS = dedent("""\
-    You are a JSON formatter. You will be given a career counselor's response text.
-    Your only job is to reformat it into the required JSON structure.
+    You will be given a career counselor's response text.
+    Your only job is to restructure it into the fields of your response.
 
     Rules:
-    - "message": the user-facing reply only -- clean prose, no JSON, no internal notes
-    - "reasoning": a brief internal note on what the response covers
-    - "finished": true only if the counselor explicitly indicated the conversation is ending
+    - message: the user-facing reply only -- clean prose, no JSON, no internal notes
+    - reasoning: a brief internal note on what the response covers
+    - finished: true only if the counselor explicitly indicated the conversation is ending
 
     Do not add, remove, or change any information from the original response.
 """)
-
-
-def _llm_input_to_contents(llm_input) -> list[types.Content]:
-    contents = []
-    for turn in llm_input.turns:
-        role = "user" if turn.role == "user" else "model"
-        part = types.Part.from_text(text=turn.content)
-        contents.append(types.Content(role=role, parts=[part]))
-    return contents
 
 
 def _build_priority_nudge_section(should_nudge: bool) -> str:
@@ -216,7 +203,7 @@ class NonPrioritySectorExplorer:
         if user_profile_context:
             full_instructions = user_profile_context + "\n\n" + full_instructions
 
-        response_instructions = "Respond conversationally. Your answer will be reformatted into JSON automatically."
+        response_instructions = "Respond conversationally."
         if should_nudge_priority:
             # Inline turn-time reminder, placed right before generation so it overrides
             # any pattern the model might imitate from prior turns.
@@ -231,74 +218,37 @@ class NonPrioritySectorExplorer:
             context=context,
             user_input=user_input,
         )
-        contents = _llm_input_to_contents(llm_input)
-
-        project = os.getenv("GOOGLE_CLOUD_PROJECT")
-        location = os.getenv("VERTEX_API_GEN_AI_REGION") or DEFAULT_VERTEX_API_GEN_AI_REGION
-        client = genai.Client(
-            vertexai=True,
-            project=project,
-            location=location,
-            http_options=HttpOptions(api_version="v1"),
+        # Stage 1: Google Search grounded call -- produces free-text answer.
+        # Google Search grounding is Gemini-only, so the Gemini model is used whatever the configured provider is.
+        grounded_search_llm = GeminiGenerativeLLM(
+            system_instructions=full_instructions,
+            config=LLMConfig(
+                language_model_name=resolve_model_name(tier=ModelTier.DEFAULT, provider="gemini"),
+                generation_config={"temperature": 1.0},
+            ),
+            tools=[{"type": "google_search"}],
         )
-
-        stage1_config = GenerateContentConfig(
-            system_instruction=full_instructions,
-            tools=[Tool(google_search=GoogleSearch())],
-            temperature=1.0,
-        )
-
-        # Google Search grounding is Gemini-only, so resolve the Gemini model whatever the configured provider is.
-        grounded_search_model = resolve_model_name(tier=ModelTier.DEFAULT, provider="gemini")
 
         llm_stats: list[LLMStats] = []
         grounding_metadata: GroundingMetadata | None = None
         raw_text: str | None = None
-
-        # Stage 1: Google Search grounded call -- produces free-text answer
-        # This is one of the two LLM call sites that bypass BasicLLM, so it needs its own explicit
-        # generation observation; the chokepoint instrumentation does not see it.
-        with traced_observation(
-                name="non_priority_sector_explorer.grounded_search",
-                as_type="generation",
-                input=llm_input_to_traceable(llm_input),
-                model=grounded_search_model,
-                model_parameters={"temperature": stage1_config.temperature},
-                metadata={"grounding": "google_search", "stage": 1},
-        ) as generation:
-            try:
-                response = await client.aio.models.generate_content(
-                    model=grounded_search_model,
-                    contents=contents,
-                    config=stage1_config,
+        try:
+            response = await grounded_search_llm.generate_content(llm_input)
+            llm_stats.append(
+                LLMStats(
+                    prompt_token_count=response.prompt_token_count,
+                    response_token_count=response.response_token_count,
+                    response_time_in_sec=0,
                 )
-                prompt_token_count = getattr(response.usage_metadata, "prompt_token_count", 0) or 0
-                response_token_count = getattr(response.usage_metadata, "candidates_token_count", 0) or 0
-                llm_stats.append(
-                    LLMStats(
-                        prompt_token_count=prompt_token_count,
-                        response_token_count=response_token_count,
-                        response_time_in_sec=0,
-                    )
-                )
-                raw_text = response.text
-                self._logger.debug("Stage 1 raw response (first 500 chars): %.500s", raw_text)
-                grounding_metadata = extract_grounding_metadata_from_genai_response(response)
-                update_observation(
-                    generation,
-                    output=raw_text,
-                    usage_details={
-                        "input": prompt_token_count,
-                        "output": response_token_count,
-                        "total": prompt_token_count + response_token_count,
-                    },
-                )
-            except Exception as e:  # pylint: disable=broad-except
-                self._logger.exception("Stage 1 (Google Search) LLM call failed: %s", e)
-                llm_stats.append(
-                    LLMStats(error=str(e), prompt_token_count=0, response_token_count=0, response_time_in_sec=0)
-                )
-                update_observation(generation, level="ERROR", status_message=str(e))
+            )
+            raw_text = response.text
+            self._logger.debug("Stage 1 raw response (first 500 chars): %.500s", raw_text)
+            grounding_metadata = response.grounding_metadata
+        except Exception as e:  # pylint: disable=broad-except
+            self._logger.exception("Stage 1 (Google Search) LLM call failed: %s", e)
+            llm_stats.append(
+                LLMStats(error=str(e), prompt_token_count=0, response_token_count=0, response_time_in_sec=0)
+            )
 
         if grounding_metadata:
             self._logger.info(
