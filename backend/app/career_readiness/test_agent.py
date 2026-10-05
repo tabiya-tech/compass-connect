@@ -1,6 +1,7 @@
 """
 Tests for the career readiness agent.
 """
+import json
 from enum import Enum
 from unittest.mock import AsyncMock, patch
 
@@ -26,7 +27,17 @@ from app.conversation_memory.conversation_memory_types import (
     ConversationContext,
     ConversationHistory,
 )
+from common_libs.llm.models_utils import LLMResponse
 from common_libs.llm.schema_builder import with_response_schema
+
+
+def _get_topic_status_record_properties(model) -> dict:
+    """Return the JSON schema properties of the topic_status entries of a response model."""
+    schema = with_response_schema(model)["response_schema"].model_json_schema()
+    items = schema["properties"]["topic_status"]["items"]
+    if "$ref" in items:
+        items = schema["$defs"][items["$ref"].split("/")[-1]]
+    return items["properties"]
 
 
 class TestBuildInstructionModeInstructions:
@@ -54,8 +65,8 @@ class TestBuildInstructionModeInstructions:
         assert "EXPLAIN" in actual_instructions
         assert "FADE" in actual_instructions
         # AND the new per-topic status contract is explained in the prompt
+        # (the meaning of each topic_status entry field is in the response schema, see TestBuildModuleResponseModel)
         assert "topic_status" in actual_instructions
-        assert "topic_id" in actual_instructions
         assert "evidence" in actual_instructions.lower()
         assert "covered" in actual_instructions
         assert "partial" in actual_instructions
@@ -212,6 +223,37 @@ class TestCareerReadinessAgent:
         call_args = given_agent._llm_caller.call_llm.call_args
         llm_input = call_args.kwargs["llm_input"]
         assert any("(silence)" in turn.content for turn in llm_input.turns)
+
+    @pytest.mark.asyncio
+    async def test_execute_in_support_mode_accepts_empty_topic_status_for_module_with_topics(self, mock_llm_cls):
+        # GIVEN an agent in support mode for a module that has topics
+        given_agent = CareerReadinessAgent(
+            module_title="Test Module", module_content="Test content.",
+            mode=ConversationMode.SUPPORT, topics=["Topic A", "Topic B"])
+        # AND an LLM that responds as the support mode prompt asks, with an empty topic_status
+        given_message = "A good CV starts with a clear summary."
+        given_llm_response = LLMResponse(
+            text=json.dumps({"reasoning": "The student asked a follow-up question.", "topic_status": [], "message": given_message}),
+            prompt_token_count=100,
+            response_token_count=50,
+        )
+        mock_llm_cls.return_value.generate_content = AsyncMock(return_value=given_llm_response)
+
+        given_input = AgentInput(message="How should my CV start?")
+        given_context = ConversationContext(
+            all_history=ConversationHistory(),
+            history=ConversationHistory(),
+        )
+
+        # WHEN execute is called
+        actual_output = await given_agent.execute(given_input, given_context)
+
+        # THEN the LLM's message is returned (not the fallback error message)
+        assert actual_output.agent_output.message_for_user == given_message
+        # AND the LLM was called only once (the response was accepted without a retry)
+        assert mock_llm_cls.return_value.generate_content.await_count == 1
+        # AND no topic status is proposed
+        assert actual_output.proposed_topic_status == []
 
     @pytest.mark.asyncio
     async def test_execute_handles_llm_error(self, mock_llm_cls):
@@ -535,6 +577,44 @@ class TestBuildModuleResponseModel:
         if "$ref" in actual_topic_id_schema:
             actual_topic_id_schema = actual_schema["$defs"][actual_topic_id_schema["$ref"].split("/")[-1]]
         assert set(actual_topic_id_schema.get("enum", [])) == {"Alpha", "Beta"}
+
+    def test_response_schema_describes_the_topic_status_record_fields(self):
+        # GIVEN a dynamic model built for a non-empty topic list
+        given_topics = ["Alpha", "Beta"]
+        actual_model = _build_module_response_model(given_topics)
+
+        # WHEN the JSON schema of the structured output is built
+        actual_schema = with_response_schema(actual_model)["response_schema"].model_json_schema()
+
+        # THEN each field of the topic_status entries has a description
+        actual_topic_status_items = actual_schema["properties"]["topic_status"]["items"]
+        if "$ref" in actual_topic_status_items:
+            actual_topic_status_items = actual_schema["$defs"][actual_topic_status_items["$ref"].split("/")[-1]]
+        actual_properties = actual_topic_status_items["properties"]
+        assert all(actual_properties[name].get("description") for name in ["topic_id", "status", "evidence"])
+        # AND the status description explains the meaning of every status value
+        for status in TopicStatus:
+            assert f'"{status.value}"' in actual_properties["status"]["description"]
+        # AND the evidence description explains the empty string rule for not_covered topics
+        assert 'empty string ""' in actual_properties["evidence"]["description"]
+
+    def test_base_response_schema_describes_the_topic_status_record_fields(self):
+        # GIVEN the base model used for a module without topics
+        actual_model = _build_module_response_model([])
+
+        # WHEN the JSON schema of the structured output is built
+        actual_schema = with_response_schema(actual_model)["response_schema"].model_json_schema()
+
+        # THEN each field of the topic_status entries has a description
+        actual_topic_status_items = actual_schema["properties"]["topic_status"]["items"]
+        if "$ref" in actual_topic_status_items:
+            actual_topic_status_items = actual_schema["$defs"][actual_topic_status_items["$ref"].split("/")[-1]]
+        actual_properties = actual_topic_status_items["properties"]
+        # AND the descriptions are the same as in the per-module model
+        expected_properties = _get_topic_status_record_properties(_build_module_response_model(["Alpha", "Beta"]))
+        for name in ["topic_id", "status", "evidence"]:
+            assert actual_properties[name].get("description")
+            assert actual_properties[name]["description"] == expected_properties[name]["description"]
 
     def test_response_schema_marks_topic_status_as_required(self):
         # GIVEN a dynamic model built for a non-empty topic list

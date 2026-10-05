@@ -18,12 +18,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel, Field
 
 from app.agent.config import ModelTier
 from app.analytics.job_demand.sector_mapping import category_leading_token
 from app.teveta.loader import get_institution_sectors
 from common_libs.llm.generative_models import GeminiGenerativeLLM
-from common_libs.llm.models_utils import JSON_GENERATION_CONFIG, LLMConfig, resolve_model_name
+from common_libs.llm.models_utils import LLMConfig, resolve_model_name
+from common_libs.llm.schema_builder import with_response_schema
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -39,12 +41,23 @@ _SYSTEM = (
 )
 
 
+class _CategorySector(BaseModel):
+    """The sector of one input category."""
+    category: str = Field(description="The input category string, exactly as given.")
+    sector: str | None = Field(description="One allowed sector string (EXACT), or null when none is a reasonable fit.")
+
+
+class _CategorySectorMap(BaseModel):
+    """The LLM response: the sector of every input category.
+    A list of entries (rather than a free-form dict keyed by category) so that the response schema is fully typed."""
+    mappings: list[_CategorySector] = Field(description="One entry for every input category.")
+
+
 def _prompt(sectors: list[str], categories: list[str]) -> str:
     return (
         f"Allowed sectors (use these EXACT strings):\n{json.dumps(sectors)}\n\n"
         f"Categories to classify:\n{json.dumps(categories)}\n\n"
-        'Return ONLY a JSON object mapping every input category string to one '
-        'allowed sector string or null. No prose.'
+        'Map every input category string to one allowed sector string or null.'
     )
 
 
@@ -61,7 +74,8 @@ async def _distinct_leading_tokens(coll) -> collections.Counter:
 async def _classify(sectors: list[str], tokens: list[str], cfg: LLMConfig) -> dict:
     """One LLM call -> ``{token: sector|None}`` (values not in ``sectors`` -> None)."""
     llm = GeminiGenerativeLLM(system_instructions=_SYSTEM, config=cfg)
-    raw = json.loads((await llm.generate_content(_prompt(sectors, tokens))).text)
+    response = _CategorySectorMap.model_validate_json((await llm.generate_content(_prompt(sectors, tokens))).text)
+    raw = {m.category: m.sector for m in response.mappings}
     allowed = set(sectors)
     return {t: (raw.get(t) if raw.get(t) in allowed else None) for t in tokens}
 
@@ -110,7 +124,7 @@ async def main() -> None:
                 len(tokens), len(sectors), total_jobs)
 
     cfg = LLMConfig(language_model_name=resolve_model_name(tier=ModelTier.DEFAULT, provider="gemini"),
-                    generation_config=JSON_GENERATION_CONFIG)
+                    generation_config=with_response_schema(_CategorySectorMap))
     mapping = await _classify(sectors, tokens, cfg)
     artifact = _build_artifact(sectors, token_counts, mapping, total_jobs,
                                cfg.language_model_name)

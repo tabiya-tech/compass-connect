@@ -29,19 +29,21 @@ class SectorRelevance(str, Enum):
 
 
 class SectorMention(BaseModel):
-    sector_name: str
-    is_priority: bool
+    sector_name: str = Field(description="The name of the sector, following the same naming rules as the top-level sector_name.")
+    is_priority: bool = Field(description="True only if the sector is a priority sector.")
 
     class Config:
         extra = "forbid"
 
 
 class SectorRelevanceClassification(BaseModel):
-    relevance: SectorRelevance
-    sector_name: str | None = None
-    is_priority: bool = False
-    all_sectors: list[SectorMention] = Field(default_factory=list)
-    reasoning: str = Field(default="")
+    relevance: SectorRelevance = Field(description="Whether the PRIMARY sector of the user's message is a priority sector (PRIORITY_SECTOR) "
+                                                   "or not (NON_PRIORITY_SECTOR).")
+    sector_name: str | None = Field(default=None, description="The name of the PRIMARY sector, see the sector_name rules. null if the message isn't about any sector.")
+    is_priority: bool = Field(default=False, description="True only if the PRIMARY sector is a priority sector.")
+    all_sectors: list[SectorMention] = Field(default_factory=list,
+                                             description="EVERY distinct sector the user mentions or expresses interest in during this message.")
+    reasoning: str = Field(default="", description=f"A short explanation of the classification, under {MAX_REASONING_LENGTH} characters.")
 
     class Config:
         extra = "forbid"
@@ -139,7 +141,7 @@ class SectorRelevanceClassifier:
         result, stats = await self._llm_caller.call_llm(
             llm=llm,
             llm_input=ConversationHistoryFormatter.format_for_agent_generative_prompt(
-                model_response_instructions="Classify the user's message. Return JSON with relevance, sector_name, is_priority, and reasoning.",
+                model_response_instructions="Classify the user's message.",
                 context=context,
                 user_input=user_input,
             ),

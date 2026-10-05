@@ -104,13 +104,13 @@ _SYSTEM_INSTRUCTIONS_CLOSING_TAG = "\n        </system_instructions>\n"
 
 
 _REFORMAT_SYSTEM_INSTRUCTIONS = dedent("""\
-    You are a JSON formatter. You will be given a career counselor's response text.
-    Your only job is to reformat it into the required JSON structure.
+    You will be given a career counselor's response text.
+    Your only job is to restructure it into the fields of your response.
 
     Rules:
-    - "message": the user-facing reply only -- clean prose, no JSON, no internal notes
-    - "reasoning": a brief internal note on what the response covers
-    - "finished": true only if the counselor explicitly indicated the conversation is ending
+    - message: the user-facing reply only -- clean prose, no JSON, no internal notes
+    - reasoning: a brief internal note on what the response covers
+    - finished: true only if the counselor explicitly indicated the conversation is ending
 
     Do not add, remove, or change any information from the original response.
 """)
@@ -203,7 +203,7 @@ class NonPrioritySectorExplorer:
         if user_profile_context:
             full_instructions = user_profile_context + "\n\n" + full_instructions
 
-        response_instructions = "Respond conversationally. Your answer will be reformatted into JSON automatically."
+        response_instructions = "Respond conversationally."
         if should_nudge_priority:
             # Inline turn-time reminder, placed right before generation so it overrides
             # any pattern the model might imitate from prior turns.

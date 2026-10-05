@@ -29,16 +29,35 @@ class TopicStatus(str, Enum):
     NOT_COVERED = "not_covered"
 
 
+TOPIC_ID_FIELD_DESCRIPTION = "The canonical topic name, matching exactly a value from the module topic list."
+"""Description of `TopicStatusRecord.topic_id` in the LLM response schema."""
+
+TOPIC_STATUS_FIELD_DESCRIPTION = (
+    "The coverage status of the topic: "
+    "\"covered\" — the student has substantively engaged with this topic and demonstrated understanding across the conversation so far; "
+    "\"partial\" — the topic was touched but the student's engagement was thin, off-topic, or just acknowledgment; "
+    "\"not_covered\" — the topic has not been addressed yet in this conversation."
+)
+"""Description of `TopicStatusRecord.status` in the LLM response schema."""
+
+TOPIC_EVIDENCE_FIELD_DESCRIPTION = (
+    "A short quote from the student, or paraphrase of what they said. "
+    "REQUIRED (non-empty) when status is \"covered\" or \"partial\". "
+    "MUST be an empty string \"\" when status is \"not_covered\"."
+)
+"""Description of `TopicStatusRecord.evidence` in the LLM response schema."""
+
+
 class TopicStatusRecord(BaseModel):
     """Records the current coverage status of one module topic."""
 
-    topic_id: str
+    topic_id: str = Field(description=TOPIC_ID_FIELD_DESCRIPTION)
     """The canonical topic name, matching a value from the module's topic list"""
 
-    status: TopicStatus
+    status: TopicStatus = Field(description=TOPIC_STATUS_FIELD_DESCRIPTION)
     """Whether the topic has been covered, partially addressed, or not yet discussed"""
 
-    evidence: str
+    evidence: str = Field(description=TOPIC_EVIDENCE_FIELD_DESCRIPTION)
     """Quote or paraphrase of the student's relevant statement; required non-empty for covered/partial, must be empty string for not_covered"""
 
     @model_validator(mode="after")
