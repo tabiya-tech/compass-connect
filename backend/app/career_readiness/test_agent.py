@@ -519,30 +519,31 @@ class TestBuildModuleResponseModel:
         assert "Alpha" in actual_schema_str
         assert "Beta" in actual_schema_str
 
-    def test_with_response_schema_preserves_enum_after_vertex_cleaning(self):
+    def test_response_schema_preserves_enum(self):
         # GIVEN a dynamic model built for specific topics
         given_topics = ["Alpha", "Beta"]
         actual_model = _build_module_response_model(given_topics)
 
-        # WHEN the Vertex-shaped schema is built
-        actual_schema = with_response_schema(actual_model)
+        # WHEN the JSON schema of the structured output is built
+        actual_schema = with_response_schema(actual_model)["response_schema"].model_json_schema()
 
-        # THEN the cleaned schema still carries an enum constraint on topic_status[].topic_id
-        actual_topic_status_items = (
-            actual_schema["response_schema"]["properties"]["topic_status"]["items"]
-        )
+        # THEN the schema still carries an enum constraint on topic_status[].topic_id
+        actual_topic_status_items = actual_schema["properties"]["topic_status"]["items"]
+        if "$ref" in actual_topic_status_items:
+            actual_topic_status_items = actual_schema["$defs"][actual_topic_status_items["$ref"].split("/")[-1]]
         actual_topic_id_schema = actual_topic_status_items["properties"]["topic_id"]
+        if "$ref" in actual_topic_id_schema:
+            actual_topic_id_schema = actual_schema["$defs"][actual_topic_id_schema["$ref"].split("/")[-1]]
         assert set(actual_topic_id_schema.get("enum", [])) == {"Alpha", "Beta"}
 
-    def test_vertex_schema_marks_topic_status_as_required(self):
+    def test_response_schema_marks_topic_status_as_required(self):
         # GIVEN a dynamic model built for a non-empty topic list
         given_topics = ["Alpha", "Beta"]
         actual_model = _build_module_response_model(given_topics)
 
-        # WHEN the Vertex-shaped schema is built
-        actual_schema = with_response_schema(actual_model)
+        # WHEN the JSON schema of the structured output is built
+        actual_schema = with_response_schema(actual_model)["response_schema"].model_json_schema()
 
         # THEN topic_status is in the top-level `required` list
-        expected_required = actual_schema["response_schema"].get("required", [])
-        assert "topic_status" in expected_required
+        assert "topic_status" in actual_schema.get("required", [])
 
