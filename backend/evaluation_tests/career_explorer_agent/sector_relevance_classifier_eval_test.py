@@ -70,7 +70,7 @@ def career_explorer_config_with_sectors(setup_multi_locale_app_config):
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.parametrize("test_case", CLASSIFIER_TEST_CASES, ids=[tc.name for tc in CLASSIFIER_TEST_CASES])
 async def test_sector_relevance_classifier(
     evals_setup,
@@ -116,7 +116,7 @@ async def test_sector_relevance_classifier(
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 async def test_classifier_extracts_multiple_sectors(
     evals_setup,
     career_explorer_config_with_sectors,

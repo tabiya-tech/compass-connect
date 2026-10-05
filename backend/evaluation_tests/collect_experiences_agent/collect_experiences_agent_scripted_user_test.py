@@ -67,7 +67,7 @@ async def setup_collect_experiences_agent() -> tuple[
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.repeat(3)
 async def test_kenyan_user_multiple_experiences_transition_issues(caplog: LogCaptureFixture,
                                                                   setup_collect_experiences_agent: Awaitable[tuple[
@@ -201,7 +201,7 @@ async def test_stuck_after_recap_confirmation(caplog: LogCaptureFixture,
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.repeat(3)
 async def test_quick_reply_options_appear_at_yes_no_questions(caplog: LogCaptureFixture,
                                                               setup_collect_experiences_agent: Awaitable[tuple[

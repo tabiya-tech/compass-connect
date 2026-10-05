@@ -104,7 +104,7 @@ def career_explorer_config_with_sectors(setup_multi_locale_app_config):
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.parametrize("test_case", PRIORITY_EXPLORER_TEST_CASES, ids=[tc.name for tc in PRIORITY_EXPLORER_TEST_CASES])
 async def test_priority_sector_explorer_rag_content(
     evals_setup,
