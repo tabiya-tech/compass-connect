@@ -4,9 +4,8 @@ import time
 from abc import ABC, abstractmethod
 from typing import Coroutine, Any
 
-import vertexai
-from google.cloud.aiplatform import initializer as aiplatform_initializer
-from vertexai.language_models import TextEmbeddingInput, TextEmbeddingModel, TextEmbedding
+from google import genai
+from google.genai.types import EmbedContentConfig
 
 from common_libs.retry import Retry
 
@@ -54,17 +53,9 @@ class GoogleEmbeddingService(EmbeddingService):
             raise ValueError("Environment variable 'VERTEX_API_EMBEDDINGS_REGION' is not set.")
         self.logger.info(f"Constructing {self.__class__.__name__} with model: {model_name} and region: {self.region}")
 
-        # vertexai.init() is process-wide and shared with the Gemini models (see BasicLLM), so leaving the
-        # embeddings region set would send every Gemini model created afterwards to that region.
-        previous_location = aiplatform_initializer.global_config.location
-        vertexai.init(location=self.region)
-        try:
-            self.model = TextEmbeddingModel.from_pretrained(model_name)
-            # Otherwise the SDK creates the client on the first call, with whatever location is set by then.
-            # noinspection PyProtectedMember
-            _ = self.model._endpoint._prediction_async_client  # pylint: disable=protected-access
-        finally:
-            vertexai.init(location=previous_location)
+        # The client is bound to the embeddings region, independently of the generative-AI client (see GeminiGenerativeLLM).
+        self._client = genai.Client(vertexai=True, location=self.region)
+        self._config = EmbedContentConfig(task_type=self._TASK)
 
     async def embed(self, text: str) -> list[float]:
         """
@@ -101,19 +92,20 @@ class GoogleEmbeddingService(EmbeddingService):
             batch_size = 5
         embeddings = []
         for i in range(0, len(text_list), batch_size):
-            def _callback() -> Coroutine[Any, Any, list[TextEmbedding]]:
-                inputs: list[TextEmbeddingInput] = [TextEmbeddingInput(query, self._TASK) for query in text_list[i:i + batch_size]]
-                return self._run_batch(inputs)
+            def _callback() -> Coroutine[Any, Any, list[list[float]]]:
+                return self._run_batch(text_list[i:i + batch_size])
 
-            batch_embeddings: list[TextEmbedding] = await Retry[list[TextEmbedding]].call_with_exponential_backoff(callback=_callback,logger=self.logger)
+            batch_embeddings: list[list[float]] = await Retry[list[list[float]]].call_with_exponential_backoff(callback=_callback,
+                                                                                                             logger=self.logger)
             embeddings.extend(batch_embeddings)
-        return [embedding.values for embedding in embeddings]
+        return embeddings
 
-    async def _run_batch(self, inputs: list[TextEmbeddingInput]) -> list[TextEmbedding]:
+    async def _run_batch(self, inputs: list[str]) -> list[list[float]]:
         try:
             # measure how long it takes to generate the embeddings
             start_time = time.time()
-            result = await self.model.get_embeddings_async(inputs)
+            response = await self._client.aio.models.embed_content(model=self.model_name, contents=inputs, config=self._config)
+            result = [embedding.values for embedding in response.embeddings]
             end_time = time.time()
             self.logger.debug(f"Time taken to generate embeddings: {end_time - start_time:.2f} seconds for {len(inputs)} queries, "
                               f"{len(result)/(end_time - start_time):.2f} queries/seconds")

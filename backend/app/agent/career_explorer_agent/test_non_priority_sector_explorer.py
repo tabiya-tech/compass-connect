@@ -7,7 +7,7 @@ field.
 
 Two-stage design
 ----------------
-Stage 1 (Google Search) is mocked via patching genai.Client.
+Stage 1 (Google Search) is mocked via patching GeminiGenerativeLLM.
 Stage 2 (structured reformat) is mocked via patching _reformat_to_structured on the
 explorer instance, since it requires Vertex AI credentials unavailable in unit tests.
 The reformat stage returns a ModelResponse directly, simulating what response_schema
@@ -60,14 +60,13 @@ _EXPECTED_MESSAGE = (
 )
 
 
-def _make_mock_response(text: str) -> MagicMock:
-    """Build a minimal mock of the genai GenerateContentResponse."""
+def _make_mock_response(text: str, grounding_metadata=None) -> MagicMock:
+    """Build a minimal mock of the LLMResponse of the grounded search LLM."""
     mock_response = MagicMock()
     mock_response.text = text
-    mock_response.usage_metadata.prompt_token_count = 100
-    mock_response.usage_metadata.candidates_token_count = 200
-    # No grounding metadata for these unit tests.
-    mock_response.candidates = []
+    mock_response.prompt_token_count = 100
+    mock_response.response_token_count = 200
+    mock_response.grounding_metadata = grounding_metadata
     return mock_response
 
 
@@ -146,13 +145,9 @@ class TestNonPrioritySectorExplorer:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=given_mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=given_mock_response)
             explorer._reformat_to_structured = _make_reformat_mock(given_raw_text)
 
             # WHEN the explorer processes the response
@@ -191,13 +186,9 @@ class TestNonPrioritySectorExplorer:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=given_mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=given_mock_response)
             explorer._reformat_to_structured = _make_reformat_mock(given_raw_text)
 
             # WHEN the explorer processes the response
@@ -226,13 +217,9 @@ class TestNonPrioritySectorExplorer:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=given_mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=given_mock_response)
             explorer._reformat_to_structured = _make_reformat_mock(given_plain_text)
 
             # WHEN the explorer processes the response
@@ -270,13 +257,9 @@ class TestNonPrioritySectorExplorer:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=given_mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=given_mock_response)
             # Stage 2 receives the raw text and returns only the message field
             explorer._reformat_to_structured = AsyncMock(return_value=ModelResponse(
                 reasoning="The user asked about construction careers in Zambia.",
@@ -313,13 +296,9 @@ class TestNonPrioritySectorExplorer:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=given_mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=given_mock_response)
             explorer._reformat_to_structured = _make_reformat_mock(given_raw_text)
 
             # WHEN the explorer processes the response
@@ -352,13 +331,9 @@ class TestNonPrioritySectorExplorer:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=given_mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=given_mock_response)
             explorer._reformat_to_structured = AsyncMock(return_value=ModelResponse(
                 reasoning="I searched for ICT Data Engineer roles.",
                 finished=False,
@@ -403,13 +378,9 @@ class TestNonPrioritySectorExplorer:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=given_mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=given_mock_response)
             explorer._reformat_to_structured = AsyncMock(return_value=ModelResponse(
                 reasoning="The user asked about ICT, a non-priority sector. I searched.",
                 finished=False,
@@ -456,13 +427,9 @@ class TestNonPrioritySectorExplorer:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=given_mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=given_mock_response)
             # Stage 2 extracts the innermost human-readable message, discarding the nested JSON
             explorer._reformat_to_structured = AsyncMock(return_value=ModelResponse(
                 reasoning="I searched and found relevant information.",
@@ -509,13 +476,9 @@ class TestNonPrioritySectorExplorer:
                           new_callable=PropertyMock,
                           create=True,
                           side_effect=ValueError("Multiple content parts")), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=given_mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=given_mock_response)
 
             # WHEN the explorer processes the response
             actual_message, actual_finished, actual_reasoning, actual_llm_stats, actual_metadata = \
@@ -551,13 +514,9 @@ class TestNonPrioritySectorExplorerQuickReply:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=mock_response)
             explorer._reformat_to_structured = _make_reformat_mock(given_raw_text)
 
             # WHEN the explorer processes the response
@@ -587,13 +546,9 @@ class TestNonPrioritySectorExplorerQuickReply:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=mock_response)
             explorer._reformat_to_structured = _make_reformat_mock(given_raw_text)
 
             # WHEN the explorer processes the response
@@ -627,13 +582,10 @@ class TestNonPrioritySectorExplorerQuickReply:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=given_grounding):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_response.grounding_metadata = given_grounding
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=mock_response)
             explorer._reformat_to_structured = _make_reformat_mock(given_raw_text)
 
             # WHEN the explorer processes the response
@@ -659,13 +611,9 @@ class TestNonPrioritySectorExplorerQuickReply:
 
         with patch("app.agent.career_explorer_agent.non_priority_sector_explorer.get_application_config",
                    return_value=mock_app_config), \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.genai") as mock_genai, \
-             patch("app.agent.career_explorer_agent.non_priority_sector_explorer."
-                   "extract_grounding_metadata_from_genai_response", return_value=None):
+             patch("app.agent.career_explorer_agent.non_priority_sector_explorer.GeminiGenerativeLLM") as mock_llm_class:
 
-            mock_client = AsyncMock()
-            mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
-            mock_genai.Client.return_value = mock_client
+            mock_llm_class.return_value.generate_content = AsyncMock(return_value=mock_response)
             explorer._reformat_to_structured = _make_reformat_mock(given_plain_text)
 
             # WHEN the explorer processes the response

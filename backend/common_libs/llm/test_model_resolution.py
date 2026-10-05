@@ -1,5 +1,6 @@
+from types import SimpleNamespace
 from typing import Optional
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -218,18 +219,23 @@ class TestGeminiGenerativeLLM:
         (LLMConfig(model_tier=ModelTier.DEEP_REASONING, language_model_name="given-explicit-model"),
          "given-explicit-model"),
     ])
-    def test_gemini_model_is_resolved_on_creation(self, setup_application_config,
-                                                  given_config: LLMConfig, expected_model: str):
+    @pytest.mark.asyncio
+    async def test_gemini_model_is_resolved_on_creation(self, setup_application_config,
+                                                        given_config: LLMConfig, expected_model: str):
         # GIVEN the gemini provider is configured with only a deep reasoning model
         _set_llm_config(setup_application_config, provider="gemini", deep_reasoning_model="given-deep-reasoning")
 
         # WHEN a gemini llm is created for the given config
-        with patch("common_libs.llm.models_utils._init_once"), \
-                patch("common_libs.llm.generative_models.GenerativeModel") as mock_generative_model:
-            actual_llm = GeminiGenerativeLLM(config=given_config)
+        actual_llm = GeminiGenerativeLLM(config=given_config)
+        # AND content is generated
+        mock_client = MagicMock()
+        mock_client.aio.interactions.create = AsyncMock(
+            return_value=SimpleNamespace(output_text="foo", steps=[], usage=None))
+        with patch("common_libs.llm.generative_models.get_genai_client", return_value=mock_client):
+            await actual_llm.generate_content("foo")
 
-        # THEN expect the underlying model to be created with the resolved model name
-        assert mock_generative_model.call_args.kwargs["model_name"] == expected_model
+        # THEN expect the request to be sent to the resolved model
+        assert mock_client.aio.interactions.create.call_args.kwargs["model"] == expected_model
         # AND the llm to report the same model name (used for tracing)
         # noinspection PyProtectedMember
         assert actual_llm._model_name == expected_model  # pylint: disable=protected-access

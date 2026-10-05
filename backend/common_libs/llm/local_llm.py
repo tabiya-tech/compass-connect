@@ -1,10 +1,11 @@
 import logging
 import os
+from typing import Type
 
 import httpx
 from pydantic import BaseModel
 
-from common_libs.llm.models_utils import LLM, LLMInput, LLMResponse
+from common_libs.llm.models_utils import LLM, LLMInput, LLMResponse, get_response_schema
 from common_libs.retry import RetryConfigWithExponentialBackOff, DEFAULT_RETRY_CONFIG_WITH_EXP_BACKOFF, Retry
 
 _USE_THINKING = os.getenv("LOCAL_LLM_THINK", "").lower() in ("1", "true", "yes")
@@ -27,8 +28,7 @@ class LocalOpenAICompatibleLLM(LLM):
     Uses ollama's native API (not /v1/chat/completions) so that think:false
     is respected, disabling qwen3's slow chain-of-thought reasoning mode.
 
-    Extends LLM directly rather than BasicLLM to avoid triggering vertexai.init().
-    Does not include traced_observation tracing.
+    Extends LLM directly rather than BasicLLM. Does not include traced_observation tracing.
     """
 
     def __init__(self, *,
@@ -42,13 +42,20 @@ class LocalOpenAICompatibleLLM(LLM):
         self._system_instructions = system_instructions
         self._resource_name = f"{config.base_url}/api/chat"
 
-    async def generate_content(self, llm_input: LLMInput | str) -> LLMResponse:
+    @property
+    def generation_config(self) -> dict:
+        """The generation parameters, read at call time."""
+        return self._generation_config
+
+    async def generate_content(self, llm_input: LLMInput | str,
+                               response_schema: Type[BaseModel] | None = None) -> LLMResponse:
         async def _call() -> LLMResponse:
-            return await self._internal_generate_content(llm_input)
+            return await self._internal_generate_content(llm_input, get_response_schema(self._generation_config, response_schema))
 
         return await Retry[str].call_with_exponential_backoff(callback=_call, logger=self.logger)
 
-    async def _internal_generate_content(self, llm_input: LLMInput | str) -> LLMResponse:
+    async def _internal_generate_content(self, llm_input: LLMInput | str,
+                                         response_schema: Type[BaseModel] | None) -> LLMResponse:
         messages = self._build_messages(llm_input)
         options = {k: v for k, v in self._generation_config.items()
                    if k in ("temperature", "top_p", "num_predict", "frequency_penalty")}
@@ -63,9 +70,11 @@ class LocalOpenAICompatibleLLM(LLM):
             "think": _USE_THINKING,
             "options": options,
         }
-        # Gemini uses response_mime_type:"application/json" to enforce JSON output;
-        # ollama uses a top-level "format":"json" field for the same purpose.
-        if self._generation_config.get("response_mime_type") == "application/json":
+        # ollama enforces the structured output with a top-level "format" field: the JSON schema of the response,
+        # or "json" for any JSON object.
+        if response_schema is not None:
+            payload["format"] = response_schema.model_json_schema()
+        elif self._generation_config.get("response_mime_type") == "application/json":
             payload["format"] = "json"
         async with httpx.AsyncClient() as client:
             response = await client.post(
