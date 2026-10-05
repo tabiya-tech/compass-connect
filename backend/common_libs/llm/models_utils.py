@@ -24,8 +24,9 @@ load_dotenv()
 
 DEFAULT_VERTEX_API_GEN_AI_REGION = os.getenv("VERTEX_API_GEN_AI_REGION")
 if not DEFAULT_VERTEX_API_GEN_AI_REGION:
-    logging.warning("VERTEX_API_GEN_AI_REGION is not set. Using 'us-central1' as the default region.")
-    DEFAULT_VERTEX_API_GEN_AI_REGION = "us-central1"
+    # The Gemini 3.x models are only served from the global location, regional locations return a 404 for them.
+    logging.warning("VERTEX_API_GEN_AI_REGION is not set. Using 'global' as the default region.")
+    DEFAULT_VERTEX_API_GEN_AI_REGION = "global"
 else:
     logging.info("Default Vertex AI gen-AI region is %s", DEFAULT_VERTEX_API_GEN_AI_REGION)
 
@@ -167,7 +168,7 @@ def resolve_model_name(*, tier: ModelTier, provider: "LLMProvider") -> str:
             ModelTier.REASONING: app_config.llm_reasoning_model,
             ModelTier.DEEP_REASONING: app_config.llm_deep_reasoning_model,
         }
-        # Gemini falls back to its own 2.5 default for the tier rather than to another tier's model.
+        # Gemini falls back to its own default for the tier rather than to another tier's model.
         tiers_to_try = [tier] if provider == "gemini" else [tier, *_NON_GEMINI_FALLBACK_TIERS[tier]]
         for candidate_tier in tiers_to_try:
             if configured_models[candidate_tier]:

@@ -143,7 +143,7 @@ class ApplicationConfig(BaseModel):
     llm_default_model: Optional[str] = None
     """
     The model for the default tier (ModelTier.DEFAULT) of the selected provider.
-    When unset, each provider uses its own default (gemini: gemini-2.5-flash-lite,
+    When unset, each provider uses its own default (gemini: gemini-3.5-flash-lite,
     anthropic: claude-sonnet-4-6, ollama: qwen2.5:7b).
     Set via LLM_DEFAULT_MODEL environment variable.
     """
@@ -151,14 +151,14 @@ class ApplicationConfig(BaseModel):
     llm_reasoning_model: Optional[str] = None
     """
     The model for the reasoning tier (ModelTier.REASONING) of the selected provider.
-    When unset, gemini uses gemini-2.5-flash; other providers fall back to llm_default_model.
+    When unset, gemini uses gemini-3.8-flash; other providers fall back to llm_default_model.
     Set via LLM_REASONING_MODEL environment variable.
     """
 
     llm_deep_reasoning_model: Optional[str] = None
     """
     The model for the deep reasoning tier (ModelTier.DEEP_REASONING) of the selected provider.
-    When unset, gemini uses gemini-2.5-pro; other providers fall back to llm_reasoning_model, then llm_default_model.
+    When unset, gemini uses gemini-3.1-pro-preview; other providers fall back to llm_reasoning_model, then llm_default_model.
     Set via LLM_DEEP_REASONING_MODEL environment variable.
     """
 

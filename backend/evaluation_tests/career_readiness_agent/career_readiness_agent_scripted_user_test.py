@@ -246,7 +246,7 @@ def _save_conversation_output(
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.parametrize("test_case", TEST_CASES, ids=[tc.name for tc in TEST_CASES])
 async def test_career_readiness_scripted(evals_setup, setup_multi_locale_app_config,
                                          test_case: CareerReadinessTestCase):
@@ -285,7 +285,7 @@ async def test_career_readiness_scripted(evals_setup, setup_multi_locale_app_con
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.parametrize("test_case", EDGE_CASE_TEST_CASES, ids=[tc.name for tc in EDGE_CASE_TEST_CASES])
 async def test_career_readiness_edge_cases(evals_setup, setup_multi_locale_app_config,
                                             test_case: CareerReadinessEdgeCaseTestCase):

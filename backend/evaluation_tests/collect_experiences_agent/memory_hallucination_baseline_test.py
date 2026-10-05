@@ -108,7 +108,7 @@ async def setup_collect_experiences_agent() -> tuple[
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.repeat(5)
 async def test_memory_recall_accuracy_after_summarization(
         caplog: LogCaptureFixture,

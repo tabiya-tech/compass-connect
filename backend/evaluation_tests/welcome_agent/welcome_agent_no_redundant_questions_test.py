@@ -89,7 +89,7 @@ def _assert_no_redundant_questions(response_text: str):
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.repeat(5)
 async def test_welcome_agent_does_not_ask_about_known_personal_data(evals_setup, caplog):
     """
