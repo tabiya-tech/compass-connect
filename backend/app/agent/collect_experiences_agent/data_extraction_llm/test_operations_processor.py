@@ -713,6 +713,48 @@ class TestExperienceDataProcessor:
         assert actual_collected_data[0].start_date == "2020"
 
 
+    def test_add_same_title_with_conflicting_details_is_not_merged(self, processor, mock_logger):
+        """Should NOT merge two ADDs with the same title and work_type whose company and dates differ."""
+        # GIVEN empty collected data
+        given_collected_data = []
+
+        # AND two ADD operations with the same title and work_type, but at different companies and dates
+        given_experiences_data = [
+            create_experience_data(
+                data_operation="ADD",
+                index=0,
+                experience_title="Research Assistant",
+                company="Cool Lab",
+                start_date="06/2020",
+                end_date="Present",
+                work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT.name
+            ),
+            create_experience_data(
+                data_operation="ADD",
+                index=1,
+                experience_title="Research Assistant",
+                company="Fancy Science Lab",
+                start_date="01/2018",
+                end_date="05/2020",
+                work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT.name
+            )
+        ]
+
+        # AND current turn index
+        given_current_turn_index = 1
+
+        # WHEN processing the experience operations
+        actual_last_processed_index, actual_collected_data = processor.process(
+            given_experiences_data, given_collected_data, given_current_turn_index
+        )
+
+        # THEN both experiences should be kept as separate entries
+        assert len(actual_collected_data) == 2
+        # AND each should keep its own company
+        assert actual_collected_data[0].company == "Cool Lab"
+        assert actual_collected_data[1].company == "Fancy Science Lab"
+
+
 class TestDataOperation:
     """Test suite for _DataOperation class."""
 

@@ -270,6 +270,7 @@ golden_test_cases = [
         expected_experiences_count_min=1,
         expected_experiences_count_max=4,
         expected_work_types={
+            WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT: (0, 2),  # "you still hustle hard": possible paid gigs/freelancing (no self-employment type any more)
             WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK: (0, 0),
             WorkType.UNSEEN_UNPAID: (1, 4),
         }

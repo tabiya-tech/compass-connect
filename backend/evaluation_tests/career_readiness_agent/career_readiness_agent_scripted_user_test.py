@@ -189,8 +189,10 @@ EDGE_CASE_TEST_CASES = [
             "Professional identity is more than a job title. It's my values, skills, and career goals. "
             "For me as a plumber, it means being someone who solves problems reliably and takes pride in safe work.",
             # Strong answer on "Types of Skills"
-            "There are technical skills like pipefitting and using pressure gauges, and transferable skills "
-            "like communication and problem-solving that apply across any job.",
+            # (the module defines three types of skills, so the answer names all three)
+            "There are technical skills like pipefitting and using pressure gauges, transferable skills "
+            "like communication and problem-solving that apply across any job, and knowledge-based skills "
+            "like knowing the building codes and the water safety regulations.",
             # Contradicts the first topic — potential downgrade trigger
             "Actually wait, I think professional identity is just your job title after all.",
             # Answer on "How to Identify Your Skills"

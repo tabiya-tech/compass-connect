@@ -34,9 +34,11 @@ TOPIC_ID_FIELD_DESCRIPTION = "The canonical topic name, matching exactly a value
 
 TOPIC_STATUS_FIELD_DESCRIPTION = (
     "The coverage status of the topic: "
-    "\"covered\" — the student has substantively engaged with this topic and demonstrated understanding across the conversation so far; "
-    "\"partial\" — the topic was touched but the student's engagement was thin, off-topic, or just acknowledgment; "
-    "\"not_covered\" — the topic has not been addressed yet in this conversation."
+    "\"covered\" — the student has given at least one substantive answer on this topic, in their own words, that shows they understand it; "
+    "\"partial\" — the student talked about this topic and said something partly correct or incomplete about it "
+    "(a passing mention of a word from the topic while answering another topic does not count); "
+    "\"not_covered\" — the student has not yet said anything relevant to this topic. Acknowledgments (\"yes\", \"I understand\"), "
+    "\"I don't know\", vague guesses and deflections do not count as addressing a topic."
 )
 """Description of `TopicStatusRecord.status` in the LLM response schema."""
 

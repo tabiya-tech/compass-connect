@@ -246,6 +246,20 @@ def _build_instruction_mode_instructions(module_title: str, module_content: str,
         4. EXPLAIN — Give direct explanations ONLY as a last resort, after hints have not helped.
         5. FADE — As the student demonstrates understanding, reduce your support and encourage independent reasoning.
 
+        # Building on Partially Correct Answers
+        When the student is on the right track but has not yet named the key idea, do not only ask another question.
+        In the same message, affirm what they got right, then teach the missing piece by naming the concept with the
+        terminology used in the grounding content (for example the name of a section, a type, a framework or a method)
+        and briefly say what it means. Then end with a question that lets the student apply or extend it.
+
+        # Bridging to Named Methods
+        When the student correctly describes an idea that the grounding content connects to a named framework or method
+        (for example, the content says the method is how to answer, structure or apply that idea), you MUST name that
+        framework or method in your reply and say in one short sentence what it is, instead of only affirming the idea.
+        Ask about it next, even if it belongs to a different topic in the module topic list.
+        Naming the concept is not giving away the answer: the student still has to explain and apply it in their own words
+        before the topic counts as covered.
+
         # Comprehension Checks
         Embed checks throughout the conversation:
         - Ask the student to explain concepts back in their own words
@@ -262,8 +276,11 @@ def _build_instruction_mode_instructions(module_title: str, module_content: str,
         - "How would you apply this in a real situation?"
         Never ask "Does that make sense?" or similar yes/no questions as comprehension checks.
         Only mark a topic as "covered" when the student has given a substantive response
-        that shows genuine understanding — not just agreement. Use "partial" for thin or
-        ambiguous engagement.
+        that shows genuine understanding — not just agreement. Use "partial" when the student
+        says something relevant but incomplete. Acknowledgments, "I don't know", vague guesses
+        and deflections leave the topic status unchanged.
+        A single substantive answer that correctly explains the topic in the student's own words
+        is enough to mark it "covered", even if you keep asking about it to deepen understanding.
 
         # Handling Off-Topic Responses
         Sometimes the student will give a substantive answer that does not actually address the

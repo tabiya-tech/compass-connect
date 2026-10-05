@@ -27,7 +27,7 @@ test_cases = [
     SkillLinkingToolTestCase(
         name="Baker by code",
         given_occupation_code="7512.1",
-        given_work_type=WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK,
+        given_work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT,
         given_responsibilities=["I bake bread", "I clean my work place", "I order supplies"],
         expected_skills=['bake goods', 'ensure sanitation']
     ),
@@ -41,7 +41,7 @@ test_cases = [
     SkillLinkingToolTestCase(
         name="GDE Brigade member by title",
         given_occupation_title="GDE Brigade member",
-        given_work_type=WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK,
+        given_work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT,
         given_responsibilities=["I make sure everyone follows the Covid-19 rules.",
                                 "I keep an eye on the kids to make sure they stay apart from each other.",
                                 "I check and record temperatures and other health signs.",
