@@ -180,7 +180,7 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
       },
     ],
     sources:
-      'Sources: Energy Transition Minerals Roadmap for Zambia (World Bank, 2025) · "Zambia\'s Copper Opportunity: Can the Workforce Keep Up?" (World Bank, 2025) · 2025 Mining Sector Performance Briefing (Ministry of Mines and Minerals Development, Jan 2026) · Lumwana Super Pit Launch Remarks (Office of the President, 2024) · Mining Sector Skills Development Strategy (TEVETA with ILO and EU, 2024) · 2023 Labour Force Survey (ZamStats) · EEI 2022/2023 (ZamStats) · Critical Skills List (TEVETA, 2025) · TEVETA Approved Programs (2020) · Priority Curriculum Development (ILO/TEVETA, 2026) · Last updated: October 2026',
+      'Sources: Energy Transition Minerals Roadmap for Zambia (World Bank, 2025) · "Zambia\'s Copper Opportunity: Can the Workforce Keep Up?" (World Bank, 2025) · 2025 Mining Sector Performance Briefing (Ministry of Mines and Minerals Development, Jan 2026) · Lumwana Super Pit Launch Remarks (Office of the President, 2024) · Mining Sector Skills Development Strategy (TEVETA with ILO and EU, 2024) · 2023 Labour Force Survey (ZamStats) · EEI 2022/2023 (ZamStats) · Critical Skills List (TEVETA, 2025) · TEVETA Approved Programs (2020) · Priority Curriculum Development (ILO/TEVETA, 2026) \nLast updated: October 2026',
   },
 
   "energy-pathway": {
