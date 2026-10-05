@@ -203,8 +203,7 @@ test_cases = [
         expected_experiences_count_min=1,
         expected_experiences_count_max=2,
         expected_work_types={
-            WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK: (0, 0),
-            WorkType.UNSEEN_UNPAID: (0, 0),
+            WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT: (0, 0),
             WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK: (0, 0),
             WorkType.UNSEEN_UNPAID: (1, 2),
         },
@@ -231,8 +230,7 @@ test_cases = [
         expected_experiences_count_min=1,
         expected_experiences_count_max=1,
         expected_work_types={
-            WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK: (0, 0),
-            WorkType.UNSEEN_UNPAID: (0, 0),
+            WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT: (0, 0),
             WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK: (0, 0),
             WorkType.UNSEEN_UNPAID: (1, 1),
         }
@@ -250,7 +248,8 @@ test_cases = [
         expected_experiences_count_min=1,
         expected_experiences_count_max=1,
         expected_work_types={
-            WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK: (1, 1),
+            WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT: (1, 1),  # paid job as a shoe salesperson, never did an internship
+            WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK: (0, 0),
             WorkType.UNSEEN_UNPAID: (0, 0),
         },
         matchers=["llm", "matcher"],
@@ -447,10 +446,9 @@ test_cases = [
         expected_experiences_count_min=2,
         expected_experiences_count_max=2,
         expected_work_types={
-            WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK: (0, 1),
-            WorkType.UNSEEN_UNPAID: (0, 1),
+            WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT: (0, 1),  # sales assistant in father's shop: paid family job (WAGED) ...
             WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK: (0, 0),
-            WorkType.UNSEEN_UNPAID: (1, 1),
+            WorkType.UNSEEN_UNPAID: (1, 2),  # ... or unpaid family help (UNSEEN_UNPAID); plus housework at mother's house
         },
         matchers=["llm", "matcher"],
         expected_experience_data=[

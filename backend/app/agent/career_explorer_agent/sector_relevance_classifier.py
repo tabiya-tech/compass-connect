@@ -37,13 +37,18 @@ class SectorMention(BaseModel):
 
 
 class SectorRelevanceClassification(BaseModel):
+    # Every field is required (no defaults): a field with a default is optional in the response schema, and the model
+    # then tends to leave it out (e.g. is_priority silently falling back to False). The reasoning comes first so the
+    # model explains itself before committing to the classification.
+    reasoning: str = Field(description=f"A short explanation of the classification, under {MAX_REASONING_LENGTH} characters.")
     relevance: SectorRelevance = Field(description="Whether the PRIMARY sector of the user's message is a priority sector (PRIORITY_SECTOR) "
                                                    "or not (NON_PRIORITY_SECTOR).")
-    sector_name: str | None = Field(default=None, description="The name of the PRIMARY sector, see the sector_name rules. null if the message isn't about any sector.")
-    is_priority: bool = Field(default=False, description="True only if the PRIMARY sector is a priority sector.")
-    all_sectors: list[SectorMention] = Field(default_factory=list,
-                                             description="EVERY distinct sector the user mentions or expresses interest in during this message.")
-    reasoning: str = Field(default="", description=f"A short explanation of the classification, under {MAX_REASONING_LENGTH} characters.")
+    sector_name: str | None = Field(description="The name of the PRIMARY sector, following the sector_name rules: the exact configured sector name "
+                                                "for a priority sector, a broad high-level industry category otherwise. "
+                                                "Just the name, nothing else. null if the message isn't about any sector.")
+    is_priority: bool = Field(description="True only if the PRIMARY sector is a priority sector, i.e. it is consistent with relevance being PRIORITY_SECTOR.")
+    all_sectors: list[SectorMention] = Field(description="EVERY distinct sector the user mentions or expresses interest in during this message. "
+                                                         "Empty if the message isn't about any sector.")
 
     class Config:
         extra = "forbid"

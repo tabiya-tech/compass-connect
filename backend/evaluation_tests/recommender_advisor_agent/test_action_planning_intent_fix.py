@@ -50,6 +50,8 @@ from app.agent.agent_types import AgentInput, AgentOutput
 from common_libs.llm.generative_models import GeminiGenerativeLLM
 from common_libs.llm.models_utils import LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG
 from app.countries import Country
+from app.i18n.translation_service import get_i18n_manager
+from app.i18n.types import Locale
 from evaluation_tests.recommender_advisor_agent.sample_data import (
     create_sample_recommendations,
     create_sample_skills_vector,
@@ -120,6 +122,9 @@ class ConversationLogger:
 
 async def initialize_handlers():
     """Initialize all phase handlers."""
+    # The handlers build their prompts for the user's locale, so a locale must be set.
+    get_i18n_manager().set_locale(Locale.EN_US)
+
     llm_config = LLMConfig(
         generation_config=LOW_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
     )
@@ -149,7 +154,7 @@ async def initialize_handlers():
     intent_classifier = IntentClassifier(intent_caller=intent_caller)
 
     concerns_handler = ConcernsPhaseHandler(
-        conversation_llm=llm,
+        conversation_llm_provider=lambda: llm,
         conversation_caller=conversation_caller,
         resistance_caller=resistance_caller,
         intent_classifier=intent_classifier,
@@ -157,37 +162,37 @@ async def initialize_handlers():
     )
 
     intro_handler = IntroPhaseHandler(
-        conversation_llm=llm,
+        conversation_llm_provider=lambda: llm,
         conversation_caller=conversation_caller,
         recommendation_interface=recommendation_interface,
         occupation_search_service=None
     )
 
     tradeoffs_handler = TradeoffsPhaseHandler(
-        conversation_llm=llm,
+        conversation_llm_provider=lambda: llm,
         conversation_caller=conversation_caller
     )
 
     skills_pivot_handler = SkillsPivotPhaseHandler(
-        conversation_llm=llm,
+        conversation_llm_provider=lambda: llm,
         conversation_caller=conversation_caller,
         intent_classifier=intent_classifier
     )
 
     wrapup_handler = WrapupPhaseHandler(
-        conversation_llm=llm,
+        conversation_llm_provider=lambda: llm,
         conversation_caller=conversation_caller,
         db6_client=None
     )
 
     followup_handler = FollowupPhaseHandler(
-        conversation_llm=llm,
+        conversation_llm_provider=lambda: llm,
         conversation_caller=conversation_caller,
         intent_classifier=intent_classifier
     )
 
     exploration_handler = ExplorationPhaseHandler(
-        conversation_llm=llm,
+        conversation_llm_provider=lambda: llm,
         conversation_caller=conversation_caller,
         intent_classifier=intent_classifier,
         concerns_handler=concerns_handler,
@@ -196,7 +201,7 @@ async def initialize_handlers():
     )
 
     present_handler = PresentPhaseHandler(
-        conversation_llm=llm,
+        conversation_llm_provider=lambda: llm,
         conversation_caller=conversation_caller,
         intent_classifier=intent_classifier,
         exploration_handler=exploration_handler,
@@ -206,7 +211,7 @@ async def initialize_handlers():
     )
 
     action_handler = ActionPhaseHandler(
-        conversation_llm=llm,
+        conversation_llm_provider=lambda: llm,
         conversation_caller=conversation_caller,
         action_caller=action_caller,
         intent_classifier=intent_classifier

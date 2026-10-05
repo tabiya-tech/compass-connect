@@ -76,7 +76,7 @@ test_cases = [
                                 "I handle communication with stakeholders",
                                 ],
         given_country_of_interest=Country.SOUTH_AFRICA,
-        given_work_type=WorkType.UNSEEN_UNPAID,
+        given_work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT,
         expected_top_skills=[]
     ),
     ExperiencePipelineTestCase(
@@ -89,7 +89,7 @@ test_cases = [
                                 "I clean and disinfect students, teachers, and visitors.",
                                 "I put together weekly and monthly reports."],
         given_country_of_interest=Country.SOUTH_AFRICA,
-        given_work_type=WorkType.UNSEEN_UNPAID,
+        given_work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT,
         expected_top_skills=['communicate health and safety measures',
                              'disinfect surfaces',
                              'measure temperature',
@@ -257,7 +257,7 @@ test_cases = [
         given_company_name="Local de mi viejo",
         given_responsibilities=["Limpiar el lugar", "Manejar la guita", "Tratar con proveedores", "Contabilidad básica", "Venta de productos", "Empaquetar pedidos"],
         given_country_of_interest=Country.ARGENTINA,
-        given_work_type=WorkType.UNSEEN_UNPAID,
+        given_work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT,
         expected_top_skills=[]
     ),
     ExperiencePipelineTestCase(

@@ -128,7 +128,7 @@ test_cases_data_extraction = [
             CollectedData(index=0, defined_at_turn_number=1, experience_title='Venta de Zapatos', company='Mercado Local',
                           location=None, start_date=None,
                           end_date=None,
-                          paid_work=None, work_type='UNSEEN_UNPAID')
+                          paid_work=None, work_type=None)
         ],
         expected_last_referenced_experience_index=0,
         expected_collected_data_count=1,
@@ -141,7 +141,7 @@ test_cases_data_extraction = [
              "paid_work": AnyOf(None, True),
              "start_date": ContainsString("2019"),
              "end_date": AnyOf('', None, "Present"),
-             "work_type": 'UNSEEN_UNPAID'
+             "work_type": AnyOf(None, WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT.name)  # self-employed shoe seller: paid, no self-employment type any more
              },
         ]
     ),
@@ -160,7 +160,7 @@ test_cases_data_extraction = [
         collected_data_so_far=[
             CollectedData(index=0, experience_title='Venta de Zapatos', company='Mercado Local', location=None,
                           start_date=None, end_date=None,
-                          paid_work=None, work_type='UNSEEN_UNPAID')
+                          paid_work=None, work_type=None)
         ],
         expected_last_referenced_experience_index=-1,  # The experience should be deleted
         expected_collected_data_count=0
@@ -204,7 +204,7 @@ test_cases_data_extraction = [
             CollectedData(index=0, defined_at_turn_number=1, experience_title='Asistente de ventas', company='Local de mi viejo',
                           location=None, start_date=None,
                           end_date=None,
-                          paid_work=None, work_type='FORMAL_SECTOR_UNPAID_TRAINEE_WORK')
+                          paid_work=None, work_type='FORMAL_SECTOR_WAGED_EMPLOYMENT')
         ],
         expected_last_referenced_experience_index=0,
         expected_collected_data_count=1,

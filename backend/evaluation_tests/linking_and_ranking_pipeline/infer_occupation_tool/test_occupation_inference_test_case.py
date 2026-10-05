@@ -80,7 +80,7 @@ test_cases = [
     InferOccupationToolTestCase(
         name="Infer from responsibilities",
         given_experience_title="GDE Brigade member",
-        given_work_type=WorkType.UNSEEN_UNPAID,
+        given_work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT,
         given_company="Gauteng Department of Education",
         given_responsibilities=[
             # https://search67.com/2021/07/19/careers-employment-opportunity-for-youth-as-c0vid-19-screeners/
@@ -96,7 +96,7 @@ test_cases = [
     InferOccupationToolTestCase(
         name="Should not change title (emtpy responsibilities)",
         given_experience_title="Software Engineer",
-        given_work_type=WorkType.UNSEEN_UNPAID,
+        given_work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT,
         given_company="Google",
         given_country_of_interest=Country.SOUTH_AFRICA,
         given_responsibilities=[],
@@ -116,7 +116,7 @@ test_cases = [
     InferOccupationToolTestCase(
         name="Infer from glossary (emtpy responsibilities)",
         given_experience_title="I make bunny chow",
-        given_work_type=WorkType.UNSEEN_UNPAID,
+        given_work_type=WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT,
         given_company="Hungry Lion",
         given_country_of_interest=Country.SOUTH_AFRICA,
         given_responsibilities=[],

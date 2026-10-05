@@ -87,9 +87,10 @@ async def test_sector_relevance_classifier(
 
     # WHEN the classifier is called with the user's input
     classifier = SectorRelevanceClassifier()
-    actual_relevance, actual_sector_name, actual_is_priority, _reasoning, _, _all_sectors = await classifier.classify(
-        user_input=test_case.user_input, context=given_context
-    )
+    actual_result = await classifier.classify(user_input=test_case.user_input, context=given_context)
+    actual_relevance = actual_result.relevance
+    actual_sector_name = actual_result.sector_name
+    actual_is_priority = actual_result.is_priority
 
     # THEN the relevance matches the expected value
     assert actual_relevance == test_case.expected_relevance, (
@@ -133,9 +134,8 @@ async def test_classifier_extracts_multiple_sectors(
 
     # WHEN the classifier is called
     classifier = SectorRelevanceClassifier()
-    _relevance, _sector_name, _is_priority, _reasoning, _, actual_all_sectors = await classifier.classify(
-        user_input=given_user_input, context=given_context
-    )
+    actual_result = await classifier.classify(user_input=given_user_input, context=given_context)
+    actual_all_sectors = actual_result.all_sectors
 
     # THEN all_sectors contains at least 2 entries
     assert len(actual_all_sectors) >= 2, (

@@ -72,10 +72,11 @@ async def test_non_priority_sector_explorer_web_search(
     context.add_turn(test_case.user_input, "")
 
     explorer = NonPrioritySectorExplorer()
-    message, finished, _, _, grounding_metadata = await explorer.explore(
+    message, finished, _, _, metadata = await explorer.explore(
         user_input=test_case.user_input,
         context=context,
     )
+    grounding_metadata = (metadata or {}).get("grounding_metadata")
 
     evaluation_record = ConversationEvaluationRecord(
         test_case=test_case.name,
@@ -99,7 +100,7 @@ async def test_non_priority_sector_explorer_web_search(
         logging.info(
             "Non-priority explorer test %s: got %d sources from web search, LLM score=%d (%s)",
             test_case.name,
-            len(grounding_metadata.grounding_chunks),
+            len(grounding_metadata.get("grounding_chunks") or []),
             eval_result.score,
             eval_result.reasoning[:100],
         )
