@@ -29,6 +29,6 @@ def get_matching_service() -> MatchingService:
             base_url=_app_config.matching_service_url,
             api_key=_app_config.matching_service_api_key,
         )
-        _matching_service = MatchingServiceV2(matching_service_client)
+        _matching_service = MatchingServiceV1(matching_service_client)
 
     return _matching_service
