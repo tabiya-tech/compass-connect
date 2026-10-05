@@ -295,9 +295,6 @@ class RecommenderAdvisorAgent(Agent):
             - "Based on what you shared, this matches your priorities"
 
             {QUICK_REPLY_PROMPT}
-
-            ### Response Format:
-            Always respond with valid JSON matching the ConversationResponse schema.
         """
     
     def set_state(self, state: RecommenderAdvisorAgentState) -> None:

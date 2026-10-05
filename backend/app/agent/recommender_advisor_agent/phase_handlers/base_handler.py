@@ -14,7 +14,7 @@ from app.agent.recommender_advisor_agent.state import RecommenderAdvisorAgentSta
 from app.agent.recommender_advisor_agent.llm_response_models import ConversationResponse
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
-from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
+from app.agent.simple_llm_agent.prompt_response_template import get_response_instructions
 from common_libs.llm.models_utils import LLM
 from app.vector_search.esco_entities import OccupationEntity
 from app.vector_search.similarity_search_service import SimilaritySearchService
@@ -222,11 +222,10 @@ Generate a response that:
 - Respect their autonomy - if they want to explore it, that's valid
 
 **CRITICAL**:
-- Your response must be a JSON object matching ConversationResponse schema
 - Set `finished` to `false` - the conversation continues
 - Keep the message conversational (2-4 sentences)
 
-""" + get_json_response_instructions()
+""" + get_response_instructions()
 
         # Call LLM to generate contextual response
         try:
@@ -381,19 +380,6 @@ You previously asked the user about exploring **"{pending_occupation}"** which w
 - Pending: "DJ" → User: "actually, I want to be a teacher" → FALSE (different occupation)
 - Pending: "DJ" → User: "tell me about option 1" → FALSE (referring to recommendations)
 - Pending: "pilot" → User: "what about the Electrician job?" → FALSE (different occupation)
-
-**REQUIRED OUTPUT FORMAT** (JSON):
-{{
-    "is_persisting": true,
-    "reasoning": "User is confirming interest in DJ/MD roles with variation in phrasing (DJing/MD)"
-}}
-
-OR
-
-{{
-    "is_persisting": false,
-    "reasoning": "User is asking about a different occupation (teacher) not related to pending DJ"
-}}
 """
 
         try:
@@ -496,18 +482,17 @@ Generate a response that:
 - End with a BINARY CHOICE question (not open-ended)
 - Do NOT ask "What appeals to you about DJ?" (too open-ended, allows derailing)
 - Do NOT offer 3+ options (keeps it simple)
-- Response must be JSON matching ConversationResponse schema
 - Set `finished` to `false`
 - NEVER provide contact information, specific URLs, or addresses - focus only on career guidance
 
-**REQUIRED OUTPUT FORMAT** (JSON):
+**EXAMPLE RESPONSE** (treat it as an example, do not repeat it exactly):
 {{
     "reasoning": "User requested DJ which requires different skills than their electrical background and has variable income",
     "message": "I understand DJ interests you. However, it requires music production and sound engineering skills, which are quite different from your current electrical and manual labor experience. Also, DJ work typically has irregular income, which may not align with your preference for stability. Would you still like to explore what it takes to become a DJ, or shall we dive deeper into these recommendations?",
     "finished": false
 }}
 
-""" + get_json_response_instructions()
+""" + get_response_instructions()
 
         # Call LLM
         try:

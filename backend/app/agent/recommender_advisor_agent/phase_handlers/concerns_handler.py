@@ -27,7 +27,7 @@ from app.agent.recommender_advisor_agent.prompts import (
     get_address_concerns_prompt_response,
     build_context_block
 )
-from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
+from app.agent.simple_llm_agent.prompt_response_template import get_response_instructions
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.i18n.translation_service import t
@@ -235,19 +235,8 @@ class ConcernsPhaseHandler(BasePhaseHandler):
 
         Step 1 of 2-step process.
         """
-        # Use the comprehensive classification prompt with proper schema instructions
-        schema_instructions = """
-Your response must be a JSON object with the following schema:
-{
-    "reasoning": "Step by step explanation of what type of resistance this is",
-    "resistance_type": "One of: belief, salience, effort, financial, circumstantial, none",
-    "concern_summary": "Brief summary of the user's concern"
-}
-
-Always return a valid JSON object matching this exact schema.
-"""
-
-        full_prompt = get_address_concerns_prompt_classification() + "\n\n" + schema_instructions
+        # Use the comprehensive classification prompt, the output structure is enforced by the response schema
+        full_prompt = get_address_concerns_prompt_classification()
 
         return await self._resistance_caller.call_llm(
             llm=self._conversation_llm,
@@ -308,7 +297,7 @@ Always return a valid JSON object matching this exact schema.
 """
 
         # Build full prompt
-        full_prompt = context_block + classification_context + get_address_concerns_prompt_response() + "\n\n" + get_json_response_instructions()
+        full_prompt = context_block + classification_context + get_address_concerns_prompt_response() + "\n\n" + get_response_instructions()
 
         return await self._conversation_caller.call_llm(
             llm=self._conversation_llm,

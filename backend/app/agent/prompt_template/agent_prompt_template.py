@@ -59,5 +59,4 @@ STD_LANGUAGE_STYLE_JSON = dedent("""\
     - Concise and not too chatty.
     - Speak in a friendly and welcoming tone.
     - Supportive and uplifting, and avoid dismissive or negative phrasings.
-    - Use JSON formatting when required by the response schema.
 """)
