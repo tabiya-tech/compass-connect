@@ -5,7 +5,9 @@ FastAPI application serving the Compass Connect career guidance API with AI-powe
 ## Prerequisites
 
 - [Python 3.11+](https://www.python.org/downloads/)
-- [Poetry 1.8+](https://python-poetry.org/)
+- [Poetry 1.8.x](https://python-poetry.org/docs/#installation): install it system-wide
+  (e.g. `pipx install poetry==1.8.5`), not inside the project virtual environment.
+  CI uses 1.8.5; the commands below do not work with Poetry 2.x.
 - [Google Cloud SDK (gcloud)](https://cloud.google.com/sdk/docs/install)
 - MongoDB Atlas instance with ESCO taxonomy data
 
@@ -13,30 +15,37 @@ FastAPI application serving the Compass Connect career guidance API with AI-powe
 
 ### Installation
 
-Create and activate a virtual environment:
+#### 1. Create and activate the project virtual environment
+
+From the `backend/` directory:
 
 ```bash
 python3 -m venv venv-backend
 source venv-backend/bin/activate
 ```
 
-Install dependencies:
+#### 2. Install the backend dependencies
+
+With `venv-backend` still activated, run:
 
 ```bash
 poetry lock --no-update
 poetry install --sync
 ```
 
-> Note: Install poetry system-wide (not in a virtualenv).
+Poetry detects the activated virtual environment and installs the dependencies into `venv-backend`, not system-wide.
 
 > Note:
-> Before running performing any tasks such as building the image or running the code locally, activate the virtual
-> environment so that the installed dependencies are available:
->  ```shell
->  # activate the virtual environment
->  source venv-backend/bin/activate
+> Before performing any tasks such as building the image, running the code locally or running the tests, activate
+> the virtual environment so that the installed dependencies are available:
+>
+> ```shell
+> # activate the virtual environment
+> source venv-backend/bin/activate
 >  ```
+>
 > To deactivate the virtual environment, run:
+>
 > ```shell
 > # deactivate the virtual environment
 > deactivate
@@ -49,7 +58,6 @@ To run the application locally after installing dependencies to the local virtua
 ```shell
 poetry run python app/server.py
 ```
-
 
 ## Running the code locally
 
@@ -159,7 +167,7 @@ The backend uses the following environment variables:
 - `VERTEX_API_EMBEDDINGS_REGION`: The region of the Vertex API to use for embedding models. Must be a regional location (e.g. `us-central1`) — embedding models such as `text-embedding-005` are not published in the global publisher catalog.
 - `VERTEX_API_GEN_AI_REGION`: (optional) The region of the Vertex API to use for generative-AI calls (Gemini etc.). Can be a regional location or `global`. If not set, defaults to `us-central1`.
 - `EMBEDDINGS_SERVICE_NAME`: The name of the embeddings service to use. Currently, the only supported service is `GOOGLE-VERTEX-AI`.
-- `EMBEDDINGS_MODEL_NAME`: The name of the embeddings model to use. See https://cloud.google.com/vertex-ai/generative-ai/docs/embeddings/get-text-embeddings#supported-models for the list of supported models.
+- `EMBEDDINGS_MODEL_NAME`: The name of the embeddings model to use. See <https://cloud.google.com/vertex-ai/generative-ai/docs/embeddings/get-text-embeddings#supported-models> for the list of supported models.
 - `LOG_CONFIG_FILE`: (Optional) See the [Logging](#logging) section for more information. If not set defaults to `logging.cfg.yaml`.
 - `BACKEND_URL`: The URL of the backend. It is used to correctly configure Swagger UI and the CORS policy.
 - `FRONTEND_URL`: The URL of the frontend. It is used to set the CORS policy.
@@ -174,7 +182,7 @@ The backend uses the following environment variables:
 - `TARGET_ENVIRONMENT`: (optional) The target environment where the backend is running. When set to `dev` or `local`, CORS will be set to allow all origins.
 - `BACKEND_FEATURES`: (optional) A JSON like dictionary with the features enabled status and configurations specific to each feature.
 - `BACKEND_EXPERIENCE_PIPELINE_CONFIG`: (optional) The configuration for the experience pipeline as a JSON like dictionary. See `class ExperiencePipelineConfig`.
-- `GLOBAL_DISABLE_REGISTRATION_CODE`: (optional) Set to `True` to bypass registration code validation for authenticated user registration. When enabled, authenticated users can create user preferences without providing an invitation code. Defaults to `False`. 
+- `GLOBAL_DISABLE_REGISTRATION_CODE`: (optional) Set to `True` to bypass registration code validation for authenticated user registration. When enabled, authenticated users can create user preferences without providing an invitation code. Defaults to `False`.
   > **Security Note:** This should only be enabled in controlled environments (testing, demos, or deployments with external access control).  
   > **Coordination:** When enabling this setting, also set the corresponding frontend variable `GLOBAL_DISABLE_REGISTRATION_CODE` to hide the registration code input from users. Mismatched configuration (frontend hides input but backend requires code, or vice versa) will lead to confusing user errors.
 
@@ -283,6 +291,7 @@ gcloud config set project <PROJECT_ID>
 ```
 
 Required roles for the service account:
+
 - `roles/aiplatform.user` - AI Platform API access
 - `roles/dlp.user` - Data de-identification
 
@@ -297,6 +306,12 @@ python server.py
 The API will be available at `http://localhost:8080`. Visit `http://localhost:8080/docs` for interactive API documentation.
 
 ## Testing
+
+Run the commands below inside the activated `venv-backend` (see [Installation](#installation)):
+
+```bash
+source venv-backend/bin/activate
+```
 
 Run unit tests:
 
@@ -350,7 +365,7 @@ git clone https://github.com/langfuse/langfuse.git
 cd langfuse && docker compose up -d
 ```
 
-Then open http://localhost:3000, create a project and copy its keys into `.env`.
+Then open <http://localhost:3000>, create a project and copy its keys into `.env`.
 
 ### Configuration (`BACKEND_TRACING_CONFIG`)
 
@@ -457,6 +472,7 @@ The Preference Elicitation Agent uses vignette-based choice modeling with Bayesi
 ### System Architecture
 
 The agent uses a hybrid vignette system combining:
+
 - **Static vignettes** (beginning/end) - Manually curated for specific dimensions
 - **Adaptive vignettes** - D-optimal selection based on Bayesian posterior
 - **Best-Worst Scaling (BWS)** - Occupation ranking tasks
@@ -471,6 +487,7 @@ python run_offline_optimization.py
 ```
 
 This generates three JSON files in `app/agent/offline_output/`:
+
 - `static_vignettes_beginning.json` - Initial vignettes (5-10)
 - `static_vignettes_end.json` - Final vignettes (5-10)
 - `adaptive_vignettes_library.json` - D-optimal library (40 vignettes)
@@ -478,6 +495,7 @@ This generates three JSON files in `app/agent/offline_output/`:
 ### Configuration
 
 The agent automatically looks for vignette files in:
+
 ```
 app/agent/offline_output/
 ├── static_vignettes_beginning.json
@@ -486,6 +504,7 @@ app/agent/offline_output/
 ```
 
 To use custom paths, initialize the agent with:
+
 ```python
 agent = PreferenceElicitationAgent(
     use_offline_with_personalization=True,
@@ -496,6 +515,7 @@ agent = PreferenceElicitationAgent(
 ### Vignette Templates
 
 Default templates are in `app/config/vignette_templates.json`. Each template defines:
+
 - Trade-off dimensions (e.g., salary vs. flexibility)
 - Attribute constraints
 - Follow-up question prompts
@@ -504,11 +524,13 @@ Default templates are in `app/config/vignette_templates.json`. Each template def
 ### Testing the Agent
 
 Interactive testing:
+
 ```bash
 python scripts/test_preference_agent_interactive.py
 ```
 
 Automated testing:
+
 ```bash
 poetry run pytest app/agent/preference_elicitation_agent/ -v
 ```
@@ -516,6 +538,7 @@ poetry run pytest app/agent/preference_elicitation_agent/ -v
 ### Output
 
 The agent produces a 7-dimensional preference vector stored in the youth profile:
+
 - Financial compensation importance
 - Work environment importance
 - Career advancement importance
@@ -544,13 +567,14 @@ For more details, see [app/agent/preference_elicitation_agent/README.md](app/age
 ### AI & Embeddings
 
 - `VERTEX_API_EMBEDDINGS_REGION` - Vertex AI region for embedding models (must be a regional location, e.g. `us-central1`)
-- `VERTEX_API_GEN_AI_REGION` - Vertex AI region for generative-AI calls (regional or `global`, default: `us-central1`)
+- `VERTEX_API_GEN_AI_REGION` - Vertex AI region for generative-AI calls (regional or `global`, default: `global`). The default and reasoning Gemini 3.x models are only available in `global`
 - `EMBEDDINGS_SERVICE_NAME` - Embeddings service provider
 - `EMBEDDINGS_MODEL_NAME` - Model for generating embeddings
 - `LLM_PROVIDER` - LLM backend for all agents: `gemini` (default), `anthropic` or `ollama`
-- `LLM_DEFAULT_MODEL` - Model for the default tier (gemini default: `gemini-2.5-flash-lite`)
-- `LLM_REASONING_MODEL` - Model for the reasoning tier (gemini default: `gemini-2.5-flash`)
-- `LLM_DEEP_REASONING_MODEL` - Model for the deep reasoning tier (gemini default: `gemini-2.5-pro`)
+- `LLM_DEFAULT_MODEL` - Model for the default tier (gemini default: `gemini-3.5-flash-lite`)
+- `LLM_REASONING_MODEL` - Model for the reasoning tier (gemini default: `gemini-3.8-flash`)
+- `LLM_DEEP_REASONING_MODEL` - Model for the deep reasoning tier (gemini default: `gemini-3.1-pro-preview`)
+  - Gemini models are called through the google-genai Interactions API, which only supports `gemini-3.5-flash-lite`, `gemini-3.8-flash` and `gemini-3.1-pro-preview` (the 2.5 models are rejected)
   - For `anthropic` and `ollama`, an unset tier falls back to the next tier down that is set (`LLM_DEEP_REASONING_MODEL` → `LLM_REASONING_MODEL` → `LLM_DEFAULT_MODEL`), then to the provider default (`claude-sonnet-4-6` / `qwen2.5:7b`)
 - `ANTHROPIC_API_KEY` - Anthropic API key, required when `LLM_PROVIDER=anthropic`
 - `OLLAMA_BASE_URL` - Ollama server URL when `LLM_PROVIDER=ollama` (default: `http://localhost:11434`)

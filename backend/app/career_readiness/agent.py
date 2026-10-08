@@ -12,7 +12,7 @@ from enum import Enum
 from textwrap import dedent
 from typing import Type
 
-from pydantic import BaseModel, ConfigDict, create_model, model_validator
+from pydantic import BaseModel, ConfigDict, Field, create_model, model_validator
 
 from app.agent.agent_types import AgentInput, AgentOutput, AgentType, LLMQuickReplyOption, LLMStats, AgentOutputWithReasoning
 from app.agent.llm_caller import LLMCaller
@@ -23,15 +23,25 @@ from app.i18n.types import Locale
 from app.agent.prompt_template.quick_reply_prompt import QUICK_REPLY_PROMPT
 from app.agent.prompt_template.format_prompt import append_user_ctx
 from app.agent.simple_llm_agent.prompt_response_template import (
-    get_json_response_instructions,
+    get_response_instructions,
 )
-from app.career_readiness.types import ConversationMode, TopicStatusRecord
+from app.career_readiness.types import (
+    ConversationMode,
+    TOPIC_EVIDENCE_FIELD_DESCRIPTION,
+    TOPIC_ID_FIELD_DESCRIPTION,
+    TOPIC_STATUS_FIELD_DESCRIPTION,
+    TopicStatus,
+    TopicStatusRecord,
+)
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_types import ConversationContext
 from common_libs.observability.decorators import traced_agent
 from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLM, LLMConfig, LOW_TEMPERATURE_GENERATION_CONFIG, JSON_GENERATION_CONFIG
 from common_libs.llm.schema_builder import with_response_schema
+
+
+_TOPIC_STATUS_DESCRIPTION = "The coverage state of the module topics, follow the topic_status instructions."
 
 
 class CareerReadinessModelResponse(BaseModel):
@@ -50,17 +60,20 @@ class CareerReadinessModelResponse(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    reasoning: str
+    reasoning: str = Field(description="Your internal chain-of-thought reasoning (not shown to the user).")
     """Chain of Thought reasoning behind the response"""
 
-    topic_status: list[TopicStatusRecord] = []
+    topic_status: list[TopicStatusRecord] = Field(default=[], description=_TOPIC_STATUS_DESCRIPTION)
     """Full coverage state: one TopicStatusRecord per canonical module topic. The
     per-module dynamic subclass enforces the one-entry-per-topic contract."""
 
-    message: str
+    message: str = Field(description="Your response to the student. Do not format with markdown. Keep it under 200 words.")
     """Message for the user"""
 
-    quick_reply_options: list[LLMQuickReplyOption] | None = None
+    quick_reply_options: list[LLMQuickReplyOption] | None = Field(
+        default=None,
+        description="Optional quick-reply button options. Only include them when your message asks a question with limited clear answers, "
+                    "see the '#Quick Reply Options'.")
     """Optional quick-reply button labels"""
 
 
@@ -135,13 +148,15 @@ def _build_module_response_model(
     dynamic_record = create_model(
         "TopicStatusRecordWithTopicEnum",
         __base__=TopicStatusRecord,
-        topic_id=(topics_enum, ...),
+        topic_id=(topics_enum, Field(description=TOPIC_ID_FIELD_DESCRIPTION)),
+        status=(TopicStatus, Field(description=TOPIC_STATUS_FIELD_DESCRIPTION)),
+        evidence=(str, Field(description=TOPIC_EVIDENCE_FIELD_DESCRIPTION)),
     )
 
     class CareerReadinessModelResponseWithTopicEnum(CareerReadinessModelResponse):
         # Intentionally no default: keeps this in Pydantic's `required` list so
         # Vertex AI structured output enforces it (default -> not required -> omittable).
-        topic_status: list[dynamic_record]  # type: ignore[valid-type]
+        topic_status: list[dynamic_record] = Field(description=_TOPIC_STATUS_DESCRIPTION)  # type: ignore[valid-type]
 
         @model_validator(mode="after")
         def _enforce_one_record_per_topic(self):
@@ -196,28 +211,9 @@ def _build_instruction_mode_instructions(module_title: str, module_content: str,
     language_style = get_language_style(with_locale=True, for_json_output=True)
 
     response_instructions = dedent("""\
-        # Response Format
-        You must respond with valid JSON matching this exact schema:
-        {
-            "reasoning": "Your internal chain-of-thought reasoning (not shown to the user)",
-            "topic_status": [
-                {"topic_id": "Topic Name 1", "status": "covered", "evidence": "student explained it as..."},
-                {"topic_id": "Topic Name 2", "status": "partial", "evidence": "student mentioned X but did not elaborate"},
-                {"topic_id": "Topic Name 3", "status": "not_covered", "evidence": ""}
-            ],
-            "message": "Your message to the student"
-        }
-
-        - "reasoning": Explain your pedagogical reasoning — what the student knows, what to cover next, which scaffolding level to use.
-        - "topic_status": A list with EXACTLY one entry for each topic in the module topic list above. Each entry has:
-            - "topic_id": The canonical topic name, matching exactly a value from the module topic list.
-            - "status": One of:
-                - "covered" — the student has substantively engaged with this topic and demonstrated understanding across the conversation so far.
-                - "partial" — the topic was touched but the student's engagement was thin, off-topic, or just acknowledgment.
-                - "not_covered" — the topic has not been addressed yet in this conversation.
-            - "evidence": A short quote from the student, or paraphrase of what they said. REQUIRED (non-empty) when status is "covered" or "partial". MUST be an empty string "" when status is "not_covered".
-        - "message": Your response to the student. Do not format with markdown. Keep under 200 words.
-        - "quick_reply_options": An optional array of quick-reply button options. Each option is an object with a "label" field (the button text). Only include when your message asks a question with limited clear answers.
+        # Response Instructions
+        - In the reasoning, explain your pedagogical reasoning — what the student knows, what to cover next, which scaffolding level to use.
+        - Set the topic_status to a list with EXACTLY one entry for each topic in the module topic list above.
 
         # Updating topic_status across turns
         Each turn you will receive the CURRENT topic_status in a "# Conversation State" block attached to the student's message.
@@ -250,6 +246,20 @@ def _build_instruction_mode_instructions(module_title: str, module_content: str,
         4. EXPLAIN — Give direct explanations ONLY as a last resort, after hints have not helped.
         5. FADE — As the student demonstrates understanding, reduce your support and encourage independent reasoning.
 
+        # Building on Partially Correct Answers
+        When the student is on the right track but has not yet named the key idea, do not only ask another question.
+        In the same message, affirm what they got right, then teach the missing piece by naming the concept with the
+        terminology used in the grounding content (for example the name of a section, a type, a framework or a method)
+        and briefly say what it means. Then end with a question that lets the student apply or extend it.
+
+        # Bridging to Named Methods
+        When the student correctly describes an idea that the grounding content connects to a named framework or method
+        (for example, the content says the method is how to answer, structure or apply that idea), you MUST name that
+        framework or method in your reply and say in one short sentence what it is, instead of only affirming the idea.
+        Ask about it next, even if it belongs to a different topic in the module topic list.
+        Naming the concept is not giving away the answer: the student still has to explain and apply it in their own words
+        before the topic counts as covered.
+
         # Comprehension Checks
         Embed checks throughout the conversation:
         - Ask the student to explain concepts back in their own words
@@ -266,8 +276,11 @@ def _build_instruction_mode_instructions(module_title: str, module_content: str,
         - "How would you apply this in a real situation?"
         Never ask "Does that make sense?" or similar yes/no questions as comprehension checks.
         Only mark a topic as "covered" when the student has given a substantive response
-        that shows genuine understanding — not just agreement. Use "partial" for thin or
-        ambiguous engagement.
+        that shows genuine understanding — not just agreement. Use "partial" when the student
+        says something relevant but incomplete. Acknowledgments, "I don't know", vague guesses
+        and deflections leave the topic status unchanged.
+        A single substantive answer that correctly explains the topic in the student's own words
+        is enough to mark it "covered", even if you keep asking about it to deepen understanding.
 
         # Handling Off-Topic Responses
         Sometimes the student will give a substantive answer that does not actually address the
@@ -334,17 +347,8 @@ def _build_support_mode_instructions(module_title: str, module_content: str,
     language_style = get_language_style(with_locale=True, for_json_output=True)
 
     response_instructions = dedent("""\
-        # Response Format
-        You must respond with valid JSON matching this exact schema:
-        {
-            "reasoning": "Your internal reasoning (not shown to the user)",
-            "topic_status": [],
-            "message": "Your response to the student"
-        }
-
-        - "topic_status": Always set to an empty list in support mode.
-        - "message": Your response to the student. Do not format with markdown. Keep under 200 words.
-        - "quick_reply_options": An optional array of quick-reply button options. Each option is an object with a "label" field (the button text). Only include when your message asks a question with limited clear answers.""")
+        # Response Instructions
+        - Always set the topic_status to an empty list in support mode.""")
 
     if quiz_answer_key:
         lines = ["# Quiz Answer Key"]
@@ -422,11 +426,15 @@ class CareerReadinessAgent:
             self._base_system_instructions = _build_support_mode_instructions(
                 module_title, module_content, quiz_answer_key=quiz_answer_key)
 
-        # Build a per-module response model so Vertex AI structured output only
+        # Build a per-module response model so the structured output only
         # permits topic values from the module's topics list. Falls back to the
-        # base class when topics is empty.
+        # base class when topics is empty. Support mode does not track topic
+        # coverage (its prompt asks for an empty topic_status), so it uses the
+        # base class too: the per-module model would reject the empty list.
         self._response_model: Type[CareerReadinessModelResponse] = (
             _build_module_response_model(resolved_topics)
+            if mode == ConversationMode.INSTRUCTION
+            else CareerReadinessModelResponse
         )
 
         self._config = LLMConfig(
@@ -485,7 +493,7 @@ class CareerReadinessAgent:
             model_response, llm_stats_list = await self._llm_caller.call_llm(
                 llm=self._get_llm(),
                 llm_input=ConversationHistoryFormatter.format_for_agent_generative_prompt(
-                    model_response_instructions=get_json_response_instructions(),
+                    model_response_instructions=get_response_instructions(),
                     context=context,
                     user_input=msg_for_llm,
                 ),

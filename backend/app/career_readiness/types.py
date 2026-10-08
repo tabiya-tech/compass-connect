@@ -29,16 +29,37 @@ class TopicStatus(str, Enum):
     NOT_COVERED = "not_covered"
 
 
+TOPIC_ID_FIELD_DESCRIPTION = "The canonical topic name, matching exactly a value from the module topic list."
+"""Description of `TopicStatusRecord.topic_id` in the LLM response schema."""
+
+TOPIC_STATUS_FIELD_DESCRIPTION = (
+    "The coverage status of the topic: "
+    "\"covered\" — the student has given at least one substantive answer on this topic, in their own words, that shows they understand it; "
+    "\"partial\" — the student talked about this topic and said something partly correct or incomplete about it "
+    "(a passing mention of a word from the topic while answering another topic does not count); "
+    "\"not_covered\" — the student has not yet said anything relevant to this topic. Acknowledgments (\"yes\", \"I understand\"), "
+    "\"I don't know\", vague guesses and deflections do not count as addressing a topic."
+)
+"""Description of `TopicStatusRecord.status` in the LLM response schema."""
+
+TOPIC_EVIDENCE_FIELD_DESCRIPTION = (
+    "A short quote from the student, or paraphrase of what they said. "
+    "REQUIRED (non-empty) when status is \"covered\" or \"partial\". "
+    "MUST be an empty string \"\" when status is \"not_covered\"."
+)
+"""Description of `TopicStatusRecord.evidence` in the LLM response schema."""
+
+
 class TopicStatusRecord(BaseModel):
     """Records the current coverage status of one module topic."""
 
-    topic_id: str
+    topic_id: str = Field(description=TOPIC_ID_FIELD_DESCRIPTION)
     """The canonical topic name, matching a value from the module's topic list"""
 
-    status: TopicStatus
+    status: TopicStatus = Field(description=TOPIC_STATUS_FIELD_DESCRIPTION)
     """Whether the topic has been covered, partially addressed, or not yet discussed"""
 
-    evidence: str
+    evidence: str = Field(description=TOPIC_EVIDENCE_FIELD_DESCRIPTION)
     """Quote or paraphrase of the student's relevant statement; required non-empty for covered/partial, must be empty string for not_covered"""
 
     @model_validator(mode="after")

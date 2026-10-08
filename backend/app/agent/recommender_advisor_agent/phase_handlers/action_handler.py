@@ -23,7 +23,7 @@ from app.agent.recommender_advisor_agent.llm_response_models import (
 )
 from app.agent.recommender_advisor_agent.phase_handlers.base_handler import BasePhaseHandler
 from app.agent.recommender_advisor_agent.intent_classifier import IntentClassifier
-from app.agent.simple_llm_agent.prompt_response_template import get_json_response_instructions
+from app.agent.simple_llm_agent.prompt_response_template import get_response_instructions
 from app.conversation_memory.conversation_formatter import ConversationHistoryFormatter
 from app.conversation_memory.conversation_memory_manager import ConversationContext
 from app.i18n.translation_service import t
@@ -248,18 +248,14 @@ User said: "{user_input}"
 
 Context: They've been exploring career/occupation recommendations.
 
-Determine:
-1. has_commitment: Did they make a clear commitment to take action? (true/false)
-2. action_type: What type of action? Must be one of: apply_to_job, enroll_in_training, explore_occupation, research_employer, network
-3. commitment_level: How strong is their commitment? Must be one of: will_do_this_week, will_do_this_month, interested, maybe_later, not_interested
-4. barriers_mentioned: List any barriers or concerns mentioned (empty list if none)
+Determine whether they made a clear commitment to take action, what type of action it is,
+how strong their commitment is, and which barriers or concerns they mentioned.
 
 IMPORTANT:
-- Use exact field names: has_commitment, action_type, commitment_level, barriers_mentioned
-- action_type and commitment_level must use exact enum values listed above
+- action_type and commitment_level must use exactly one of their allowed values
 - If has_commitment is false, set action_type and commitment_level to null
 
-{get_json_response_instructions(examples=examples)}
+{get_response_instructions(examples=examples)}
 """
 
         try:
@@ -329,7 +325,7 @@ IMPORTANT - When to set finished:
 - ONLY set finished=True if the user has already made a strong commitment and you're providing a final summary/farewell
 - In ACTION_PLANNING phase, finished should almost always be False unless wrapping up
 
-{get_json_response_instructions(examples=examples)}
+{get_response_instructions(examples=examples)}
 """
 
         return await self._conversation_caller.call_llm(

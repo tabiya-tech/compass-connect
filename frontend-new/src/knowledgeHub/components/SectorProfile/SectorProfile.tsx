@@ -863,6 +863,7 @@ const SectorProfile: React.FC<SectorProfileProps> = ({ staticData, topContent })
                   paddingTop: 14,
                   borderTop: `1px solid ${SILVER}`,
                   lineHeight: 1.6,
+                  whiteSpace: "pre-line",
                 }}
               >
                 {staticData.sources}

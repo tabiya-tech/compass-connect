@@ -120,40 +120,43 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
   "mining-pathway": {
     sector: "mining",
     description:
-      "Zambia is the world's seventh-largest copper producer. Mining is the highest-paying industrial sector, with jobs concentrated in the Copperbelt and North-Western provinces.",
+      "Zambia is Africa's second-largest and the world's ninth-largest copper producer. Mining is the highest-paying industrial sector, with jobs concentrated in the Copperbelt and North-Western provinces.",
     displayName: "Mining",
     sectorApiParam: "Mining",
     heroColor: "#0A5C4A",
     ladderColors: ["#0A5C4A", "#0a6b56", "#0c7a62", "#0e896e", "#10987a"],
     avgEarnings: "K14,182",
     heroText:
-      "Zambia is the world's seventh-largest copper producer and a top source of emeralds, with mining driving over 70% of the country's export earnings. It is the highest-paying industrial sector in Zambia, with jobs concentrated primarily in the Copperbelt and North-Western provinces.",
+      "Zambia is Africa's second-largest and the world's ninth-largest copper producer, and a major emerald producer (35,612 kg in 2025). Copper contributes about 15% of GDP and over 70% of exports. Zambia produced 890,346 tonnes of copper in 2025 (up 8%), and the government target is 3 million tonnes a year by 2031. Mining is the highest-paying industrial sector in Zambia, with jobs concentrated primarily in the Copperbelt and North-Western provinces.",
     heroHighlight:
-      "With 6 percent of the world's known copper reserves, as well as large deposits of cobalt, nickel, and manganese, all essential for electric vehicles, batteries, and renewable energy, demand for skilled mining professionals is set to grow as the world shifts to low-carbon technologies.",
+      "With about 2 percent of global copper reserves, including some of the highest-grade copper in the world, as well as large deposits of cobalt, nickel, and manganese, and Africa's largest nickel mine (Enterprise, Kalumbila), all essential for electric vehicles, batteries, and renewable energy, demand for skilled mining professionals is set to grow as the world shifts to low-carbon technologies.",
     geoLabel:
       "58.9% of mining employment is concentrated in Copperbelt Province. North-Western Province is the fastest-growing mining region.",
     mapFile: "zm-mining-map.svg",
-    mapAlt: "Map of Zambia highlighting Copperbelt and North-Western provinces",
+    mapAlt: "Map of Zambia highlighting Copperbelt and North-Western provinces, with Luapula also marked",
     employers: [
       {
         province: "Copperbelt",
         employers: [
-          "Mopani Copper Mines (Kitwe, Mufulira)",
-          "Konkola Copper Mines / KCM (Chingola)",
+          "Mopani Copper Mines (Kitwe, Mufulira), majority-owned by International Resources Holding (UAE) since 2024",
+          "Konkola Copper Mines / KCM, Vedanta Resources (Chingola)",
+          "Lubambe Mine (Chililabombwe)",
+          "Mimbula Mine (started production 2025)",
+          "KoBold Metals, Mingomba project, former Konkola West (development stage)",
           "Chambishi Metals (Chambishi)",
         ],
       },
       {
         province: "North-Western",
         employers: [
-          "First Quantum Minerals (Kansanshi, Solwezi)",
-          "First Quantum Minerals (Sentinel, Kalumbila)",
-          "KoBold Metals (exploration stage)",
+          "First Quantum Minerals (Kansanshi, Solwezi): Africa's largest copper-producing mine; expansion under way",
+          "First Quantum Minerals (Sentinel copper mine and Enterprise nickel mine, Kalumbila)",
+          "Barrick Gold (Lumwana Mine): about $2 billion expansion to 240,000 tonnes a year",
         ],
       },
       {
-        province: "Southern / Central",
-        employers: ["Barrick Gold (Lumwana Mine)"],
+        province: "Other provinces",
+        employers: ["Luongo Manganese Mine (Chipili, Luapula)"],
       },
     ],
     programmeSubtitleSuffix:
@@ -161,7 +164,7 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
     considerations: [
       {
         title: "Location and lifestyle",
-        body: "Mining jobs are concentrated in Copperbelt towns (Kitwe, Mufulira, Chingola) and North-Western Province (Solwezi, Kalumbila). Relocation from Lusaka or other provinces is common. Many mining companies provide housing or housing allowances, transport, and meals for employees.",
+        body: "Mining jobs are concentrated in Copperbelt towns (Kitwe, Mufulira, Chingola) and North-Western Province (Solwezi, Kalumbila). Relocation from Lusaka or other provinces is common. Mining companies may provide benefits, for example housing or housing allowances, transport, and meals.",
       },
       {
         title: "Working conditions",
@@ -172,12 +175,12 @@ const SECTOR_DATA: Record<string, SectorStaticData> = {
         body: "Mining offers structured progression from ZQF 3 (1 year) through to ZQF 6 (3 years). Bridging courses allow workers to move between specialisations, for example from automotive repair to heavy equipment repair. Recognition of Prior Learning (RPL) enables experienced workers without formal qualifications to gain certification.",
       },
       {
-        title: "Industry outlook",
-        body: "$9.3 billion has been invested in Zambian mining since 2024, with direct employment projected to grow from 56,000 to 200,000 jobs. Global demand for copper is accelerating due to electric vehicles and renewable energy infrastructure. Only 55% of Zambia has been geologically mapped, meaning new deposits and mines are likely.",
+        title: "What mines need",
+        body: "About 60% of mining jobs are for technicians, craftspeople and artisans (TEVET level), 25% for managers and professionals, and 15% for elementary workers. In 2023 only about 800 students graduated from institutions meeting industry-recognised standards, and only 1 in 5 qualified for technician or artisan jobs.",
       },
     ],
     sources:
-      "Sources: 2023 Labour Force Survey (ZamStats) · EEI 2022/2023 (ZamStats) · Critical Skills List (TEVETA, 2025) · TEVETA Approved Programs (2020) · Priority Curriculum Development (ILO/TEVETA, 2026) · Zambia CPSD (World Bank, 2024) · Ministry of Mines Briefing (2024)",
+      'Sources: Energy Transition Minerals Roadmap for Zambia (World Bank, 2025) · "Zambia\'s Copper Opportunity: Can the Workforce Keep Up?" (World Bank, 2025) · 2025 Mining Sector Performance Briefing (Ministry of Mines and Minerals Development, Jan 2026) · Lumwana Super Pit Launch Remarks (Office of the President, 2024) · Mining Sector Skills Development Strategy (TEVETA with ILO and EU, 2024) · 2023 Labour Force Survey (ZamStats) · EEI 2022/2023 (ZamStats) · Critical Skills List (TEVETA, 2025) · TEVETA Approved Programs (2020) · Priority Curriculum Development (ILO/TEVETA, 2026) \nLast updated: October 2026',
   },
 
   "energy-pathway": {

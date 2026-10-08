@@ -132,7 +132,9 @@ def _translate_field(field_key: str) -> str:
 class _ConversationLLMResponse(BaseModel):
     """Structured JSON response from the conversation LLM."""
     message: str = Field(description="The conversational message for the user")
-    quick_reply_options: list[LLMQuickReplyOption] | None = None
+    # No default: a field with a default is not in the schema's `required` list, and the model then skips it.
+    quick_reply_options: list[LLMQuickReplyOption] | None = Field(
+        description="The quick-reply options for the message, see the '#Quick Reply Options' instructions. null when there are none.")
     model_config = ConfigDict(extra="forbid")
 
 

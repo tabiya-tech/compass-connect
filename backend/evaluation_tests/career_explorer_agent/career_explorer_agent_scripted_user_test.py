@@ -183,7 +183,7 @@ def career_explorer_config_with_sectors(setup_multi_locale_app_config):
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.parametrize("test_case", TEST_CASES, ids=[tc.name for tc in TEST_CASES])
 async def test_career_explorer_sector_content(
     evals_setup, setup_multi_locale_app_config, career_explorer_config_with_sectors, test_case: SectorContentTestCase
@@ -239,7 +239,7 @@ async def test_career_explorer_sector_content(
 
 
 @pytest.mark.asyncio
-@pytest.mark.evaluation_test("gemini-2.5-flash-lite/")
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.parametrize(
     "test_case", TEST_CASES_GENERAL_KNOWLEDGE, ids=[tc.name for tc in TEST_CASES_GENERAL_KNOWLEDGE]
 )
