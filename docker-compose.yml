@@ -1,0 +1,144 @@
+# Compass Connect on-premise stack: MongoDB Community + mongot (vector search), backend, frontend.
+#
+#   cp .env.example .env      # then fill in the REQUIRED section
+#   docker compose up -d --build
+#
+# Start-up order:  preflight (checks .env + Google Cloud + Firebase)  ->  mongod  ->  replica set + users  ->  mongot
+#                  ->  taxonomy download/restore + indexes  ->  search check  ->  backend  ->  frontend
+# If a check fails the stack stops with a message:  docker compose logs preflight  (or smoke-test)
+
+name: compass-connect
+
+x-mongo-image: &mongo-image mongodb/mongodb-community-server:${MONGO_IMAGE_TAG:-latest}
+
+x-mongo-uri: &mongo-uri mongodb://mongod:27017/?replicaSet=rs0
+
+# the backend image is also used for the checks
+x-backend: &backend
+  build:
+    context: ./backend
+  image: compass-connect-backend:${COMPASS_VERSION:-local}
+  env_file: .env
+  environment: &backend-environment
+    # all databases live in the stack's MongoDB
+    TAXONOMY_MONGODB_URI: *mongo-uri
+    APPLICATION_MONGODB_URI: *mongo-uri
+    USERDATA_MONGODB_URI: *mongo-uri
+    METRICS_MONGODB_URI: *mongo-uri
+    CAREER_EXPLORER_MONGODB_URI: *mongo-uri
+    JOBS_MONGODB_URI: *mongo-uri
+    GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/gcp-credentials.json
+  volumes:
+    # fails with a clear error (instead of silently creating a directory) when the key file does not exist
+    - type: bind
+      source: ${GCP_CREDENTIALS_FILE:?set GCP_CREDENTIALS_FILE in .env}
+      target: /run/secrets/gcp-credentials.json
+      read_only: true
+      bind:
+        create_host_path: false
+
+services:
+  # one-shot: validates .env, the Google Cloud key (Vertex AI, Gemini, DLP) and Firebase before anything starts
+  preflight:
+    <<: *backend
+    command: ["python", "scripts/verify_setup.py", "preflight"]
+    healthcheck:
+      disable: true
+    restart: "no"
+
+  mongod:
+    image: *mongo-image
+    command: ["--config", "/etc/mongod.conf"]
+    volumes:
+      - ./docker/mongo/mongod.conf:/etc/mongod.conf:ro
+      - mongod-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    depends_on:
+      preflight:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # one-shot: replica set, mongot user, mongot password file
+  mongo-init-replset:
+    image: *mongo-image
+    entrypoint: ["bash", "/init/init-replset.sh"]
+    user: root   # writes mongot's password file into a fresh (root-owned) volume
+    environment:
+      MONGOT_PASSWORD: ${MONGOT_PASSWORD:?set MONGOT_PASSWORD in .env}
+    volumes:
+      - ./docker/mongo/init-replset.sh:/init/init-replset.sh:ro
+      - mongot-secrets:/secrets
+    depends_on:
+      mongod:
+        condition: service_healthy
+    restart: "no"
+
+  mongot:
+    image: mongodb/mongodb-community-search:${MONGOT_IMAGE_TAG:-latest}
+    volumes:
+      - ./docker/mongo/mongot.yml:/mongot-community/config.default.yml:ro
+      - mongot-secrets:/secrets:ro
+      - mongot-data:/data/mongot
+    depends_on:
+      mongo-init-replset:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # one-shot: download + restore the taxonomy snapshot (only when the database is empty) and create the vector indexes
+  mongo-init-taxonomy:
+    image: *mongo-image
+    entrypoint: ["bash", "/init/init-taxonomy.sh"]
+    user: root   # writes the download cache volume
+    environment:
+      TAXONOMY_ARCHIVE_URL: ${TAXONOMY_ARCHIVE_URL:-}
+      TAXONOMY_ARCHIVE_SHA256: ${TAXONOMY_ARCHIVE_SHA256:-}
+    volumes:
+      - ./docker/mongo/init-taxonomy.sh:/init/init-taxonomy.sh:ro
+      # optional: drop compass-taxonomy.archive.gz here to restore from a local file instead of downloading
+      - ./docker/taxonomy:/taxonomy:ro
+      - taxonomy-cache:/cache
+    depends_on:
+      mongot:
+        condition: service_started
+    restart: "no"
+
+  # one-shot: a real vector search through mongot, using Vertex embeddings
+  smoke-test:
+    <<: *backend
+    command: ["python", "scripts/verify_setup.py", "search"]
+    healthcheck:
+      disable: true
+    depends_on:
+      mongo-init-taxonomy:
+        condition: service_completed_successfully
+    restart: "no"
+
+  backend:
+    <<: *backend
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      smoke-test:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend-new
+    image: compass-connect-frontend:${COMPASS_VERSION:-local}
+    env_file: .env
+    ports:
+      - "${FRONTEND_PORT:-3000}:8080"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mongod-data:
+  mongot-data:
+  mongot-secrets:
+  taxonomy-cache:

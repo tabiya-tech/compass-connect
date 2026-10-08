@@ -1,0 +1,8 @@
+node_modules
+build
+coverage
+.env*
+# generated at container start from environment variables
+public/data/env.js
+**/*.log
+.idea

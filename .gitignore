@@ -21,3 +21,5 @@ CLAUDE.md
 
 backend/offline_output/
 backend/app/agent/preference_elicitation_agent/offline_optimization/output/
+/docker/taxonomy/*
+!/docker/taxonomy/.gitkeep
