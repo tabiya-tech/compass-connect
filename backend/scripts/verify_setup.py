@@ -25,10 +25,16 @@ import warnings
 
 warnings.filterwarnings("ignore", message="This feature is deprecated")
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # the backend root, to import the app settings
+from app.agent.config import GEMINI_DEFAULT_MODELS, ModelTier  # noqa: E402
+from app.users.auth import SELF_HOSTED_ENVIRONMENT_TYPE  # noqa: E402
+
+# The environment variable that overrides the model of each tier, and the model used when it is not set
+# (the same defaults the backend uses)
 GEMINI_TIERS = {
-    "LLM_DEFAULT_MODEL": "gemini-2.5-flash-lite",
-    "LLM_REASONING_MODEL": "gemini-2.5-flash",
-    "LLM_DEEP_REASONING_MODEL": "gemini-2.5-pro",
+    "LLM_DEFAULT_MODEL": GEMINI_DEFAULT_MODELS[ModelTier.DEFAULT],
+    "LLM_REASONING_MODEL": GEMINI_DEFAULT_MODELS[ModelTier.REASONING],
+    "LLM_DEEP_REASONING_MODEL": GEMINI_DEFAULT_MODELS[ModelTier.DEEP_REASONING],
 }
 
 # Settings that must have a real value for the stack to work
@@ -45,6 +51,8 @@ REQUIRED_SETTINGS = [
     "VERTEX_API_EMBEDDINGS_REGION",
     "VERTEX_API_GEN_AI_REGION",
 ]
+# Only required when the backend verifies the Firebase tokens itself (TARGET_ENVIRONMENT_TYPE=selfhosted)
+SELF_HOSTED_REQUIRED_SETTINGS = ["FIREBASE_PROJECT_ID"]
 # Settings that must exist, but may be empty
 MUST_EXIST_SETTINGS = ["MATCHING_SERVICE_URL", "MATCHING_SERVICE_API_KEY"]
 
@@ -95,7 +103,10 @@ def is_placeholder(value: str) -> bool:
 def check_configuration(r: Report):
     print("Configuration")
     problems = False
-    for name in REQUIRED_SETTINGS:
+    required = list(REQUIRED_SETTINGS)
+    if os.getenv("TARGET_ENVIRONMENT_TYPE") == SELF_HOSTED_ENVIRONMENT_TYPE:
+        required += SELF_HOSTED_REQUIRED_SETTINGS
+    for name in required:
         value = os.getenv(name)
         if value is None or not value.strip():
             r.error(name, "is not set", f"set {name} in your .env file (see .env.example)")
@@ -110,6 +121,15 @@ def check_configuration(r: Report):
     if os.getenv("TARGET_ENVIRONMENT_TYPE") == "local":
         r.warn("TARGET_ENVIRONMENT_TYPE", "is 'local': the backend does NOT verify user tokens in this mode",
                "fine for testing on your own machine; never expose this stack to the internet")
+    if os.getenv("TARGET_ENVIRONMENT_TYPE") == SELF_HOSTED_ENVIRONMENT_TYPE:
+        project_id = os.getenv("FIREBASE_PROJECT_ID", "").strip()
+        auth_domain = os.getenv("FIREBASE_AUTH_DOMAIN", "").strip()
+        if project_id and auth_domain and not auth_domain.startswith(project_id):
+            r.warn("FIREBASE_PROJECT_ID", f"{project_id!r} does not match FIREBASE_AUTH_DOMAIN {auth_domain!r}",
+                   "check both come from the same Firebase project; tokens of another project are rejected")
+        if not os.getenv("API_KEYS", "").strip():
+            r.warn("API_KEYS", "is empty: the x-api-key endpoints (/analytics/*, occupation and skill search) are disabled",
+                   "fine unless you integrate an analytics or search client; set API_KEYS to enable them")
     if os.getenv("GOOGLE_CLOUD_PROJECT"):
         r.warn("GOOGLE_CLOUD_PROJECT", "is set; the project is normally taken from the service-account key",
                "remove it unless you know you need it")
@@ -178,12 +198,12 @@ def gcp_hint(e: Exception, project: str) -> str:
 
 
 def with_429_retries(fn, retries=3):
-    from google.api_core.exceptions import TooManyRequests
+    from google.genai.errors import ClientError
     for attempt in range(retries + 1):
         try:
             return fn()
-        except TooManyRequests:
-            if attempt == retries:
+        except ClientError as e:
+            if e.code != 429 or attempt == retries:
                 raise
             time.sleep(2 ** (attempt + 2))  # 4s, 8s, 16s
 
@@ -191,20 +211,19 @@ def with_429_retries(fn, retries=3):
 def check_vertex(r: Report, key: dict):
     print("\nGoogle Cloud (Vertex AI)")
     project = key["project_id"]
-    import vertexai
-    from vertexai.generative_models import GenerativeModel
-    from vertexai.language_models import TextEmbeddingModel
+    from google import genai
+    from google.genai.types import EmbedContentConfig
 
     embeddings_region = os.getenv("VERTEX_API_EMBEDDINGS_REGION", "us-central1")
-    gen_ai_region = os.getenv("VERTEX_API_GEN_AI_REGION", embeddings_region)
+    gen_ai_region = os.getenv("VERTEX_API_GEN_AI_REGION", "global")  # same default as the backend
     model_name = os.getenv("EMBEDDINGS_MODEL_NAME", "text-embedding-005")
     if os.getenv("EMBEDDINGS_SERVICE_NAME", "GOOGLE-VERTEX-AI") != "GOOGLE-VERTEX-AI":
         r.error("EMBEDDINGS_SERVICE_NAME", "only GOOGLE-VERTEX-AI is supported", "set EMBEDDINGS_SERVICE_NAME=GOOGLE-VERTEX-AI")
 
     try:
-        vertexai.init(project=project, location=embeddings_region)
-        values = with_429_retries(
-            lambda: TextEmbeddingModel.from_pretrained(model_name).get_embeddings(["baker"])[0].values)
+        embeddings_client = genai.Client(vertexai=True, project=project, location=embeddings_region)
+        values = with_429_retries(lambda: embeddings_client.models.embed_content(
+            model=model_name, contents=["baker"], config=EmbedContentConfig(task_type="RETRIEVAL_QUERY")).embeddings[0].values)
         if len(values) != 768:
             r.error(f"Embeddings {model_name}", f"returned {len(values)} dimensions, the taxonomy snapshot needs 768",
                     "use EMBEDDINGS_MODEL_NAME=text-embedding-005, the model the taxonomy vectors were computed with")
@@ -220,12 +239,13 @@ def check_vertex(r: Report, key: dict):
         r.warn("LLM_PROVIDER", f"is '{provider}': the Gemini model checks were skipped",
                "that provider's own settings are not verified by this check")
         return
-    vertexai.init(project=project, location=gen_ai_region)
+    gen_ai_client = genai.Client(vertexai=True, project=project, location=gen_ai_region)
     for env_name, default_model in GEMINI_TIERS.items():
         model = os.getenv(env_name) or default_model
         try:
-            text = with_429_retries(
-                lambda: GenerativeModel(model).generate_content("Reply with exactly: OK").text.strip())
+            # the backend calls the models through the Interactions API
+            text = with_429_retries(lambda: (gen_ai_client.interactions.create(
+                model=model, input="Reply with exactly: OK", store=False).output_text or "").strip())
             r.ok(f"Gemini {model} ({env_name}, {gen_ai_region})", f"replied {text[:20]!r}")
         except Exception as e:
             if DEBUG:
@@ -338,8 +358,8 @@ def search():
     try:
         from bson import ObjectId
         from pymongo import MongoClient
-        import vertexai
-        from vertexai.language_models import TextEmbeddingInput, TextEmbeddingModel
+        from google import genai
+        from google.genai.types import EmbedContentConfig
 
         db = MongoClient(uri, serverSelectionTimeoutMS=15000)[database]
         model_object_id = ObjectId(model_id)
@@ -353,10 +373,11 @@ def search():
                         "and `docker compose logs mongo-init-taxonomy` should show the restore")
 
         embeddings_region = os.getenv("VERTEX_API_EMBEDDINGS_REGION", "us-central1")
-        vertexai.init(project=key["project_id"], location=embeddings_region)
-        model = TextEmbeddingModel.from_pretrained(os.getenv("EMBEDDINGS_MODEL_NAME", "text-embedding-005"))
-        vector = with_429_retries(lambda: model.get_embeddings(
-            [TextEmbeddingInput("I sell vegetables at the market", "RETRIEVAL_QUERY")])[0].values)
+        embeddings_client = genai.Client(vertexai=True, project=key["project_id"], location=embeddings_region)
+        model_name = os.getenv("EMBEDDINGS_MODEL_NAME", "text-embedding-005")
+        vector = with_429_retries(lambda: embeddings_client.models.embed_content(
+            model=model_name, contents=["I sell vegetables at the market"],
+            config=EmbedContentConfig(task_type="RETRIEVAL_QUERY")).embeddings[0].values)
 
         for collection, label in (("occupationmodelsembeddings", "occupation"), ("skillsmodelsembeddings", "skill")):
             results = list(db[collection].aggregate([

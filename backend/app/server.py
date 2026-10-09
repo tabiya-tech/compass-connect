@@ -26,7 +26,7 @@ from app.analytics.routes import add_analytics_routes
 from app.teveta.routes import add_teveta_routes
 from app.sentry_init import init_sentry, set_sentry_contexts
 from app.server_dependencies.db_dependencies import CompassDBProvider
-from app.users.auth import Authentication, ApiKeyAuth
+from app.users.auth import Authentication, ApiKeyAuth, SELF_HOSTED_ENVIRONMENT_TYPE
 from app.vector_search.occupation_search_routes import add_occupation_search_routes
 from app.vector_search.skill_search_routes import add_skill_search_routes
 from app.vector_search.validate_taxonomy_model import validate_taxonomy_model
@@ -157,6 +157,11 @@ if not os.getenv("TARGET_ENVIRONMENT_TYPE"):
 
 target_environment_type = os.getenv("TARGET_ENVIRONMENT_TYPE")
 logger.info(f"Target environment: {target_environment_type}")
+
+if target_environment_type == SELF_HOSTED_ENVIRONMENT_TYPE and not os.getenv("FIREBASE_PROJECT_ID"):
+    raise ValueError(f"Mandatory FIREBASE_PROJECT_ID env variable is not set! It is required when TARGET_ENVIRONMENT_TYPE is "
+                     f"'{SELF_HOSTED_ENVIRONMENT_TYPE}' as the backend verifies the Firebase ID tokens itself "
+                     f"(set it to the id of your Firebase project).")
 
 if not os.getenv("TARGET_ENVIRONMENT_NAME"):
     raise ValueError("Mandatory TARGET_ENVIRONMENT_NAME env variable is not set! Please set it to the target environment name as it is "

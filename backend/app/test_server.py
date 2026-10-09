@@ -8,6 +8,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from starlette.datastructures import State
 
 from app.server_dependencies.db_dependencies import CompassDBProvider
+from app.users.auth import SELF_HOSTED_ENVIRONMENT_TYPE
 from common_libs.test_utilities.setup_env_vars import setup_env_vars, teardown_env_vars
 
 
@@ -95,3 +96,22 @@ class TestServer:
                 assert response.status_code == 200
                 # AND the response should be a JSON object
                 assert response.json() is not None
+
+    def test_self_hosted_requires_firebase_project_id(self, monkeypatch: pytest.MonkeyPatch):
+        """
+        In the selfhosted environment the backend verifies the Firebase tokens itself, so it must refuse to start
+        without knowing which Firebase project the tokens must belong to.
+        """
+        # GIVEN the selfhosted environment without a FIREBASE_PROJECT_ID
+        setup_env_vars(env_vars={"TARGET_ENVIRONMENT_TYPE": SELF_HOSTED_ENVIRONMENT_TYPE})
+        try:
+            monkeypatch.delenv("FIREBASE_PROJECT_ID", raising=False)
+            # WHEN the server module is loaded
+            app_module = importlib.import_module("app.server")
+            with pytest.raises(ValueError) as error_info:
+                importlib.reload(app_module)
+
+            # THEN it fails with a message naming the missing variable
+            assert "FIREBASE_PROJECT_ID" in str(error_info.value)
+        finally:
+            teardown_env_vars()

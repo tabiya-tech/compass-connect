@@ -584,7 +584,12 @@ For more details, see [app/agent/preference_elicitation_agent/README.md](app/age
 - `BACKEND_URL` - Backend API URL (for Swagger UI and CORS)
 - `FRONTEND_URL` - Frontend URL (for CORS policy)
 - `TARGET_ENVIRONMENT_NAME` - Environment identifier
-- `TARGET_ENVIRONMENT_TYPE` - Environment type (e.g., `local`, `dev`, `prod`)
+- `TARGET_ENVIRONMENT_TYPE` - Environment type. It also selects how users are authenticated:
+  - `local`: the token is decoded **without verification** (only for your own machine).
+  - `selfhosted`: no Google API Gateway in front of the backend; the backend verifies the Firebase ID tokens itself.
+    Requires `FIREBASE_PROJECT_ID`. The `x-api-key` endpoints (`/analytics/*` and the occupation/skill search endpoints) accept only the keys listed in
+    `API_KEYS` (comma separated) and are disabled when it is empty.
+  - any other value (e.g. `dev`, `prod`): the Google API Gateway verifies the tokens and sends the user info in a header.
 - `LOG_CONFIG_FILE` - Path to logging configuration (default: `logging.cfg.yaml`)
 
 ### Optional Features

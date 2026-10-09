@@ -1,5 +1,4 @@
 import asyncio
-import base64
 from pydantic import BaseModel, Field
 
 from app.agent.agent_director.llm_agent_director import LLMAgentDirector
@@ -24,7 +23,7 @@ from app.server_dependencies.application_state_dependencies import get_applicati
 from app.server_dependencies.conversation_manager_dependencies import get_conversation_memory_manager
 from app.server_dependencies.db_dependencies import CompassDBProvider
 from app.store.in_memory_application_state_store import InMemoryApplicationStateStore
-from app.users.auth import Authentication
+from app.users.auth import Authentication, UserInfo
 from app.vector_search.similarity_search_service import SimilaritySearchService
 from app.vector_search.vector_search_dependencies import get_occupation_skill_search_service
 
@@ -388,11 +387,7 @@ def add_poc_route_endpoints(poc_router: APIRouter, auth: Authentication):
     # and must be removed later.
     @router.get(path="/authinfo",
                 description="Returns the authentication info (JWT token claims)")
-    async def _get_auth_info(request: Request,
-                             credentials=Depends(auth.provider)):
-        auth_info_b64 = request.headers.get('x-apigateway-api-userinfo')
-        # some python magic
-        auth_info = base64.b64decode(auth_info_b64.encode() + b'==').decode()
-        return JSONResponse(auth_info)
+    async def _get_auth_info(user_info: UserInfo = Depends(auth.get_user_info())):
+        return JSONResponse(user_info.model_dump(mode="json", exclude={"token"}))
 
     poc_router.include_router(router, tags=["poc"])
