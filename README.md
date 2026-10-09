@@ -128,6 +128,8 @@ Test outputs are saved to `backend/evaluation_tests/test_output/` with timestamp
 
 ## Getting Started
 
+Want to run Compass Connect on your own machine first? Follow the [self-hosting guide](docs/getting-started/README.md).
+
 To work with this repository you should have a system with a bash compatible terminal (linux, macOS, cygwin) as most of the scripts are written for bash and will not work on windows cmd or powershell.
 
 1. Fork the repository and clone it to your local environment.
