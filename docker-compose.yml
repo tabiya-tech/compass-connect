@@ -36,6 +36,7 @@ x-backend: &backend
       read_only: true
       bind:
         create_host_path: false
+        selinux: z
 
 services:
   # one-shot: validates .env, the Google Cloud key (Vertex AI, Gemini, DLP) and Firebase before anything starts
@@ -50,7 +51,7 @@ services:
     image: *mongo-image
     command: ["--config", "/etc/mongod.conf"]
     volumes:
-      - ./docker/mongo/mongod.conf:/etc/mongod.conf:ro
+      - ./docker/mongo/mongod.conf:/etc/mongod.conf:ro,z
       - mongod-data:/data/db
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
@@ -70,7 +71,7 @@ services:
     environment:
       MONGOT_PASSWORD: ${MONGOT_PASSWORD:?set MONGOT_PASSWORD in .env}
     volumes:
-      - ./docker/mongo/init-replset.sh:/init/init-replset.sh:ro
+      - ./docker/mongo/init-replset.sh:/init/init-replset.sh:ro,z
       - mongot-secrets:/secrets
     depends_on:
       mongod:
@@ -80,7 +81,7 @@ services:
   mongot:
     image: mongodb/mongodb-community-search:${MONGOT_IMAGE_TAG:-latest}
     volumes:
-      - ./docker/mongo/mongot.yml:/mongot-community/config.default.yml:ro
+      - ./docker/mongo/mongot.yml:/mongot-community/config.default.yml:ro,z
       - mongot-secrets:/secrets:ro
       - mongot-data:/data/mongot
     depends_on:
@@ -104,10 +105,11 @@ services:
         read_only: true
         bind:
           create_host_path: false
+          selinux: z
       # the same scripts as the manual setup, from this checkout (setup_taxonomy.py expects a compass-connect layout)
-      - ./docker/taxonomy-setup:/repo/docker/taxonomy-setup:ro
-      - ./docs/getting-started/scripts:/repo/docs/getting-started/scripts:ro
-      - ./backend:/repo/backend:ro
+      - ./docker/taxonomy-setup:/repo/docker/taxonomy-setup:ro,z
+      - ./docs/getting-started/scripts:/repo/docs/getting-started/scripts:ro,z
+      - ./backend:/repo/backend:ro,z
       - taxonomy-work:/work
     healthcheck:
       disable: true
