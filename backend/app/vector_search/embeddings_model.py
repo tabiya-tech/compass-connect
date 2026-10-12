@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Coroutine, Any
 
 from google import genai
+from google.genai import errors as genai_errors
 from google.genai.types import EmbedContentConfig
 
 from common_libs.retry import Retry
@@ -93,12 +94,28 @@ class GoogleEmbeddingService(EmbeddingService):
         embeddings = []
         for i in range(0, len(text_list), batch_size):
             def _callback() -> Coroutine[Any, Any, list[list[float]]]:
-                return self._run_batch(text_list[i:i + batch_size])
+                return self._run_batch_within_token_limit(text_list[i:i + batch_size])
 
             batch_embeddings: list[list[float]] = await Retry[list[list[float]]].call_with_exponential_backoff(callback=_callback,
                                                                                                              logger=self.logger)
             embeddings.extend(batch_embeddings)
         return embeddings
+
+    async def _run_batch_within_token_limit(self, inputs: list[str]) -> list[list[float]]:
+        """
+        A request is limited in tokens (20000 for text-embedding-005) as well as in texts, and a batch of 250 long
+        texts, e.g. in languages that need more tokens per word, can exceed it.
+        In that case the batch is split in two, until it fits.
+        """
+        try:
+            return await self._run_batch(inputs)
+        except genai_errors.ClientError as e:
+            if len(inputs) < 2 or "input token count" not in str(e):
+                raise
+            middle = len(inputs) // 2
+            self.logger.warning(f"A batch of {len(inputs)} texts exceeds the token limit of the model, splitting it")
+            return (await self._run_batch_within_token_limit(inputs[:middle])
+                    + await self._run_batch_within_token_limit(inputs[middle:]))
 
     async def _run_batch(self, inputs: list[str]) -> list[list[float]]:
         try:

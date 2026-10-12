@@ -11,6 +11,9 @@ COPY ./pyproject.toml ./README.md ./poetry.lock* ./
 
 RUN poetry install --no-interaction --no-ansi --no-root --without dev
 
+# tqdm is a dev dependency, but the taxonomy embeddings script (run by the taxonomy-setup step) needs it
+RUN pip install "tqdm>=4.66,<5"
+
 # Generate the offline vignettes (gitignored, so absent from a fresh clone). The script is self-contained,
 # needs no cloud access, and takes about a minute.
 COPY ./app/agent/preference_elicitation_agent/offline_optimization ./offline_optimization

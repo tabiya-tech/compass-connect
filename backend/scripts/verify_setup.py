@@ -130,6 +130,19 @@ def check_configuration(r: Report):
         if not os.getenv("API_KEYS", "").strip():
             r.warn("API_KEYS", "is empty: the x-api-key endpoints (/analytics/*, occupation and skill search) are disabled",
                    "fine unless you integrate an analytics or search client; set API_KEYS to enable them")
+    taxonomy_url = os.getenv("TAXONOMY_URL", "").strip()
+    if taxonomy_url:
+        url_model_id = taxonomy_url.rsplit("/", 1)[-1].split("-", 1)[0]
+        if url_model_id != os.getenv("TAXONOMY_MODEL_ID", "").strip():
+            r.error("TAXONOMY_MODEL_ID", f"does not match the model id in TAXONOMY_URL ({url_model_id})",
+                    f"set TAXONOMY_MODEL_ID={url_model_id} in .env")
+            problems = True
+    else:
+        r.error("TAXONOMY_URL", "is not set", "set it in .env (see .env.example)")
+        problems = True
+    if os.getenv("TAXONOMY_MODE", "partial") not in ("partial", "full"):
+        r.error("TAXONOMY_MODE", "must be 'partial' or 'full'", "fix it in .env")
+        problems = True
     if os.getenv("GOOGLE_CLOUD_PROJECT"):
         r.warn("GOOGLE_CLOUD_PROJECT", "is set; the project is normally taken from the service-account key",
                "remove it unless you know you need it")
@@ -369,8 +382,8 @@ def search():
                 r.ok(collection, f"{count} documents for model {model_id}")
             else:
                 r.error(collection, f"no documents for taxonomy model {model_id}",
-                        "TAXONOMY_MODEL_ID must be the id of the restored snapshot (see .env.example), "
-                        "and `docker compose logs mongo-init-taxonomy` should show the restore")
+                        "TAXONOMY_MODEL_ID must be the id of the taxonomy that was built (see .env.example), "
+                        "and `docker compose logs taxonomy-setup` should show the build")
 
         embeddings_region = os.getenv("VERTEX_API_EMBEDDINGS_REGION", "us-central1")
         embeddings_client = genai.Client(vertexai=True, project=key["project_id"], location=embeddings_region)
@@ -389,7 +402,7 @@ def search():
                 r.ok(f"vector search ({label})", f"{results[0].get('preferredLabel')!r} (score {results[0]['score']:.3f})")
             else:
                 r.error(f"vector search ({label})", "returned no results",
-                        "the search index may still be building or is missing; check `docker compose logs mongo-init-taxonomy mongot`")
+                        "the search index may still be building or is missing; check `docker compose logs taxonomy-setup mongot`")
     except Exception as e:
         if DEBUG:
             traceback.print_exc()

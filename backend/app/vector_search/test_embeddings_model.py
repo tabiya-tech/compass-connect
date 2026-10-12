@@ -2,6 +2,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from google.genai import errors as genai_errors
 
 from app.vector_search.embeddings_model import GoogleEmbeddingService
 
@@ -78,3 +79,43 @@ class TestGoogleEmbeddingService:
         # THEN expect a ValueError
         with pytest.raises(ValueError):
             await given_service.embed_batch(["foo", "  "])
+
+    @pytest.mark.asyncio
+    async def test_splits_a_batch_that_exceeds_the_token_limit(self, monkeypatch):
+        # GIVEN an embedding service whose model rejects requests of more than 4 texts for exceeding the token limit
+        monkeypatch.setenv("VERTEX_API_EMBEDDINGS_REGION", "us-central1")
+        given_client = _fake_client()
+        ok_embed = given_client.aio.models.embed_content.side_effect
+
+        async def _embed_content(*, model, contents, config):
+            if len(contents) > 4:
+                raise genai_errors.ClientError(400, {"error": {"message": "the input token count is 21432 but the model supports up to 20000"}})
+            return await ok_embed(model=model, contents=contents, config=config)
+
+        given_client.aio.models.embed_content = AsyncMock(side_effect=_embed_content)
+        with patch("app.vector_search.embeddings_model.genai.Client", return_value=given_client):
+            given_service = GoogleEmbeddingService(model_name="foo-model")
+        # AND some texts
+        given_texts = ["a" * (i + 1) for i in range(10)]
+
+        # WHEN the texts are embedded
+        actual_embeddings = await given_service.embed_batch(given_texts)
+
+        # THEN expect an embedding for each text, in order
+        assert actual_embeddings == [[float(len(text)), 1.0] for text in given_texts]
+
+    @pytest.mark.asyncio
+    async def test_raises_other_client_errors(self, monkeypatch):
+        # GIVEN an embedding service whose model rejects every request with an unrelated client error
+        monkeypatch.setenv("VERTEX_API_EMBEDDINGS_REGION", "us-central1")
+        given_client = _fake_client()
+        given_client.aio.models.embed_content = AsyncMock(
+            side_effect=genai_errors.ClientError(403, {"error": {"message": "permission denied"}}))
+        with patch("app.vector_search.embeddings_model.genai.Client", return_value=given_client):
+            given_service = GoogleEmbeddingService(model_name="foo-model")
+
+        # WHEN the texts are embedded
+        # THEN expect the error, without splitting the batch
+        with pytest.raises(genai_errors.ClientError):
+            await given_service._run_batch_within_token_limit(["foo", "bar"])  # pylint: disable=protected-access
+        assert given_client.aio.models.embed_content.call_count == 1

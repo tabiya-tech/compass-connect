@@ -1,6 +1,9 @@
 # Getting started: run Compass Connect on your own machine
 
-This guide takes you from a fresh clone to a running Compass Connect (backend, frontend and a first conversation) on your own computer. Once it runs locally you have the basis to deploy it on the cloud provider you prefer.
+This guide takes you from a fresh clone to a running Compass Connect (backend, frontend and a first conversation) on your own computer or server. There are two ways:
+
+- **[Docker](#docker-setup)** (recommended): one command starts everything, including the database and the vector search. Only Google Cloud (Vertex AI) and Firebase stay in the cloud.
+- **[Manual](#manual-setup)**: you install and run each piece yourself, with MongoDB Atlas for the vector search.
 
 You will end up with:
 
@@ -8,27 +11,87 @@ You will end up with:
 - the frontend running at `http://localhost:3000`,
 - your first conversation and a skills report generated.
 
-> **Scope.** This is a guide for local test environments, not for a production deployment. It was tested on macOS. The Windows (PowerShell) commands are written with care but have not been run on a Windows machine yet; if you use Windows, [WSL2](https://learn.microsoft.com/windows/wsl/) makes most of the steps easier. If something fails, please open an issue.
->
-> **Docker.** This guide sets up the pieces by hand (a local MongoDB plus MongoDB Atlas for the vector search). A Docker-based self-hosted setup is on its way and will replace the Atlas parts of this guide.
+> **Scope.** This is a guide for dev environments, not a hardened production deployment. Tested on macOS; the Windows commands of the manual setup were not run on Windows ([WSL2](https://learn.microsoft.com/windows/wsl/) makes it easier). If something fails, please open an issue.
 
 ## The pieces
 
 - The **frontend** is a React application that talks to the backend.
 - The **backend** is a Python server that uses four services:
   - a **MongoDB** database for the regular data: conversations, users, metrics.
-  - a **vector database** to search embeddings. This guide uses MongoDB Atlas (free tier).
+  - a **vector database** to search embeddings: `mongot` next to MongoDB Community with Docker, MongoDB Atlas (free tier) in the manual setup.
   - **Google Cloud (Vertex AI)**, which provides the language model (Gemini) and the embeddings used to search occupations and skills. Embeddings only work with Vertex AI today. Cloud DLP is used to protect personal data.
   - **Firebase** for the user login.
 
-So you need:
+So you need a Google Cloud project with a few services enabled (Firebase can live in the same project). The manual setup also needs a free MongoDB Atlas account.
 
-- a Google Cloud account with a few services enabled (Firebase can live in the same project),
-- a free MongoDB Atlas account.
+## Accounts (both setups)
 
-## Prerequisites
+### 1. Google Cloud
 
-Tools installed on your computer:
+You need a Google Cloud project with billing enabled to use the Vertex AI models. The cost of these first tests should be a few dollars at most. Everything here is done in the [Google Cloud console](https://console.cloud.google.com/).
+
+1. Create a project and attach a billing account.
+2. Create a [budget alert](https://console.cloud.google.com/billing/budgets) so you never overspend (for example 10 USD).
+3. Enable these two APIs:
+   - [Vertex AI](https://console.cloud.google.com/apis/library/aiplatform.googleapis.com) (it may appear as "Agent Platform API")
+   - [Cloud Data Loss Prevention (DLP)](https://console.cloud.google.com/apis/library/dlp.googleapis.com)
+4. Create a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts) with the roles `roles/aiplatform.user` and `roles/dlp.user`.
+5. Download its JSON key (Keys, Add key, JSON), create the `backend/keys` folder (it does not exist in a fresh clone) and save the key there as `backend/keys/credentials.json`. That folder is in `.gitignore`: never commit the key. The smoke test, the taxonomy setup and the backend `.env` all point to this path, so keep it unless you change them.
+
+### 2. Firebase (login)
+
+Use the same Google Cloud project.
+
+1. Open the [Firebase console](https://console.firebase.google.com/) and add Firebase to your existing project.
+2. In Authentication, Sign-in method, enable **Email/Password** and **Anonymous**.
+3. Check that `localhost` is among the authorized domains (it usually is).
+4. In Project settings, Your apps, register a web app and copy its `apiKey` and `authDomain`. The frontend needs them.
+
+## Docker setup
+
+Needs [Docker](https://docs.docker.com/engine/install/) with Compose v2, Git, and the two accounts above.
+
+1. Clone the repository and create your configuration:
+
+```bash
+git clone https://github.com/tabiya-tech/compass-connect.git
+cd compass-connect
+cp .env.example .env
+```
+
+2. Fill the `REQUIRED` section of `.env`:
+   - `MONGOT_PASSWORD`: any strong string without spaces.
+   - `GCP_CREDENTIALS_FILE`: the path to the service-account key (the default is `./backend/keys/credentials.json`, see [Accounts](#1-google-cloud)).
+   - `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`: from your Firebase web app ([Accounts](#2-firebase-login)).
+   - `SENSITIVE_PERSONAL_DATA_RSA_ENCRYPTION_KEY`: the public key, generated as in [manual step 6](#step-6-the-frontend).
+
+3. Start everything:
+
+```bash
+docker compose up -d --build
+```
+
+The first start builds the images, checks your configuration and Google Cloud access, and builds the taxonomy: it downloads it from [taxonomy.tabiya.tech](https://taxonomy.tabiya.tech/#/modeldirectory), generates its embeddings with Vertex AI (billed: an estimated 10 to 40 US cents, about 7 minutes in `partial` mode) and creates the vector indexes. Later starts skip that step. Follow it with `docker compose logs -f taxonomy-setup`.
+
+4. Open <http://localhost:3000>, register and try it as in [step 7](#step-7-try-it).
+
+If a check fails the stack stops and says why: `docker compose logs preflight` (configuration, Google Cloud, Firebase), `taxonomy-setup` (taxonomy) or `smoke-test` (vector search). Fix it and run `docker compose up -d` again; interrupted work resumes.
+
+| To | Do |
+|---|---|
+| Stop, keeping the data | `docker compose down` |
+| Wipe everything, including the database | `docker compose down -v` |
+| Use another taxonomy | set `TAXONOMY_URL` and `TAXONOMY_MODEL_ID` in `.env`, then `docker compose up -d` |
+| Load the whole taxonomy | `TAXONOMY_MODE=full` (slower and more expensive; not measured yet) |
+| Change the ports | `FRONTEND_PORT`, `BACKEND_PORT` |
+
+`TARGET_ENVIRONMENT_TYPE=selfhosted` (the default) makes the backend verify the Firebase tokens itself. `local` skips that check: use it only on your own machine.
+
+## Manual setup
+
+### Tools
+
+Installed on your computer:
 
 - Git
 - Python 3.12
@@ -61,30 +124,7 @@ git clone https://github.com/tabiya-tech/compass-connect.git
 cd compass-connect
 ```
 
-## Accounts
-
-### 1. Google Cloud
-
-You need a Google Cloud project with billing enabled to use the Vertex AI models. The cost of these first tests should be a few dollars at most. Everything here is done in the [Google Cloud console](https://console.cloud.google.com/).
-
-1. Create a project and attach a billing account.
-2. Create a [budget alert](https://console.cloud.google.com/billing/budgets) so you never overspend (for example 10 USD).
-3. Enable these two APIs:
-   - [Vertex AI](https://console.cloud.google.com/apis/library/aiplatform.googleapis.com) (it may appear as "Agent Platform API")
-   - [Cloud Data Loss Prevention (DLP)](https://console.cloud.google.com/apis/library/dlp.googleapis.com)
-4. Create a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts) with the roles `roles/aiplatform.user` and `roles/dlp.user`.
-5. Download its JSON key (Keys, Add key, JSON), create the `backend/keys` folder (it does not exist in a fresh clone) and save the key there as `backend/keys/credentials.json`. That folder is in `.gitignore`: never commit the key. The smoke test, the taxonomy setup and the backend `.env` all point to this path, so keep it unless you change them.
-
-### 2. Firebase (login)
-
-Use the same Google Cloud project.
-
-1. Open the [Firebase console](https://console.firebase.google.com/) and add Firebase to your existing project.
-2. In Authentication, Sign-in method, enable **Email/Password** and **Anonymous**.
-3. Check that `localhost` is among the authorized domains (it usually is).
-4. In Project settings, Your apps, register a web app and copy its `apiKey` and `authDomain`. The frontend needs them.
-
-### 3. MongoDB Atlas
+### MongoDB Atlas
 
 The vector search needs a database that supports it. Atlas has a free tier and is quicker than installing anything locally.
 
@@ -94,8 +134,6 @@ The vector search needs a database that supports it. Atlas has a free tier and i
 4. Click **Connect** on the cluster to find the connection string (`mongodb+srv://...`). Keep it, you will need it soon.
 
 The free tier stores 512 MB, and the full taxonomy with embeddings is larger than that. That is why step 3 below offers a *partial* taxonomy.
-
-## Set up Compass Connect
 
 ### Step 1: install the backend dependencies
 
@@ -208,11 +246,11 @@ At the end it prints the values for the backend `.env` (`TAXONOMY_MODEL_ID` and 
 
 Similar results mean the vectors and the index are fine. Other options:
 
-- `--taxonomy-url`: use another taxonomy export. The list of models is at [taxonomy.tabiya.tech](https://taxonomy.tabiya.tech/#/modeldirectory); the file name starts with the model id. Compass Connect is developed against the default one.
+- `--taxonomy-url`: use another taxonomy export. The list of models is at [taxonomy.tabiya.tech](https://taxonomy.tabiya.tech/#/modeldirectory); the file name starts with the model id, which you set as `TAXONOMY_MODEL_ID`. Compass Connect is developed against the default (English) one.
 - `--skills-limit N`: how many skills `partial` mode keeps.
 - `--target-db`: the database to write to (default `compass-taxonomy`).
 
-The scripts it uses are in [`scripts/`](scripts/) and can be run separately: `import_taxonomy_csv.py` (CSV to a local MongoDB shaped like the Taxonomy Platform's), `generate_embeddings.py` (a wrapper around `backend/scripts/embeddings/generate_taxonomy_embeddings.py`) and `check_search.py` (a search like the backend's; try `python check_search.py "baking bread"`, or `--collection skills`). The taxonomy is in English, so search in English.
+The scripts it uses are in [`scripts/`](scripts/) and can be run separately: `import_taxonomy_csv.py` (CSV to a local MongoDB shaped like the Taxonomy Platform's), `generate_embeddings.py` (a wrapper around `backend/scripts/embeddings/generate_taxonomy_embeddings.py`) and `check_search.py` (a search like the backend's; try `python check_search.py "baking bread"`, or `--collection skills`). Search in the language of your taxonomy.
 
 If the search returns nothing, check that `embedding_index` is **READY** in Atlas (Atlas M0 allows 3 search indexes, 2 are used by the taxonomy) and that the model id matches.
 
@@ -391,7 +429,7 @@ mongosh compass-metrics --eval "db.metric_events.find().sort({_id:-1}).limit(10)
 
 The Vertex AI traffic of that session is visible in the Google Cloud console (Vertex AI, Dashboard).
 
-## Keeping it running
+### Keeping it running
 
 The backend and the frontend are two processes that stay open: one terminal each. `mongod` runs as a service, so it does not need a terminal. If you launch them from a tool with a time limit, they stop on their own when it expires.
 
@@ -411,3 +449,5 @@ The backend and the frontend are two processes that stay open: one terminal each
 | Same error, only for the taxonomy | Your IP is missing from Atlas Network Access, or the Atlas password has special characters | Add the IP; use a letters-and-digits password or URL-encode it |
 | Atlas "out of space" | M0 is 512 MB | Use `--mode partial` |
 | No vector search results | `embedding_index` is not READY, or the model id is wrong | Wait for READY; check `TAXONOMY_MODEL_ID` |
+| Docker: mongot restarts with "failed to initialize from config journal" | Unclean shutdown corrupted its state | `docker compose down`, `docker volume rm compass-connect_mongot-data`, `docker compose up -d` (indexes are rebuilt) |
+| Docker: port already in use | Another service uses 3000 or 8080 | Set `FRONTEND_PORT` / `BACKEND_PORT` in `.env` |
