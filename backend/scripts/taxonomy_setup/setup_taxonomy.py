@@ -4,10 +4,10 @@ Sets up the taxonomy Compass Connect searches on: downloads it, generates its em
 
 Steps:
   1. Download the taxonomy export (a .zip of CSVs from https://taxonomy.tabiya.tech) and extract it.
-  2. Import the CSVs into a local MongoDB shaped like the Taxonomy Platform's database (import_taxonomy_csv.py).
+  2. Import the CSVs into a local MongoDB shaped like the Taxonomy Platform's database (import_taxonomy_csv_to_mongodb.py).
   3. Generate the embeddings with Vertex AI into the target database and create the vector search indexes
-     (generate_embeddings.py, which wraps backend/scripts/embeddings/generate_taxonomy_embeddings.py).
-  4. Wait for the vector search indexes to be READY and run a sample search (check_search.py).
+     (generate_taxonomy_embeddings_wrapper.py, which wraps backend/scripts/embeddings/generate_taxonomy_embeddings.py).
+  4. Wait for the vector search indexes to be READY and run a sample search (check_taxonomy_vector_search.py).
 
 Modes:
   partial (default)  all the occupations and the --skills-limit (default 5500) most used skills. It fits the
@@ -19,7 +19,7 @@ The steps can be repeated: the embeddings already generated are skipped.
 
 Usage (with the Python of the backend virtual environment):
   export TARGET_MONGODB_URI="mongodb+srv://user:password@your-cluster.mongodb.net/"
-  backend/venv-backend/bin/python docs/getting-started/scripts/setup_taxonomy.py \
+  backend/venv-backend/bin/python backend/scripts/taxonomy_setup/setup_taxonomy.py \
       --credentials backend/keys/credentials.json --mode partial [--hot-run]
 
 To use another taxonomy, pass the link of its .zip with --taxonomy-url
@@ -130,7 +130,7 @@ def main() -> None:
     csv_dir = extract(archive, work_dir / "extracted")
 
     step(f"2/4 Import the CSVs into {args.source_uri} ({args.source_db}), mode: {args.mode}")
-    import_command = [python, str(SCRIPTS_DIR / "import_taxonomy_csv.py"), "--csv-dir", str(csv_dir),
+    import_command = [python, str(SCRIPTS_DIR / "import_taxonomy_csv_to_mongodb.py"), "--csv-dir", str(csv_dir),
                       "--model-id", model_id, "--mongo-uri", args.source_uri, "--db", args.source_db]
     if args.mode == "partial":
         import_command += ["--skills-limit", str(args.skills_limit)]
@@ -144,17 +144,17 @@ def main() -> None:
         return
 
     step(f"3/4 Generate the embeddings and the indexes into {args.target_db}")
-    run([python, str(SCRIPTS_DIR / "generate_embeddings.py"), "--compass-repo", str(args.compass_repo),
+    run([python, str(SCRIPTS_DIR / "generate_taxonomy_embeddings_wrapper.py"), "--compass-repo", str(args.compass_repo),
          "--credentials", str(args.credentials), "--source-uri", args.source_uri, "--source-db", args.source_db,
          "--target-db", args.target_db, "--target-uri-env", args.target_uri_env, "--model-id", model_id,
          "--region", args.region, "--hot-run"])
 
     step("4/4 Wait for the vector search indexes and run a sample search")
     if not wait_for_indexes(target_uri, args.target_db, args.index_timeout):
-        raise SystemExit("The search indexes are not READY yet. Check them in Atlas, then run check_search.py.")
+        raise SystemExit("The search indexes are not READY yet. Check them in Atlas, then run check_taxonomy_vector_search.py.")
     os.environ["TAXONOMY_MONGODB_URI"] = target_uri
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(args.credentials.resolve())
-    run([python, str(SCRIPTS_DIR / "check_search.py"), "I sell vegetables at the market",
+    run([python, str(SCRIPTS_DIR / "check_taxonomy_vector_search.py"), "I sell vegetables at the market",
          "--db", args.target_db, "--model-id", model_id, "--region", args.region])
 
     print(f"\nDone. In the backend .env set TAXONOMY_MODEL_ID={model_id} and TAXONOMY_DATABASE_NAME={args.target_db}")

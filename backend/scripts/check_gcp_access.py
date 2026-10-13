@@ -8,7 +8,7 @@ Checks that a service-account key can call everything the Compass Connect backen
   3. Cloud DLP (deidentify)
 
 Usage (with the Python of the backend virtual environment):
-  python gcp_smoke_test.py [--key keys/credentials.json] [--region us-central1] [--gen-ai-region global]
+  python backend/scripts/check_gcp_access.py [--key keys/credentials.json] [--region us-central1] [--gen-ai-region global]
 
 Cost: a handful of tiny requests, a fraction of a cent.
 """

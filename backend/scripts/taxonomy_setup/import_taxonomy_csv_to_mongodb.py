@@ -19,7 +19,7 @@ embeddings fit a small database such as the Atlas free tier. Skills are ranked b
 skills used by ICATUS (unpaid work) occupations are always kept.
 
 Usage:
-  python import_taxonomy_csv.py --csv-dir ./extracted --model-id 68933862382aab4c7de13ec6 [--skills-limit 5500] [--hot-run] [--drop]
+  python backend/scripts/taxonomy_setup/import_taxonomy_csv_to_mongodb.py --csv-dir ./extracted --model-id 68933862382aab4c7de13ec6 [--skills-limit 5500] [--hot-run] [--drop]
 """
 import argparse
 import csv

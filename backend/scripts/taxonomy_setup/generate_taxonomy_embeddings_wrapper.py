@@ -12,7 +12,7 @@ The original script is used unchanged: it is imported and its main() is called.
 
 Usage (with the Python of the backend virtual environment):
   export TARGET_MONGODB_URI="mongodb+srv://user:password@your-cluster.mongodb.net/"
-  backend/venv-backend/bin/python generate_embeddings.py \
+  backend/venv-backend/bin/python backend/scripts/taxonomy_setup/generate_taxonomy_embeddings_wrapper.py \
       --compass-repo <path/to/compass-connect> --credentials <path/to/credentials.json> \
       --source-db tabiya-platform --target-db compass-taxonomy [--hot-run] [--no-indexes]
 
@@ -32,7 +32,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("--compass-repo", required=True, type=Path, help="Path to your clone of compass-connect")
     parser.add_argument("--credentials", required=True, type=Path, help="GCP service-account key (JSON)")
-    parser.add_argument("--source-db", default="tabiya-platform", help="DB made by import_taxonomy_csv.py")
+    parser.add_argument("--source-db", default="tabiya-platform", help="DB made by import_taxonomy_csv_to_mongodb.py")
     parser.add_argument("--source-uri", default="mongodb://127.0.0.1:27017")
     parser.add_argument("--target-db", required=True, help="DB to write the embeddings to (e.g. compass-taxonomy)")
     parser.add_argument("--target-uri-env", default="TARGET_MONGODB_URI",
