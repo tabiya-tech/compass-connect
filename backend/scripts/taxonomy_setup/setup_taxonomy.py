@@ -29,7 +29,7 @@ The backend's TAXONOMY_MODEL_ID must be set to that id.
 import argparse
 import os
 import re
-import subprocess
+import subprocess  # nosec B404 - used to run the sibling setup scripts with fixed arguments
 import sys
 import tempfile
 import time
@@ -50,15 +50,17 @@ def step(message: str) -> None:
 
 def run(command: list[str]) -> None:
     print("$ " + " ".join(command))
-    subprocess.run(command, check=True)
+    subprocess.run(command, check=True)  # nosec B603 - the command is built from this repo's scripts and the CLI arguments of the person running it
 
 
 def download(url: str, destination: Path) -> None:
     if destination.exists():
         print(f"Already downloaded: {destination}")
         return
+    if not url.startswith("https://"):
+        raise SystemExit(f"The taxonomy link must start with https:// (got: {url})")
     print(f"Downloading {url}")
-    with urllib.request.urlopen(url, timeout=60) as response, open(destination, "wb") as out:
+    with urllib.request.urlopen(url, timeout=60) as response, open(destination, "wb") as out:  # nosec B310 - https only, checked above
         out.write(response.read())
     print(f"Saved {destination} ({destination.stat().st_size / 1_000_000:.1f} MB)")
 

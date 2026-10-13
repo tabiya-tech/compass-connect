@@ -294,7 +294,7 @@ def firebase_call(api_key: str, endpoint: str, body: dict) -> tuple[int, dict]:
         f"https://identitytoolkit.googleapis.com/v1/{endpoint}?key={api_key}",
         data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
     try:
-        with urllib.request.urlopen(request, timeout=15) as response:
+        with urllib.request.urlopen(request, timeout=15) as response:  # nosec B310 - fixed https URL
             return response.status, json.load(response)
     except urllib.error.HTTPError as e:
         return e.code, json.loads(e.read() or b"{}")
