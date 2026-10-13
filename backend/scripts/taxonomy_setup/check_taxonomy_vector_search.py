@@ -6,8 +6,8 @@ Compass Connect's backend does (RETRIEVAL_QUERY embedding, $vectorSearch, group 
 Usage (with the Python of the backend virtual environment):
   export TAXONOMY_MONGODB_URI="mongodb+srv://user:password@your-cluster.mongodb.net/"
   export GOOGLE_APPLICATION_CREDENTIALS="path/to/credentials.json"
-  python check_search.py "I sell vegetables at the market"
-  python check_search.py "baking bread" --collection skills --k 5
+  python backend/scripts/taxonomy_setup/check_taxonomy_vector_search.py "I sell vegetables at the market"
+  python backend/scripts/taxonomy_setup/check_taxonomy_vector_search.py "baking bread" --collection skills --k 5
 """
 import argparse
 import os

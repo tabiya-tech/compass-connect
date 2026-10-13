@@ -121,7 +121,7 @@ poetry run pytest -m "not (evaluation_test or smoke_test or llm_integration)"
 Before going further, check that your project is ready. The test authenticates with the service-account key you saved as `backend/keys/credentials.json` in [Accounts, step 1](#1-google-cloud); that is the path it looks for when you run it from the `backend` folder. If your key is somewhere else, pass `--key path/to/credentials.json`. From the `backend` folder, with the virtual environment active:
 
 ```bash
-python ../docs/getting-started/scripts/gcp_smoke_test.py
+python scripts/check_gcp_access.py
 ```
 
 A successful run looks like this:
@@ -181,14 +181,14 @@ export TARGET_MONGODB_URI="mongodb+srv://user:password@your-cluster.mongodb.net/
 First a dry run, which downloads and validates the taxonomy and writes nothing:
 
 ```bash
-backend/venv-backend/bin/python docs/getting-started/scripts/setup_taxonomy.py \
+backend/venv-backend/bin/python backend/scripts/taxonomy_setup/setup_taxonomy.py \
     --credentials backend/keys/credentials.json --mode partial
 ```
 
 Then for real:
 
 ```bash
-backend/venv-backend/bin/python docs/getting-started/scripts/setup_taxonomy.py \
+backend/venv-backend/bin/python backend/scripts/taxonomy_setup/setup_taxonomy.py \
     --credentials backend/keys/credentials.json --mode partial --hot-run
 ```
 
@@ -212,7 +212,7 @@ Similar results mean the vectors and the index are fine. Other options:
 - `--skills-limit N`: how many skills `partial` mode keeps.
 - `--target-db`: the database to write to (default `compass-taxonomy`).
 
-The scripts it uses are in [`scripts/`](scripts/) and can be run separately: `import_taxonomy_csv.py` (CSV to a local MongoDB shaped like the Taxonomy Platform's), `generate_embeddings.py` (a wrapper around `backend/scripts/embeddings/generate_taxonomy_embeddings.py`) and `check_search.py` (a search like the backend's; try `python check_search.py "baking bread"`, or `--collection skills`). The taxonomy is in English, so search in English.
+The scripts it uses are in [`backend/scripts/taxonomy_setup/`](../../backend/scripts/taxonomy_setup/) and can be run separately: `import_taxonomy_csv_to_mongodb.py` (CSV to a local MongoDB shaped like the Taxonomy Platform's), `generate_taxonomy_embeddings_wrapper.py` (a wrapper around `backend/scripts/embeddings/generate_taxonomy_embeddings.py`) and `check_taxonomy_vector_search.py` (a search like the backend's; try `python backend/scripts/taxonomy_setup/check_taxonomy_vector_search.py "baking bread"`, or `--collection skills`). The taxonomy is in English, so search in English.
 
 If the search returns nothing, check that `embedding_index` is **READY** in Atlas (Atlas M0 allows 3 search indexes, 2 are used by the taxonomy) and that the model id matches.
 
