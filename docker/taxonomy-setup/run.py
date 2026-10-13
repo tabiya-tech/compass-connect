@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 One-shot step of the Docker stack: builds the taxonomy the backend searches on, using the same scripts as the manual
-setup (docs/getting-started/scripts/setup_taxonomy.py): download the public CSV export, import it, generate the
+setup (backend/scripts/taxonomy_setup/setup_taxonomy.py): download the public CSV export, import it, generate the
 embeddings with Vertex AI and create the vector search indexes.
 
 Idempotent: when the taxonomy was already built for TAXONOMY_MODEL_ID (same or a bigger TAXONOMY_MODE) it does nothing,
@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from pymongo import MongoClient
 
 REPO = "/repo"  # the compass-connect checkout, mounted by docker-compose.yml
-SETUP_SCRIPT = f"{REPO}/docs/getting-started/scripts/setup_taxonomy.py"
+SETUP_SCRIPT = f"{REPO}/backend/scripts/taxonomy_setup/setup_taxonomy.py"
 SOURCE_DB = "tabiya-platform"  # scratch database the CSVs are imported into
 STATE_COLLECTION = "taxonomy_setup_state"
 EMBEDDING_COLLECTIONS = ("occupationmodelsembeddings", "skillsmodelsembeddings")

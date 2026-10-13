@@ -9,7 +9,7 @@
 
 name: compass-connect
 
-x-mongo-image: &mongo-image mongodb/mongodb-community-server:${MONGO_IMAGE_TAG:-latest}
+x-mongo-image: &mongo-image mongodb/mongodb-community-server:${MONGO_IMAGE_TAG:-9.0.2-ubi9}
 
 x-mongo-uri: &mongo-uri mongodb://mongod:27017/?replicaSet=rs0
 
@@ -79,7 +79,7 @@ services:
     restart: "no"
 
   mongot:
-    image: mongodb/mongodb-community-search:${MONGOT_IMAGE_TAG:-latest}
+    image: mongodb/mongodb-community-search:${MONGOT_IMAGE_TAG:-1.70.5}
     volumes:
       - ./docker/mongo/mongot.yml:/mongot-community/config.default.yml:ro,z
       - mongot-secrets:/secrets:ro
@@ -106,9 +106,8 @@ services:
         bind:
           create_host_path: false
           selinux: z
-      # the same scripts as the manual setup, from this checkout (setup_taxonomy.py expects a compass-connect layout)
+      # the same scripts as the manual setup (backend/scripts/taxonomy_setup), from this checkout (setup_taxonomy.py expects a compass-connect layout)
       - ./docker/taxonomy-setup:/repo/docker/taxonomy-setup:ro,z
-      - ./docs/getting-started/scripts:/repo/docs/getting-started/scripts:ro,z
       - ./backend:/repo/backend:ro,z
       - taxonomy-work:/work
     healthcheck:
