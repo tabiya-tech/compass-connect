@@ -27,7 +27,7 @@ warnings.filterwarnings("ignore", message="This feature is deprecated")
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # the backend root, to import the app settings
 from app.agent.config import GEMINI_DEFAULT_MODELS, ModelTier  # noqa: E402
-from app.users.auth import SELF_HOSTED_ENVIRONMENT_TYPE  # noqa: E402
+from app.gateway.ingress_mode import IngressMode, get_ingress_mode, get_rate_limit_per_minute, RATE_LIMIT_ENV_VAR  # noqa: E402
 
 # The environment variable that overrides the model of each tier, and the model used when it is not set
 # (the same defaults the backend uses)
@@ -51,8 +51,8 @@ REQUIRED_SETTINGS = [
     "VERTEX_API_EMBEDDINGS_REGION",
     "VERTEX_API_GEN_AI_REGION",
 ]
-# Only required when the backend verifies the Firebase tokens itself (TARGET_ENVIRONMENT_TYPE=selfhosted)
-SELF_HOSTED_REQUIRED_SETTINGS = ["FIREBASE_PROJECT_ID"]
+# Only required when the backend verifies the Firebase tokens itself (INGRESS_MODE=direct)
+DIRECT_INGRESS_REQUIRED_SETTINGS = ["FIREBASE_PROJECT_ID"]
 # Settings that must exist, but may be empty
 MUST_EXIST_SETTINGS = ["MATCHING_SERVICE_URL", "MATCHING_SERVICE_API_KEY"]
 
@@ -103,9 +103,17 @@ def is_placeholder(value: str) -> bool:
 def check_configuration(r: Report):
     print("Configuration")
     problems = False
+    try:
+        ingress_mode = get_ingress_mode()
+    except ValueError:
+        ingress_mode = None
+        r.error("INGRESS_MODE", f"has the unknown value {os.getenv('INGRESS_MODE')!r}",
+                "set it to 'direct' (nothing in front of the backend, e.g. this docker compose stack) "
+                "or 'gateway' (behind the Google API Gateway)")
+        problems = True
     required = list(REQUIRED_SETTINGS)
-    if os.getenv("TARGET_ENVIRONMENT_TYPE") == SELF_HOSTED_ENVIRONMENT_TYPE:
-        required += SELF_HOSTED_REQUIRED_SETTINGS
+    if ingress_mode == IngressMode.DIRECT:
+        required += DIRECT_INGRESS_REQUIRED_SETTINGS
     for name in required:
         value = os.getenv(name)
         if value is None or not value.strip():
@@ -118,10 +126,13 @@ def check_configuration(r: Report):
         if os.getenv(name) is None:
             r.error(name, "is missing", f"keep `{name}=` in your .env file, even if empty (the backend fails to start without it)")
             problems = True
-    if os.getenv("TARGET_ENVIRONMENT_TYPE") == "local":
-        r.warn("TARGET_ENVIRONMENT_TYPE", "is 'local': the backend does NOT verify user tokens in this mode",
-               "fine for testing on your own machine; never expose this stack to the internet")
-    if os.getenv("TARGET_ENVIRONMENT_TYPE") == SELF_HOSTED_ENVIRONMENT_TYPE:
+    if ingress_mode == IngressMode.GATEWAY and os.getenv("TARGET_ENVIRONMENT_TYPE") == "local":
+        r.warn("INGRESS_MODE", "is 'gateway' and TARGET_ENVIRONMENT_TYPE is 'local': the backend does NOT verify user tokens",
+               "fine for testing on your own machine; set INGRESS_MODE=direct before exposing this stack to the internet")
+    elif ingress_mode == IngressMode.GATEWAY:
+        r.warn("INGRESS_MODE", "is 'gateway': the backend expects the Google API Gateway in front of it to verify the user tokens",
+               "without one (e.g. with this docker compose stack) every request is unauthorized; set INGRESS_MODE=direct")
+    if ingress_mode == IngressMode.DIRECT:
         project_id = os.getenv("FIREBASE_PROJECT_ID", "").strip()
         auth_domain = os.getenv("FIREBASE_AUTH_DOMAIN", "").strip()
         if project_id and auth_domain and not auth_domain.startswith(project_id):
@@ -130,6 +141,14 @@ def check_configuration(r: Report):
         if not os.getenv("API_KEYS", "").strip():
             r.warn("API_KEYS", "is empty: the x-api-key endpoints (/analytics/*, occupation and skill search) are disabled",
                    "fine unless you integrate an analytics or search client; set API_KEYS to enable them")
+        try:
+            if get_rate_limit_per_minute() == 0:
+                r.warn(RATE_LIMIT_ENV_VAR, "is 0: the requests are not rate limited",
+                       "set it to the number of requests per minute allowed per client IP")
+        except ValueError:
+            r.error(RATE_LIMIT_ENV_VAR, f"is not a whole number >= 0: {os.getenv(RATE_LIMIT_ENV_VAR)!r}",
+                    "set it to the number of requests per minute allowed per client IP, or 0 to disable the rate limiter")
+            problems = True
     taxonomy_url = os.getenv("TAXONOMY_URL", "").strip()
     if taxonomy_url:
         url_model_id = taxonomy_url.rsplit("/", 1)[-1].split("-", 1)[0]

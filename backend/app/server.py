@@ -26,7 +26,9 @@ from app.analytics.routes import add_analytics_routes
 from app.teveta.routes import add_teveta_routes
 from app.sentry_init import init_sentry, set_sentry_contexts
 from app.server_dependencies.db_dependencies import CompassDBProvider
-from app.users.auth import Authentication, ApiKeyAuth, SELF_HOSTED_ENVIRONMENT_TYPE
+from app.users.auth import Authentication, ApiKeyAuth
+from app.gateway.ingress_mode import validate_ingress_config, get_ingress_mode
+from app.gateway.rate_limiter import add_rate_limiter
 from app.vector_search.occupation_search_routes import add_occupation_search_routes
 from app.vector_search.skill_search_routes import add_skill_search_routes
 from app.vector_search.validate_taxonomy_model import validate_taxonomy_model
@@ -158,10 +160,8 @@ if not os.getenv("TARGET_ENVIRONMENT_TYPE"):
 target_environment_type = os.getenv("TARGET_ENVIRONMENT_TYPE")
 logger.info(f"Target environment: {target_environment_type}")
 
-if target_environment_type == SELF_HOSTED_ENVIRONMENT_TYPE and not os.getenv("FIREBASE_PROJECT_ID"):
-    raise ValueError(f"Mandatory FIREBASE_PROJECT_ID env variable is not set! It is required when TARGET_ENVIRONMENT_TYPE is "
-                     f"'{SELF_HOSTED_ENVIRONMENT_TYPE}' as the backend verifies the Firebase ID tokens itself "
-                     f"(set it to the id of your Firebase project).")
+validate_ingress_config()
+logger.info(f"Ingress mode: {get_ingress_mode().value}")
 
 if not os.getenv("TARGET_ENVIRONMENT_NAME"):
     raise ValueError("Mandatory TARGET_ENVIRONMENT_NAME env variable is not set! Please set it to the target environment name as it is "
@@ -419,6 +419,11 @@ app.state.shutdown_complete = asyncio.Event()
 
 # --- Add BrotliRequestMiddleware before other middlewares ---
 app.add_middleware(BrotliRequestMiddleware)
+
+# --- Add the rate limiter when there is no API Gateway in front of the backend (INGRESS_MODE=direct) ---
+# The middlewares added later wrap it, so a rejected request still gets the correlation id and the CORS headers,
+# and it is rejected before its body is decompressed.
+add_rate_limiter(app)
 
 # --- Add CorrelationIdMiddleware for request tracing ---
 app.add_middleware(CorrelationIdMiddleware)
