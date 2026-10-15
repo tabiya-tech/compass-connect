@@ -122,6 +122,7 @@ def setup_env_vars(*, env_vars: dict[str, str] = None):
         'FRONTEND_URL': "foo",
         'BACKEND_URL': "foo",
         'TARGET_ENVIRONMENT_TYPE': "foo",
+        'INGRESS_MODE': "gateway",
         'TARGET_ENVIRONMENT_NAME': "foo",
         'BACKEND_SENTRY_DSN': "foo",
         'BACKEND_ENABLE_SENTRY': "false",

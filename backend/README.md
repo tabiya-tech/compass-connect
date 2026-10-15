@@ -584,7 +584,18 @@ For more details, see [app/agent/preference_elicitation_agent/README.md](app/age
 - `BACKEND_URL` - Backend API URL (for Swagger UI and CORS)
 - `FRONTEND_URL` - Frontend URL (for CORS policy)
 - `TARGET_ENVIRONMENT_NAME` - Environment identifier
-- `TARGET_ENVIRONMENT_TYPE` - Environment type (e.g., `local`, `dev`, `prod`)
+- `TARGET_ENVIRONMENT_TYPE` - Environment type (e.g. `local`, `dev`, `prod`). `local` and `dev` allow all CORS origins.
+- `INGRESS_MODE` - How the requests reach the backend. The code that depends on it is in [`app/gateway/`](app/gateway/__init__.py).
+  - `gateway` (default): the Google API Gateway is in front of the backend. It verifies the Firebase ID tokens and sends the user info in a header,
+    validates the `x-api-key` keys and applies the rate limit. With `TARGET_ENVIRONMENT_TYPE=local` there is no gateway and the token is decoded
+    **without verification** (only for your own machine).
+  - `direct`: nothing is in front of the backend (any cloud provider or on-premise), so the backend does the work of the gateway itself:
+    - it verifies the Firebase ID tokens. Requires `FIREBASE_PROJECT_ID`.
+    - the `x-api-key` endpoints (`/analytics/*` and the occupation/skill search endpoints) accept only the keys listed in `API_KEYS` (comma separated),
+      and are disabled when it is empty.
+    - it limits the requests per client IP to `BACKEND_RATE_LIMIT_PER_MINUTE` (default `600`, `0` disables it). The counters are kept in memory,
+      so with several replicas each one counts separately. Behind your own reverse proxy, set `FORWARDED_ALLOW_IPS` to its IP so the client IPs
+      are read from `X-Forwarded-For`; otherwise all the users share the limit of the proxy.
 - `LOG_CONFIG_FILE` - Path to logging configuration (default: `logging.cfg.yaml`)
 
 ### Optional Features

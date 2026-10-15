@@ -95,3 +95,39 @@ class TestServer:
                 assert response.status_code == 200
                 # AND the response should be a JSON object
                 assert response.json() is not None
+
+    def test_direct_ingress_requires_firebase_project_id(self, monkeypatch: pytest.MonkeyPatch):
+        """
+        Without a gateway in front (INGRESS_MODE=direct) the backend verifies the Firebase tokens itself, so it must refuse
+        to start without knowing which Firebase project the tokens must belong to.
+        """
+        # GIVEN the direct ingress mode without a FIREBASE_PROJECT_ID
+        setup_env_vars(env_vars={"INGRESS_MODE": "direct"})
+        try:
+            monkeypatch.delenv("FIREBASE_PROJECT_ID", raising=False)
+            # WHEN the server module is loaded
+            app_module = importlib.import_module("app.server")
+            with pytest.raises(ValueError) as error_info:
+                importlib.reload(app_module)
+
+            # THEN it fails with a message naming the missing variable
+            assert "FIREBASE_PROJECT_ID" in str(error_info.value)
+        finally:
+            teardown_env_vars()
+
+    def test_unknown_ingress_mode_is_rejected(self):
+        """
+        A mistyped INGRESS_MODE must not silently fall back to trusting the gateway.
+        """
+        # GIVEN an unknown ingress mode
+        setup_env_vars(env_vars={"INGRESS_MODE": "selfhosted"})
+        try:
+            # WHEN the server module is loaded
+            app_module = importlib.import_module("app.server")
+            with pytest.raises(ValueError) as error_info:
+                importlib.reload(app_module)
+
+            # THEN it fails with a message naming the variable
+            assert "INGRESS_MODE" in str(error_info.value)
+        finally:
+            teardown_env_vars()

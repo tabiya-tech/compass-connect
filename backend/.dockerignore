@@ -1,0 +1,19 @@
+# Keep the build context small and free of secrets / local state
+venv-backend
+**/__pycache__
+**/*.pyc
+.env
+.env.*
+keys
+logs
+**/logs
+session_logs
+test_output
+evaluation_tests
+smoke_test
+exports
+feedback-reports
+offline_output
+.idea
+.pytest_cache
+.mypy_cache

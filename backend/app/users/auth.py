@@ -1,15 +1,12 @@
-import base64
 import logging
-import json
-import os
 from enum import Enum
 from typing import Optional, Callable, Any
-
-import jwt
 
 from pydantic import BaseModel
 from fastapi import Depends, Request, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, APIKeyHeader
+
+from app.gateway.request_verification import get_token_claims, check_api_key
 
 logger = logging.getLogger(__name__)
 
@@ -78,48 +75,6 @@ def _get_user_info(decoded_token: Any, token: str) -> UserInfo:
     )
 
 
-def _decode_user_info_api_gateway(auth_info_b64):
-    """
-    Decodes a base64-encoded string containing user information and returns it as a dictionary.
-    The api-gateway does not allways send the correct padding, so this function
-    handles partial padding (missing one or two `=` characters). Rejects invalid input.
-
-    Args:
-        auth_info_b64 (str): The base64-encoded string containing JSON user data.
-
-    Returns:
-        dict: Decoded user information as a Python dictionary.
-
-    Raises:
-        ValueError: If the input is not valid base64 or if the JSON is invalid.
-    """
-    try:
-        # Check if padding is needed and apply it
-        padding_needed = len(auth_info_b64) % 4
-        if padding_needed == 1:
-            raise ValueError("Invalid base64 input: length is not compatible with base64 encoding")
-        elif padding_needed == 2:
-            padded_base64 = auth_info_b64 + '=='  # Add two `=` characters
-        elif padding_needed == 3:
-            padded_base64 = auth_info_b64 + '='  # Add one `=` character
-        else:
-            padded_base64 = auth_info_b64  # No padding needed
-
-        # Decode the base64 string
-        decoded_bytes = base64.b64decode(padded_base64.encode('utf-8'))
-
-        # Convert bytes to string
-        decoded_string = decoded_bytes.decode('utf-8')
-
-        # Parse JSON from the decoded string
-        user_info = json.loads(decoded_string)
-
-        return user_info
-
-    except Exception as e:
-        raise ValueError("Invalid base64 or JSON input") from e
-
-
 class Authentication:
     ############################################
     # Authentication
@@ -155,31 +110,10 @@ class Authentication:
             :param request: Request object.
             :return: UserInfo object.
             """
-            target_env = os.getenv("TARGET_ENVIRONMENT_TYPE")
             try:
                 credentials: str = provider.credentials
-                token_info: Any
-                if target_env != "local":
-                    # When deployed, the credentials are verified by the API Gateway, which sends
-                    # the decoded user information in a Base64-encoded format through the `x-apigateway-api-userinfo` header.
-                    # If the header is missing, the user should be treated as unauthenticated, and a 403 error must be raised.
-                    # While this scenario should not occur under normal circumstances, since the
-                    # API Gateway is expected to always include the header, we implement this check
-                    # as a precautionary measure. For example, such an issue could arise if the API
-                    # Gateway is improperly configured or if the incoming request does not originate
-                    # from the API Gateway.
-                    auth_info_b64 = request.headers.get('x-apigateway-api-userinfo')
-                    if not auth_info_b64:
-                        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="forbidden")
-
-                    # The user info is encoded as base 64 string by the api-gateway
-                    token_info = _decode_user_info_api_gateway(auth_info_b64)
-                else:
-                    # When running locally, use the jwt token from Authorization header.
-                    if not credentials:
-                        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized, missing credentials")
-                    # Decode the token without verifying the signature as we are running locally.
-                    token_info = jwt.decode(credentials, options={"verify_signature": False})
+                # How the token is verified depends on the ingress mode, see app.gateway.
+                token_info = get_token_claims(request, credentials)
                 # decoded credentials.
                 return _get_user_info(token_info, credentials)
 
@@ -200,7 +134,8 @@ class ApiKeyAuth:
     see https://cloud.google.com/endpoints/docs/openapi/authentication-method for more details.
     """
     async def __call__(self, api_key: str = Depends(APIKeyHeader(scheme_name="gcp_api_key", name="x-api-key", auto_error=True))):
-        # Currently, there's not much to do here as the API Gateway validates the key.
-        # Additionally, since APIKeyHeader is used with auto_error=True, it will raise an exception if the header key is missing.
+        # Since APIKeyHeader is used with auto_error=True, it will raise an exception if the header key is missing.
         # In the future, the key can be checked against roles and permissions.
+        # Who validates the key depends on the ingress mode, see app.gateway.
+        check_api_key(api_key)
         return api_key
