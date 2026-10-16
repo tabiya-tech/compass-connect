@@ -378,6 +378,11 @@
           "linkInvalidOrExpired": "Este enlace no es válido o ha expirado. Por favor solicitá uno nuevo.",
           "unknownMode": "No pudimos reconocer la acción solicitada por este enlace."
         }
+      },
+      "handoff": {
+        "signingIn": "Iniciando tu sesión...",
+        "invalidLinkTitle": "No se puede usar este enlace",
+        "invalidLinkMessage": "Puede que haya expirado o que se haya reemplazado por uno más reciente. Volvé a la plataforma desde la que llegaste y abrí {{appName}} de nuevo."
       }
     },
     "components": {

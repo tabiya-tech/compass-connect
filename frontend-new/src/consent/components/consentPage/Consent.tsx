@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from "react";
+import React, { startTransition, useCallback, useState } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import { Box, Container, Checkbox, styled, Typography, useTheme, FormControlLabel, useMediaQuery } from "@mui/material";
 import { useSnackbar } from "src/theme/SnackbarProvider/SnackbarProvider";
 import { Language, UpdateUserPreferencesSpec } from "src/userPreferences/UserPreferencesService/userPreferences.types";
 import { getUserFriendlyErrorMessage, RestAPIError } from "src/error/restAPIError/RestAPIError";
 import PrimaryButton from "src/theme/PrimaryButton/PrimaryButton";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import UserPreferencesService from "src/userPreferences/UserPreferencesService/userPreferences.service";
 import { routerPaths } from "src/app/routerPaths";
 import UserPreferencesStateService from "src/userPreferences/UserPreferencesStateService";
@@ -50,12 +50,22 @@ export const DATA_TEST_ID = {
   GOOGLE_LOGO: `consent-google-logo-${uniqueId}`,
 };
 
+/**
+ * Optional router state of the consent page: where to go once the consent is given, instead of the home page.
+ * Used by the hand-off link to land the user in the conversation.
+ */
+export interface ConsentPageState {
+  afterConsent?: string;
+}
+
 const Consent: React.FC = () => {
   const theme = useTheme();
   const { t } = useTranslation();
   const logoSrc = getDarkLogoUrl() || `${process.env.PUBLIC_URL}/njila-logo-dark.svg`;
   const isSmallMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
   const navigate = useNavigate();
+  const location = useLocation();
+  const afterConsentPath = (location.state as ConsentPageState | null)?.afterConsent;
   const [isAccepting, setIsAccepting] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [isTCAccepted, setIsTCAccepted] = useState(false);
@@ -141,6 +151,11 @@ const Consent: React.FC = () => {
       if (!isSensitiveDataValid(userPreferences!)) {
         console.info("User preferences incomplete. Redirecting to sensitive data page.");
         navigate(routerPaths.SENSITIVE_DATA, { replace: true });
+      } else if (afterConsentPath) {
+        // the requested page may be lazy loaded: navigate in a transition, or React fails while it loads
+        startTransition(() => {
+          navigate(afterConsentPath, { replace: true });
+        });
       } else {
         navigate(routerPaths.ROOT, { replace: true });
       }
@@ -161,7 +176,7 @@ const Consent: React.FC = () => {
     } finally {
       setIsAccepting(false);
     }
-  }, [enqueueSnackbar, navigate, userPreferences, t]);
+  }, [enqueueSnackbar, navigate, userPreferences, t, afterConsentPath]);
 
   /**
    * Handle when a user accepts the agreements

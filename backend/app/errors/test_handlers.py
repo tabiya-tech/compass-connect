@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 from pydantic import BaseModel, field_validator
 
+from app.constants.errors import HTTPExceptionWithErrorCode
 from app.errors.handlers import register_exception_handlers
 from app.middleware.correlation_id_middleware import CorrelationIdMiddleware
 
@@ -21,6 +22,10 @@ def app():
     @_app.get("/raises-http")
     async def _raises_http():
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="bad input")
+
+    @_app.get("/raises-http-with-error-code")
+    async def _raises_http_with_error_code():
+        raise HTTPExceptionWithErrorCode(status_code=HTTPStatus.CONFLICT, detail="already there", error_code="foo_bar")
 
     @_app.get("/raises-http-500")
     async def _raises_http_500():
@@ -77,6 +82,22 @@ class TestHttpExceptionHandler:
         assert actual_body["correlation_id"] == given_correlation_id
         # AND no sentry_event_id is present (4xx is not captured)
         assert "sentry_event_id" not in actual_body
+
+    def test_http_exception_with_error_code_returns_the_error_code(self, client):
+        # WHEN a route raises an HTTPException that carries an error code
+        actual_response = client.get("/raises-http-with-error-code")
+
+        # THEN the response has the status, the detail and the error code
+        assert actual_response.status_code == HTTPStatus.CONFLICT
+        assert actual_response.json()["detail"] == "already there"
+        assert actual_response.json()["error_code"] == "foo_bar"
+
+    def test_http_exception_without_error_code_has_none(self, client):
+        # WHEN a route raises a plain HTTPException
+        actual_response = client.get("/raises-http")
+
+        # THEN the body has no error code
+        assert "error_code" not in actual_response.json()
 
     def test_http_exception_500_captures_sentry_event_id_when_enabled(self, client, monkeypatch):
         # GIVEN Sentry is enabled and capture_exception returns a known event id

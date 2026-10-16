@@ -35,7 +35,7 @@ You need a Google Cloud project with billing enabled to use the Vertex AI models
 3. Enable these two APIs:
    - [Vertex AI](https://console.cloud.google.com/apis/library/aiplatform.googleapis.com) (it may appear as "Agent Platform API")
    - [Cloud Data Loss Prevention (DLP)](https://console.cloud.google.com/apis/library/dlp.googleapis.com)
-4. Create a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts) with the roles `roles/aiplatform.user` and `roles/dlp.user`.
+4. Create a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts) with the roles `roles/aiplatform.user` and `roles/dlp.user`. If another platform will create users through the [integration API](#optional-integration-api), also give it `roles/firebaseauth.admin`.
 5. Download its JSON key (Keys, Add key, JSON), create the `backend/keys` folder (it does not exist in a fresh clone) and save the key there as `backend/keys/credentials.json`. That folder is in `.gitignore`: never commit the key. The smoke test, the taxonomy setup and the backend `.env` all point to this path, so keep it unless you change them.
 
 ### 2. Firebase (login)
@@ -86,6 +86,28 @@ If a check fails the stack stops and says why: `docker compose logs preflight` (
 | Change the ports | `FRONTEND_PORT`, `BACKEND_PORT` |
 
 `INGRESS_MODE=direct` (the value in `.env.example`) makes the backend verify the Firebase tokens itself and limit each client IP to `BACKEND_RATE_LIMIT_PER_MINUTE` requests per minute (default `600`, `0` disables it; raise it if many users share one IP, e.g. a school network). `INGRESS_MODE=gateway` is for deployments behind the Google API Gateway: with `TARGET_ENVIRONMENT_TYPE=local` it skips the token check, so use it only on your own machine.
+
+### Optional: integration API
+
+The integration API lets another platform (a job portal, a training provider) create users in your Compass instance and send them into Compass with a link that logs them in. The platform's developers use the [integration guide](../integration/README.md).
+
+To turn it on:
+
+1. Give the service account of the GCP key the role Firebase Authentication Admin (`roles/firebaseauth.admin`) in your Firebase project, in addition to the roles in [Accounts](#1-google-cloud). The backend uses it to create the users' accounts and log them in. The key must belong to the Firebase project, as it does when you follow [Accounts](#2-firebase-login).
+   ```bash
+   gcloud projects add-iam-policy-binding <firebase-project-id> \
+     --member="serviceAccount:<service-account-email>" --role="roles/firebaseauth.admin"
+   ```
+2. In `.env`, put a key for the platform in `API_KEYS` (generate one with `openssl rand -hex 32`). All keys have the same access: the platform's key also opens `/analytics/*` and the occupation and skill search. `BACKEND_HANDOFF_LINK_TTL_MINUTES` sets how long a link works, in minutes (default `1440`, 24 hours).
+3. Run `docker compose up -d --build`, create a test user and open the `link.url` of the response in a private browser window. You should see the consent screen, then the conversation.
+   ```bash
+   curl -i -X POST "$BACKEND_URL/integration/users" \
+     -H "x-api-key: <a key from API_KEYS>" -H "content-type: application/json" \
+     -d '{"external_id": "setup-check-1", "email": "setup-check-1@example.org"}'
+   ```
+   Without the role, the call answers `500` and `docker compose logs backend` shows the Firebase error. With a key of another project, the call works but the login fails in the browser (`auth/custom-token-mismatch` in the browser console).
+
+Test users stay in Firebase Authentication and in MongoDB (`external_users` collection): delete them by hand. Then give the platform its key and the backend address (`BACKEND_URL`). To withdraw its access, remove its key from `API_KEYS` and run `docker compose up -d` again.
 
 ## Manual setup
 

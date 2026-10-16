@@ -378,6 +378,11 @@
           "linkInvalidOrExpired": "This link is invalid or has expired. Please request a new one.",
           "unknownMode": "We couldn't recognise the action requested by this link."
         }
+      },
+      "handoff": {
+        "signingIn": "Signing you in...",
+        "invalidLinkTitle": "This link can't be used",
+        "invalidLinkMessage": "It may have expired or been replaced by a newer one. Go back to the platform that sent you here and open {{appName}} again."
       }
     },
     "components": {

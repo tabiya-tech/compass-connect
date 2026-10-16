@@ -22,6 +22,16 @@ class HTTPErrorResponse(BaseModel):
         extra = "forbid"
 
 
+class HTTPExceptionWithErrorCode(HTTPException):
+    """
+    An HTTPException whose error body also carries a machine-readable `error_code`, for clients that branch on it.
+    """
+
+    def __init__(self, status_code: int, detail: str, error_code: str):
+        super().__init__(status_code=status_code, detail=detail)
+        self.error_code = error_code
+
+
 class ErrorService:
     """
     ErrorService class is responsible for handling exceptions and logging them.

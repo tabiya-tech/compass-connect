@@ -378,6 +378,11 @@
           "linkInvalidOrExpired": "Esta hiperligação é inválida ou expirou. Por favor, peça uma nova.",
           "unknownMode": "Não conseguimos reconhecer a ação solicitada por esta hiperligação."
         }
+      },
+      "handoff": {
+        "signingIn": "A iniciar a sua sessão...",
+        "invalidLinkTitle": "Não é possível usar esta hiperligação",
+        "invalidLinkMessage": "Pode ter expirado ou sido substituída por uma mais recente. Volte à plataforma de onde veio e abra o {{appName}} novamente."
       }
     },
     "components": {

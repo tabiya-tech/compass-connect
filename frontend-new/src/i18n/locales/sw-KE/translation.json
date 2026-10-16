@@ -378,6 +378,11 @@
           "linkInvalidOrExpired": "Kiungo hiki si halali au kimeisha muda. Tafadhali omba kingine kipya.",
           "unknownMode": "Hatuwezi kutambua kitendo kinachoombwa na kiungo hiki."
         }
+      },
+      "handoff": {
+        "signingIn": "Tunakuingiza...",
+        "invalidLinkTitle": "Kiungo hiki hakiwezi kutumika",
+        "invalidLinkMessage": "Huenda kimeisha muda au kimebadilishwa na kipya zaidi. Rudi kwenye jukwaa lililokuleta hapa na ufungue {{appName}} tena."
       }
     },
     "components": {

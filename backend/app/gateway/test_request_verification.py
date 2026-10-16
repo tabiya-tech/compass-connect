@@ -115,7 +115,20 @@ class TestDirectIngressFirebaseTokenVerification:
         assert response.json()["role"] == "institution_staff"
         assert response.json()["institution_id"] == "inst-1"
 
+    @pytest.mark.parametrize("given_sign_in_provider", ["password", "google.com", "anonymous", "custom"])
+    def test_sign_in_providers(self, direct_ingress_env, given_sign_in_provider: str):
+        # GIVEN a valid token from a supported sign-in provider ("custom" is the hand-off link login)
+        given_token = _token(_claims(firebase={"sign_in_provider": given_sign_in_provider}))
+
+        # WHEN calling an authenticated endpoint
+        response = _build_client().get("/me", headers=_bearer(given_token))
+
+        # THEN the user is authenticated with that sign-in provider
+        assert response.status_code == HTTPStatus.OK
+        assert response.json()["sign_in_provider"] == given_sign_in_provider
+
     @pytest.mark.parametrize("given_token", [
+        pytest.param(_token(_claims(firebase={"sign_in_provider": "phone"})), id="unsupported sign-in provider"),
         pytest.param(_token(key=_OTHER_SIGNING_KEY), id="forged signature"),
         pytest.param(_token(_claims(exp=int(time.time()) - 3600)), id="expired"),
         pytest.param(_token(_claims(iat=int(time.time()) + 3600)), id="issued in the future"),
@@ -222,6 +235,18 @@ class TestGatewayIngress:
 
         # AND without the header the request is unauthorized
         assert _build_client().get("/me", headers=_bearer(_token())).status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_custom_token_session_is_accepted(self, monkeypatch: pytest.MonkeyPatch):
+        # GIVEN a deployed environment and the gateway header of a session started with a custom token (hand-off link)
+        monkeypatch.setenv("TARGET_ENVIRONMENT_TYPE", "prod")
+        gateway_info = base64.b64encode(json.dumps(_claims(firebase={"sign_in_provider": "custom"})).encode()).decode().rstrip("=")
+
+        # WHEN calling an authenticated endpoint
+        response = _build_client().get("/me", headers={**_bearer("whatever"), "x-apigateway-api-userinfo": gateway_info})
+
+        # THEN the user is authenticated with the custom sign-in provider
+        assert response.status_code == HTTPStatus.OK
+        assert response.json()["sign_in_provider"] == "custom"
 
     @pytest.mark.parametrize("given_ingress_mode", ["gateway", " GATEWAY ", ""])
     def test_gateway_mode_set_explicitly(self, monkeypatch: pytest.MonkeyPatch, given_ingress_mode: str):

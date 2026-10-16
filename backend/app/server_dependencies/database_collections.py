@@ -27,3 +27,4 @@ class Collections:
     PROGRAMME_SKILLS: str = "programme_skills"
     PILOT_WHITELIST: str = "pilot_whitelist"
     USER_INSTITUTION_ASSIGNMENT: str = "user_institution_assignment"
+    EXTERNAL_USERS: str = "external_users"

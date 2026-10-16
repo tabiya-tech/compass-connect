@@ -139,8 +139,9 @@ def check_configuration(r: Report):
             r.warn("FIREBASE_PROJECT_ID", f"{project_id!r} does not match FIREBASE_AUTH_DOMAIN {auth_domain!r}",
                    "check both come from the same Firebase project; tokens of another project are rejected")
         if not os.getenv("API_KEYS", "").strip():
-            r.warn("API_KEYS", "is empty: the x-api-key endpoints (/analytics/*, occupation and skill search) are disabled",
-                   "fine unless you integrate an analytics or search client; set API_KEYS to enable them")
+            r.warn("API_KEYS", "is empty: the x-api-key endpoints (/analytics/*, occupation and skill search, "
+                               "/integration/users) are disabled",
+                   "fine unless you integrate an analytics, search or other client platform; set API_KEYS to enable them")
         try:
             if get_rate_limit_per_minute() == 0:
                 r.warn(RATE_LIMIT_ENV_VAR, "is 0: the requests are not rate limited",

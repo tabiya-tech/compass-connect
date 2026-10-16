@@ -21,10 +21,12 @@ def _sentry_enabled() -> bool:
     return os.getenv("BACKEND_ENABLE_SENTRY") == "True"
 
 
-def _build_response(status_code: int, detail: str, sentry_event_id: str | None) -> JSONResponse:
+def _build_response(status_code: int, detail: str, sentry_event_id: str | None,
+                    error_code: str | None = None) -> JSONResponse:
     correlation_id = correlation_id_ctx_var.get()
     body = HTTPErrorResponse(
         detail=detail,
+        error_code=error_code,
         correlation_id=correlation_id if correlation_id != ":none:" else None,
         sentry_event_id=sentry_event_id,
     )
@@ -43,7 +45,8 @@ def _maybe_capture(exc: BaseException, status_code: int) -> str | None:
 async def _http_exception_handler(_: Request, exc: StarletteHTTPException) -> JSONResponse:
     detail = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
     sentry_event_id = _maybe_capture(exc, exc.status_code)
-    return _build_response(exc.status_code, detail, sentry_event_id)
+    # set by HTTPExceptionWithErrorCode
+    return _build_response(exc.status_code, detail, sentry_event_id, getattr(exc, "error_code", None))
 
 
 async def _unhandled_exception_handler(_: Request, exc: Exception) -> JSONResponse:

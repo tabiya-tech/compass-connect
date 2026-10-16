@@ -3,6 +3,7 @@ import { PersistentStorageService } from "src/app/PersistentStorageService/Persi
 import FirebaseEmailAuthenticationService from "./FirebaseAuthenticationService/emailAuth/FirebaseEmailAuthentication.service";
 import FirebaseInvitationCodeAuthenticationService from "./FirebaseAuthenticationService/invitationCodeAuth/FirebaseInvitationCodeAuthenticationService";
 import FirebaseSocialAuthenticationService from "./FirebaseAuthenticationService/socialAuth/FirebaseSocialAuthentication.service";
+import FirebaseCustomTokenAuthenticationService from "./FirebaseAuthenticationService/customTokenAuth/FirebaseCustomTokenAuthenticationService";
 import { AuthenticationServices } from "src/auth/auth.types";
 import stdFirebaseAuthenticationService from "./FirebaseAuthenticationService/StdFirebaseAuthenticationService";
 import AuthenticationStateService from "./AuthenticationState.service";
@@ -57,6 +58,8 @@ class AuthenticationServiceFactory {
         return FirebaseEmailAuthenticationService.getInstance();
       case AuthenticationServices.FIREBASE_SOCIAL:
         return FirebaseSocialAuthenticationService.getInstance();
+      case AuthenticationServices.FIREBASE_CUSTOM_TOKEN:
+        return FirebaseCustomTokenAuthenticationService.getInstance();
       case "":
       case null:
         console.debug("The authentication method is or empty. The user is not logged in.");

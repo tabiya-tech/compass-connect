@@ -378,6 +378,11 @@
           "linkInvalidOrExpired": "Ulalo uwu si wovomerezeka kapena watha. Chonde pemphani watsopano.",
           "unknownMode": "Sitinathe kuzindikira chochita chomwe ulalo uwu wapempha."
         }
+      },
+      "handoff": {
+        "signingIn": "Tikukulowetsani...",
+        "invalidLinkTitle": "Ulalo uwu sungagwiritsidwe ntchito",
+        "invalidLinkMessage": "Mwina watha kapena walowedwa m'malo ndi watsopano. Bwererani ku pulatifomu yomwe yakutumizani kuno ndipo mutsegulenso {{appName}}."
       }
     },
     "components": {

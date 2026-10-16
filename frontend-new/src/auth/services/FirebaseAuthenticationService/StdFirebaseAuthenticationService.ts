@@ -24,6 +24,7 @@ export enum FirebaseTokenProvider {
   GOOGLE = "google.com",
   PASSWORD = "password",
   ANONYMOUS = "anonymous",
+  CUSTOM = "custom",
 }
 
 export enum FirebaseTokenValidationFailureCause {
