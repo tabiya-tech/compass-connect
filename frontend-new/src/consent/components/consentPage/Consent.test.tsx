@@ -579,3 +579,65 @@ describe("Testing Consent Page", () => {
     });
   });
 });
+
+describe("Consent page: where to go after the consent", () => {
+  const givenUserPreferences: UserPreference = {
+    user_id: "foo-id",
+    language: Language.en,
+    accepted_tc: new Date(),
+    sessions: [],
+    user_feedback_answered_questions: {},
+    has_sensitive_personal_data: false,
+    sensitive_personal_data_requirement: SensitivePersonalDataRequirement.NOT_AVAILABLE,
+    experiments: {},
+  };
+
+  beforeEach(() => {
+    (console.error as jest.Mock).mockClear();
+    (console.warn as jest.Mock).mockClear();
+    jest.clearAllMocks();
+    mockBrowserIsOnLine(true);
+    UserPreferencesStateService.getInstance().setUserPreferences(givenUserPreferences);
+    jest.spyOn(UserPreferencesService.getInstance(), "updateUserPreferences").mockResolvedValue(givenUserPreferences);
+    jest
+      .spyOn(authStateService.getInstance(), "getUser")
+      .mockImplementation(() => ({ id: "0001", email: "foo@bar.baz", name: "Foo Bar" }));
+    jest.spyOn(UserLocationUtils, "getCoordinates").mockResolvedValue([123, 456]);
+    jest.spyOn(MetricsService.getInstance(), "sendMetricsEvent").mockReturnValue();
+    // no sensitive data needed, so the sensitive data page does not come first
+    jest.spyOn(ProtectedRouteUtils, "isSensitiveDataValid").mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    window.history.replaceState(null, "", "#/");
+  });
+
+  const acceptAgreements = async () => {
+    const dpaCheckBoxWrapper = screen.getByTestId(DATA_TEST_ID.ACCEPT_CHECKBOX_CONTAINER);
+    await userEvent.click(dpaCheckBoxWrapper.getElementsByTagName("input")[0] as HTMLInputElement);
+    const tcCheckBoxWrapper = screen.getByTestId(DATA_TEST_ID.ACCEPT_TERMS_AND_CONDITIONS_CHECKBOX_CONTAINER);
+    await userEvent.click(tcCheckBoxWrapper.getElementsByTagName("input")[0] as HTMLInputElement);
+    await userEvent.click(screen.getByTestId(DATA_TEST_ID.ACCEPT_BUTTON));
+  };
+
+  test.each([
+    [
+      "the conversation, as the hand-off link asks",
+      { afterConsent: routerPaths.SKILLS_INTERESTS },
+      routerPaths.SKILLS_INTERESTS,
+    ],
+    ["the home page, when no page was asked", null, routerPaths.ROOT],
+  ])("should go to %s", async (_description, givenState, expectedRoute) => {
+    // GIVEN the consent page was opened with or without a page to go to afterwards (router state, as the hand-off
+    // sets it)
+    window.history.replaceState({ usr: givenState, key: "foo", idx: 0 }, "", "#/consent");
+
+    // WHEN the user accepts the agreements
+    render(<Consent />);
+    await acceptAgreements();
+
+    // THEN they go to the expected page
+    await waitFor(() => expect(useNavigate()).toHaveBeenCalledWith(expectedRoute, { replace: true }));
+    expect(console.error).not.toHaveBeenCalled();
+  });
+});

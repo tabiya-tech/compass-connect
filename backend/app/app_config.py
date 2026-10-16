@@ -10,6 +10,8 @@ from app.version.types import Version
 from common_libs.observability.config import TracingConfig
 from features.types import FeatureSetupConfig
 
+DEFAULT_HANDOFF_LINK_TTL_MINUTES = 24 * 60
+
 _APPLICATION_NOT_CONFIGURED_ERROR_MESSAGE = "Application configuration is not setup."
 
 LLMProvider = Literal["gemini", "anthropic", "ollama"]
@@ -117,6 +119,12 @@ class ApplicationConfig(BaseModel):
     """
     Unified Career Explorer configuration (sectors, country).
     Loaded from CAREER_EXPLORER_CONFIG JSON env var.
+    """
+
+    handoff_link_ttl_minutes: int = Field(default=DEFAULT_HANDOFF_LINK_TTL_MINUTES, gt=0)
+    """
+    How long a hand-off link from the integration API can be used, in minutes. Links are re-usable until they expire.
+    Loaded from the BACKEND_HANDOFF_LINK_TTL_MINUTES environment variable.
     """
 
     admin_firebase_tenant_id: str

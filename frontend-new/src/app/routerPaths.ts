@@ -20,4 +20,5 @@ export const routerPaths = {
   CAREER_READINESS_MODULE: "/career-readiness/:moduleId",
   JOB_MATCHING: "/job-matching",
   FAQ: "/faq",
+  HANDOFF: "/handoff",
 };

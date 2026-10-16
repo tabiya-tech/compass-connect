@@ -15,6 +15,7 @@ class SignInProvider(Enum):
     ANONYMOUS = "anonymous"
     PASSWORD = "password"  # nosec
     GOOGLE = "google.com"
+    CUSTOM = "custom"  # signInWithCustomToken, used by the hand-off link
 
 
 class UserInfo(BaseModel):

@@ -11,7 +11,6 @@ from app.conversations.feedback.services.service import UserFeedbackService, IUs
 from app.invitations.repository import UserInvitationRepository
 from app.metrics.services.get_metrics_service import get_metrics_service
 from app.metrics.services.service import IMetricsService
-from app.metrics.types import UserAccountCreatedEvent
 from app.server_dependencies.db_dependencies import CompassDBProvider
 from app.users.auth import Authentication, UserInfo, SignInProvider
 from app.users.get_user_preferences_repository import get_user_preferences_repository
@@ -22,8 +21,9 @@ from app.users.sensitive_personal_data.routes import get_sensitive_personal_data
 from app.users.sensitive_personal_data.service import ISensitivePersonalDataService
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
 from app.users.generate_session_id import generate_new_session_id
+from app.users.new_user_preferences import create_new_user_preferences
 from app.users.sessions import SessionsService
-from app.users.types import UserPreferencesUpdateRequest, UserPreferences, \
+from app.users.types import UserPreferencesUpdateRequest, \
     CreateUserPreferencesRequest, UserPreferencesRepositoryUpdateRequest, UsersPreferencesResponse
 
 from app.app_config import get_application_config
@@ -126,25 +126,17 @@ async def _create_user_preferences(
             if not is_reduced:
                 raise HTTPException(status_code=400, detail=INVALID_INVITATION_CODE_MESSAGE)
 
-        # Generating a 64-bit integer session ID
-        session_id = generate_new_session_id()
-        sessions = [session_id]
-
         # Create the user preferences
         # Store invitation_code as provided (will be None if bypass was used without providing a code)
-        newly_created = await repository.insert_user_preference(preferences.user_id, UserPreferences(
+        newly_created = await create_new_user_preferences(
+            repository=repository,
+            metrics_service=metrics_service,
+            user_id=preferences.user_id,
             language=preferences.language,
             invitation_code=preferences.invitation_code,
             client_id=preferences.client_id,
             sensitive_personal_data_requirement=sensitive_personal_data_requirement,
-            sessions=sessions
-        ))
-
-        # Record user account creation metric
-        await metrics_service.record_event(UserAccountCreatedEvent(
-            user_id=preferences.user_id,
-            client_id=preferences.client_id,
-        ))
+        )
 
         return UsersPreferencesResponse(
             **newly_created.model_dump(),

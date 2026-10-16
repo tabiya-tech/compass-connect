@@ -21,6 +21,7 @@ from app.career_path import add_career_path_routes
 from app.career_readiness import add_career_readiness_routes
 from app.career_explorer.routes import add_career_explorer_routes
 from app.career_explorer.config import parse_career_explorer_config
+from app.integration.routes import add_integration_routes
 from app.metrics.routes.routes import add_metrics_routes
 from app.analytics.routes import add_analytics_routes
 from app.teveta.routes import add_teveta_routes
@@ -41,7 +42,8 @@ from contextlib import asynccontextmanager
 
 from app.users.routes import add_users_routes
 from app.conversations.poc import add_poc_routes
-from app.app_config import ApplicationConfig, LLMProvider, set_application_config, get_application_config
+from app.app_config import ApplicationConfig, LLMProvider, set_application_config, get_application_config, \
+    DEFAULT_HANDOFF_LINK_TTL_MINUTES
 from app.version.utils import load_version_info
 from app.agent.config import ModelTier
 from common_libs.llm.models_utils import resolve_model_name
@@ -289,6 +291,7 @@ application_config = ApplicationConfig(
     matching_service_api_key=os.getenv("MATCHING_SERVICE_API_KEY"),
     inline_phase_transition=os.getenv("COMPASS_INLINE_PHASE_TRANSITION", "").lower() in ("1", "true"),
     career_explorer_config=parse_career_explorer_config(os.getenv("CAREER_EXPLORER_CONFIG")),
+    handoff_link_ttl_minutes=os.getenv("BACKEND_HANDOFF_LINK_TTL_MINUTES") or DEFAULT_HANDOFF_LINK_TTL_MINUTES,
     admin_firebase_tenant_id=os.getenv("ADMIN_FIREBASE_TENANT_ID", ""),
     tracing_config=load_tracing_config(_version_info),
     llm_provider=os.getenv("LLM_PROVIDER") or "gemini",
@@ -530,6 +533,11 @@ search_router = APIRouter(dependencies=[Depends(api_key_auth)], tags=["Search"])
 add_occupation_search_routes(search_router)
 add_skill_search_routes(search_router)
 app.include_router(search_router)
+
+############################################
+# Add integration routes (users created by other platforms, hand-off links)
+############################################
+add_integration_routes(app)
 
 ############################################
 # Add metrics routes
