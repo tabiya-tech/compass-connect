@@ -21,7 +21,7 @@ def _user(external_id: str = "ext-1", email: str = "person@example.com", user_id
     return ExternalUser(external_id=external_id, email=email, user_id=user_id, created_at=now, updated_at=now)
 
 
-def _link(token_hash: str = "hash-1", expires_in: timedelta = timedelta(hours=1)) -> HandoffLink:
+def _link(token_hash: str = "hash-1", expires_in: timedelta = timedelta(hours=1)) -> HandoffLink:  # nosec B107 # test fixture, not a credential
     return HandoffLink(token_hash=token_hash, action=HandoffAction.SKILL_REPORT,
                        expires_at=truncate_microseconds(get_now() + expires_in))
 
@@ -141,10 +141,10 @@ class TestExternalUserRepository:
         repository = await repository
         # GIVEN a user with a link
         await repository.insert(_user(user_id="user-1"))
-        await repository.set_link("ext-1", _link(token_hash="hash-1"), get_now())
+        await repository.set_link("ext-1", _link(token_hash="hash-1"), get_now())  # nosec B106 # test fixture
 
         # WHEN a new link is set
-        await repository.set_link("ext-1", _link(token_hash="hash-2"), get_now())
+        await repository.set_link("ext-1", _link(token_hash="hash-2"), get_now())  # nosec B106 # test fixture
 
         # THEN only the new one is valid
         assert await repository.find_by_valid_link("hash-1", get_now()) is None

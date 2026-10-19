@@ -146,7 +146,7 @@ def test_without_api_keys_every_call_is_forbidden(setup_application_config: Appl
 class TestExchangeRoute:
     def test_valid_link(self, client: TestClient, mocked_service: AsyncMock):
         # GIVEN the service accepts the link
-        mocked_service.exchange_link.return_value = HandoffExchangeResponse(custom_token="custom-token",
+        mocked_service.exchange_link.return_value = HandoffExchangeResponse(custom_token="custom-token",  # nosec B106 # test fixture
                                                                             action=HandoffAction.CREATE)
 
         # WHEN the frontend exchanges it, without credentials
