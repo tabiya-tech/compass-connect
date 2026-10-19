@@ -8,6 +8,13 @@ This guide is for the developers of that platform. Each instance serves the full
 (tag "Integration") and `<BACKEND_URL>/openapi.json`. Operators set the API up with the
 [getting-started guide](../getting-started/README.md#optional-integration-api).
 
+To try the flow, run [`example.mjs`](example.mjs), a quick example in one file with no dependencies (Node.js 20 or
+later). Open http://localhost:3100, click **Build my profile**, and you land in Compass as the user of the form:
+
+```bash
+COMPASS_BACKEND_URL=http://localhost:8080 COMPASS_API_KEY=<a key from API_KEYS> node docs/integration/example.mjs
+```
+
 ## How it works
 
 1. The user clicks a button on your platform, for example "Build my profile".
