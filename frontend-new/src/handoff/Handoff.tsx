@@ -66,7 +66,7 @@ const Handoff: React.FC = () => {
 
     logInWithHandoffLink(token)
       .then((action) => {
-        const landingPath = action === HandoffAction.SKILL_REPORT ? routerPaths.SKILLS_INTERESTS : routerPaths.ROOT;
+        const landingPath = action === HandoffAction.BUILD_PROFILE ? routerPaths.SKILLS_INTERESTS : routerPaths.ROOT;
         const prefs = UserPreferencesStateService.getInstance().getUserPreferences();
         if (!prefs || !isAcceptedTCValid(prefs)) {
           // first visit: the consent page comes first, then the landing page

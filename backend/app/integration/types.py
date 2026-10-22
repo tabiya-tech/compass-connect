@@ -11,7 +11,7 @@ class HandoffAction(Enum):
     """
     CREATE = "create"
     """ The Compass home page. """
-    SKILL_REPORT = "skill_report"
+    BUILD_PROFILE = "build_profile"
     """ The conversation that builds the skills report. """
 
 
@@ -29,9 +29,9 @@ class CreateExternalUserRequest(BaseModel):
     external_id: str = Field(min_length=1, max_length=128,
                              description="The calling platform's id for the user. Unique per Compass instance.")
     email: EmailStr = Field(description="The user's email; their Compass account.")
-    action: HandoffAction = Field(default=HandoffAction.SKILL_REPORT,
+    action: HandoffAction = Field(default=HandoffAction.BUILD_PROFILE,
                                   description="Where the hand-off link lands the user. create: the Compass home "
-                                              "page. skill_report: the conversation that builds the skills report.")
+                                              "page. build_profile: the conversation that builds the skills report.")
 
     @field_validator("email")
     @classmethod

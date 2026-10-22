@@ -84,7 +84,7 @@ describe("Handoff", () => {
     setSearch("?token=link-token");
     exchangeSpy.mockResolvedValue({
       custom_token: givenCustomToken,
-      action: HandoffAction.SKILL_REPORT,
+      action: HandoffAction.BUILD_PROFILE,
     });
     // AND the user has not given the consent yet
     givenLoginSetsPreferences(undefined);
@@ -106,7 +106,7 @@ describe("Handoff", () => {
   });
 
   test.each([
-    [HandoffAction.SKILL_REPORT, routerPaths.SKILLS_INTERESTS],
+    [HandoffAction.BUILD_PROFILE, routerPaths.SKILLS_INTERESTS],
     [HandoffAction.CREATE, routerPaths.ROOT],
   ])("should land a user who gave the consent where the %s link says", async (givenAction, expectedPath) => {
     // GIVEN a link, for a user who already gave the consent

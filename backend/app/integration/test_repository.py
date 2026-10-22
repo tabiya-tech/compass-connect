@@ -22,7 +22,7 @@ def _user(external_id: str = "ext-1", email: str = "person@example.com", user_id
 
 
 def _link(token_hash: str = "hash-1", expires_in: timedelta = timedelta(hours=1)) -> HandoffLink:  # nosec B107 # test fixture, not a credential
-    return HandoffLink(token_hash=token_hash, action=HandoffAction.SKILL_REPORT,
+    return HandoffLink(token_hash=token_hash, action=HandoffAction.BUILD_PROFILE,
                        expires_at=truncate_microseconds(get_now() + expires_in))
 
 
