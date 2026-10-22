@@ -5,7 +5,7 @@ export enum HandoffAction {
   /** The Compass home page. */
   CREATE = "create",
   /** The conversation that builds the skills report. */
-  SKILL_REPORT = "skill_report",
+  BUILD_PROFILE = "build_profile",
 }
 
 export interface HandoffExchangeResponse {

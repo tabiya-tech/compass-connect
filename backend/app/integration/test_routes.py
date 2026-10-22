@@ -76,8 +76,8 @@ class TestCreateUserRoute:
         assert actual.json()["user"]["external_id"] == "ext-1"
         assert actual.json()["link"]["url"] == "https://compass.example.org/#/handoff?token=abc"
 
-    def test_request_is_normalised_and_defaults_to_skill_report(self, client: TestClient,
-                                                                mocked_service: AsyncMock):
+    def test_request_is_normalised_and_defaults_to_build_profile(self, client: TestClient,
+                                                                  mocked_service: AsyncMock):
         # GIVEN the service creates the user
         mocked_service.create_user.return_value = (True, _response())
 
@@ -88,7 +88,7 @@ class TestCreateUserRoute:
         actual_request = mocked_service.create_user.await_args.args[0]
         assert actual_request.external_id == "ext-1"
         assert actual_request.email == "person@example.com"
-        assert actual_request.action == HandoffAction.SKILL_REPORT
+        assert actual_request.action == HandoffAction.BUILD_PROFILE
 
     @pytest.mark.parametrize("given_conflict", list(ExternalUserConflict))
     def test_conflicts_are_409_with_an_error_code(self, client: TestClient, mocked_service: AsyncMock,

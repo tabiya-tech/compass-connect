@@ -28,7 +28,7 @@ describe("HandoffService", () => {
       // GIVEN the exchange endpoint responds with a custom token
       const givenResponse: HandoffExchangeResponse = {
         custom_token: "custom-token",
-        action: HandoffAction.SKILL_REPORT,
+        action: HandoffAction.BUILD_PROFILE,
       };
       const fetchSpy = setupAPIServiceSpy(StatusCodes.OK, givenResponse, "application/json;charset=UTF-8");
 

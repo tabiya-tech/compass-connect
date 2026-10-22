@@ -86,7 +86,7 @@ async def setup(in_memory_application_database: Awaitable[AsyncIOMotorDatabase],
 
 
 def _request(external_id: str = "ext-1", email: str = "person@example.com",
-             action: HandoffAction = HandoffAction.SKILL_REPORT) -> CreateExternalUserRequest:
+             action: HandoffAction = HandoffAction.BUILD_PROFILE) -> CreateExternalUserRequest:
     return CreateExternalUserRequest(external_id=external_id, email=email, action=action)
 
 
@@ -289,7 +289,7 @@ class TestExchangeLink:
         # THEN both give a custom token for the user and the landing action
         for actual in (actual_first, actual_second):
             assert actual.custom_token == f"custom-token-for-{given_user.uid}"
-            assert actual.action == HandoffAction.SKILL_REPORT
+            assert actual.action == HandoffAction.BUILD_PROFILE
 
     @pytest.mark.asyncio
     async def test_create_action_is_returned(self, setup: Awaitable[_Setup]):
@@ -309,7 +309,7 @@ class TestExchangeLink:
         # GIVEN an existing user whose link has expired
         await s.service.create_user(_request())
         await s.users.set_link("ext-1", HandoffLink(token_hash=hash_link_token("expired-token"),
-                                                    action=HandoffAction.SKILL_REPORT,
+                                                    action=HandoffAction.BUILD_PROFILE,
                                                     expires_at=get_now() - timedelta(days=1)), get_now())
 
         # WHEN it is opened

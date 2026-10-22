@@ -37,7 +37,7 @@ One user per call. Every call returns a new hand-off link.
 |---|---|---|
 | `external_id` | yes | Your id for the user, 1 to 128 characters, case-sensitive. One `external_id` is one user on the instance. Use an internal id, not a national id number, a phone number or other personal data. |
 | `email` | yes | The user's email. It becomes their Compass account and is stored in lower case. Compass sends no email when it creates the account. |
-| `action` | no | Where the link takes the user. `skill_report` (default) opens the conversation that builds the skills report. `create` opens the Compass home page. |
+| `action` | no | Where the link takes the user. `build_profile` (default) opens the conversation that builds the skills report. `create` opens the Compass home page. |
 
 A request with any other field (a name, a gender, an education level) gets `422`. Compass stores the `external_id`, the
 email, the creation date and a SHA-256 hash of the link token, nothing else from your platform.
@@ -222,7 +222,7 @@ function sendPage(res, status, user, error) {
     <label>Email <input name="email" type="email" required value="${escape(user.email ?? "test-user-1@example.org")}"></label>
     <label>Open
       <select name="action">
-        <option value="skill_report">skill_report: the conversation that builds the skills report</option>
+        <option value="build_profile">build_profile: the conversation that builds the skills report</option>
         <option value="create"${user.action === "create" ? " selected" : ""}>create: the Compass home page</option>
       </select>
     </label>
