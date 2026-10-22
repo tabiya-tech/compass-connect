@@ -15,6 +15,7 @@ from app.integration.service import IntegrationService, ExternalUserConflictErro
 from app.integration.types import CreateExternalUserRequest, HandoffAction, ExternalUserConflict, HandoffLink, \
     ExternalUser
 from app.users.repositories import UserPreferenceRepository
+from app.users.preferences_service import UserPreferencesService
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
 from common_libs.time_utilities import get_now
 
@@ -76,7 +77,7 @@ async def setup(in_memory_application_database: Awaitable[AsyncIOMotorDatabase],
     service = IntegrationService(
         user_repository=users,
         user_preferences_repository=user_preferences,
-        metrics_service=metrics_service,
+        user_preferences_service=UserPreferencesService(user_preferences, metrics_service),
         firebase=firebase,  # type: ignore[arg-type]
         link_ttl_minutes=_TTL_MINUTES,
         frontend_url=_FRONTEND_URL,

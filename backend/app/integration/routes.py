@@ -6,8 +6,6 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.app_config import get_application_config
 from app.constants.errors import HTTPErrorResponse, HTTPExceptionWithErrorCode
-from app.metrics.services.get_metrics_service import get_metrics_service
-from app.metrics.services.service import IMetricsService
 from app.integration.firebase import get_integration_firebase
 from app.integration.repository import ExternalUserRepository
 from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError
@@ -16,6 +14,7 @@ from app.integration.types import CreateExternalUserRequest, CreateExternalUserR
 from app.server_dependencies.db_dependencies import CompassDBProvider
 from app.users.auth import ApiKeyAuth
 from app.users.get_user_preferences_repository import get_user_preferences_repository
+from app.users.preferences_service import IUserPreferencesService, get_user_preferences_service
 from app.users.repositories import IUserPreferenceRepository
 
 _CONFLICT_DETAILS = {
@@ -31,12 +30,13 @@ INVALID_LINK_MESSAGE = "The link is not valid or has expired."
 async def get_integration_service(
         application_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_application_db),
         user_preferences_repository: IUserPreferenceRepository = Depends(get_user_preferences_repository),
-        metrics_service: IMetricsService = Depends(get_metrics_service)) -> IntegrationService:
+        user_preferences_service: IUserPreferencesService = Depends(get_user_preferences_service)
+) -> IntegrationService:
     app_config = get_application_config()
     return IntegrationService(
         user_repository=ExternalUserRepository(application_db),
         user_preferences_repository=user_preferences_repository,
-        metrics_service=metrics_service,
+        user_preferences_service=user_preferences_service,
         firebase=get_integration_firebase(),
         link_ttl_minutes=app_config.handoff_link_ttl_minutes,
         frontend_url=os.getenv("FRONTEND_URL", "").rstrip("/"),
