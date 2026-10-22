@@ -12,13 +12,12 @@ from datetime import timedelta
 
 from firebase_admin import auth
 
-from app.metrics.services.service import IMetricsService
 from app.integration.firebase import IntegrationFirebase
 from app.integration.repository import ExternalUserRepository, DuplicateExternalUserError
 from app.integration.types import CreateExternalUserRequest, CreateExternalUserResponse, HandoffAction, \
     HandoffLink, HandoffLinkResponse, ExternalUserConflict, ExternalUserResponse, ExternalUser, \
     HandoffExchangeResponse
-from app.users.new_user_preferences import create_new_user_preferences
+from app.users.preferences_service import IUserPreferencesService
 from app.users.repositories import IUserPreferenceRepository, UserPreferenceRepositoryError
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
 from common_libs.time_utilities import get_now, truncate_microseconds
@@ -54,14 +53,14 @@ class IntegrationService:
     def __init__(self, *,
                  user_repository: ExternalUserRepository,
                  user_preferences_repository: IUserPreferenceRepository,
-                 metrics_service: IMetricsService,
+                 user_preferences_service: IUserPreferencesService,
                  firebase: IntegrationFirebase,
                  link_ttl_minutes: int,
                  frontend_url: str,
                  default_language: str):
         self._users = user_repository
         self._user_preferences = user_preferences_repository
-        self._metrics_service = metrics_service
+        self._user_preferences_service = user_preferences_service
         self._firebase = firebase
         self._link_ttl_minutes = link_ttl_minutes
         self._frontend_url = frontend_url
@@ -167,9 +166,7 @@ class IntegrationService:
             return
         try:
             # consent (accepted_tc) is left empty: the user accepts the terms in the frontend, like everyone
-            await create_new_user_preferences(
-                repository=self._user_preferences,
-                metrics_service=self._metrics_service,
+            await self._user_preferences_service.create_new_user_preferences(
                 user_id=user_id,
                 language=self._default_language,
                 invitation_code=None,

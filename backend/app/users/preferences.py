@@ -10,7 +10,6 @@ from app.conversations.feedback.repository import UserFeedbackRepository
 from app.conversations.feedback.services.service import UserFeedbackService, IUserFeedbackService
 from app.invitations.repository import UserInvitationRepository
 from app.metrics.services.get_metrics_service import get_metrics_service
-from app.metrics.services.service import IMetricsService
 from app.server_dependencies.db_dependencies import CompassDBProvider
 from app.users.auth import Authentication, UserInfo, SignInProvider
 from app.users.get_user_preferences_repository import get_user_preferences_repository
@@ -21,7 +20,7 @@ from app.users.sensitive_personal_data.routes import get_sensitive_personal_data
 from app.users.sensitive_personal_data.service import ISensitivePersonalDataService
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
 from app.users.generate_session_id import generate_new_session_id
-from app.users.new_user_preferences import create_new_user_preferences
+from app.users.preferences_service import IUserPreferencesService, get_user_preferences_service
 from app.users.sessions import SessionsService
 from app.users.types import UserPreferencesUpdateRequest, \
     CreateUserPreferencesRequest, UserPreferencesRepositoryUpdateRequest, UsersPreferencesResponse
@@ -89,7 +88,7 @@ async def _create_user_preferences(
         repository: UserPreferenceRepository,
         preferences: CreateUserPreferencesRequest,
         authed_user: UserInfo,
-        metrics_service: IMetricsService = Depends(get_metrics_service)) -> UsersPreferencesResponse:
+        user_preferences_service: IUserPreferencesService) -> UsersPreferencesResponse:
     try:
         if preferences.user_id != authed_user.user_id:
             raise HTTPException(status_code=403, detail="forbidden")
@@ -128,9 +127,7 @@ async def _create_user_preferences(
 
         # Create the user preferences
         # Store invitation_code as provided (will be None if bypass was used without providing a code)
-        newly_created = await create_new_user_preferences(
-            repository=repository,
-            metrics_service=metrics_service,
+        newly_created = await user_preferences_service.create_new_user_preferences(
             user_id=preferences.user_id,
             language=preferences.language,
             invitation_code=preferences.invitation_code,
@@ -328,10 +325,10 @@ def add_user_preference_routes(users_router: APIRouter, auth: Authentication):
                                   _get_user_invitations_repository),
                               user_preference_repository: UserPreferenceRepository = Depends(
                                   get_user_preferences_repository),
-                              metrics_service: IMetricsService = Depends(
-                                  get_metrics_service)) -> UsersPreferencesResponse:
+                              user_preferences_service: IUserPreferencesService = Depends(
+                                  get_user_preferences_service)) -> UsersPreferencesResponse:
         return await _create_user_preferences(user_invitation_repository, user_preference_repository, body, user_info,
-                                              metrics_service)
+                                              user_preferences_service)
 
     #########################
     # PATCH /users/preferences - Create a user preferences
