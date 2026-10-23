@@ -8,27 +8,57 @@ import hashlib
 import logging
 import secrets
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta
+from typing import Optional
 
 from firebase_admin import auth
+from pydantic import BaseModel, Field
 
+from app.agent.agent_director.abstract_agent_director import ConversationPhase
+from app.agent.explore_experiences_agent_director import DiveInPhase
+from app.application_state import IApplicationStateManager
+from app.conversations.experience._types import ExperienceResponse
 from app.integration.firebase import IntegrationFirebase
 from app.integration.repository import ExternalUserRepository, DuplicateExternalUserError
+from app.integration.return_url import validate_return_url
 from app.integration.types import CreateExternalUserRequest, CreateExternalUserResponse, HandoffAction, \
     HandoffLink, HandoffLinkResponse, ExternalUserConflict, ExternalUserResponse, ExternalUser, \
     HandoffExchangeResponse
 from app.users.preferences_service import IUserPreferencesService
 from app.users.repositories import IUserPreferenceRepository, UserPreferenceRepositoryError
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
+from app.users.types import UserPreferencesRepositoryUpdateRequest
 from common_libs.time_utilities import get_now, truncate_microseconds
 
 HANDOFF_PATH = "/#/handoff"
+
+
+# The results models are here, not in types.py: ExperienceResponse pulls in the agents, and types.py is imported at
+# start-up by the database setup (create_integration_indexes), before them.
+class ConversationResults(BaseModel):
+    session_id: int
+    conversation_completed: bool
+    conversation_conducted_at: Optional[datetime] = Field(description="The last turn; null when not started.")
+    experiences: list[ExperienceResponse] = Field(description="The experiences the user explored, as they see "
+                                                              "them (edits included, deleted ones left out).")
+
+
+class ExternalUserResultsResponse(BaseModel):
+    external_id: str
+    email: str
+    conversations: list[ConversationResults] = Field(description="One per conversation of the user, newest first.")
 
 
 class ExternalUserConflictError(Exception):
     def __init__(self, conflict: ExternalUserConflict):
         super().__init__(conflict.value)
         self.conflict = conflict
+
+
+class ExternalUserNotFoundError(Exception):
+    """
+    No user with this external id, or its Firebase account is not created yet.
+    """
 
 
 class InvalidHandoffLinkError(Exception):
@@ -54,17 +84,21 @@ class IntegrationService:
                  user_repository: ExternalUserRepository,
                  user_preferences_repository: IUserPreferenceRepository,
                  user_preferences_service: IUserPreferencesService,
+                 application_state_manager: IApplicationStateManager,
                  firebase: IntegrationFirebase,
                  link_ttl_minutes: int,
                  frontend_url: str,
-                 default_language: str):
+                 default_language: str,
+                 return_url_origins: list[str]):
         self._users = user_repository
         self._user_preferences = user_preferences_repository
         self._user_preferences_service = user_preferences_service
+        self._application_state_manager = application_state_manager
         self._firebase = firebase
         self._link_ttl_minutes = link_ttl_minutes
         self._frontend_url = frontend_url
         self._default_language = default_language
+        self._return_url_origins = return_url_origins
         self._logger = logging.getLogger(self.__class__.__name__)
 
     async def create_user(self, request: CreateExternalUserRequest) -> tuple[bool, CreateExternalUserResponse]:
@@ -74,7 +108,10 @@ class IntegrationService:
 
         :return: whether the user was created by this request, and the response
         :raises ExternalUserConflictError: see ExternalUserConflict
+        :raises InvalidReturnUrlError: before anything is created
         """
+        if request.return_url is not None:
+            validate_return_url(request.return_url, self._return_url_origins)
         external_user, created = await self._get_or_create_external_user(request)
         user = await self._ensure_firebase_user(external_user)
         if not is_plain_jobseeker(user):
@@ -82,13 +119,16 @@ class IntegrationService:
                                  user.uid)
             raise ExternalUserConflictError(ExternalUserConflict.ACCOUNT_NOT_ELIGIBLE)
         await self._ensure_preferences(user.uid)
+        # each call replaces it, and a call without it removes it ("": the update skips None)
+        await self._user_preferences.update_user_preference(
+            user.uid, UserPreferencesRepositoryUpdateRequest(return_url=request.return_url or ""))
         link = await self._issue_link(external_user.external_id, request.action)
 
         return created, CreateExternalUserResponse(
             result="User created, hand-off link issued." if created
             else "User already existed, new hand-off link issued.",
             user=ExternalUserResponse(external_id=external_user.external_id, email=external_user.email,
-                                      created_at=external_user.created_at),
+                                      return_url=request.return_url, created_at=external_user.created_at),
             link=link)
 
     async def exchange_link(self, token: str) -> HandoffExchangeResponse:
@@ -111,6 +151,32 @@ class IntegrationService:
 
         custom_token = await asyncio.to_thread(self._firebase.create_custom_token, user.uid)
         return HandoffExchangeResponse(custom_token=custom_token, action=external_user.link.action)
+
+    async def get_results(self, external_id: str) -> ExternalUserResultsResponse:
+        """
+        What the user's skills conversations produced, newest first like the sessions, so a new conversation does
+        not hide a completed one. Only the explored experiences: the deleted ones are not in them, and the ones
+        still being explored are left out.
+
+        :raises ExternalUserNotFoundError: for an unknown external id, or one without a Firebase account yet
+        """
+        external_user = await self._users.find_by_external_id(external_id)
+        if external_user is None or external_user.user_id is None:
+            raise ExternalUserNotFoundError()
+
+        # the sessions come from the user's own preferences: a session of another user can never be read
+        preferences = await self._user_preferences.get_user_preference_by_user_id(external_user.user_id)
+        conversations = []
+        for session_id in preferences.sessions if preferences else []:
+            state = await self._application_state_manager.get_state(session_id)
+            conversations.append(ConversationResults(
+                session_id=session_id,
+                conversation_completed=state.agent_director_state.current_phase == ConversationPhase.ENDED,
+                conversation_conducted_at=state.agent_director_state.conversation_conducted_at,
+                experiences=[ExperienceResponse.from_experience_entity(experience, DiveInPhase.PROCESSED)
+                             for experience in state.explore_experiences_director_state.explored_experiences]))
+        return ExternalUserResultsResponse(external_id=external_user.external_id, email=external_user.email,
+                                           conversations=conversations)
 
     async def _get_or_create_external_user(self, request: CreateExternalUserRequest) -> tuple[ExternalUser, bool]:
         existing = await self._users.find_by_external_id(request.external_id)

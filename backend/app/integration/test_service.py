@@ -5,22 +5,32 @@ from unittest.mock import AsyncMock
 
 import pytest
 import pytest_mock
+from pydantic import ValidationError
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.agent.agent_director.abstract_agent_director import ConversationPhase
+from app.agent.experience import ExperienceEntity
+from app.agent.experience.upgrade_experience import get_editable_experience
+from app.application_state import ApplicationStateManager
 from app.metrics.services.service import IMetricsService
+from app.store.database_application_state_store import DatabaseApplicationStateStore
+from app.vector_search.esco_entities import SkillEntity
 from app.metrics.types import UserAccountCreatedEvent
 from app.integration.repository import ExternalUserRepository
+from app.integration.return_url import InvalidReturnUrlError
 from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError, \
-    hash_link_token
+    ExternalUserNotFoundError, hash_link_token
 from app.integration.types import CreateExternalUserRequest, HandoffAction, ExternalUserConflict, HandoffLink, \
     ExternalUser
 from app.users.repositories import UserPreferenceRepository
 from app.users.preferences_service import UserPreferencesService
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
+from app.users.types import UserPreferencesRepositoryUpdateRequest, UserPreferencesUpdateRequest
 from common_libs.time_utilities import get_now
 
 _FRONTEND_URL = "https://compass.example.org"
 _TTL_MINUTES = 60
+_PARTNER_ORIGIN = "https://partner.example.org"
 
 
 @dataclass
@@ -63,6 +73,7 @@ class _Setup:
     users: ExternalUserRepository
     user_preferences: UserPreferenceRepository
     metrics_service: AsyncMock
+    state_manager: ApplicationStateManager
 
 
 @pytest.fixture(scope="function")
@@ -74,16 +85,19 @@ async def setup(in_memory_application_database: Awaitable[AsyncIOMotorDatabase],
     users = ExternalUserRepository(db)
     user_preferences = UserPreferenceRepository(db)
     metrics_service = AsyncMock(spec=IMetricsService)
+    state_manager = ApplicationStateManager(store=DatabaseApplicationStateStore(db))
     service = IntegrationService(
         user_repository=users,
         user_preferences_repository=user_preferences,
         user_preferences_service=UserPreferencesService(user_preferences, metrics_service),
+        application_state_manager=state_manager,
         firebase=firebase,  # type: ignore[arg-type]
         link_ttl_minutes=_TTL_MINUTES,
         frontend_url=_FRONTEND_URL,
         default_language="es-ES",
+        return_url_origins=[_PARTNER_ORIGIN],
     )
-    return _Setup(service, firebase, users, user_preferences, metrics_service)
+    return _Setup(service, firebase, users, user_preferences, metrics_service, state_manager)
 
 
 def _request(external_id: str = "ext-1", email: str = "person@example.com",
@@ -343,3 +357,150 @@ class TestExchangeLink:
         s.firebase.users.clear()
         with pytest.raises(InvalidHandoffLinkError):
             await s.service.exchange_link(_token_of(given.link.url))
+
+
+class TestReturnUrl:
+    @pytest.mark.asyncio
+    async def test_is_stored_echoed_and_replaced_by_the_latest_call(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a user created with a return URL
+        given_url = f"{_PARTNER_ORIGIN}/perfil?vuelta=1"
+        _, actual_first = await s.service.create_user(
+            CreateExternalUserRequest(external_id="ext-1", email="person@example.com", return_url=given_url))
+
+        # THEN the response echoes it and it is in the user's preferences, which the frontend loads
+        assert actual_first.user.return_url == given_url
+        user_id = (await s.users.find_by_external_id("ext-1")).user_id
+        assert (await s.user_preferences.get_user_preference_by_user_id(user_id)).return_url == given_url
+
+        # WHEN the platform calls again without a return URL
+        _, actual_second = await s.service.create_user(_request())
+
+        # THEN it is removed: the record follows the latest call
+        assert actual_second.user.return_url is None
+        assert (await s.user_preferences.get_user_preference_by_user_id(user_id)).return_url is None
+
+    def test_users_cannot_set_it_themselves(self):
+        # the request of the user-facing preferences update does not accept it (else a user could send themselves
+        # anywhere from Compass)
+        with pytest.raises(ValidationError):
+            UserPreferencesUpdateRequest(user_id="uid-1", return_url="https://other.example.org/")
+
+    @pytest.mark.asyncio
+    async def test_not_allowed_is_refused_before_anything_is_created(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # WHEN a platform creates a user with a return URL on another site
+        with pytest.raises(InvalidReturnUrlError):
+            await s.service.create_user(CreateExternalUserRequest(
+                external_id="ext-1", email="person@example.com", return_url="https://other.example.org/"))
+
+        # THEN no user and no account are created
+        assert await s.users.find_by_external_id("ext-1") is None
+        assert s.firebase.created_emails == []
+
+
+def _experience(title: str) -> ExperienceEntity:
+    return ExperienceEntity(uuid=f"uuid-{title}", experience_title=title, top_skills=[
+        SkillEntity(id="1", UUID="skill-1", preferredLabel="atender a los clientes", altLabels=[],
+                    description="...", score=0.5, skillType="skill/competence")])
+
+
+async def _sessions_of(s: _Setup, external_id: str = "ext-1") -> list[int]:
+    user_id = (await s.users.find_by_external_id(external_id)).user_id
+    return (await s.user_preferences.get_user_preference_by_user_id(user_id)).sessions
+
+
+async def _save_conversation(s: _Setup, session_id: int, phase: ConversationPhase, explored: list[ExperienceEntity],
+                             deleted: list[ExperienceEntity] = ()) -> None:
+    state = await s.state_manager.get_state(session_id)
+    state.agent_director_state.current_phase = phase
+    state.agent_director_state.conversation_conducted_at = get_now()
+    state.explore_experiences_director_state.explored_experiences = [get_editable_experience(e) for e in explored]
+    state.explore_experiences_director_state.deleted_experiences = [get_editable_experience(e) for e in deleted]
+    await s.state_manager.save_state(state)
+
+
+class TestGetResults:
+    @pytest.mark.asyncio
+    async def test_new_user_has_one_conversation_not_completed(self, setup: Awaitable[_Setup]):
+        s = await setup
+        await s.service.create_user(_request())
+
+        actual = await s.service.get_results("ext-1")
+
+        assert actual.external_id == "ext-1"
+        assert actual.email == "person@example.com"
+        assert len(actual.conversations) == 1
+        assert actual.conversations[0].conversation_completed is False
+        assert actual.conversations[0].conversation_conducted_at is None
+        assert actual.conversations[0].experiences == []
+
+    @pytest.mark.asyncio
+    async def test_completed_conversation_has_the_explored_experiences_only(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a user who finished their conversation with one experience and deleted another one
+        await s.service.create_user(_request())
+        session_id = (await _sessions_of(s))[0]
+        await _save_conversation(s, session_id, ConversationPhase.ENDED, explored=[_experience("Vendedor")],
+                                 deleted=[_experience("Deleted")])
+
+        # WHEN the platform fetches the results
+        actual = await s.service.get_results("ext-1")
+
+        # THEN the conversation is completed, with the explored experience as the frontend gets it
+        conversation = actual.conversations[0]
+        assert conversation.session_id == session_id
+        assert conversation.conversation_completed is True
+        assert conversation.conversation_conducted_at is not None
+        assert [e.experience_title for e in conversation.experiences] == ["Vendedor"]
+        assert conversation.experiences[0].top_skills[0].preferredLabel == "atender a los clientes"
+
+    @pytest.mark.asyncio
+    async def test_conversations_in_the_order_of_the_sessions(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a user with a completed conversation, then a newer session (newest first in the preferences)
+        await s.service.create_user(_request())
+        user_id = (await s.users.find_by_external_id("ext-1")).user_id
+        preferences = await s.user_preferences.get_user_preference_by_user_id(user_id)
+        await _save_conversation(s, preferences.sessions[0], ConversationPhase.ENDED, [_experience("Vendedor")])
+        await s.user_preferences.update_user_preference(user_id, UserPreferencesRepositoryUpdateRequest(
+            sessions=[preferences.sessions[0] + 1] + preferences.sessions))
+
+        # WHEN the platform fetches the results
+        actual = await s.service.get_results("ext-1")
+
+        # THEN the new conversation does not hide the completed one
+        assert [c.conversation_completed for c in actual.conversations] == [False, True]
+
+    @pytest.mark.asyncio
+    async def test_other_users_conversations_are_not_read(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN two users, the other one with a completed conversation
+        await s.service.create_user(_request())
+        await s.service.create_user(_request(external_id="ext-2", email="other@example.com"))
+        await _save_conversation(s, (await _sessions_of(s, "ext-2"))[0], ConversationPhase.ENDED,
+                                 [_experience("Vendedor")])
+
+        # WHEN the results of the first one are fetched
+        actual = await s.service.get_results("ext-1")
+
+        # THEN they only have the first one's conversation
+        assert [c.session_id for c in actual.conversations] == await _sessions_of(s)
+        assert actual.conversations[0].experiences == []
+
+    @pytest.mark.asyncio
+    async def test_unknown_user(self, setup: Awaitable[_Setup]):
+        s = await setup
+        with pytest.raises(ExternalUserNotFoundError):
+            await s.service.get_results("ext-1")
+
+    @pytest.mark.asyncio
+    async def test_user_without_an_account_yet(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a user left half-created (the record exists, the Firebase account does not)
+        now = get_now()
+        await s.users.insert(ExternalUser(external_id="ext-1", email="person@example.com",
+                                          created_at=now, updated_at=now))
+
+        with pytest.raises(ExternalUserNotFoundError):
+            await s.service.get_results("ext-1")

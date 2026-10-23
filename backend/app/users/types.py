@@ -55,6 +55,11 @@ class UserPreferencesRepositoryUpdateRequest(BaseModel):
     UUID - The client ID (UUID) assigned to the device client (Browser).
     """
 
+    return_url: str | None = None
+    """
+    return_url - Set by the integration API only. "" removes it: None fields are not updated.
+    """
+
     experiments: Optional[Experiments] = None
     """
     experiments - A dictionary mapping experiment namespaces to their configuration
@@ -131,6 +136,10 @@ class UserPreferences(BaseModel):
     client_id: str | None = None
     sessions: list[int] = Field(default_factory=list)  # not required
     sensitive_personal_data_requirement: SensitivePersonalDataRequirement
+    return_url: str | None = None
+    """
+    return_url - Where to send a user created by the integration API back to the other platform.
+    """
     experiments: Experiments = Field(default_factory=dict)
     """
     experiments - A dictionary mapping experiment namespaces to their configuration
@@ -166,6 +175,7 @@ class UserPreferences(BaseModel):
                 SensitivePersonalDataRequirement.NOT_AVAILABLE
             ),
             experiments=doc.get("experiments", {}),
+            return_url=doc.get("return_url") or None,
         )
 
     class Config:
