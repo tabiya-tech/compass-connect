@@ -4,6 +4,12 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+EXTERNAL_ID_PATTERN = r"^[A-Za-z0-9._:@-]{1,128}$"
+"""
+The ids a platform can use. No `/`, so an id can be a path segment (Starlette decodes `%2F` before routing), and no
+free text, which leaves less room for personal data in the id.
+"""
+
 
 class HandoffAction(Enum):
     """
@@ -26,12 +32,17 @@ class ExternalUserConflict(Enum):
 
 
 class CreateExternalUserRequest(BaseModel):
-    external_id: str = Field(min_length=1, max_length=128,
-                             description="The calling platform's id for the user. Unique per Compass instance.")
+    external_id: str = Field(pattern=EXTERNAL_ID_PATTERN,
+                             description="The calling platform's id for the user. Unique per Compass instance. "
+                                         "1 to 128 characters: letters, digits and . _ : @ -")
     email: EmailStr = Field(description="The user's email; their Compass account.")
     action: HandoffAction = Field(default=HandoffAction.BUILD_PROFILE,
                                   description="Where the hand-off link lands the user. create: the Compass home "
                                               "page. build_profile: the conversation that builds the skills report.")
+    return_url: Optional[str] = Field(default=None, max_length=2048,
+                                      description="Where the user goes back to when they are done. Its origin must "
+                                                  "be allowed on the instance. Each call replaces it; a call "
+                                                  "without it removes it.")
 
     @field_validator("email")
     @classmethod
@@ -46,6 +57,7 @@ class CreateExternalUserRequest(BaseModel):
 class ExternalUserResponse(BaseModel):
     external_id: str
     email: str
+    return_url: Optional[str] = Field(default=None, description="The return URL stored by this call.")
     created_at: datetime
 
 
@@ -98,3 +110,4 @@ class HandoffExchangeRequest(BaseModel):
 class HandoffExchangeResponse(BaseModel):
     custom_token: str = Field(description="A Firebase custom token, for signInWithCustomToken.")
     action: HandoffAction = Field(description="Where the user lands.")
+

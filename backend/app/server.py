@@ -293,6 +293,8 @@ application_config = ApplicationConfig(
     inline_phase_transition=os.getenv("COMPASS_INLINE_PHASE_TRANSITION", "").lower() in ("1", "true"),
     career_explorer_config=parse_career_explorer_config(os.getenv("CAREER_EXPLORER_CONFIG")),
     handoff_link_ttl_minutes=os.getenv("BACKEND_HANDOFF_LINK_TTL_MINUTES") or DEFAULT_HANDOFF_LINK_TTL_MINUTES,
+    integration_return_url_origins=[o.strip() for o in os.getenv("BACKEND_INTEGRATION_RETURN_URL_ORIGINS", "").split(",")
+                                    if o.strip()],
     admin_firebase_tenant_id=os.getenv("ADMIN_FIREBASE_TENANT_ID", ""),
     tracing_config=load_tracing_config(_version_info),
     llm_provider=os.getenv("LLM_PROVIDER") or "gemini",
