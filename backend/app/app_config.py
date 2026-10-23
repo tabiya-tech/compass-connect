@@ -127,6 +127,12 @@ class ApplicationConfig(BaseModel):
     Loaded from the BACKEND_HANDOFF_LINK_TTL_MINUTES environment variable.
     """
 
+    integration_return_url_origins: list[str] = Field(default_factory=list)
+    """
+    The origins a return_url of the integration API can point to, e.g. https://partner.example.org.
+    Empty: return_url is refused. Loaded from the BACKEND_INTEGRATION_RETURN_URL_ORIGINS environment variable.
+    """
+
     admin_firebase_tenant_id: str
     """
     The Firebase tenant ID for admin user management operations.

@@ -9,8 +9,10 @@ from fastapi.testclient import TestClient
 
 from app.app_config import ApplicationConfig, set_application_config
 from app.errors.handlers import register_exception_handlers
+from app.integration.return_url import InvalidReturnUrlError
 from app.integration.routes import add_integration_routes, get_integration_service
-from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError
+from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError, \
+    ExternalUserNotFoundError, ExternalUserResultsResponse, ConversationResults
 from app.integration.types import CreateExternalUserResponse, ExternalUserResponse, HandoffLinkResponse, \
     HandoffAction, ExternalUserConflict, HandoffExchangeResponse
 
@@ -76,6 +78,30 @@ class TestCreateUserRoute:
         assert actual.json()["user"]["external_id"] == "ext-1"
         assert actual.json()["link"]["url"] == "https://compass.example.org/#/handoff?token=abc"
 
+    def test_external_id_allows_letters_digits_and_separators(self, client: TestClient,
+                                                              mocked_service: AsyncMock):
+        mocked_service.create_user.return_value = (True, _response())
+
+        actual = _post_user(client, {"external_id": "PRM.000_123:a@b-c", "email": "person@example.com"})
+
+        assert actual.status_code == HTTPStatus.CREATED
+
+    def test_return_url_not_allowed_is_422(self, client: TestClient, mocked_service: AsyncMock):
+        mocked_service.create_user.side_effect = InvalidReturnUrlError("return_url is not allowed on this instance.")
+
+        actual = _post_user(client, {"external_id": "ext-1", "email": "person@example.com",
+                                     "return_url": "https://other.example.org/"})
+
+        assert actual.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        assert actual.json()["detail"] == "return_url is not allowed on this instance."
+
+    def test_return_url_longer_than_2048_is_422(self, client: TestClient, mocked_service: AsyncMock):
+        actual = _post_user(client, {"external_id": "ext-1", "email": "person@example.com",
+                                     "return_url": "https://partner.example.org/" + "x" * 2048})
+
+        assert actual.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        mocked_service.create_user.assert_not_called()
+
     def test_request_is_normalised_and_defaults_to_build_profile(self, client: TestClient,
                                                                   mocked_service: AsyncMock):
         # GIVEN the service creates the user
@@ -109,6 +135,8 @@ class TestCreateUserRoute:
         pytest.param({"external_id": "ext-1"}, id="missing email"),
         pytest.param({"external_id": "", "email": "person@example.com"}, id="empty external_id"),
         pytest.param({"external_id": "x" * 129, "email": "person@example.com"}, id="external_id too long"),
+        pytest.param({"external_id": "org/ext-1", "email": "person@example.com"}, id="external_id with a slash"),
+        pytest.param({"external_id": "Ana Pérez", "email": "person@example.com"}, id="external_id with free text"),
         pytest.param({"external_id": "ext-1", "email": "not-an-email"}, id="invalid email"),
         pytest.param({"external_id": "ext-1", "email": "person@example.com", "action": "delete_user"},
                      id="unknown action"),
@@ -141,6 +169,52 @@ def test_without_api_keys_every_call_is_forbidden(setup_application_config: Appl
     # THEN it is forbidden
     assert actual.status_code == HTTPStatus.FORBIDDEN
     mocked_service.create_user.assert_not_called()
+
+
+def _get_results(client: TestClient, external_id: str, api_key: str | None = _API_KEY):
+    headers = {"x-api-key": api_key} if api_key is not None else {}
+    return client.get(f"/integration/users/{external_id}/results", headers=headers)
+
+
+class TestResultsRoute:
+    def test_results(self, client: TestClient, mocked_service: AsyncMock):
+        # GIVEN the service finds the user
+        mocked_service.get_results.return_value = ExternalUserResultsResponse(
+            external_id="ext-1", email="person@example.com",
+            conversations=[ConversationResults(session_id=1, conversation_completed=True,
+                                               conversation_conducted_at=_CREATED_AT, experiences=[])])
+
+        # WHEN the platform fetches the results
+        actual = _get_results(client, "ext-1")
+
+        # THEN it gets them
+        assert actual.status_code == HTTPStatus.OK
+        assert actual.json()["conversations"][0]["conversation_completed"] is True
+        mocked_service.get_results.assert_awaited_once_with("ext-1")
+
+    def test_unknown_user_is_404(self, client: TestClient, mocked_service: AsyncMock):
+        mocked_service.get_results.side_effect = ExternalUserNotFoundError()
+
+        actual = _get_results(client, "ext-1")
+
+        assert actual.status_code == HTTPStatus.NOT_FOUND
+        assert actual.json()["detail"]
+
+    @pytest.mark.parametrize("given_external_id", ["Ana%20P%C3%A9rez", "x" * 129])
+    def test_external_id_outside_the_pattern_is_422(self, client: TestClient, mocked_service: AsyncMock,
+                                                    given_external_id: str):
+        actual = _get_results(client, given_external_id)
+
+        assert actual.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        mocked_service.get_results.assert_not_called()
+
+    @pytest.mark.parametrize("given_api_key", [None, "wrong-key"])
+    def test_missing_or_wrong_api_key_is_rejected(self, client: TestClient, mocked_service: AsyncMock,
+                                                  given_api_key: str | None):
+        actual = _get_results(client, "ext-1", given_api_key)
+
+        assert actual.status_code in (HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN)
+        mocked_service.get_results.assert_not_called()
 
 
 class TestExchangeRoute:
