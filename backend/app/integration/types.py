@@ -49,6 +49,15 @@ class CreateExternalUserRequest(BaseModel):
     def _normalize_email(cls, value: str) -> str:
         return value.lower()
 
+    @field_validator("external_id")
+    @classmethod
+    def _not_a_dot_segment(cls, value: str) -> str:
+        # `.` and `..` match the pattern, but clients resolve them in a URL path: `/users/../results` never reaches
+        # the results route. Not in the pattern: lookarounds are not supported by pydantic's regex engine.
+        if value in (".", ".."):
+            raise ValueError("external_id cannot be '.' or '..'")
+        return value
+
     class Config:
         extra = "forbid"
         str_strip_whitespace = True

@@ -17,7 +17,7 @@ from app.store.database_application_state_store import DatabaseApplicationStateS
 from app.vector_search.esco_entities import SkillEntity
 from app.metrics.types import UserAccountCreatedEvent
 from app.integration.repository import ExternalUserRepository
-from app.integration.return_url import InvalidReturnUrlError
+from app.integration.return_url_validation import InvalidReturnUrlError
 from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError, \
     ExternalUserNotFoundError, hash_link_token
 from app.integration.types import CreateExternalUserRequest, HandoffAction, ExternalUserConflict, HandoffLink, \
@@ -74,6 +74,7 @@ class _Setup:
     user_preferences: UserPreferenceRepository
     metrics_service: AsyncMock
     state_manager: ApplicationStateManager
+    state_store: DatabaseApplicationStateStore
 
 
 @pytest.fixture(scope="function")
@@ -85,19 +86,20 @@ async def setup(in_memory_application_database: Awaitable[AsyncIOMotorDatabase],
     users = ExternalUserRepository(db)
     user_preferences = UserPreferenceRepository(db)
     metrics_service = AsyncMock(spec=IMetricsService)
-    state_manager = ApplicationStateManager(store=DatabaseApplicationStateStore(db))
+    state_store = DatabaseApplicationStateStore(db)
+    state_manager = ApplicationStateManager(store=state_store)
     service = IntegrationService(
         user_repository=users,
         user_preferences_repository=user_preferences,
         user_preferences_service=UserPreferencesService(user_preferences, metrics_service),
-        application_state_manager=state_manager,
+        application_state_store=state_store,
         firebase=firebase,  # type: ignore[arg-type]
         link_ttl_minutes=_TTL_MINUTES,
         frontend_url=_FRONTEND_URL,
         default_language="es-ES",
         return_url_origins=[_PARTNER_ORIGIN],
     )
-    return _Setup(service, firebase, users, user_preferences, metrics_service, state_manager)
+    return _Setup(service, firebase, users, user_preferences, metrics_service, state_manager, state_store)
 
 
 def _request(external_id: str = "ext-1", email: str = "person@example.com",
@@ -487,6 +489,40 @@ class TestGetResults:
         # THEN they only have the first one's conversation
         assert [c.session_id for c in actual.conversations] == await _sessions_of(s)
         assert actual.conversations[0].experiences == []
+
+    @pytest.mark.asyncio
+    async def test_not_started_conversation_is_not_saved(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a user whose conversation has no state yet
+        await s.service.create_user(_request())
+        session_id = (await _sessions_of(s))[0]
+
+        # WHEN the platform fetches the results
+        actual = await s.service.get_results("ext-1")
+
+        # THEN the conversation is reported as not started, and reading it did not create a state
+        assert actual.conversations[0].conversation_completed is False
+        assert await s.state_store.get_state(session_id) is None
+
+    @pytest.mark.asyncio
+    async def test_failed_read_does_not_overwrite_the_conversation(self, setup: Awaitable[_Setup],
+                                                                   mocker: pytest_mock.MockerFixture):
+        s = await setup
+        # GIVEN a user who finished their conversation
+        await s.service.create_user(_request())
+        session_id = (await _sessions_of(s))[0]
+        await _save_conversation(s, session_id, ConversationPhase.ENDED, explored=[_experience("Vendedor")])
+        # AND reading the state fails (the store logs it and returns None)
+        read = mocker.patch.object(s.state_store, "get_state", return_value=None)
+
+        # WHEN the platform fetches the results
+        await s.service.get_results("ext-1")
+
+        # THEN the saved conversation is left as it was
+        mocker.stop(read)
+        state = await s.state_store.get_state(session_id)
+        assert state.agent_director_state.current_phase == ConversationPhase.ENDED
+        assert [e.experience_title for e in state.explore_experiences_director_state.explored_experiences] == ["Vendedor"]
 
     @pytest.mark.asyncio
     async def test_unknown_user(self, setup: Awaitable[_Setup]):

@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from app.app_config import ApplicationConfig, set_application_config
 from app.errors.handlers import register_exception_handlers
-from app.integration.return_url import InvalidReturnUrlError
+from app.integration.return_url_validation import InvalidReturnUrlError
 from app.integration.routes import add_integration_routes, get_integration_service
 from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError, \
     ExternalUserNotFoundError, ExternalUserResultsResponse, ConversationResults
@@ -137,6 +137,8 @@ class TestCreateUserRoute:
         pytest.param({"external_id": "x" * 129, "email": "person@example.com"}, id="external_id too long"),
         pytest.param({"external_id": "org/ext-1", "email": "person@example.com"}, id="external_id with a slash"),
         pytest.param({"external_id": "Ana Pérez", "email": "person@example.com"}, id="external_id with free text"),
+        pytest.param({"external_id": ".", "email": "person@example.com"}, id="external_id is a dot segment"),
+        pytest.param({"external_id": "..", "email": "person@example.com"}, id="external_id is a double-dot segment"),
         pytest.param({"external_id": "ext-1", "email": "not-an-email"}, id="invalid email"),
         pytest.param({"external_id": "ext-1", "email": "person@example.com", "action": "delete_user"},
                      id="unknown action"),
