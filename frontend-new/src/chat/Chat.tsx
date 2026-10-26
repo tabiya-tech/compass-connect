@@ -642,7 +642,10 @@ export const Chat: React.FC<Readonly<ChatProps>> = ({
               children: showBackdrop ? <InactiveBackdrop isShown={showBackdrop} /> : undefined,
             }}
             belowChatView={
-              conversationCompleted && returnUrl && getReturnSite(returnUrl) ? (
+              conversationCompleted &&
+              currentPhase.phase === ConversationPhase.ENDED &&
+              returnUrl &&
+              getReturnSite(returnUrl) ? (
                 <ReturnToPlatformBanner returnUrl={returnUrl} />
               ) : conversationCompleted && nextModule ? (
                 <ModuleHandoffBanner
