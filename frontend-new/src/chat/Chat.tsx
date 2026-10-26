@@ -39,6 +39,7 @@ import { enqueueErrorSnackbarWithReference } from "src/theme/SnackbarProvider/en
 import { nanoid } from "nanoid";
 import { useExperiencesDrawer } from "src/experiences/ExperiencesDrawerProvider";
 import ModuleHandoffBanner from "src/home/components/ModuleHandoffBanner/ModuleHandoffBanner";
+import ReturnToPlatformBanner, { getReturnSite } from "src/chat/ReturnToPlatformBanner/ReturnToPlatformBanner";
 import { useNextModule } from "src/home/useNextModule";
 import ChatPage from "src/chat/ChatPage/ChatPage";
 import SkillsDiscoverySidebar from "src/home/components/Sidebar/SkillsDiscoverySidebar";
@@ -121,6 +122,8 @@ export const Chat: React.FC<Readonly<ChatProps>> = ({
   const [messages, setMessages] = useState<IChatMessage<any>[]>([]);
   const [conversationCompleted, setConversationCompleted] = useState<boolean>(false);
   const nextModule = useNextModule("skills_discovery");
+  // only users created by another platform through the integration API have one
+  const returnUrl = UserPreferencesStateService.getInstance().getUserPreferences()?.return_url;
   const [exploredExperiences, setExploredExperiences] = useState<number>(0);
   const [aiIsTyping, setAiIsTyping] = useState<boolean>(false);
   const [failedSendDraft, setFailedSendDraft] = useState<string | null>(null);
@@ -639,7 +642,9 @@ export const Chat: React.FC<Readonly<ChatProps>> = ({
               children: showBackdrop ? <InactiveBackdrop isShown={showBackdrop} /> : undefined,
             }}
             belowChatView={
-              conversationCompleted && nextModule ? (
+              conversationCompleted && returnUrl && getReturnSite(returnUrl) ? (
+                <ReturnToPlatformBanner returnUrl={returnUrl} />
+              ) : conversationCompleted && nextModule ? (
                 <ModuleHandoffBanner
                   nextModuleLabel={t(nextModule.labelKey as any)}
                   nextModuleRoute={nextModule.route}

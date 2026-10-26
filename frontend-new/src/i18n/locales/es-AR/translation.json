@@ -280,6 +280,10 @@
       "addScreenshot": "Agregar una captura de pantalla",
       "requiredLabel": "(obligatorio)",
       "cancelButton": "Cancelar"
+    },
+    "handoffReturn": {
+      "message": "¡Listo! Volvé a {{site}} para continuar.",
+      "backTo": "Volver a {{site}}"
     }
   },
   "auth": {

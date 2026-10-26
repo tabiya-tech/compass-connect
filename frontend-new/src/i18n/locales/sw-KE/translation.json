@@ -280,6 +280,10 @@
           }
         }
       }
+    },
+    "handoffReturn": {
+      "message": "Umemaliza! Rudi kwenye {{site}} ili kuendelea.",
+      "backTo": "Rudi kwenye {{site}}"
     }
   },
   "auth": {

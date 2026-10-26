@@ -280,6 +280,10 @@
       "addScreenshot": "Add a screenshot",
       "requiredLabel": "(required)",
       "cancelButton": "Cancel"
+    },
+    "handoffReturn": {
+      "message": "All done! Head back to {{site}} to continue.",
+      "backTo": "Back to {{site}}"
     }
   },
   "auth": {
