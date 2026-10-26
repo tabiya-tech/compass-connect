@@ -95,6 +95,21 @@ describe("UserPreferencesService", () => {
       expect(actualUserPreferences).toEqual(givenResponseBody);
     });
 
+    test("getUserPreferences should return the return url of a user created through the integration API", async () => {
+      // GIVEN the user preferences have a return url
+      const givenResponseBody = { ...getTestUserPreferences(), return_url: "https://partner.example.org/perfil" };
+      jest.spyOn(PersistentStorageService, "getClientId").mockReturnValue(givenResponseBody.client_id as string);
+      setupAPIServiceSpy(StatusCodes.OK, givenResponseBody, "application/json;charset=UTF-8");
+
+      // WHEN the getUserPreferences function is called
+      const actualUserPreferences = await UserPreferencesService.getInstance().getUserPreferences(
+        givenResponseBody.user_id
+      );
+
+      // THEN expect the return url to be kept
+      expect(actualUserPreferences.return_url).toBe(givenResponseBody.return_url);
+    });
+
     test("getUserPreferences should update the client id in the user preferences if it does not exist for legacy users", async () => {
       const updateUserPreferencesSpy = jest.spyOn(UserPreferencesService.getInstance(), "updateUserPreferences");
 

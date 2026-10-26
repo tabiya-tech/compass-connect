@@ -74,6 +74,7 @@ export default class UserPreferencesService {
         accepted_tc: this.formatAcceptedTC(jsonPayload.accepted_tc),
         user_feedback_answered_questions: jsonPayload.user_feedback_answered_questions,
         experiments: jsonPayload.experiments,
+        return_url: jsonPayload.return_url,
       };
     } catch (error) {
       throw errorFactory(

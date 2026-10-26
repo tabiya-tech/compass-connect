@@ -280,6 +280,10 @@
           }
         }
       }
+    },
+    "handoffReturn": {
+      "message": "Mwamaliza! Bwererani ku {{site}} kuti mupitirize.",
+      "backTo": "Bwererani ku {{site}}"
     }
   },
   "auth": {
