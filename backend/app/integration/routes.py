@@ -5,17 +5,16 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path, Response
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.app_config import get_application_config
-from app.application_state import ApplicationStateManager
 from app.constants.errors import HTTPErrorResponse, HTTPExceptionWithErrorCode
 from app.integration.firebase import get_integration_firebase
 from app.integration.repository import ExternalUserRepository
-from app.integration.return_url import InvalidReturnUrlError
+from app.integration.return_url_validation import InvalidReturnUrlError
 from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError, \
     ExternalUserNotFoundError, ExternalUserResultsResponse
 from app.integration.types import CreateExternalUserRequest, CreateExternalUserResponse, ExternalUserConflict, \
     HandoffExchangeRequest, HandoffExchangeResponse, EXTERNAL_ID_PATTERN
-from app.server_dependencies.application_state_dependencies import get_application_state_manager
 from app.server_dependencies.db_dependencies import CompassDBProvider
+from app.store.database_application_state_store import DatabaseApplicationStateStore
 from app.users.auth import ApiKeyAuth
 from app.users.get_user_preferences_repository import get_user_preferences_repository
 from app.users.preferences_service import IUserPreferencesService, get_user_preferences_service
@@ -36,14 +35,13 @@ async def get_integration_service(
         application_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_application_db),
         user_preferences_repository: IUserPreferenceRepository = Depends(get_user_preferences_repository),
         user_preferences_service: IUserPreferencesService = Depends(get_user_preferences_service),
-        application_state_manager: ApplicationStateManager = Depends(get_application_state_manager)
 ) -> IntegrationService:
     app_config = get_application_config()
     return IntegrationService(
         user_repository=ExternalUserRepository(application_db),
         user_preferences_repository=user_preferences_repository,
         user_preferences_service=user_preferences_service,
-        application_state_manager=application_state_manager,
+        application_state_store=DatabaseApplicationStateStore(application_db),
         firebase=get_integration_firebase(),
         link_ttl_minutes=app_config.handoff_link_ttl_minutes,
         frontend_url=os.getenv("FRONTEND_URL", "").rstrip("/"),

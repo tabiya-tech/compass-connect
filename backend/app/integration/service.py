@@ -16,11 +16,11 @@ from pydantic import BaseModel, Field
 
 from app.agent.agent_director.abstract_agent_director import ConversationPhase
 from app.agent.explore_experiences_agent_director import DiveInPhase
-from app.application_state import IApplicationStateManager
+from app.application_state import ApplicationStateStore
 from app.conversations.experience._types import ExperienceResponse
 from app.integration.firebase import IntegrationFirebase
 from app.integration.repository import ExternalUserRepository, DuplicateExternalUserError
-from app.integration.return_url import validate_return_url
+from app.integration.return_url_validation import validate_return_url
 from app.integration.types import CreateExternalUserRequest, CreateExternalUserResponse, HandoffAction, \
     HandoffLink, HandoffLinkResponse, ExternalUserConflict, ExternalUserResponse, ExternalUser, \
     HandoffExchangeResponse
@@ -84,7 +84,7 @@ class IntegrationService:
                  user_repository: ExternalUserRepository,
                  user_preferences_repository: IUserPreferenceRepository,
                  user_preferences_service: IUserPreferencesService,
-                 application_state_manager: IApplicationStateManager,
+                 application_state_store: ApplicationStateStore,
                  firebase: IntegrationFirebase,
                  link_ttl_minutes: int,
                  frontend_url: str,
@@ -93,7 +93,7 @@ class IntegrationService:
         self._users = user_repository
         self._user_preferences = user_preferences_repository
         self._user_preferences_service = user_preferences_service
-        self._application_state_manager = application_state_manager
+        self._application_state_store = application_state_store
         self._firebase = firebase
         self._link_ttl_minutes = link_ttl_minutes
         self._frontend_url = frontend_url
@@ -168,7 +168,13 @@ class IntegrationService:
         preferences = await self._user_preferences.get_user_preference_by_user_id(external_user.user_id)
         conversations = []
         for session_id in preferences.sessions if preferences else []:
-            state = await self._application_state_manager.get_state(session_id)
+            # the store, not the state manager: the manager saves a new empty state when the store returns None, and
+            # the store also returns None when the read fails, so a partner polling this could wipe a conversation
+            state = await self._application_state_store.get_state(session_id)
+            if state is None:
+                conversations.append(ConversationResults(session_id=session_id, conversation_completed=False,
+                                                         conversation_conducted_at=None, experiences=[]))
+                continue
             conversations.append(ConversationResults(
                 session_id=session_id,
                 conversation_completed=state.agent_director_state.current_phase == ConversationPhase.ENDED,

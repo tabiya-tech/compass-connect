@@ -13,19 +13,24 @@ class InvalidReturnUrlError(Exception):
     """
 
 
-def _origin(url: str) -> Optional[str]:
+_DEFAULT_PORTS = {"http": 80, "https": 443}
+
+
+def _origin(url: str) -> Optional[tuple[str, str, int]]:
     """
-    The origin of an absolute http(s) URL in lowercase, or None. URLs with credentials have none:
-    `https://allowed.org@other.org` reads as allowed.org to a person.
+    The origin of an absolute http(s) URL as (scheme, host, port), lowercase and with the default port filled in, or
+    None. A tuple, not a string: an IPv6 host loses its brackets, and `[::1]:8443` would read as the host `::1:8443`.
+    URLs with credentials have none: `https://allowed.org@other.org` reads as allowed.org to a person.
     """
     try:
         parts = urlsplit(url.strip())
-        port = f":{parts.port}" if parts.port else ""
+        scheme = parts.scheme.lower()
+        port = parts.port
     except ValueError:
         return None
-    if parts.scheme.lower() not in ("http", "https") or not parts.hostname or "@" in parts.netloc:
+    if scheme not in _DEFAULT_PORTS or not parts.hostname or "@" in parts.netloc:
         return None
-    return f"{parts.scheme.lower()}://{parts.hostname}{port}"
+    return scheme, parts.hostname, _DEFAULT_PORTS[scheme] if port is None else port
 
 
 def validate_return_url(url: str, allowed_origins: list[str]) -> None:
@@ -36,7 +41,8 @@ def validate_return_url(url: str, allowed_origins: list[str]) -> None:
     origin = _origin(url)
     if origin is None:
         raise InvalidReturnUrlError("return_url must be an absolute https URL.")
-    if origin.startswith("http://") and urlsplit(origin).hostname not in ("localhost", "127.0.0.1"):
+    scheme, host, _ = origin
+    if scheme == "http" and host not in ("localhost", "127.0.0.1"):
         raise InvalidReturnUrlError("return_url must use https (http only for localhost).")
     if origin not in {_origin(allowed) for allowed in allowed_origins}:
         raise InvalidReturnUrlError("return_url is not allowed on this instance.")
