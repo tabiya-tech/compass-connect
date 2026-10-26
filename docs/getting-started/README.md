@@ -99,7 +99,8 @@ To turn it on:
      --member="serviceAccount:<service-account-email>" --role="roles/firebaseauth.admin"
    ```
 2. In `.env`, put a key for the platform in `API_KEYS` (generate one with `openssl rand -hex 32`). All keys have the same access: the platform's key also opens `/analytics/*` and the occupation and skill search. `BACKEND_HANDOFF_LINK_TTL_MINUTES` sets how long a link works, in minutes (default `1440`, 24 hours).
-3. Run `docker compose up -d --build`, create a test user and open the `link.url` of the response in a private browser window. You should see the consent screen, then the conversation.
+3. If the platform wants a button that brings its users back when the conversation ends, put its origin in `BACKEND_INTEGRATION_RETURN_URL_ORIGINS`, for example `https://jobs.example.org` (several origins separated by commas). The platform can only send users back to these origins. While the variable is empty, a request with a `return_url` gets `422`. Origins must use `https`; `http` is accepted for `localhost` and `127.0.0.1`, for example `http://localhost:3100` for the [example integration](../integration/README.md#example-integration).
+4. Run `docker compose up -d --build`, create a test user and open the `link.url` of the response in a private browser window. You should see the consent screen, then the conversation.
    ```bash
    curl -i -X POST "$BACKEND_URL/integration/users" \
      -H "x-api-key: <a key from API_KEYS>" -H "content-type: application/json" \
@@ -107,7 +108,7 @@ To turn it on:
    ```
    Without the role, the call answers `500` and `docker compose logs backend` shows the Firebase error. With a key of another project, the call works but the login fails in the browser (`auth/custom-token-mismatch` in the browser console).
 
-Test users stay in Firebase Authentication and in MongoDB (`external_users` collection): delete them by hand. Then give the platform its key and the backend address (`BACKEND_URL`). To withdraw its access, remove its key from `API_KEYS` and run `docker compose up -d` again.
+Test users stay in Firebase Authentication and in MongoDB (`external_users` and `user_preferences` collections): delete them by hand. Then give the platform its key and the backend address (`BACKEND_URL`). To withdraw its access, remove its key from `API_KEYS` and run `docker compose up -d` again.
 
 ## Manual setup
 
