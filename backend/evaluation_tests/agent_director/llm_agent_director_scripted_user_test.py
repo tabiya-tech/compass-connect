@@ -13,7 +13,7 @@ from app.user_recommendations.types import UserRecommendations
 from app.agent.agent_types import AgentType
 from app.agent.collect_experiences_agent import CollectExperiencesAgentState
 from app.agent.explore_experiences_agent_director import ExploreExperiencesAgentDirectorState
-from app.agent.linking_and_ranking_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
 from app.agent.skill_explorer_agent import SkillsExplorerAgentState
 from app.agent.welcome_agent import WelcomeAgentState
 from app.conversation_memory.conversation_memory_manager import ConversationMemoryManager, \

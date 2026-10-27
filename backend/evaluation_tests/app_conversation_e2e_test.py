@@ -5,7 +5,7 @@ from typing import Awaitable
 import pytest
 from tqdm import tqdm
 
-from app.agent.linking_and_ranking_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
 from app.i18n.translation_service import get_i18n_manager
 from app.vector_search.vector_search_dependencies import SearchServices
 from common_libs.test_utilities import get_random_session_id
