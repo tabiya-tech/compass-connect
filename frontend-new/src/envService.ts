@@ -21,6 +21,8 @@ export enum EnvVariables {
   GLOBAL_ENABLE_CV_UPLOAD = "GLOBAL_ENABLE_CV_UPLOAD",
   FRONTEND_ENABLE_NEW_SESSION = "FRONTEND_ENABLE_NEW_SESSION",
   FRONTEND_FEATURES = "FRONTEND_FEATURES",
+  FRONTEND_DISABLED_MODULES = "FRONTEND_DISABLED_MODULES",
+  FRONTEND_STRINGS_OVERRIDES = "FRONTEND_STRINGS_OVERRIDES",
   FRONTEND_DISABLE_SOCIAL_AUTH = "FRONTEND_DISABLE_SOCIAL_AUTH",
   FRONTEND_SUPPORTED_LOCALES = "FRONTEND_SUPPORTED_LOCALES",
   FRONTEND_DEFAULT_LOCALE = "FRONTEND_DEFAULT_LOCALE",
@@ -193,6 +195,65 @@ export const getMetricsConfig = () => {
 
 export const getFeatures = () => {
   return getEnv(EnvVariables.FRONTEND_FEATURES);
+};
+
+/**
+ * Returns the ids of the modules hidden in this deployment, configured via `FRONTEND_DISABLED_MODULES` as a JSON array.
+ *
+ * Returns an empty array (every module shown) when the variable is unset, is not a JSON array, or cannot be parsed
+ * (an `EnvError` is logged in the latter two cases). Entries that are not strings are dropped.
+ */
+export const getDisabledModules = (): string[] => {
+  const jsonString = getEnv(EnvVariables.FRONTEND_DISABLED_MODULES);
+  if (!jsonString) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(jsonString);
+    if (!Array.isArray(parsed)) {
+      console.error(new EnvError("FRONTEND_DISABLED_MODULES must be a JSON array"));
+      return [];
+    }
+    return parsed.filter((id): id is string => typeof id === "string");
+  } catch (e) {
+    console.error(new EnvError("Error parsing FRONTEND_DISABLED_MODULES JSON", e));
+    return [];
+  }
+};
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+/**
+ * Returns the interface text overrides of this deployment, configured via `FRONTEND_STRINGS_OVERRIDES` as a JSON object
+ * of locales, each mapping translation keys (dotted, as in the translation files) to their text.
+ *
+ * Returns an empty object (no overrides) when the variable is unset, is not a JSON object, or cannot be parsed
+ * (an `EnvError` is logged in the latter two cases). Locales whose value is not an object are dropped, with an `EnvError`.
+ * The keys and texts themselves are checked when they are applied (see `applyStringsOverrides`).
+ */
+export const getStringsOverrides = (): Record<string, Record<string, unknown>> => {
+  const jsonString = getEnv(EnvVariables.FRONTEND_STRINGS_OVERRIDES);
+  if (!jsonString) {
+    return {};
+  }
+  try {
+    const parsed = JSON.parse(jsonString);
+    if (!isPlainObject(parsed)) {
+      console.error(new EnvError("FRONTEND_STRINGS_OVERRIDES must be a JSON object"));
+      return {};
+    }
+    return Object.fromEntries(
+      Object.entries(parsed).filter((entry): entry is [string, Record<string, unknown>] => {
+        if (isPlainObject(entry[1])) return true;
+        console.error(new EnvError(`FRONTEND_STRINGS_OVERRIDES: the overrides of '${entry[0]}' must be a JSON object`));
+        return false;
+      })
+    );
+  } catch (e) {
+    console.error(new EnvError("Error parsing FRONTEND_STRINGS_OVERRIDES JSON", e));
+    return {};
+  }
 };
 
 export const getCvUploadEnabled = () => {

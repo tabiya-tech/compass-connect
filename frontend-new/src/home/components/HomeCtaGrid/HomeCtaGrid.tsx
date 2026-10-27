@@ -7,6 +7,7 @@ import { IsOnlineContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import { routerPaths } from "src/app/routerPaths";
 import PrimaryButton from "src/theme/PrimaryButton/PrimaryButton";
 import SecondaryButton from "src/theme/SecondaryButton/SecondaryButton";
+import { isModuleEnabled } from "src/home/modulesService";
 
 const uniqueId = "b2c3d4e5-f6a7-8901-bcde-f23456789012";
 
@@ -43,6 +44,8 @@ const CtaTitle: React.FC<{ title: string; leadColor: string; tailColor: string }
 interface CtaCardProps {
   testKey: "profile" | "paths" | "jobs";
   edge?: "start" | "middle" | "end";
+  /** Columns the card takes on md and up, so the shown cards fill the row. */
+  mdSize: number;
   title: string;
   description: string;
   cta: string;
@@ -64,6 +67,7 @@ interface CtaCardProps {
 
 const HomeCtaCard: React.FC<CtaCardProps> = ({
   testKey,
+  mdSize,
   title,
   description,
   cta,
@@ -80,7 +84,7 @@ const HomeCtaCard: React.FC<CtaCardProps> = ({
   const contentPadding = theme.fixedSpacing(theme.tabiyaSpacing.lg);
 
   return (
-    <Grid size={{ xs: 12, md: 4 }}>
+    <Grid size={{ xs: 12, md: mdSize }}>
       <Box
         data-testid={`${DATA_TEST_ID.HOME_CTA_CARD}-${testKey}`}
         sx={{
@@ -161,13 +165,23 @@ const HomeCtaGrid: React.FC = () => {
   const pathwaysCardBg = theme.palette.primary.main;
   const jobMatchesBg = theme.palette.quaternary.main;
 
+  // each card leads to a module: cards of modules disabled for this deployment are not shown, the others share the row
+  const showProfile = isModuleEnabled("skills_discovery");
+  const showPaths = isModuleEnabled("career_explorer");
+  const showJobs = isModuleEnabled("job_matching");
+  const shownBackgrounds = [showProfile && profileCardBg, showPaths && pathwaysCardBg, showJobs && jobMatchesBg].filter(
+    (bg): bg is string => !!bg
+  );
+  if (shownBackgrounds.length === 0) return null;
+  const mdSize = 12 / shownBackgrounds.length;
+
   return (
     <Box sx={{ display: "flex", width: "100%" }}>
       {/* Left Spacer - Extends the first card background to the left edge */}
       <Box
         sx={{
           flex: 1,
-          backgroundColor: profileCardBg,
+          backgroundColor: shownBackgrounds[0],
           marginRight: -2,
           display: { xs: "none", md: "block" },
         }}
@@ -182,66 +196,75 @@ const HomeCtaGrid: React.FC = () => {
         }}
       >
         <Grid container spacing={0} data-testid={DATA_TEST_ID.HOME_CTA_GRID}>
-          <HomeCtaCard
-            testKey="profile"
-            title={t("home.cta.buildProfileTitle")}
-            description={t("home.cta.buildProfileDesc")}
-            cta={t("home.cta.buildProfileCta")}
-            onClick={() => {
-              setLoadingCta("profile");
-              go(routerPaths.SKILLS_INTERESTS);
-            }}
-            isLoading={loadingCta === "profile"}
-            backgroundColor={profileCardBg}
-            titleLeadColor={profileCardText}
-            titleTailColor={alpha(profileCardText, 0.8)}
-            descriptionColor={profileCardText}
-            filledButton={{
-              color: "secondary",
-              bgColor: theme.palette.tertiary.main,
-              textColor: theme.palette.tertiary.contrastText,
-            }}
-          />
+          {showProfile && (
+            <HomeCtaCard
+              testKey="profile"
+              title={t("home.cta.buildProfileTitle")}
+              description={t("home.cta.buildProfileDesc")}
+              cta={t("home.cta.buildProfileCta")}
+              onClick={() => {
+                setLoadingCta("profile");
+                go(routerPaths.SKILLS_INTERESTS);
+              }}
+              isLoading={loadingCta === "profile"}
+              backgroundColor={profileCardBg}
+              titleLeadColor={profileCardText}
+              titleTailColor={alpha(profileCardText, 0.8)}
+              descriptionColor={profileCardText}
+              filledButton={{
+                color: "secondary",
+                bgColor: theme.palette.tertiary.main,
+                textColor: theme.palette.tertiary.contrastText,
+              }}
+              mdSize={mdSize}
+            />
+          )}
 
-          <HomeCtaCard
-            testKey="paths"
-            title={t("home.cta.explorePathsTitle")}
-            description={t("home.cta.explorePathsDesc")}
-            cta={t("home.cta.explorePathsCta")}
-            onClick={() => {
-              setLoadingCta("paths");
-              go(routerPaths.CAREER_EXPLORER);
-            }}
-            isLoading={loadingCta === "paths"}
-            backgroundColor={pathwaysCardBg}
-            titleLeadColor={theme.palette.common.white}
-            titleTailColor={alpha(theme.palette.common.white, 0.8)}
-            descriptionColor={theme.palette.common.white}
-            filledButton={{
-              color: "primary",
-              bgColor: theme.palette.tertiary.main,
-              textColor: theme.palette.tertiary.contrastText,
-            }}
-          />
+          {showPaths && (
+            <HomeCtaCard
+              testKey="paths"
+              title={t("home.cta.explorePathsTitle")}
+              description={t("home.cta.explorePathsDesc")}
+              cta={t("home.cta.explorePathsCta")}
+              onClick={() => {
+                setLoadingCta("paths");
+                go(routerPaths.CAREER_EXPLORER);
+              }}
+              isLoading={loadingCta === "paths"}
+              backgroundColor={pathwaysCardBg}
+              titleLeadColor={theme.palette.common.white}
+              titleTailColor={alpha(theme.palette.common.white, 0.8)}
+              descriptionColor={theme.palette.common.white}
+              filledButton={{
+                color: "primary",
+                bgColor: theme.palette.tertiary.main,
+                textColor: theme.palette.tertiary.contrastText,
+              }}
+              mdSize={mdSize}
+            />
+          )}
 
-          <HomeCtaCard
-            testKey="jobs"
-            title={t("home.cta.jobMatchesTitle")}
-            description={t("home.cta.jobMatchesDesc")}
-            cta={t("home.cta.jobMatchesCta")}
-            onClick={() => {
-              setLoadingCta("jobs");
-              go(routerPaths.JOB_MATCHING);
-            }}
-            isLoading={loadingCta === "jobs"}
-            backgroundColor={jobMatchesBg}
-            titleLeadColor={theme.palette.neutral.main}
-            titleTailColor={theme.palette.neutral.main}
-            descriptionColor={theme.palette.text.primary}
-            outlinedButton={{
-              color: "neutral",
-            }}
-          />
+          {showJobs && (
+            <HomeCtaCard
+              testKey="jobs"
+              title={t("home.cta.jobMatchesTitle")}
+              description={t("home.cta.jobMatchesDesc")}
+              cta={t("home.cta.jobMatchesCta")}
+              onClick={() => {
+                setLoadingCta("jobs");
+                go(routerPaths.JOB_MATCHING);
+              }}
+              isLoading={loadingCta === "jobs"}
+              backgroundColor={jobMatchesBg}
+              titleLeadColor={theme.palette.neutral.main}
+              titleTailColor={theme.palette.neutral.main}
+              descriptionColor={theme.palette.text.primary}
+              outlinedButton={{
+                color: "neutral",
+              }}
+              mdSize={mdSize}
+            />
+          )}
         </Grid>
       </Box>
 
@@ -249,7 +272,7 @@ const HomeCtaGrid: React.FC = () => {
       <Box
         sx={{
           flex: 1,
-          backgroundColor: jobMatchesBg,
+          backgroundColor: shownBackgrounds[shownBackgrounds.length - 1],
           marginLeft: -2,
           display: { xs: "none", md: "block" },
         }}

@@ -52,6 +52,8 @@ import { ProfileCard } from "./components/ProfileCard/ProfileCard";
 import { SkillsDiscoveredCard } from "./components/SkillsDiscoveredCard/SkillsDiscoveredCard";
 import CareerReadinessProgressBanner from "src/careerReadiness/components/CareerReadinessProgressBanner/CareerReadinessProgressBanner";
 import type { ModuleSummary } from "src/careerReadiness/types";
+import { getDisabledModules } from "src/envService";
+import { DATA_TEST_ID as CAREER_EXPLORER_CARD_DATA_TEST_ID } from "./components/CareerExplorerCard/CareerExplorerCard";
 
 const makeModule = (id: string, status: ModuleSummary["status"]): ModuleSummary => ({
   id,
@@ -96,6 +98,7 @@ describe("Profile Component", () => {
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();
+    (getDisabledModules as jest.Mock).mockReturnValue([]);
   });
 
   describe("Rendering", () => {
@@ -263,6 +266,43 @@ describe("Profile Component", () => {
 
       // AND the content should match the snapshot
       expect(contentContainer).toMatchSnapshot();
+    });
+  });
+
+  describe("Disabled modules", () => {
+    test("should show the cards of the career modules when they are enabled", () => {
+      // GIVEN no module is disabled
+      // WHEN the Profile component is rendered
+      render(<Profile {...getDefaultProps()} />);
+
+      // THEN the career readiness banner and the career explorer card are shown
+      expect(screen.getByTestId("career-readiness-progress-banner")).toBeInTheDocument();
+      expect(screen.getByTestId(CAREER_EXPLORER_CARD_DATA_TEST_ID.CARD)).toBeInTheDocument();
+    });
+
+    test.each([
+      ["career_explorer", ["career_explorer"]],
+      ["knowledge_hub", ["knowledge_hub"]],
+    ])("should not show the career explorer card when %s is disabled", (_description, givenDisabledModules) => {
+      // GIVEN a module the career explorer card is about or links to is disabled
+      (getDisabledModules as jest.Mock).mockReturnValue(givenDisabledModules);
+
+      // WHEN the Profile component is rendered
+      render(<Profile {...getDefaultProps()} />);
+
+      // THEN the career explorer card is not shown
+      expect(screen.queryByTestId(CAREER_EXPLORER_CARD_DATA_TEST_ID.CARD)).not.toBeInTheDocument();
+    });
+
+    test("should not show the career readiness banner when job_readiness is disabled", () => {
+      // GIVEN the career readiness module is disabled
+      (getDisabledModules as jest.Mock).mockReturnValue(["job_readiness"]);
+
+      // WHEN the Profile component is rendered
+      render(<Profile {...getDefaultProps()} />);
+
+      // THEN the career readiness banner is not shown
+      expect(screen.queryByTestId("career-readiness-progress-banner")).not.toBeInTheDocument();
     });
   });
 });

@@ -1,7 +1,19 @@
 import { routerPaths } from "src/app/routerPaths";
+import { getDisabledModules } from "src/envService";
+
+/**
+ * The ids of the modules, also used in `FRONTEND_DISABLED_MODULES` to hide them.
+ */
+export type ModuleId =
+  | "skills_discovery"
+  | "career_explorer"
+  | "job_readiness"
+  | "knowledge_hub"
+  | "job_matching"
+  | "faq";
 
 export interface Module {
-  id: string;
+  id: ModuleId;
   labelKey: string;
   descriptionKey: string;
   route: string;
@@ -10,7 +22,7 @@ export interface Module {
    * The id of the next top-level module to suggest when this module completes.
    * Leave undefined if there is no automatic handoff.
    */
-  nextModuleId?: string;
+  nextModuleId?: ModuleId;
 }
 
 /**
@@ -49,12 +61,36 @@ const DEFAULT_MODULES: Module[] = [
     descriptionKey: "home.modules.jobMatchingDesc",
     route: routerPaths.JOB_MATCHING,
   },
+  {
+    // the help page: not a step of the journey, so no module hands off to it
+    id: "faq",
+    labelKey: "nav.needHelp",
+    descriptionKey: "faq.lede",
+    route: routerPaths.FAQ,
+  },
 ];
 
+// Unknown ids already warned about, so a misconfigured deployment logs each one once and not on every render.
+const warnedUnknownModuleIds = new Set<string>();
+
 /**
- * Gets the list of enabled modules.
- * Returns the hardcoded default set of 5 modules.
+ * Gets the list of enabled modules: the default set of modules, without the ones disabled for this deployment
+ * (`FRONTEND_DISABLED_MODULES`).
  */
 export const getEnabledModules = (): Module[] => {
-  return DEFAULT_MODULES;
+  const disabledModuleIds = getDisabledModules();
+  disabledModuleIds
+    .filter((id) => !DEFAULT_MODULES.some((module) => module.id === id) && !warnedUnknownModuleIds.has(id))
+    .forEach((id) => {
+      warnedUnknownModuleIds.add(id);
+      console.warn(`Unknown module id '${id}' in FRONTEND_DISABLED_MODULES, ignoring it`);
+    });
+  return DEFAULT_MODULES.filter((module) => !disabledModuleIds.includes(module.id));
+};
+
+/**
+ * Whether the module is enabled for this deployment. Disabled modules have no routes and no links to them.
+ */
+export const isModuleEnabled = (moduleId: ModuleId): boolean => {
+  return getEnabledModules().some((module) => module.id === moduleId);
 };

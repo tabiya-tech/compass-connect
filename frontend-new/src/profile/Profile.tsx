@@ -12,6 +12,7 @@ import type { ModuleSummary } from "src/careerReadiness/types";
 import type { UserSectorEngagementItem } from "src/careerExplorer/services/CareerExplorerService";
 import type { CurrentPhase } from "src/chat/chatProgressbar/types";
 import { calculateProfileStrength } from "./utils/calculateProfileStrength";
+import { isModuleEnabled } from "src/home/modulesService";
 
 const uniqueId = "a7f8e4b2-9c3d-4a1e-8f6b-2d3e4a5b6c7d";
 
@@ -114,7 +115,7 @@ export const Profile: React.FC<ProfileProps> = ({
         >
           <Stack spacing={theme.fixedSpacing(theme.tabiyaSpacing.lg)}>
             <ModuleProgressCard profileStrength={profileStrength} isLoading={isLoadingProgress || isLoadingSkills} />
-            <CareerReadinessProgressBanner modules={modules} />
+            {isModuleEnabled("job_readiness") && <CareerReadinessProgressBanner modules={modules} />}
           </Stack>
 
           <Stack spacing={theme.fixedSpacing(theme.tabiyaSpacing.lg)} sx={{ minWidth: 0 }}>
@@ -125,7 +126,10 @@ export const Profile: React.FC<ProfileProps> = ({
               school={school}
               program={program}
             />
-            <CareerExplorerCard sectors={careerExplorerSectors} isLoading={isLoadingCareerExplorer} />
+            {/* the card shows the career explorer engagement and links to the knowledge hub pathways */}
+            {isModuleEnabled("career_explorer") && isModuleEnabled("knowledge_hub") && (
+              <CareerExplorerCard sectors={careerExplorerSectors} isLoading={isLoadingCareerExplorer} />
+            )}
 
             {/* Account info */}
             <Box

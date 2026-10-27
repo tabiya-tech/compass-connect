@@ -68,4 +68,55 @@ describe("utils", () => {
       expect(actualPossibleLocaleNames).toStrictEqual([givenLocale]);
     });
   });
+
+  describe("applyStringsOverrides", () => {
+    const givenResources = {
+      home: { hero: { headline1: "Let's discover", headline2: "Your skills" } },
+      common: { ok: "OK" },
+    };
+
+    beforeEach(() => {
+      (console.warn as jest.Mock).mockClear();
+    });
+
+    test("should return the resources unchanged when there are no overrides", () => {
+      // WHEN no overrides are applied
+      const actualResources = Utils.applyStringsOverrides(Locale.EN_US, givenResources, undefined);
+
+      // THEN the same resources are returned
+      expect(actualResources).toBe(givenResources);
+    });
+
+    test("should replace the texts named by the dotted keys, leaving the others and the given resources unchanged", () => {
+      // GIVEN overrides of a nested and a top-level text
+      const givenOverrides = { "home.hero.headline1": "Discover", "common.ok": "Fine" };
+
+      // WHEN the overrides are applied
+      const actualResources = Utils.applyStringsOverrides(Locale.EN_US, givenResources, givenOverrides);
+
+      // THEN the named texts are replaced and the others kept
+      expect(actualResources).toEqual({
+        home: { hero: { headline1: "Discover", headline2: "Your skills" } },
+        common: { ok: "Fine" },
+      });
+      // AND the given resources are not changed
+      expect(givenResources.home.hero.headline1).toBe("Let's discover");
+      // AND nothing is warned about
+      expect(console.warn).not.toHaveBeenCalled();
+    });
+
+    test.each([
+      ["names no existing text", { "home.hero.typo": "foo" }],
+      ["names a group of texts, not a text", { "home.hero": "foo" }],
+      ["is not a string", { "home.hero.headline1": 42 }],
+    ])("should skip an override that %s, with a warning", (_description, givenOverrides) => {
+      // WHEN the override is applied
+      const actualResources = Utils.applyStringsOverrides(Locale.EN_US, givenResources, givenOverrides);
+
+      // THEN the resources are unchanged
+      expect(actualResources).toEqual(givenResources);
+      // AND a warning is logged
+      expect(console.warn).toHaveBeenCalledTimes(1);
+    });
+  });
 });

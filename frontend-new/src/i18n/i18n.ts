@@ -1,11 +1,11 @@
-import i18n from "i18next";
+import i18n, { type ResourceLanguage } from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { DEFAULT_LOCALE, FALL_BACK_LOCALE, Locale, SupportedLocales } from "./constants";
-import { constructLocaleResources } from "./utils";
+import { applyStringsOverrides, constructLocaleResources } from "./utils";
 import { ConfigurationError } from "../error/commonErrors";
 import { parseEnvSupportedLocales } from "./languageContextMenu/parseEnvSupportedLocales";
-import { getProductName, getCountryName } from "src/envService";
+import { getProductName, getCountryName, getStringsOverrides } from "src/envService";
 
 // --- Import translations ---
 import enGb from "./locales/en-GB/translation.json";
@@ -26,6 +26,16 @@ import questionsPtMz from "src/feedback/overallFeedback/feedbackForm/questions-p
 import { updateLanguage } from "../auth/firebaseConfig";
 
 // --- i18n initialization ---
+
+// The deployment's text overrides, merged into each locale before the resources are built,
+// so the locale's other names (e.g. `es` for es-ES) get them too.
+const stringsOverrides = getStringsOverrides();
+Object.keys(stringsOverrides)
+  .filter((locale) => !SupportedLocales.includes(locale as Locale))
+  .forEach((locale) => console.warn(`Text overrides for unknown locale '${locale}', ignoring them`));
+const withOverrides = (locale: Locale, resourceLanguage: ResourceLanguage): ResourceLanguage =>
+  applyStringsOverrides(locale, resourceLanguage, stringsOverrides[locale]);
+
 const resources = {
   // For each locale, construct the locale resources for each possible case
   //   - for only language without a region e.g.: `en`
@@ -36,13 +46,13 @@ const resources = {
   //       same with the es-AR and es-ES, es, if the user has provided es, es-ES will be used.
   //       We are relying on the JS object construction here.
   //       The last object entry will override the previous entry.
-  ...constructLocaleResources(Locale.EN_GB, { ...enGb, questions: questionsEnGb }),
-  ...constructLocaleResources(Locale.EN_US, { ...enUs, questions: questionsEnUs }),
-  ...constructLocaleResources(Locale.ES_AR, { ...esAr, questions: questionsEsAr }),
-  ...constructLocaleResources(Locale.ES_ES, { ...esEs, questions: questionsEsEs }),
-  ...constructLocaleResources(Locale.SW_KE, { ...swKe }),
-  ...constructLocaleResources(Locale.NY_ZM, { ...nyZm, questions: questionsNyZm }),
-  ...constructLocaleResources(Locale.PT_MZ, { ...ptMz, questions: questionsPtMz }),
+  ...constructLocaleResources(Locale.EN_GB, withOverrides(Locale.EN_GB, { ...enGb, questions: questionsEnGb })),
+  ...constructLocaleResources(Locale.EN_US, withOverrides(Locale.EN_US, { ...enUs, questions: questionsEnUs })),
+  ...constructLocaleResources(Locale.ES_AR, withOverrides(Locale.ES_AR, { ...esAr, questions: questionsEsAr })),
+  ...constructLocaleResources(Locale.ES_ES, withOverrides(Locale.ES_ES, { ...esEs, questions: questionsEsEs })),
+  ...constructLocaleResources(Locale.SW_KE, withOverrides(Locale.SW_KE, { ...swKe })),
+  ...constructLocaleResources(Locale.NY_ZM, withOverrides(Locale.NY_ZM, { ...nyZm, questions: questionsNyZm })),
+  ...constructLocaleResources(Locale.PT_MZ, withOverrides(Locale.PT_MZ, { ...ptMz, questions: questionsPtMz })),
 };
 
 // Validate DEFAULT_LOCALE before using it

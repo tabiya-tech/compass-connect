@@ -41,6 +41,7 @@ import { LocalesLabels } from "src/i18n/constants";
 import { useExperiencesDrawer } from "src/experiences/ExperiencesDrawerProvider";
 import { useUserProfileContext } from "src/profile/UserProfileContext";
 import { useRebuildProfile } from "src/chat/RebuildProfileContext";
+import { isModuleEnabled } from "src/home/modulesService";
 
 const uniqueId = "c3a8f1d2-7b4e-4c9a-a5d6-8e3f2b1c0d9e";
 
@@ -122,6 +123,8 @@ const NavBar: React.FC<NavBarProps> = ({ headerColor = "primary" }) => {
   const currentPath = location.pathname;
   const isOnDashboard = currentPath === "/" || currentPath === "";
   const isOnPathways = currentPath.startsWith(routerPaths.KNOWLEDGE_HUB);
+  const isKnowledgeHubEnabled = isModuleEnabled("knowledge_hub");
+  const isFaqEnabled = isModuleEnabled("faq");
   const isOnFaq = currentPath === routerPaths.FAQ;
 
   const handleReportBug = useCallback(() => {
@@ -292,20 +295,28 @@ const NavBar: React.FC<NavBarProps> = ({ headerColor = "primary" }) => {
         disabled: !isOnline,
         action: handleViewExperiences,
       },
-      {
-        id: MENU_ITEM_ID.PATHWAYS,
-        text: t("nav.pathways" as TranslationKey).toLowerCase(),
-        icon: <BookOpenText size={18} />,
-        disabled: !isOnline,
-        action: navigateToPathways,
-      },
-      {
-        id: MENU_ITEM_ID.FAQ,
-        text: t("nav.needHelp" as TranslationKey).toLowerCase(),
-        icon: <HelpCircle size={18} />,
-        disabled: !isOnline,
-        action: navigateToFaq,
-      },
+      ...(isKnowledgeHubEnabled
+        ? [
+            {
+              id: MENU_ITEM_ID.PATHWAYS,
+              text: t("nav.pathways" as TranslationKey).toLowerCase(),
+              icon: <BookOpenText size={18} />,
+              disabled: !isOnline,
+              action: navigateToPathways,
+            },
+          ]
+        : []),
+      ...(isFaqEnabled
+        ? [
+            {
+              id: MENU_ITEM_ID.FAQ,
+              text: t("nav.needHelp" as TranslationKey).toLowerCase(),
+              icon: <HelpCircle size={18} />,
+              disabled: !isOnline,
+              action: navigateToFaq,
+            },
+          ]
+        : []),
       ...(hasMultipleLocales
         ? [
             {
@@ -371,7 +382,9 @@ const NavBar: React.FC<NavBarProps> = ({ headerColor = "primary" }) => {
     navigateToProfile,
     handleViewExperiences,
     navigateToPathways,
+    isKnowledgeHubEnabled,
     navigateToFaq,
+    isFaqEnabled,
     sentryEnabled,
     handleReportBug,
     isAnonymous,
@@ -502,35 +515,39 @@ const NavBar: React.FC<NavBarProps> = ({ headerColor = "primary" }) => {
                 <LayoutDashboard size={18} />
                 {t("nav.dashboard" as TranslationKey)}
               </Box>
-              <Box
-                component={NavLink}
-                to={routerPaths.KNOWLEDGE_HUB}
-                onClick={(event: React.MouseEvent<HTMLElement>) => {
-                  event.preventDefault();
-                  navigateWithTransition(routerPaths.KNOWLEDGE_HUB);
-                }}
-                aria-disabled={!isOnline}
-                sx={getNavLinkSx(isOnPathways, !isOnline)}
-                data-testid={DATA_TEST_ID.NAVBAR_LINK_PATHWAYS}
-              >
-                <BookOpenText size={18} />
-                {t("nav.pathways" as TranslationKey)}
-              </Box>
-              <Box
-                component={NavLink}
-                to={routerPaths.FAQ}
-                onClick={(event: React.MouseEvent<HTMLElement>) => {
-                  event.preventDefault();
-                  navigateWithTransition(routerPaths.FAQ);
-                }}
-                aria-disabled={!isOnline}
-                aria-label={t("nav.faqAriaLabel" as TranslationKey)}
-                sx={getNavLinkSx(isOnFaq, !isOnline)}
-                data-testid={DATA_TEST_ID.NAVBAR_LINK_FAQ}
-              >
-                <HelpCircle size={18} />
-                {t("nav.needHelp" as TranslationKey)}
-              </Box>
+              {isKnowledgeHubEnabled && (
+                <Box
+                  component={NavLink}
+                  to={routerPaths.KNOWLEDGE_HUB}
+                  onClick={(event: React.MouseEvent<HTMLElement>) => {
+                    event.preventDefault();
+                    navigateWithTransition(routerPaths.KNOWLEDGE_HUB);
+                  }}
+                  aria-disabled={!isOnline}
+                  sx={getNavLinkSx(isOnPathways, !isOnline)}
+                  data-testid={DATA_TEST_ID.NAVBAR_LINK_PATHWAYS}
+                >
+                  <BookOpenText size={18} />
+                  {t("nav.pathways" as TranslationKey)}
+                </Box>
+              )}
+              {isFaqEnabled && (
+                <Box
+                  component={NavLink}
+                  to={routerPaths.FAQ}
+                  onClick={(event: React.MouseEvent<HTMLElement>) => {
+                    event.preventDefault();
+                    navigateWithTransition(routerPaths.FAQ);
+                  }}
+                  aria-disabled={!isOnline}
+                  aria-label={t("nav.faqAriaLabel" as TranslationKey)}
+                  sx={getNavLinkSx(isOnFaq, !isOnline)}
+                  data-testid={DATA_TEST_ID.NAVBAR_LINK_FAQ}
+                >
+                  <HelpCircle size={18} />
+                  {t("nav.needHelp" as TranslationKey)}
+                </Box>
+              )}
 
               {hasMultipleLocales && (
                 <Box

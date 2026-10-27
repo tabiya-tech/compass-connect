@@ -9,6 +9,7 @@ import { DATA_TEST_ID as FOOTER_DATA_TEST_ID } from "src/home/components/Footer/
 import { DATA_TEST_ID as HERO_DATA_TEST_ID } from "src/home/components/HomeHero/HomeHero";
 import { DATA_TEST_ID as CTA_DATA_TEST_ID } from "src/home/components/HomeCtaGrid/HomeCtaGrid";
 import { DATA_TEST_ID as JOB_READY_DATA_TEST_ID } from "src/home/components/HomeJobReadyList/HomeJobReadyList";
+import { getDisabledModules } from "src/envService";
 
 jest.mock("src/experiences/ExperiencesDrawerProvider", () => ({
   useExperiencesDrawer: () => ({
@@ -46,6 +47,7 @@ describe("Home", () => {
     mockProfileData.name = "Test User";
     mockProfileData.modules = [];
     mockProfileData.skills = [];
+    (getDisabledModules as jest.Mock).mockReturnValue([]);
   });
 
   describe("render", () => {
@@ -87,6 +89,32 @@ describe("Home", () => {
       expect(screen.getByTestId(`${CTA_DATA_TEST_ID.HOME_CTA_CARD}-profile`)).toBeInTheDocument();
       expect(screen.getByTestId(`${CTA_DATA_TEST_ID.HOME_CTA_CARD}-paths`)).toBeInTheDocument();
       expect(screen.getByTestId(`${CTA_DATA_TEST_ID.HOME_CTA_CARD}-jobs`)).toBeInTheDocument();
+    });
+
+    test("should not offer the disabled modules", () => {
+      // GIVEN the career explorer, career readiness and job matching modules are disabled
+      (getDisabledModules as jest.Mock).mockReturnValue(["career_explorer", "job_readiness", "job_matching"]);
+
+      // WHEN the Home page is rendered
+      render(<Home />);
+
+      // THEN only the card of the enabled module is shown
+      expect(screen.getByTestId(`${CTA_DATA_TEST_ID.HOME_CTA_CARD}-profile`)).toBeInTheDocument();
+      expect(screen.queryByTestId(`${CTA_DATA_TEST_ID.HOME_CTA_CARD}-paths`)).not.toBeInTheDocument();
+      expect(screen.queryByTestId(`${CTA_DATA_TEST_ID.HOME_CTA_CARD}-jobs`)).not.toBeInTheDocument();
+      // AND the career readiness list is not shown
+      expect(screen.queryByTestId(JOB_READY_DATA_TEST_ID.HOME_JOB_READY)).not.toBeInTheDocument();
+    });
+
+    test("should not show the CTA grid when every module of its cards is disabled", () => {
+      // GIVEN the modules of every CTA card are disabled
+      (getDisabledModules as jest.Mock).mockReturnValue(["skills_discovery", "career_explorer", "job_matching"]);
+
+      // WHEN the Home page is rendered
+      render(<Home />);
+
+      // THEN the CTA grid is not shown
+      expect(screen.queryByTestId(CTA_DATA_TEST_ID.HOME_CTA_GRID)).not.toBeInTheDocument();
     });
   });
 });

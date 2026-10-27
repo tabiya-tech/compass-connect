@@ -165,6 +165,8 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
     enable_cv_upload: Optional[str] = getenv("GLOBAL_ENABLE_CV_UPLOAD", False, False)
     enable_new_session: Optional[str] = getenv("FRONTEND_ENABLE_NEW_SESSION", False, False)
     hide_program_skills: Optional[str] = getenv("FRONTEND_HIDE_PROGRAM_SKILLS", False, False)
+    disabled_modules: Optional[str] = getenv("FRONTEND_DISABLED_MODULES", False, False)
+    strings_overrides: Optional[str] = getenv("FRONTEND_STRINGS_OVERRIDES", False, False)
 
     # branding
     global_product_name: Optional[str] = getenv("GLOBAL_PRODUCT_NAME", False, False)
@@ -227,6 +229,8 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
         "FRONTEND_DISABLE_REGISTRATION": base64_encode(disable_registration),
         "FRONTEND_DISABLE_SOCIAL_AUTH": base64_encode(disable_social_auth),
         "FRONTEND_FEATURES": base64_encode(features),
+        "FRONTEND_DISABLED_MODULES": base64_encode(disabled_modules or ""),
+        "FRONTEND_STRINGS_OVERRIDES": base64_encode(strings_overrides or ""),
         "FRONTEND_SUPPORTED_LOCALES": base64_encode(supported_locales),
         "FRONTEND_DEFAULT_LOCALE": base64_encode(default_locale),
         "GLOBAL_PRODUCT_NAME": base64_encode(global_product_name),

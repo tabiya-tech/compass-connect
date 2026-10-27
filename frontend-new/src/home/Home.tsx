@@ -11,6 +11,7 @@ import HomeCtaGrid from "src/home/components/HomeCtaGrid/HomeCtaGrid";
 import HomeJobReadyList from "src/home/components/HomeJobReadyList/HomeJobReadyList";
 import HomeSidebar from "src/home/components/Sidebar/HomeSidebar";
 import { useUserProfileContext } from "src/profile/UserProfileContext";
+import { isModuleEnabled } from "src/home/modulesService";
 
 const uniqueId = "f1a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c";
 
@@ -33,6 +34,7 @@ const Home: React.FC = () => {
   const modulesLoadError = Boolean(errors?.modules);
   const modulesConnectionError = isConnectionError(errors?.modules);
   const careerReadinessModules = profileData?.modules ?? [];
+  const showJobReadyList = isModuleEnabled("job_readiness");
   const moduleErrorMessage = modulesConnectionError
     ? t("common.errors.api.serverConnectionError")
     : t("error.errorPage.defaultMessage", { appName });
@@ -132,20 +134,25 @@ const Home: React.FC = () => {
               mx: "auto",
               px: "var(--layout-gutter-x)",
               display: "grid",
-              gridTemplateColumns: { xs: "minmax(0, 1fr)", md: "minmax(0, 2fr) minmax(0, 1fr)" },
+              gridTemplateColumns: {
+                xs: "minmax(0, 1fr)",
+                md: showJobReadyList ? "minmax(0, 2fr) minmax(0, 1fr)" : "minmax(0, 1fr)",
+              },
               columnGap: { xs: 0, md: theme.fixedSpacing(10) },
               rowGap: { xs: theme.fixedSpacing(6), md: 0 },
               alignItems: "start",
             }}
           >
-            <Box sx={{ minWidth: 0 }}>
-              <HomeJobReadyList
-                modules={careerReadinessModules}
-                isLoading={isLoadingModules}
-                loadError={modulesLoadError}
-                loadErrorMessage={moduleErrorMessage}
-              />
-            </Box>
+            {showJobReadyList && (
+              <Box sx={{ minWidth: 0 }}>
+                <HomeJobReadyList
+                  modules={careerReadinessModules}
+                  isLoading={isLoadingModules}
+                  loadError={modulesLoadError}
+                  loadErrorMessage={moduleErrorMessage}
+                />
+              </Box>
+            )}
             <Box sx={{ minWidth: 0 }}>
               <HomeSidebar />
             </Box>

@@ -15,6 +15,7 @@ import AuthenticationServiceFactory from "src/auth/services/Authentication.servi
 import AuthenticationService from "src/auth/services/Authentication.service";
 import UserPreferencesStateService from "src/userPreferences/UserPreferencesStateService";
 import { UserPreference } from "src/userPreferences/UserPreferencesService/userPreferences.types";
+import * as envService from "src/envService";
 
 // Mock the router so we can spy on navigation and inject the location.
 jest.mock("react-router-dom", () => {
@@ -119,6 +120,24 @@ describe("Handoff", () => {
 
     // THEN they land on the page of the action
     await waitFor(() => expect(useNavigate()).toHaveBeenCalledWith(expectedPath, { replace: true }));
+  });
+
+  test("should land the user on home when the module of the action is disabled", async () => {
+    // GIVEN the deployment disables the module the conversation link lands in
+    const getDisabledModulesSpy = jest.spyOn(envService, "getDisabledModules").mockReturnValue(["skills_discovery"]);
+    // AND a link to the conversation, for a user who already gave the consent
+    setSearch("?token=link-token");
+    exchangeSpy.mockResolvedValue({ custom_token: givenCustomToken, action: HandoffAction.BUILD_PROFILE });
+    givenLoginSetsPreferences(new Date());
+
+    // WHEN the page is opened
+    render(<Handoff />);
+
+    // THEN they land on home instead
+    await waitFor(() => expect(useNavigate()).toHaveBeenCalledWith(routerPaths.ROOT, { replace: true }));
+    // AND the misconfiguration is logged
+    expect(console.warn).toHaveBeenCalled();
+    getDisabledModulesSpy.mockRestore();
   });
 
   test.each([
