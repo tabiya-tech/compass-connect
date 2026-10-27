@@ -8,6 +8,7 @@ import LanguageContextMenu from "src/i18n/languageContextMenu/LanguageContextMen
 import SecondaryButton from "src/theme/SecondaryButton/SecondaryButton";
 import { routerPaths } from "src/app/routerPaths";
 import { getIllustrationUrls } from "src/envService";
+import { isModuleEnabled } from "src/home/modulesService";
 
 const uniqueId = "9ad2f1c6-3e08-4b49-9f7d-4c8a1e3d5b27";
 
@@ -135,7 +136,7 @@ const AuthPageShell: React.FC<AuthPageShellProps> = ({
                 sx={{ maxHeight: { xs: 36, md: 44 }, width: "auto", maxWidth: "min(200px, 45vw)" }}
               />
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                {!isOnFaqPage && (
+                {!isOnFaqPage && isModuleEnabled("faq") && (
                   <SecondaryButton
                     color="primary"
                     onClick={handleFaqClick}

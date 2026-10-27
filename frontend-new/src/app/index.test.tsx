@@ -18,6 +18,8 @@ import { resetAllMethodMocks } from "src/_test_utilities/resetAllMethodMocks";
 import AuthenticationStateService from "src/auth/services/AuthenticationState.service";
 import { routerPaths } from "src/app/routerPaths";
 import { AuthBroadcastChannel, AuthChannelMessage } from "src/auth/services/authBroadcastChannel/authBroadcastChannel";
+import * as EnvServiceModule from "src/envService";
+import { createHashRouter, RouteObject } from "react-router-dom";
 
 // Mock UserProfileContext so route content renders without API calls
 jest.mock("src/profile/UserProfileContext", () => ({
@@ -206,6 +208,70 @@ describe("index", () => {
         // AND  expect the offline and online notification to not be shown
         expect(useSnackbar().enqueueSnackbar).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe("module routes", () => {
+    afterEach(() => {
+      (EnvServiceModule.getDisabledModules as jest.Mock).mockRestore?.();
+    });
+
+    // the paths of every route the router was created with
+    const getRouterPaths = (): string[] => {
+      const routes: RouteObject[] = (createHashRouter as jest.Mock).mock.calls.at(-1)[0];
+      const collect = (routes: RouteObject[]): string[] =>
+        routes.flatMap((route) => [...(route.path ? [route.path] : []), ...collect(route.children ?? [])]);
+      return collect(routes);
+    };
+
+    test("should create the routes of every module when no module is disabled", async () => {
+      // GIVEN no module is disabled
+      jest.spyOn(EnvServiceModule, "getDisabledModules").mockReturnValue([]);
+      jest.spyOn(AuthenticationStateService.prototype, "loadToken").mockImplementation(() => {});
+
+      // WHEN the app is rendered
+      render(<App />);
+      await waitForAppLoadingToFinish();
+
+      // THEN the router has the routes of every module
+      expect(getRouterPaths()).toEqual(
+        expect.arrayContaining([
+          routerPaths.SKILLS_INTERESTS,
+          routerPaths.CAREER_EXPLORER,
+          routerPaths.CAREER_READINESS,
+          routerPaths.CAREER_READINESS_MODULE,
+          routerPaths.KNOWLEDGE_HUB,
+          routerPaths.KNOWLEDGE_HUB_DOCUMENT,
+          routerPaths.JOB_MATCHING,
+          routerPaths.FAQ,
+        ])
+      );
+    });
+
+    test("should leave out the routes of the disabled modules, so a direct link to them is not found", async () => {
+      // GIVEN the career readiness and job matching modules are disabled
+      jest.spyOn(EnvServiceModule, "getDisabledModules").mockReturnValue(["job_readiness", "job_matching", "faq"]);
+      jest.spyOn(AuthenticationStateService.prototype, "loadToken").mockImplementation(() => {});
+
+      // WHEN the app is rendered
+      render(<App />);
+      await waitForAppLoadingToFinish();
+
+      // THEN the router has no routes of the disabled modules
+      const actualPaths = getRouterPaths();
+      expect(actualPaths).not.toContain(routerPaths.CAREER_READINESS);
+      expect(actualPaths).not.toContain(routerPaths.CAREER_READINESS_MODULE);
+      expect(actualPaths).not.toContain(routerPaths.JOB_MATCHING);
+      expect(actualPaths).not.toContain(routerPaths.FAQ);
+      // AND it keeps the routes of the other modules and the not found route
+      expect(actualPaths).toEqual(
+        expect.arrayContaining([
+          routerPaths.SKILLS_INTERESTS,
+          routerPaths.CAREER_EXPLORER,
+          routerPaths.KNOWLEDGE_HUB,
+          "*",
+        ])
+      );
     });
   });
 

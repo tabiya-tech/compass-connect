@@ -30,6 +30,8 @@ import {
   getSkillsReportOutputConfigEnvVar,
   getFaqTutorialVideoUrl,
   getPartnerLogos,
+  getDisabledModules,
+  getStringsOverrides,
   getCountryName,
   getProgramSkillsVisibility,
 } from "./envService";
@@ -232,6 +234,123 @@ describe("FRONTEND_PARTNER_LOGOS Getter (getPartnerLogos) tests", () => {
     // AND expect an error to have been logged
     expect(console.error).toHaveBeenCalledWith(new EnvError("FRONTEND_PARTNER_LOGOS must be a JSON array"));
   });
+});
+
+describe("FRONTEND_DISABLED_MODULES Getter (getDisabledModules) tests", () => {
+  test("should return an empty array when the FRONTEND_DISABLED_MODULES is not set", () => {
+    // GIVEN the FRONTEND_DISABLED_MODULES environment variable is not set
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: {},
+      writable: true,
+    });
+    // WHEN getDisabledModules is called
+    const actualDisabledModules = getDisabledModules();
+    // THEN expect it to return an empty array
+    expect(actualDisabledModules).toEqual([]);
+  });
+
+  test("should return the decoded module ids, dropping entries that are not strings", () => {
+    // GIVEN the FRONTEND_DISABLED_MODULES environment variable is set to a JSON array with a non-string entry
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: {
+        FRONTEND_DISABLED_MODULES: btoa(JSON.stringify(["career_explorer", 42, "job_matching"])),
+      },
+      writable: true,
+    });
+    // WHEN getDisabledModules is called
+    const actualDisabledModules = getDisabledModules();
+    // THEN expect only the string ids to be returned
+    expect(actualDisabledModules).toEqual(["career_explorer", "job_matching"]);
+  });
+
+  test("should return an empty array and log an error when the FRONTEND_DISABLED_MODULES is not valid JSON", () => {
+    // GIVEN the FRONTEND_DISABLED_MODULES environment variable is set to an invalid JSON string
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: {
+        FRONTEND_DISABLED_MODULES: btoa("not-json"),
+      },
+      writable: true,
+    });
+    // WHEN getDisabledModules is called
+    const actualDisabledModules = getDisabledModules();
+    // THEN expect it to return an empty array
+    expect(actualDisabledModules).toEqual([]);
+    // AND expect an error to have been logged
+    expect(console.error).toHaveBeenCalledWith(
+      new EnvError("Error parsing FRONTEND_DISABLED_MODULES JSON", expect.any(Error))
+    );
+  });
+
+  test("should return an empty array and log an error when the FRONTEND_DISABLED_MODULES is not a JSON array", () => {
+    // GIVEN the FRONTEND_DISABLED_MODULES environment variable is set to a JSON object (not an array)
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: {
+        FRONTEND_DISABLED_MODULES: btoa(JSON.stringify({ career_explorer: true })),
+      },
+      writable: true,
+    });
+    // WHEN getDisabledModules is called
+    const actualDisabledModules = getDisabledModules();
+    // THEN expect it to return an empty array
+    expect(actualDisabledModules).toEqual([]);
+    // AND expect an error to have been logged
+    expect(console.error).toHaveBeenCalledWith(new EnvError("FRONTEND_DISABLED_MODULES must be a JSON array"));
+  });
+});
+
+describe("FRONTEND_STRINGS_OVERRIDES Getter (getStringsOverrides) tests", () => {
+  const givenConfig = (value: string | undefined) =>
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: value === undefined ? {} : { FRONTEND_STRINGS_OVERRIDES: value },
+      writable: true,
+    });
+  // base64 of the UTF-8 bytes, as the env.js generators write it
+  const encode = (text: string) => btoa(String.fromCharCode(...Array.from(new TextEncoder().encode(text))));
+
+  test("should return an empty object when the FRONTEND_STRINGS_OVERRIDES is not set", () => {
+    // GIVEN the FRONTEND_STRINGS_OVERRIDES environment variable is not set
+    givenConfig(undefined);
+    // WHEN getStringsOverrides is called
+    // THEN expect it to return an empty object
+    expect(getStringsOverrides()).toEqual({});
+  });
+
+  test("should return the decoded overrides, keeping accented characters", () => {
+    // GIVEN overrides with accented characters
+    const givenOverrides = { "es-ES": { "home.hero.headline1": "Descubramos tus habilidades y fortalezas también" } };
+    givenConfig(encode(JSON.stringify(givenOverrides)));
+    // WHEN getStringsOverrides is called
+    // THEN expect it to return the overrides
+    expect(getStringsOverrides()).toEqual(givenOverrides);
+  });
+
+  test("should drop a locale whose overrides are not an object, logging an error", () => {
+    // GIVEN one locale's overrides are not an object
+    givenConfig(encode(JSON.stringify({ "es-ES": { "common.ok": "Vale" }, "en-US": "foo" })));
+    // WHEN getStringsOverrides is called
+    // THEN expect only the valid locale to be returned
+    expect(getStringsOverrides()).toEqual({ "es-ES": { "common.ok": "Vale" } });
+    // AND an error to have been logged
+    expect(console.error).toHaveBeenCalledWith(
+      new EnvError("FRONTEND_STRINGS_OVERRIDES: the overrides of 'en-US' must be a JSON object")
+    );
+  });
+
+  test.each([
+    ["not valid JSON", "not-json", new EnvError("Error parsing FRONTEND_STRINGS_OVERRIDES JSON", expect.any(Error))],
+    ["a JSON array", JSON.stringify([]), new EnvError("FRONTEND_STRINGS_OVERRIDES must be a JSON object")],
+  ])(
+    "should return an empty object and log an error when the FRONTEND_STRINGS_OVERRIDES is %s",
+    (_d, givenValue, expectedError) => {
+      // GIVEN the FRONTEND_STRINGS_OVERRIDES environment variable is invalid
+      givenConfig(btoa(givenValue));
+      // WHEN getStringsOverrides is called
+      // THEN expect it to return an empty object
+      expect(getStringsOverrides()).toEqual({});
+      // AND an error to have been logged
+      expect(console.error).toHaveBeenCalledWith(expectedError);
+    }
+  );
 });
 
 describe("Ensure Required Environment Variables", () => {

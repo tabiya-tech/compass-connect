@@ -1,4 +1,4 @@
-import { getEnabledModules, Module } from "./modulesService";
+import { getEnabledModules, Module, ModuleId } from "./modulesService";
 
 /**
  * Given a module id, returns the next top-level module to suggest
@@ -6,7 +6,7 @@ import { getEnabledModules, Module } from "./modulesService";
  *
  * Returns null if no handoff is configured for the given module.
  */
-export const useNextModule = (moduleId: string): Module | null => {
+export const useNextModule = (moduleId: ModuleId): Module | null => {
   const modules = getEnabledModules();
   const current = modules.find((m) => m.id === moduleId);
   if (!current?.nextModuleId) return null;
