@@ -170,6 +170,8 @@ class IntegrationService:
         for session_id in preferences.sessions if preferences else []:
             # the store, not the state manager: the manager saves a new empty state when the store returns None, and
             # the store also returns None when the read fails, so a partner polling this could wipe a conversation
+            # TODO: get_state can still save healed or upgraded state, and a failed read is reported here as an
+            #  incomplete conversation. Use a read-only load and return a 5xx on failure once the store has one.
             state = await self._application_state_store.get_state(session_id)
             if state is None:
                 conversations.append(ConversationResults(session_id=session_id, conversation_completed=False,

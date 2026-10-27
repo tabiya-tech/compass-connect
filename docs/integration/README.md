@@ -1,13 +1,13 @@
 # Compass Connect integration API
 
-It is possible to use Compass Connect as an additional module from your existing platforms, In thi scenario a external platform 
+It is possible to use Compass Connect as an additional module from your existing platforms. In this scenario an external platform
 can send its users into a Compass Connect instance. 
 
 The platform's server creates the user with an API key and gets back a hand-off link. The user opens the link
 and is logged in to Compass, with no sign-up and no password.
 
-Compass connects exposes the full API specification at `<BACKEND_URL>/docs`
-(tag "Integration") and `<BACKEND_URL>/openapi.json`. Make sure you have looked at
+Compass Connect exposes the full API specification at `<BACKEND_URL>/docs`
+(tag "Integration") and `<BACKEND_URL>/openapi.json`. Make sure you have looked at the
 [getting-started guide](../getting-started/README.md#optional-integration-api) to understand where your API key will come from.
 
 To try the flow, run the [example integration](#example-integration) at the end of this guide.
