@@ -4,8 +4,8 @@ from typing import Optional, Awaitable
 import pytest
 
 from app.agent.experience.work_type import WorkType
-from app.agent.linking_and_ranking_pipeline.infer_occupation_tool import InferOccupationTool
-from app.agent.linking_and_ranking_pipeline.skill_linking_tool import SkillLinkingTool
+from app.agent.skill_linker.linking_and_ranking_pipeline.infer_occupation_tool import InferOccupationTool
+from app.agent.skill_linker.linking_and_ranking_pipeline.skill_linking_tool import SkillLinkingTool
 from app.countries import Country
 from app.i18n.translation_service import get_i18n_manager
 from app.vector_search.esco_entities import OccupationSkillEntity

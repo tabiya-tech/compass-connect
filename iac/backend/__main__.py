@@ -119,6 +119,11 @@ def main():
         matching_service_url=getenv("MATCHING_SERVICE_URL", False, False),
         matching_service_api_key=getenv("MATCHING_SERVICE_API_KEY", True, False),
 
+        # Skill linker (optional) and the classifier API it may use
+        skill_linker=getenv("BACKEND_SKILL_LINKER", False, False),
+        classifier_api_url=getenv("CLASSIFIER_API_URL", False, False),
+        classifier_api_key=getenv("CLASSIFIER_API_KEY", True, False),
+
         # Phase transition behavior (optional)
         inline_phase_transition=getenv("COMPASS_INLINE_PHASE_TRANSITION", False, False),
 

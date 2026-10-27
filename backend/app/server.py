@@ -46,6 +46,7 @@ from app.app_config import ApplicationConfig, LLMProvider, set_application_confi
     DEFAULT_HANDOFF_LINK_TTL_MINUTES
 from app.version.utils import load_version_info
 from app.agent.config import ModelTier
+from app.agent.skill_linker.skill_linker_type import SkillLinkerType
 from common_libs.llm.models_utils import resolve_model_name
 from common_libs.logging.log_utilities import setup_logging_config
 from common_libs.observability.config import TracingConfig, parse_tracing_config
@@ -300,12 +301,16 @@ application_config = ApplicationConfig(
     llm_deep_reasoning_model=os.getenv("LLM_DEEP_REASONING_MODEL") or None,
     anthropic_api_key=os.getenv("ANTHROPIC_API_KEY") or None,
     ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+    skill_linker=os.getenv("BACKEND_SKILL_LINKER") or SkillLinkerType.LINKING_AND_RANKING_PIPELINE,
+    classifier_api_url=os.getenv("CLASSIFIER_API_URL") or None,
+    classifier_api_key=os.getenv("CLASSIFIER_API_KEY") or None,
 )
 
 set_application_config(application_config)
 
 if os.getenv("LLM_MODEL_NAME"):
     logger.warning("LLM_MODEL_NAME is no longer supported and is ignored, use LLM_DEFAULT_MODEL instead.")
+logger.info("Skill linker: %s", application_config.skill_linker.value)
 logger.info("LLM provider: %s, models: %s", application_config.llm_provider,
             {tier.value: resolve_model_name(tier=tier, provider=application_config.llm_provider) for tier in ModelTier})
 

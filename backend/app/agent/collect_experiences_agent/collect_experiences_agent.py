@@ -15,8 +15,8 @@ from app.agent.collect_experiences_agent._types import CollectedData
 from app.agent.experience.experience_entity import ExperienceEntity
 from app.agent.experience.timeline import Timeline
 from app.agent.experience.work_type import WorkType, is_storage_work_type
-from app.agent.linking_and_ranking_pipeline import ExperiencePipelineConfig
-from app.agent.linking_and_ranking_pipeline.infer_occupation_tool import InferOccupationTool
+from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.linking_and_ranking_pipeline.infer_occupation_tool import InferOccupationTool
 from app.conversation_memory.conversation_memory_types import ConversationContext
 from app.countries import Country
 from app.vector_search.esco_entities import OccupationSkillEntity

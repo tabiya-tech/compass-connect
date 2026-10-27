@@ -7,7 +7,8 @@ from app.conversations.phase_state_machine import JourneyPhase
 from app.agent.agent_types import AgentInput, AgentOutput, AgentType
 from app.agent.explore_experiences_agent_director import ExploreExperiencesAgentDirector
 from app.agent.farewell_agent import FarewellAgent
-from app.agent.linking_and_ranking_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.skill_linker import ISkillLinker
+from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
 from app.agent.preference_elicitation_agent.agent import PreferenceElicitationAgent
 from app.agent.recommender_advisor_agent.agent import RecommenderAdvisorAgent
 from app.matching.get_service import get_matching_service
@@ -31,6 +32,7 @@ class LLMAgentDirector(AbstractAgentDirector):
                  search_services: SearchServices,
                  experience_pipeline_config: ExperiencePipelineConfig,
                  user_recommendations_service: IUserRecommendationsService,
+                 skill_linker: ISkillLinker | None = None,
                  ):
         super().__init__(conversation_manager)
         self._user_recommendations_service = user_recommendations_service
@@ -48,7 +50,8 @@ class LLMAgentDirector(AbstractAgentDirector):
             AgentType.EXPLORE_EXPERIENCES_AGENT: ExploreExperiencesAgentDirector(
                 conversation_manager=conversation_manager,
                 search_services=search_services,
-                experience_pipeline_config=experience_pipeline_config
+                experience_pipeline_config=experience_pipeline_config,
+                skill_linker=skill_linker
             ),
             AgentType.PREFERENCE_ELICITATION_AGENT: PreferenceElicitationAgent(
                 use_personalized_vignettes=False,  # Disable default personalization
