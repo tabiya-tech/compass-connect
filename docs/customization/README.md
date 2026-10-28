@@ -339,6 +339,8 @@ For the full schema and examples, see the
 1. Copy `config/default.json` and give it a name that reflects your deployment (for example `config/connect.json`).
 2. Update the values in your new file. Only the values you change need to be included: settings missing from your
    file keep the value already in the backend `.env` and the frontend `env.js`.
+   `strings` is the exception: when your file has it, it replaces all the text overrides, so `"strings": {}`
+   restores the built-in texts.
 3. Navigate to the `config` directory and run the inject script:
 
 ```bash

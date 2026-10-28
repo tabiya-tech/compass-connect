@@ -87,6 +87,13 @@ FRONTEND_JSON_FIELDS = {
     # Add more JSON.stringify fields here
 }
 
+# JSON fields whose value in the config is complete: it replaces the one in env.js instead of being merged into it.
+# The text overrides are the whole list of a deployment's texts, so removing one (or all, with {}) restores the
+# bundled wording. Fields missing from the config keep their value either way.
+FRONTEND_REPLACED_JSON_FIELDS = {
+    'FRONTEND_STRINGS_OVERRIDES',
+}
+
 
 def read_json(path: Path) -> Dict[str, Any]:
     try:
@@ -240,7 +247,7 @@ def format_frontend_replacement(key: str, raw_value: Any, existing_content: str)
     if key in FRONTEND_JSON_FIELDS:
         # Merge dicts if possible so config can override but keep existing keys
         existing = extract_existing_frontend_json_value(existing_content, key)
-        if isinstance(raw_value, dict) and isinstance(existing, dict):
+        if key not in FRONTEND_REPLACED_JSON_FIELDS and isinstance(raw_value, dict) and isinstance(existing, dict):
             merged = {**existing, **raw_value}
         else:
             merged = raw_value
