@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Card, CardContent, Typography, LinearProgress, Skeleton, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import type { ProfileStrengthBreakdown } from "src/profile/utils/calculateProfileStrength";
+import type { ProfileStrengthBreakdown, ProfileStrengthComponentKey } from "src/profile/utils/calculateProfileStrength";
 import type { TranslationKey } from "src/react-i18next";
 
 const uniqueId = "module-progress-card-b7e3f4a5-8c9d-1e2f-3a4b-5c6d7e8f9a1b";
@@ -17,7 +17,7 @@ export interface ModuleProgressCardProps {
   isLoading?: boolean;
 }
 
-const COMPONENT_ROWS: { key: keyof Omit<ProfileStrengthBreakdown, "overall">; labelKey: TranslationKey }[] = [
+const COMPONENT_ROWS: { key: ProfileStrengthComponentKey; labelKey: TranslationKey }[] = [
   { key: "experienceCollection", labelKey: "home.profile.profileStrengthExperienceCollection" },
   { key: "skillsDiscovery", labelKey: "home.profile.profileStrengthSkillsDiscovery" },
   { key: "preferences", labelKey: "home.profile.profileStrengthPreferences" },
@@ -88,8 +88,8 @@ export const ModuleProgressCard: React.FC<ModuleProgressCardProps> = ({ profileS
 
               {/* Breakdowns */}
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {COMPONENT_ROWS.map((row, index) => {
-                  const { points, max } = profileStrength[row.key];
+                {COMPONENT_ROWS.filter((row) => profileStrength[row.key]).map((row, index) => {
+                  const { points, max } = profileStrength[row.key]!;
                   const label = t(row.labelKey);
                   const safeComponentProgress = Math.max(0, Math.min(100, (points / max) * 100));
                   return (

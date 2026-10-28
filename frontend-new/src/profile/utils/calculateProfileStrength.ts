@@ -2,6 +2,7 @@ import { ConversationPhase } from "src/chat/chatProgressbar/types";
 import { Experience, WorkType } from "src/experiences/experienceService/experiences.types";
 import type { ModuleSummary } from "src/careerReadiness/types";
 import type { UserSectorEngagementItem } from "src/careerExplorer/services/CareerExplorerService";
+import type { ModuleId } from "src/home/modulesService";
 
 export interface ProfileStrengthInput {
   phase: ConversationPhase | null;
@@ -12,6 +13,8 @@ export interface ProfileStrengthInput {
   experiences: Experience[];
   modules: ModuleSummary[];
   sectors: UserSectorEngagementItem[];
+  /** The modules of the deployment: components of other modules are left out. Defaults to every module. */
+  enabledModules?: ModuleId[];
 }
 
 export interface ProfileStrengthComponent {
@@ -19,14 +22,26 @@ export interface ProfileStrengthComponent {
   max: number;
 }
 
-export interface ProfileStrengthBreakdown {
-  experienceCollection: ProfileStrengthComponent;
-  skillsDiscovery: ProfileStrengthComponent;
-  preferences: ProfileStrengthComponent;
-  careerReadiness: ProfileStrengthComponent;
-  careerExplorer: ProfileStrengthComponent;
+export type ProfileStrengthComponentKey =
+  | "experienceCollection"
+  | "skillsDiscovery"
+  | "preferences"
+  | "careerReadiness"
+  | "careerExplorer";
+
+/** The components of the enabled modules, and the overall strength scaled to them (0-100). */
+export type ProfileStrengthBreakdown = Partial<Record<ProfileStrengthComponentKey, ProfileStrengthComponent>> & {
   overall: number;
-}
+};
+
+// The module each component measures. Modules without a component (e.g. faq) do not change the score.
+const COMPONENT_MODULE: Record<ProfileStrengthComponentKey, ModuleId> = {
+  experienceCollection: "skills_discovery",
+  skillsDiscovery: "skills_discovery",
+  preferences: "skills_discovery",
+  careerReadiness: "job_readiness",
+  careerExplorer: "career_explorer",
+};
 
 // Component weights, summing to 100.
 export const EXPERIENCE_COLLECTION_MAX = 20;
@@ -71,10 +86,20 @@ const getWorkTypePoints = (done: boolean, collectedCount: number): number => {
   return 0;
 };
 
-// Profile strength (0-100): sum of five weighted components.
+// Profile strength (0-100): the weighted components of the enabled modules, scaled to their total.
+// With every module enabled the weights sum to 100, so the score is their plain sum.
 export const calculateProfileStrength = (input: ProfileStrengthInput): ProfileStrengthBreakdown => {
-  const { phase, phaseCurrent, phaseTotal, totalExperiences, exploredExperiences, experiences, modules, sectors } =
-    input;
+  const {
+    phase,
+    phaseCurrent,
+    phaseTotal,
+    totalExperiences,
+    exploredExperiences,
+    experiences,
+    modules,
+    sectors,
+    enabledModules,
+  } = input;
 
   const isPastCollect = hasReachedPhase(phase, ConversationPhase.DIVE_IN);
   const isCollecting = phase === ConversationPhase.COLLECT_EXPERIENCES;
@@ -119,26 +144,28 @@ export const calculateProfileStrength = (input: ProfileStrengthInput): ProfileSt
   const totalInquiries = sectors.reduce((sum, sector) => sum + sector.inquiry_count, 0);
   const careerExplorerPoints = totalInquiries >= 1 ? CAREER_EXPLORER_MAX : 0;
 
-  const overall = Math.max(
-    0,
-    Math.min(
-      100,
-      Math.round(
-        experienceCollectionPoints +
-          skillsDiscoveryPoints +
-          preferencesPoints +
-          careerReadinessPoints +
-          careerExplorerPoints
-      )
-    )
-  );
-
-  return {
+  const allComponents: Record<ProfileStrengthComponentKey, ProfileStrengthComponent> = {
     experienceCollection: { points: experienceCollectionPoints, max: EXPERIENCE_COLLECTION_MAX },
     skillsDiscovery: { points: skillsDiscoveryPoints, max: SKILLS_DISCOVERY_MAX },
     preferences: { points: preferencesPoints, max: PREFERENCES_MAX },
     careerReadiness: { points: careerReadinessPoints, max: CAREER_READINESS_MAX },
     careerExplorer: { points: careerExplorerPoints, max: CAREER_EXPLORER_MAX },
-    overall,
   };
+  const components: Partial<Record<ProfileStrengthComponentKey, ProfileStrengthComponent>> = Object.fromEntries(
+    Object.entries(allComponents).filter(
+      ([key]) => !enabledModules || enabledModules.includes(COMPONENT_MODULE[key as ProfileStrengthComponentKey])
+    )
+  );
+
+  const countedComponents = Object.values(components);
+  const points = countedComponents.reduce((sum, component) => sum + component.points, 0);
+  const max = countedComponents.reduce((sum, component) => sum + component.max, 0);
+  // no enabled module has a component: there is nothing to measure
+  const overall = max > 0 ? Math.max(0, Math.min(100, Math.round((points / max) * 100))) : 0;
+
+  return { ...components, overall };
 };
+
+/** Whether any enabled module has a profile strength component, i.e. whether there is a strength to show. */
+export const hasProfileStrengthComponents = (breakdown: ProfileStrengthBreakdown): boolean =>
+  Object.keys(breakdown).some((key) => key !== "overall");
