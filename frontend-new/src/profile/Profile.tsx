@@ -11,8 +11,8 @@ import CareerReadinessProgressBanner from "src/careerReadiness/components/Career
 import type { ModuleSummary } from "src/careerReadiness/types";
 import type { UserSectorEngagementItem } from "src/careerExplorer/services/CareerExplorerService";
 import type { CurrentPhase } from "src/chat/chatProgressbar/types";
-import { calculateProfileStrength } from "./utils/calculateProfileStrength";
-import { isModuleEnabled } from "src/home/modulesService";
+import { calculateProfileStrength, hasProfileStrengthComponents } from "./utils/calculateProfileStrength";
+import { getEnabledModules, isModuleEnabled } from "src/home/modulesService";
 
 const uniqueId = "a7f8e4b2-9c3d-4a1e-8f6b-2d3e4a5b6c7d";
 
@@ -80,6 +80,7 @@ export const Profile: React.FC<ProfileProps> = ({
     experiences,
     modules,
     sectors: careerExplorerSectors,
+    enabledModules: getEnabledModules().map((module) => module.id),
   });
 
   return (
@@ -114,7 +115,9 @@ export const Profile: React.FC<ProfileProps> = ({
           }}
         >
           <Stack spacing={theme.fixedSpacing(theme.tabiyaSpacing.lg)}>
-            <ModuleProgressCard profileStrength={profileStrength} isLoading={isLoadingProgress || isLoadingSkills} />
+            {hasProfileStrengthComponents(profileStrength) && (
+              <ModuleProgressCard profileStrength={profileStrength} isLoading={isLoadingProgress || isLoadingSkills} />
+            )}
             {isModuleEnabled("job_readiness") && <CareerReadinessProgressBanner modules={modules} />}
           </Stack>
 
@@ -126,8 +129,8 @@ export const Profile: React.FC<ProfileProps> = ({
               school={school}
               program={program}
             />
-            {/* the card shows the career explorer engagement and links to the knowledge hub pathways */}
-            {isModuleEnabled("career_explorer") && isModuleEnabled("knowledge_hub") && (
+            {/* despite its name, the card shows the knowledge hub pathways and only links there */}
+            {isModuleEnabled("knowledge_hub") && (
               <CareerExplorerCard sectors={careerExplorerSectors} isLoading={isLoadingCareerExplorer} />
             )}
 

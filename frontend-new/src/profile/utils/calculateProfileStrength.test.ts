@@ -1,4 +1,8 @@
-import { calculateProfileStrength, ProfileStrengthInput } from "./calculateProfileStrength";
+import {
+  calculateProfileStrength,
+  hasProfileStrengthComponents,
+  ProfileStrengthInput,
+} from "./calculateProfileStrength";
 import { ConversationPhase } from "src/chat/chatProgressbar/types";
 import { DiveInPhase, Experience, WorkType } from "src/experiences/experienceService/experiences.types";
 import type { ModuleSummary, ModuleStatus } from "src/careerReadiness/types";
@@ -375,12 +379,137 @@ describe("calculateProfileStrength", () => {
       const breakdown = calculateProfileStrength(input);
 
       // THEN each component contributes as expected: 15 + 12.5 + 0 + 5 + 5 = 37.5 → 38
-      expect(breakdown.experienceCollection.points).toBe(15);
-      expect(breakdown.skillsDiscovery.points).toBe(12.5);
-      expect(breakdown.preferences.points).toBe(0);
-      expect(breakdown.careerReadiness.points).toBe(5);
-      expect(breakdown.careerExplorer.points).toBe(5);
+      expect(breakdown.experienceCollection?.points).toBe(15);
+      expect(breakdown.skillsDiscovery?.points).toBe(12.5);
+      expect(breakdown.preferences?.points).toBe(0);
+      expect(breakdown.careerReadiness?.points).toBe(5);
+      expect(breakdown.careerExplorer?.points).toBe(5);
       expect(breakdown.overall).toBe(38);
+    });
+  });
+
+  describe("enabled modules", () => {
+    // everything the skills conversation offers is complete: experiences, skills discovery and preferences (65 points)
+    const completedConversation = {
+      phase: ConversationPhase.ENDED,
+      totalExperiences: 2,
+      exploredExperiences: 2,
+      experiences: [paidExperience, unpaidExperience],
+    };
+    const completedReadinessAndExplorer = {
+      modules: Array.from({ length: 6 }, (_, i) => getModule("COMPLETED", i)),
+      sectors: [getSector(1)],
+    };
+
+    test("should give the same score as before when every module is enabled", () => {
+      // GIVEN a mid-journey profile
+      const givenProfile = {
+        ...completedConversation,
+        modules: [getModule("COMPLETED", 0)],
+      };
+
+      // WHEN the profile strength is calculated with every module listed, and with none given
+      const actualWithAllModules = calculateProfileStrength(
+        getDefaultInput({
+          ...givenProfile,
+          enabledModules: [
+            "skills_discovery",
+            "career_explorer",
+            "job_readiness",
+            "knowledge_hub",
+            "job_matching",
+            "faq",
+          ],
+        })
+      );
+      const actualByDefault = calculateProfileStrength(getDefaultInput(givenProfile));
+
+      // THEN both are the plain sum of the components: 65 + 5 = 70
+      expect(actualWithAllModules).toEqual(actualByDefault);
+      expect(actualByDefault.overall).toBe(70);
+    });
+
+    test("should reach 100 in a skills-only deployment once the conversation is complete", () => {
+      // GIVEN only the skills conversation (and modules without a component) is enabled
+      const input = getDefaultInput({
+        ...completedConversation,
+        enabledModules: ["skills_discovery", "faq"],
+      });
+
+      // WHEN the profile strength is calculated
+      const breakdown = calculateProfileStrength(input);
+
+      // THEN the overall strength is 100
+      expect(breakdown.overall).toBe(100);
+      // AND only the components of the skills conversation are in the breakdown
+      expect(Object.keys(breakdown).sort()).toEqual(
+        ["experienceCollection", "overall", "preferences", "skillsDiscovery"].sort()
+      );
+    });
+
+    test("should reach 100 without the skills conversation once readiness and explorer are complete", () => {
+      // GIVEN the skills conversation is disabled
+      const input = getDefaultInput({
+        ...completedReadinessAndExplorer,
+        enabledModules: ["career_explorer", "job_readiness", "knowledge_hub"],
+      });
+
+      // WHEN the profile strength is calculated
+      const breakdown = calculateProfileStrength(input);
+
+      // THEN the overall is scaled to the 35 points of career readiness and career explorer
+      expect(breakdown.overall).toBe(100);
+      expect(breakdown.experienceCollection).toBeUndefined();
+      expect(breakdown.skillsDiscovery).toBeUndefined();
+      expect(breakdown.preferences).toBeUndefined();
+    });
+
+    test("should scale a partial score to the components of the enabled modules", () => {
+      // GIVEN career explorer is disabled
+      // AND the conversation is complete (65 points) and 3 of 6 readiness modules are done (15 of 30 points)
+      const input = getDefaultInput({
+        ...completedConversation,
+        modules: Array.from({ length: 3 }, (_, i) => getModule("COMPLETED", i)),
+        enabledModules: ["skills_discovery", "job_readiness"],
+      });
+
+      // WHEN the profile strength is calculated
+      const breakdown = calculateProfileStrength(input);
+
+      // THEN the overall is scaled to the 95 points available: 80 / 95 = 84.2% → 84
+      expect(breakdown.overall).toBe(84);
+      expect(breakdown.careerExplorer).toBeUndefined();
+    });
+
+    test("should ignore the progress of a disabled module", () => {
+      // GIVEN career readiness is disabled, but the user completed readiness modules before it was
+      const input = getDefaultInput({
+        ...completedConversation,
+        ...completedReadinessAndExplorer,
+        enabledModules: ["skills_discovery", "career_explorer"],
+      });
+
+      // WHEN the profile strength is calculated
+      const breakdown = calculateProfileStrength(input);
+
+      // THEN only the enabled components count: (65 + 5) / 70 → 100
+      expect(breakdown.overall).toBe(100);
+      expect(breakdown.careerReadiness).toBeUndefined();
+    });
+
+    test("should give 0 and no components when no enabled module has a component", () => {
+      // GIVEN only modules without a component are enabled
+      const input = getDefaultInput({
+        ...completedConversation,
+        enabledModules: ["knowledge_hub", "faq"],
+      });
+
+      // WHEN the profile strength is calculated
+      const breakdown = calculateProfileStrength(input);
+
+      // THEN there is nothing to measure
+      expect(breakdown).toEqual({ overall: 0 });
+      expect(hasProfileStrengthComponents(breakdown)).toBe(false);
     });
   });
 });

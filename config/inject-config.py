@@ -281,7 +281,8 @@ def update_frontend_env(config: Dict[str, Any], env_js_path: Path, namespaces: O
         pattern = frontend_json_pattern(key) if key in FRONTEND_JSON_FIELDS else frontend_scalar_pattern(key)
 
         if re.search(pattern, content, flags):
-            content = re.sub(pattern, replacement, content, count=1, flags=flags)
+            # a function as replacement: re.sub would otherwise read the escapes of the serialized value (e.g. "\n")
+            content = re.sub(pattern, lambda _match: replacement, content, count=1, flags=flags)
         else:
             content = insert_before_closing_brace(content, f'  {replacement}\n')
 
