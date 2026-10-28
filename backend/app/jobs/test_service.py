@@ -37,7 +37,9 @@ class TestJobServiceListJobs:
             uuid="job-1",
             url="https://example.com/apply",
             opportunity_title="Software Engineer",
-            location="Lusaka",
+            location="Lusaka Lusaka",
+            city="Lusaka",
+            province="Lusaka",
             employer="TechCorp",
             employment_type="full_time",
             contract_type="permanent",
@@ -69,6 +71,8 @@ class TestJobServiceListJobs:
         assert doc.posted_date == "2026-06-01"
         assert doc.closing_date == "2026-07-01"
         assert doc.skills == ["Python", "SQL"]
+        assert doc.city == "Lusaka"
+        assert doc.province == "Lusaka"
 
     @pytest.mark.asyncio
     async def test_employment_type_falls_back_to_contract_type(self):
@@ -133,7 +137,7 @@ class TestJobServiceListJobs:
         # WHEN listing jobs with filters, a cursor and include=count
         await service.list_jobs(
             search="nurse", category="Health", employment_type="full_time",
-            location="Lusaka", skills="care", days=30, cursor="cur", limit=10, include="count",
+            location=["Lusaka", "Ndola"], skills="care", days=30, cursor="cur", limit=10, include="count",
         )
 
         # THEN every filter, the cursor, the limit and include_total reach the repository
@@ -143,7 +147,7 @@ class TestJobServiceListJobs:
             "search": "nurse",
             "category": "Health",
             "employment_type": "full_time",
-            "location": "Lusaka",
+            "location": ["Lusaka", "Ndola"],
             "skills": "care",
             "days": 30,
             "include_total": True,

@@ -1289,7 +1289,8 @@
       "searchPlaceholder": "Tafuta majina ya kazi au makampuni...",
       "searchAriaLabel": "Tafuta kazi",
       "pageAriaLabel": "Ukurasa {{page}}",
-      "pageRange": "{{start}}–{{end}} kati ya {{total}} vitu"
+      "pageRange": "{{start}}–{{end}} kati ya {{total}} vitu",
+      "clearAllFilters": "Futa yote"
     },
     "columns": {
       "jobTitle": "Jina la Kazi",

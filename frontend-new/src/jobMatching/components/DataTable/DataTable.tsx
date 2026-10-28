@@ -19,6 +19,8 @@ import {
   Popover,
   Divider,
   Pagination,
+  Checkbox,
+  Chip,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
@@ -36,11 +38,28 @@ export interface ColumnFilterConfig {
   onChange: (value: string) => void;
 }
 
+export interface MultiColumnFilterConfig {
+  multi: true;
+  /** Selectable values, excluding the "All" option (added automatically as a checkbox of its own). */
+  options: { value: string; label: string }[];
+  /** Controlled current selection; empty (or just "all") means no active filter. */
+  values: string[];
+  onChange: (values: string[]) => void;
+}
+
 export interface SearchConfig {
   placeholder: string;
   ariaLabel?: string;
   value: string;
   onChange: (value: string) => void;
+}
+
+/** One removable chip summarizing an active filter selection, shown beside the search box. */
+export interface ActiveFilterChip {
+  /** Stable key, e.g. `${columnKey}:${value}` — used as the React key and for identification only. */
+  key: string;
+  label: string;
+  onRemove: () => void;
 }
 
 export interface ColumnDef<T> {
@@ -52,8 +71,10 @@ export interface ColumnDef<T> {
   render?: (value: T[keyof T], row: T) => React.ReactNode;
   /** Extra sx applied to every body cell in this column */
   cellSx?: object;
-  /** When provided, a filter icon appears in the header */
+  /** When provided, a filter icon appears in the header (single-select dropdown). */
   filter?: ColumnFilterConfig;
+  /** When provided instead of `filter`, the header's filter icon opens a multi-select checkbox list. */
+  multiFilter?: MultiColumnFilterConfig;
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -66,6 +87,12 @@ export interface DataTableProps<T extends { id: string }> {
   emptyMessage?: string;
   /** When provided, renders a search field above the table */
   search?: SearchConfig;
+  /** Removable chips summarizing the currently active filters, shown below the search field. */
+  activeFilters?: ActiveFilterChip[];
+  /** Clears every active filter at once; shown next to the chips when 2 or more are active. */
+  onClearAllFilters?: () => void;
+  /** Label for the "clear all" control. */
+  clearAllFiltersLabel?: string;
   // Pagination
   page?: number;
   totalPages?: number;
@@ -118,8 +145,10 @@ function FilterIconButton<T>({
   const { t } = useTranslation();
 
   const hasFilter = !!col.filter;
+  const hasMultiFilter = !!col.multiFilter;
   const isFiltered = hasFilter && col.filter!.value !== "all" && col.filter!.value !== "";
-  const isActive = isFiltered || isActiveSortKey;
+  const isMultiFiltered = hasMultiFilter && col.multiFilter!.values.some((v) => v !== "all");
+  const isActive = isFiltered || isMultiFiltered || isActiveSortKey;
 
   return (
     <>
@@ -170,30 +199,34 @@ function FilterIconButton<T>({
           }}
         >
           {/* Search — shown at the top when filter has >5 options */}
-          {hasFilter && col.filter!.options.length > SEARCHABLE_FILTER_THRESHOLD && (
-            <>
-              <Box
-                px={1}
-                pt={theme.fixedSpacing(theme.tabiyaSpacing.xxs)}
-                pb={theme.fixedSpacing(theme.tabiyaSpacing.xxs)}
-              >
-                <TextField
-                  size="small"
-                  placeholder={t("jobMatching.table.filterSearchPlaceholder")}
-                  value={filterSearch}
-                  autoFocus
-                  onChange={(e) => setFilterSearch(e.target.value)}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  slotProps={{
-                    input: { startAdornment: <SearchIcon fontSize="small" sx={{ mr: 0.5, color: "text.disabled" }} /> },
-                    htmlInput: { "aria-label": t("jobMatching.table.filterSearchAriaLabel") },
-                  }}
-                  sx={{ width: "100%" }}
-                />
-              </Box>
-              <Divider sx={{ mb: theme.fixedSpacing(theme.tabiyaSpacing.xxs) }} />
-            </>
-          )}
+          {(hasFilter || hasMultiFilter) &&
+            (hasFilter ? col.filter!.options.length : col.multiFilter!.options.length) >
+              SEARCHABLE_FILTER_THRESHOLD && (
+              <>
+                <Box
+                  px={1}
+                  pt={theme.fixedSpacing(theme.tabiyaSpacing.xxs)}
+                  pb={theme.fixedSpacing(theme.tabiyaSpacing.xxs)}
+                >
+                  <TextField
+                    size="small"
+                    placeholder={t("jobMatching.table.filterSearchPlaceholder")}
+                    value={filterSearch}
+                    autoFocus
+                    onChange={(e) => setFilterSearch(e.target.value)}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    slotProps={{
+                      input: {
+                        startAdornment: <SearchIcon fontSize="small" sx={{ mr: 0.5, color: "text.disabled" }} />,
+                      },
+                      htmlInput: { "aria-label": t("jobMatching.table.filterSearchAriaLabel") },
+                    }}
+                    sx={{ width: "100%" }}
+                  />
+                </Box>
+                <Divider sx={{ mb: theme.fixedSpacing(theme.tabiyaSpacing.xxs) }} />
+              </>
+            )}
 
           {/* Sort rows */}
           {col.sortable !== false && (
@@ -237,11 +270,11 @@ function FilterIconButton<T>({
                   </MenuItem>
                 </>
               )}
-              {hasFilter && <Divider sx={{ my: theme.fixedSpacing(theme.tabiyaSpacing.xxs) }} />}
+              {(hasFilter || hasMultiFilter) && <Divider sx={{ my: theme.fixedSpacing(theme.tabiyaSpacing.xxs) }} />}
             </>
           )}
 
-          {/* Filter list */}
+          {/* Single-select filter list */}
           {hasFilter &&
             (() => {
               const isSearchable = col.filter!.options.length > SEARCHABLE_FILTER_THRESHOLD;
@@ -273,6 +306,67 @@ function FilterIconButton<T>({
                 </MenuList>
               );
             })()}
+
+          {/* Multi-select checkbox filter list: "All" is its own checkbox. */}
+          {hasMultiFilter &&
+            (() => {
+              const { options, onChange } = col.multiFilter!;
+              // Strip the single-select "all" sentinel in case it ends up in `values`.
+              const values = col.multiFilter!.values.filter((v) => v !== "all");
+              const isSearchable = options.length > SEARCHABLE_FILTER_THRESHOLD;
+              const visibleOptions = isSearchable
+                ? options.filter((opt) => opt.label.toLowerCase().includes(filterSearch.toLowerCase()))
+                : options;
+              const isAllSelected = values.length === 0;
+
+              return (
+                <MenuList
+                  key={open ? "open" : "closed"}
+                  dense
+                  disablePadding
+                  sx={{ maxHeight: 240, overflowY: "auto" }}
+                >
+                  <MenuItem
+                    dense
+                    role="menuitemcheckbox"
+                    aria-checked={isAllSelected}
+                    onClick={() => onChange([])}
+                    sx={{
+                      gap: theme.fixedSpacing(theme.tabiyaSpacing.xxs),
+                      fontSize: "0.78rem",
+                      color: "text.primary",
+                    }}
+                  >
+                    <Checkbox size="small" checked={isAllSelected} sx={{ p: 0 }} tabIndex={-1} aria-hidden="true" />
+                    {t("jobMatching.columns.filterAll")}
+                  </MenuItem>
+                  <Divider sx={{ my: theme.fixedSpacing(theme.tabiyaSpacing.xxs) }} />
+                  {visibleOptions.map((opt) => {
+                    const checked = values.includes(opt.value);
+                    return (
+                      <MenuItem
+                        key={opt.value}
+                        dense
+                        role="menuitemcheckbox"
+                        aria-checked={checked}
+                        onClick={() => {
+                          const next = checked ? values.filter((v) => v !== opt.value) : [...values, opt.value];
+                          onChange(next);
+                        }}
+                        sx={{
+                          gap: theme.fixedSpacing(theme.tabiyaSpacing.xxs),
+                          fontSize: "0.78rem",
+                          color: "text.primary",
+                        }}
+                      >
+                        <Checkbox size="small" checked={checked} sx={{ p: 0 }} tabIndex={-1} aria-hidden="true" />
+                        {opt.label}
+                      </MenuItem>
+                    );
+                  })}
+                </MenuList>
+              );
+            })()}
         </Box>
       </Popover>
     </>
@@ -288,6 +382,9 @@ function DataTable<T extends { id: string }>({
   skeletonRows = 8,
   emptyMessage,
   search,
+  activeFilters,
+  onClearAllFilters,
+  clearAllFiltersLabel = "Clear all",
   page,
   totalPages,
   onPageChange,
@@ -350,7 +447,7 @@ function DataTable<T extends { id: string }>({
     const isActive = activeSortKey === col.key;
     const isSortable = col.sortable !== false;
 
-    if (!isSortable && !col.filter) {
+    if (!isSortable && !col.filter && !col.multiFilter) {
       return (
         <Typography
           variant="caption"
@@ -396,7 +493,7 @@ function DataTable<T extends { id: string }>({
           ) : (
             <ArrowDownwardIcon sx={{ fontSize: "0.72rem", color: "secondary.main", flexShrink: 0 }} />
           ))}
-        {(isSortable || col.filter) && (
+        {(isSortable || col.filter || col.multiFilter) && (
           <FilterIconButton<T>
             col={col}
             isActiveSortKey={isActive}
@@ -414,16 +511,61 @@ function DataTable<T extends { id: string }>({
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
-      {search && (
+      {(search || (activeFilters && activeFilters.length > 0)) && (
         <Box mb={theme.fixedSpacing(theme.tabiyaSpacing.md)}>
-          <TextField
-            size="small"
-            placeholder={search.placeholder}
-            value={search.value}
-            onChange={(e) => search.onChange(e.target.value)}
-            slotProps={{ htmlInput: { "aria-label": search.ariaLabel } }}
-            sx={{ width: 280 }}
-          />
+          {search && (
+            <TextField
+              size="small"
+              placeholder={search.placeholder}
+              value={search.value}
+              onChange={(e) => search.onChange(e.target.value)}
+              slotProps={{ htmlInput: { "aria-label": search.ariaLabel } }}
+              sx={{ width: 280 }}
+            />
+          )}
+          {activeFilters && activeFilters.length > 0 && (
+            <Box
+              mt={theme.fixedSpacing(theme.tabiyaSpacing.md)}
+              display="flex"
+              flexWrap="wrap"
+              alignItems="center"
+              gap={theme.fixedSpacing(theme.tabiyaSpacing.xs)}
+            >
+              {activeFilters.map((chip) => (
+                <Chip
+                  key={chip.key}
+                  label={chip.label}
+                  size="small"
+                  onDelete={chip.onRemove}
+                  sx={{
+                    backgroundColor: theme.palette.primary.main,
+                    color: theme.palette.primary.contrastText,
+                    fontWeight: 600,
+                    fontSize: "0.72rem",
+                  }}
+                />
+              ))}
+              {onClearAllFilters && activeFilters.length > 5 && (
+                <Typography
+                  component="button"
+                  type="button"
+                  onClick={onClearAllFilters}
+                  sx={{
+                    border: "none",
+                    background: "none",
+                    p: 0,
+                    cursor: "pointer",
+                    fontSize: "0.72rem",
+                    fontWeight: 600,
+                    color: "primary.main",
+                    textDecoration: "underline",
+                  }}
+                >
+                  {clearAllFiltersLabel}
+                </Typography>
+              )}
+            </Box>
+          )}
         </Box>
       )}
       <TableContainer

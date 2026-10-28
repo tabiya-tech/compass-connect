@@ -1289,7 +1289,8 @@
       "searchPlaceholder": "Sakani maina a ntchito kapena makampani...",
       "searchAriaLabel": "Sakani ntchito",
       "pageAriaLabel": "Peji {{page}}",
-      "pageRange": "{{start}}–{{end}} mwa {{total}} zinthu"
+      "pageRange": "{{start}}–{{end}} mwa {{total}} zinthu",
+      "clearAllFilters": "Chotsani zonse"
     },
     "columns": {
       "jobTitle": "Mutu wa Ntchito",

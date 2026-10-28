@@ -23,6 +23,8 @@ class JobDocument(BaseModel):
     category: Optional[str] = None
     employment_type: Optional[str] = None
     location: Optional[str] = None
+    city: Optional[str] = None
+    province: Optional[str] = None
     posted_date: Optional[str] = None
     closing_date: Optional[str] = None
     application_url: Optional[str] = None
@@ -80,7 +82,7 @@ class IJobService(ABC):
         search: Optional[str],
         category: Optional[str],
         employment_type: Optional[str],
-        location: Optional[str],
+        location: Optional[list[str]],
         skills: Optional[str],
         days: Optional[int],
         cursor: Optional[str],
@@ -115,6 +117,8 @@ class JobService(IJobService):
             category=item.category,
             employment_type=item.employment_type or item.contract_type,
             location=item.location,
+            city=item.city,
+            province=item.province,
             posted_date=item.posted_date,
             closing_date=item.closing_date,
             application_url=item.url,
@@ -131,7 +135,7 @@ class JobService(IJobService):
         search: Optional[str],
         category: Optional[str],
         employment_type: Optional[str],
-        location: Optional[str],
+        location: Optional[list[str]],
         skills: Optional[str],
         days: Optional[int],
         cursor: Optional[str],
