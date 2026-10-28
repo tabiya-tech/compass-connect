@@ -9,7 +9,7 @@ import { MetricsError } from "src/error/commonErrors";
 import { isConnectionError } from "src/error/restAPIError/isConnectionError";
 import Footer from "src/home/components/Footer/Footer";
 import DataTable from "src/jobMatching/components/DataTable/DataTable";
-import type { ColumnDef } from "src/jobMatching/components/DataTable/DataTable";
+import type { ActiveFilterChip, ColumnDef } from "src/jobMatching/components/DataTable/DataTable";
 import JobDetailModal from "src/jobMatching/components/JobDetailModal/JobDetailModal";
 import { useJobs, PAGE_SIZE } from "src/jobMatching/hooks/useJobs";
 import { useMatchedJobs } from "src/jobMatching/hooks/useMatchedJobs";
@@ -35,7 +35,71 @@ const toFilterOptions = (values: string[], selectedValue: string) => {
   return [{ value: "all", label: "All" }, ...sortedValues.map((value) => ({ value, label: capitalize(value) }))];
 };
 
-const EMPTY_FILTERS: JobFilters = { search: "", category: "all", employmentType: "all", location: "all" };
+/** Like `toFilterOptions`, but for a multi-select filter: no "All" entry (the checkbox list adds its own). */
+const toMultiFilterOptions = (values: string[], selectedValues: string[]) => {
+  const selected = selectedValues.filter((v) => v !== "all");
+  const mergedValues = Array.from(new Set([...values, ...selected]));
+  const sortedValues = [...mergedValues].sort((a, b) => a.localeCompare(b));
+  return sortedValues.map((value) => ({ value, label: capitalize(value) }));
+};
+
+/** Splits a raw `location` string into words, for Matched for You's filter options (no standalone city/province there). */
+const locationTokens = (location: string): string[] => {
+  const seen = new Set<string>();
+  const tokens: string[] = [];
+  for (const raw of location.split(/[,\s]+/)) {
+    const token = raw.trim();
+    if (!token) continue;
+    const key = token.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    tokens.push(token);
+  }
+  return tokens;
+};
+
+/** Does `location` contain any of the given words, as a substring (case-insensitive)? Empty/["all"] always matches. */
+const locationMatchesAnyWord = (location: string, selectedWords: string[]): boolean => {
+  const selected = selectedWords.filter((v) => v !== "all");
+  if (selected.length === 0) return true;
+  const haystack = location.toLowerCase();
+  return selected.some((word) => haystack.includes(word.toLowerCase()));
+};
+
+/** Removable chip list summarizing a tab's active filters, shown beside its search box. */
+const buildActiveFilterChips = (
+  filters: JobFilters,
+  setFilters: React.Dispatch<React.SetStateAction<JobFilters>>,
+  labels: { category: string; employmentType: string; location: string }
+): ActiveFilterChip[] => {
+  const chips: ActiveFilterChip[] = [];
+  if (filters.category !== "all") {
+    chips.push({
+      key: `category:${filters.category}`,
+      label: `${labels.category}: ${capitalize(filters.category)}`,
+      onRemove: () => setFilters((f) => ({ ...f, category: "all" })),
+    });
+  }
+  if (filters.employmentType !== "all") {
+    chips.push({
+      key: `employmentType:${filters.employmentType}`,
+      label: `${labels.employmentType}: ${capitalize(filters.employmentType)}`,
+      onRemove: () => setFilters((f) => ({ ...f, employmentType: "all" })),
+    });
+  }
+  filters.location
+    .filter((v) => v !== "all")
+    .forEach((value) => {
+      chips.push({
+        key: `location:${value}`,
+        label: `${labels.location}: ${capitalize(value)}`,
+        onRemove: () => setFilters((f) => ({ ...f, location: f.location.filter((v) => v !== value) })),
+      });
+    });
+  return chips;
+};
+
+const EMPTY_FILTERS: JobFilters = { search: "", category: "all", employmentType: "all", location: [] };
 const SEARCH_DEBOUNCE_MS = 300;
 // Number of recent jobs sampled once on mount to seed the filter dropdowns. A single
 // bounded request — NOT a full-dataset cursor walk — keeps the dropdowns populated from
@@ -74,6 +138,8 @@ const JobMatchingPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState(0);
   const [browseFilters, setBrowseFilters] = useState<JobFilters>(EMPTY_FILTERS);
+  // Matched for You filters client-side only — GET /jobs/matched takes no filter params.
+  const [matchedFilters, setMatchedFilters] = useState<JobFilters>(EMPTY_FILTERS);
   const [selectedJob, setSelectedJob] = useState<JobRow | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [datasetFilterValues, setDatasetFilterValues] = useState<{
@@ -111,11 +177,13 @@ const JobMatchingPage: React.FC = () => {
         result.data.forEach((doc) => {
           const category = doc.category?.trim();
           const employmentType = doc.employment_type?.trim();
-          const location = doc.location?.trim();
+          const city = doc.city?.trim();
+          const province = doc.province?.trim();
 
           if (category) categorySet.add(category);
           if (employmentType) employmentTypeSet.add(employmentType);
-          if (location) locationSet.add(location);
+          if (city) locationSet.add(city);
+          if (province) locationSet.add(province);
         });
 
         if (!cancelled) {
@@ -147,9 +215,51 @@ const JobMatchingPage: React.FC = () => {
     [datasetFilterValues.employmentType, browseFilters.employmentType]
   );
   const locationOptions = useMemo(
-    () => toFilterOptions(datasetFilterValues.location, browseFilters.location),
-    [datasetFilterValues.location, browseFilters.location]
+    () => toMultiFilterOptions(datasetFilterValues.location, browseFilters.location),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [datasetFilterValues.location, JSON.stringify(browseFilters.location)]
   );
+
+  // Matched for You's filter options come from the matches already on screen.
+  const matchedFilterValues = useMemo(() => {
+    const categorySet = new Set<string>();
+    const employmentTypeSet = new Set<string>();
+    const locationSet = new Set<string>();
+    matchedJobs.forEach((job) => {
+      if (job.category) categorySet.add(job.category);
+      if (job.employmentType) employmentTypeSet.add(job.employmentType);
+      if (job.location) locationTokens(job.location).forEach((token) => locationSet.add(token));
+    });
+    return {
+      category: Array.from(categorySet),
+      employmentType: Array.from(employmentTypeSet),
+      location: Array.from(locationSet),
+    };
+  }, [matchedJobs]);
+
+  const matchedCategoryOptions = useMemo(
+    () => toFilterOptions(matchedFilterValues.category, matchedFilters.category),
+    [matchedFilterValues.category, matchedFilters.category]
+  );
+  const matchedEmploymentTypeOptions = useMemo(
+    () => toFilterOptions(matchedFilterValues.employmentType, matchedFilters.employmentType),
+    [matchedFilterValues.employmentType, matchedFilters.employmentType]
+  );
+  const matchedLocationOptions = useMemo(
+    () => toMultiFilterOptions(matchedFilterValues.location, matchedFilters.location),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [matchedFilterValues.location, JSON.stringify(matchedFilters.location)]
+  );
+
+  const filteredMatchedJobs = useMemo(() => {
+    return matchedJobs.filter((job) => {
+      if (matchedFilters.category !== "all" && job.category !== matchedFilters.category) return false;
+      if (matchedFilters.employmentType !== "all" && job.employmentType !== matchedFilters.employmentType) return false;
+      if (!locationMatchesAnyWord(job.location, matchedFilters.location)) return false;
+      return true;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchedJobs, matchedFilters.category, matchedFilters.employmentType, JSON.stringify(matchedFilters.location)]);
 
   /**
    * Opening the detail is what counts as viewing a listing, on both tabs — it is the point
@@ -185,6 +295,31 @@ const JobMatchingPage: React.FC = () => {
   const pageLabel = useMemo(() => {
     return t("jobMatching.table.pageRange", { start: rangeStart, end: rangeEnd, total: totalItems });
   }, [rangeStart, rangeEnd, totalItems, t]);
+
+  const filterColumnLabels = useMemo(
+    () => ({
+      category: t("jobMatching.columns.category"),
+      employmentType: t("jobMatching.columns.type"),
+      location: t("jobMatching.columns.location"),
+    }),
+    [t]
+  );
+
+  const browseActiveFilters = useMemo(
+    () => buildActiveFilterChips(browseFilters, setBrowseFilters, filterColumnLabels),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [browseFilters.category, browseFilters.employmentType, JSON.stringify(browseFilters.location), filterColumnLabels]
+  );
+
+  const matchedLocationKey = JSON.stringify(matchedFilters.location);
+  const matchedActiveFilters = useMemo(
+    () => buildActiveFilterChips(matchedFilters, setMatchedFilters, filterColumnLabels),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [matchedFilters.category, matchedFilters.employmentType, matchedLocationKey, filterColumnLabels]
+  );
+
+  const clearFilters = (setFilters: React.Dispatch<React.SetStateAction<JobFilters>>) => () =>
+    setFilters((f) => ({ ...f, category: "all", employmentType: "all", location: [] }));
 
   const columns: ColumnDef<JobRow>[] = useMemo(
     () => [
@@ -271,10 +406,11 @@ const JobMatchingPage: React.FC = () => {
         sortable: false,
         align: "left",
         minWidth: 110,
-        filter: {
+        multiFilter: {
+          multi: true,
           options: locationOptions,
-          value: browseFilters.location,
-          onChange: (v) => setBrowseFilters((f) => ({ ...f, location: v })),
+          values: browseFilters.location,
+          onChange: (values) => setBrowseFilters((f) => ({ ...f, location: values })),
         },
         render: (val) => (
           <Typography variant="body2" color="text.secondary">
@@ -300,7 +436,40 @@ const JobMatchingPage: React.FC = () => {
 
   const matchedColumns: ColumnDef<JobRow>[] = useMemo(
     () => [
-      ...columns,
+      ...columns.map((col) => {
+        if (col.key === "category") {
+          return {
+            ...col,
+            filter: {
+              options: matchedCategoryOptions,
+              value: matchedFilters.category,
+              onChange: (v: string) => setMatchedFilters((f) => ({ ...f, category: v })),
+            },
+          };
+        }
+        if (col.key === "employmentType") {
+          return {
+            ...col,
+            filter: {
+              options: matchedEmploymentTypeOptions,
+              value: matchedFilters.employmentType,
+              onChange: (v: string) => setMatchedFilters((f) => ({ ...f, employmentType: v })),
+            },
+          };
+        }
+        if (col.key === "location") {
+          return {
+            ...col,
+            multiFilter: {
+              multi: true as const,
+              options: matchedLocationOptions,
+              values: matchedFilters.location,
+              onChange: (values: string[]) => setMatchedFilters((f) => ({ ...f, location: values })),
+            },
+          };
+        }
+        return col;
+      }),
       {
         key: "matchScore",
         label: t("jobMatching.columns.match"),
@@ -334,7 +503,7 @@ const JobMatchingPage: React.FC = () => {
         },
       },
     ],
-    [columns, theme, t]
+    [columns, matchedCategoryOptions, matchedEmploymentTypeOptions, matchedLocationOptions, matchedFilters, theme, t]
   );
   const hasError = Boolean(error);
   const isConnectionFailure = hasError && isConnectionError(error);
@@ -441,6 +610,9 @@ const JobMatchingPage: React.FC = () => {
                 value: browseFilters.search,
                 onChange: (v) => setBrowseFilters((f) => ({ ...f, search: v })),
               }}
+              activeFilters={browseActiveFilters}
+              onClearAllFilters={clearFilters(setBrowseFilters)}
+              clearAllFiltersLabel={t("jobMatching.table.clearAllFilters")}
               onRowClick={handleRowClick}
               page={Math.max(1, pageIndex)}
               totalPages={totalPages}
@@ -482,7 +654,7 @@ const JobMatchingPage: React.FC = () => {
               </Alert>
             )}
             <DataTable<JobRow>
-              rows={matchedJobs}
+              rows={filteredMatchedJobs}
               columns={matchedColumns}
               loading={matchedLoading}
               tableMinWidth={750}
@@ -494,6 +666,9 @@ const JobMatchingPage: React.FC = () => {
                     ? t("jobMatching.matched.emptySiNoMatches")
                     : t("jobMatching.matched.emptyNoSkills")
               }
+              activeFilters={matchedActiveFilters}
+              onClearAllFilters={clearFilters(setMatchedFilters)}
+              clearAllFiltersLabel={t("jobMatching.table.clearAllFilters")}
               onRowClick={handleRowClick}
             />
           </>

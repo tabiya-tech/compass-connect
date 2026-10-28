@@ -8,6 +8,10 @@ export interface JobApiDocument {
   category?: string;
   employment_type?: string;
   location?: string;
+  /** City, as a standalone value — use this (not `location`) to filter/match by place. */
+  city?: string;
+  /** Province/county, as a standalone value — use this (not `location`) to filter/match by place. */
+  province?: string;
   posted_date?: string;
   closing_date?: string;
   application_url?: string;
@@ -74,6 +78,10 @@ export interface JobRow {
   category: string;
   employmentType: string;
   location: string;
+  /** Standalone city, when the API provided one (Browse Jobs only; blank on Matched for You). */
+  city: string;
+  /** Standalone province/county, when the API provided one (Browse Jobs only; blank on Matched for You). */
+  province: string;
   posted: string;
   jobUrl?: string;
   skills?: string[];
@@ -87,7 +95,8 @@ export interface JobFilters {
   search: string;
   category: string;
   employmentType: string;
-  location: string;
+  /** Selected location values; empty (or omitted) means no location filter is applied. */
+  location: string[];
 }
 
 export type JobSortKey = "jobTitle" | "category" | "location" | "posted";

@@ -20,7 +20,7 @@ class TestJobRepository:
         # WHEN fetching a filtered page with a total requested
         actual = await repo.fetch_jobs_page(
             cursor="cur", limit=10, search="nurse", category="Health",
-            employment_type="full_time", location="Lusaka", skills="care",
+            employment_type="full_time", location=["Lusaka", "Ndola"], skills="care",
             days=30, include_total=True,
         )
 
@@ -37,7 +37,7 @@ class TestJobRepository:
             "search": "nurse",
             "category": "Health",
             "employment_type": "full_time",
-            "location": "Lusaka",
+            "location": ["Lusaka", "Ndola"],
             "skills": "care",
             "days": 30,
             "include_total": "true",

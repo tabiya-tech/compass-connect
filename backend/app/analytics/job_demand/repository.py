@@ -99,7 +99,7 @@ class JobDemandAnalyticsRepository(IJobDemandAnalyticsRepository):
             page = await self._job_repository.fetch_jobs_page(
                 cursor=cursor,
                 limit=_PAGE_SIZE,
-                location=location,
+                location=[location] if location else None,
             )
             for job in page.items:
                 if sector_prefixes is not None and not _job_matches_sector(job, sector_prefixes):
