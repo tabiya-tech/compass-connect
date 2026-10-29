@@ -7,6 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from common_libs.environment_settings.mongo_db_settings import MongoDbSettings
 from app.app_config import get_application_config
 from app.integration.repository import create_integration_indexes
+from app.integration.webhooks.repository import create_webhook_indexes
 from .database_collections import Collections
 
 
@@ -306,6 +307,8 @@ class CompassDBProvider:
 
             # Integration API indexes (the users created by other platforms)
             await create_integration_indexes(application_db)
+            # and the outcome of the notifications sent to them
+            await create_webhook_indexes(application_db)
 
             logger.info("Finished creating indexes for the application database")
         except Exception as e:

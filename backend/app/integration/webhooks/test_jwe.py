@@ -1,13 +1,11 @@
-import base64
-import json
 import secrets
 
 import pytest
 from cryptography.exceptions import InvalidTag
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from pydantic import BaseModel, SecretStr
 
 from app.integration.webhooks.jwe import encrypt_webhook_payload, _encrypt_compact
+from app.integration.webhooks.testing import decrypt, b64url_decode, b64url_encode
 
 
 class _Payload(BaseModel):
@@ -16,30 +14,11 @@ class _Payload(BaseModel):
     note: str
 
 
-_GIVEN_PAYLOAD = _Payload(event="conversation.completed", external_id="ext-1", note="Atención al público, 3 años")
+_PAYLOAD = _Payload(event="conversation.completed", external_id="ext-1", note="Atención al público, 3 años")
 
 
-def _b64url_decode(value: str) -> bytes:
-    return base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
-
-
-def _decrypt(jwe: str, key: bytes) -> tuple[dict, bytes]:
-    """
-    What a platform does to open the body, written from RFC 7516 (5.2), independently of the code under test.
-
-    :return: the protected header and the plaintext
-    :raises InvalidTag: if the key is wrong or anything was changed
-    """
-    protected, encrypted_key, iv, ciphertext, tag = jwe.split(".")
-    assert encrypted_key == ""  # "dir": no encrypted key
-    plaintext = AESGCM(key).decrypt(_b64url_decode(iv), _b64url_decode(ciphertext) + _b64url_decode(tag),
-                                    protected.encode("ascii"))
-    return json.loads(_b64url_decode(protected)), plaintext
-
-
-def _secret() -> tuple[SecretStr, bytes]:
-    value = secrets.token_urlsafe(32)
-    return SecretStr(value), _b64url_decode(value)
+def _new_secret() -> str:
+    return secrets.token_urlsafe(32)
 
 
 def test_known_answer_of_rfc_7516():
@@ -63,62 +42,57 @@ def test_known_answer_of_rfc_7516():
 
 def test_the_platform_opens_it_with_its_secret():
     # GIVEN a platform's secret
-    given_secret, given_key = _secret()
+    given_secret = _new_secret()
 
-    # WHEN a payload is encrypted
-    actual = encrypt_webhook_payload(_GIVEN_PAYLOAD, given_secret)
+    # WHEN a payload is encrypted with it
+    actual = encrypt_webhook_payload(_PAYLOAD, SecretStr(given_secret))
 
-    # THEN it is a compact JWE with direct AES-256-GCM encryption, and decrypting it gives the payload as JSON
-    actual_header, actual_plaintext = _decrypt(actual, given_key)
+    # THEN the platform decrypts it with the same secret, and gets the payload as JSON
+    actual_header, actual_plaintext = decrypt(actual, given_secret)
     assert actual_header == {"alg": "dir", "enc": "A256GCM"}
-    assert _Payload.model_validate_json(actual_plaintext) == _GIVEN_PAYLOAD
-    # AND nothing of the payload is readable in the body
-    assert "ext-1" not in actual and "conversation" not in actual
+    assert _Payload.model_validate_json(actual_plaintext) == _PAYLOAD
+    # AND nothing of the payload can be read in the body
+    assert "ext-1" not in actual
+    assert "conversation" not in actual
 
 
-def test_every_body_has_a_new_iv():
-    given_secret, _ = _secret()
-    actual_first = encrypt_webhook_payload(_GIVEN_PAYLOAD, given_secret)
-    actual_second = encrypt_webhook_payload(_GIVEN_PAYLOAD, given_secret)
-    assert actual_first.split(".")[2] != actual_second.split(".")[2]
+def test_the_same_payload_encrypts_differently_every_time():
+    # a new random IV each time: with AES-GCM, the same key and IV twice would reveal both payloads
+    given_secret = SecretStr(_new_secret())
+    actual_first = encrypt_webhook_payload(_PAYLOAD, given_secret)
+    actual_second = encrypt_webhook_payload(_PAYLOAD, given_secret)
     assert actual_first != actual_second
 
 
 def test_another_secret_cannot_open_it():
-    # a notification made with another key (e.g. by someone who is not this Compass instance) does not decrypt
-    given_secret, _ = _secret()
-    actual = encrypt_webhook_payload(_GIVEN_PAYLOAD, given_secret)
+    # this is also what proves the origin: a body made without the platform's secret does not decrypt
+    actual = encrypt_webhook_payload(_PAYLOAD, SecretStr(_new_secret()))
     with pytest.raises(InvalidTag):
-        _decrypt(actual, _secret()[1])
+        decrypt(actual, _new_secret())
 
 
-@pytest.mark.parametrize("given_part", [
-    pytest.param(0, id="protected header"),
-    pytest.param(2, id="iv"),
-    pytest.param(3, id="ciphertext"),
-    pytest.param(4, id="tag"),
-])
-def test_any_change_is_detected(given_part: int):
+@pytest.mark.parametrize("given_part", [0, 2, 3, 4], ids=["protected header", "iv", "ciphertext", "tag"])
+def test_any_change_to_the_body_is_detected(given_part: int):
     # GIVEN a body
-    given_secret, given_key = _secret()
-    parts = encrypt_webhook_payload(_GIVEN_PAYLOAD, given_secret).split(".")
+    given_secret = _new_secret()
+    parts = encrypt_webhook_payload(_PAYLOAD, SecretStr(given_secret)).split(".")
 
-    # WHEN one byte of one of its parts is changed
-    changed = bytearray(_b64url_decode(parts[given_part]))
+    # WHEN one bit of one of its parts is changed
+    changed = bytearray(b64url_decode(parts[given_part]))
     changed[0] ^= 1
-    parts[given_part] = base64.urlsafe_b64encode(bytes(changed)).rstrip(b"=").decode("ascii")
+    parts[given_part] = b64url_encode(bytes(changed))
 
     # THEN it does not decrypt
     with pytest.raises(InvalidTag):
-        _decrypt(".".join(parts), given_key)
+        decrypt(".".join(parts), given_secret)
 
 
 @pytest.mark.parametrize("given_secret", [
-    pytest.param("s" * 42, id="shorter"),
-    pytest.param(secrets.token_urlsafe(16), id="16 bytes"),
-    pytest.param(secrets.token_urlsafe(48), id="48 bytes"),
-])
-def test_secret_must_be_32_bytes(given_secret: str):
-    # the request is validated, but a stored secret is checked again: AESGCM would accept a 16 or 24 bytes key
+    "s" * 42,
+    secrets.token_urlsafe(16),
+    secrets.token_urlsafe(48),
+], ids=["shorter", "16 bytes", "48 bytes"])
+def test_the_secret_must_be_32_bytes(given_secret: str):
+    # the request is validated, but a stored secret is checked again: AES-GCM would also accept 16 or 24 bytes
     with pytest.raises(ValueError):
-        encrypt_webhook_payload(_GIVEN_PAYLOAD, SecretStr(given_secret))
+        encrypt_webhook_payload(_PAYLOAD, SecretStr(given_secret))

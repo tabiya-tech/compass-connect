@@ -50,6 +50,10 @@ class ExternalUserRepository:
         doc = await self._collection.find_one({"external_id": {"$eq": external_id}})
         return self._from_db_doc(doc) if doc else None
 
+    async def find_by_user_id(self, user_id: str) -> Optional[ExternalUser]:
+        doc = await self._collection.find_one({"user_id": {"$eq": user_id}})
+        return self._from_db_doc(doc) if doc else None
+
     async def find_by_email(self, email: str) -> Optional[ExternalUser]:
         doc = await self._collection.find_one({"email": {"$eq": email}})
         return self._from_db_doc(doc) if doc else None
