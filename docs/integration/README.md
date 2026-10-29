@@ -10,7 +10,8 @@ Compass Connect exposes the full API specification at `<BACKEND_URL>/docs`
 (tag "Integration") and `<BACKEND_URL>/openapi.json`. Make sure you have looked at the
 [getting-started guide](../getting-started/README.md#optional-integration-api) to understand where your API key will come from.
 
-To try the flow, run the [example integration](#example-integration) at the end of this guide.
+To try the flow, run the [example integration](#example-integration) at the end of this guide. To receive the results
+on your server when a conversation ends, see [Webhooks](webhooks.md).
 
 ## How it works
 
@@ -21,7 +22,8 @@ To try the flow, run the [example integration](#example-integration) at the end 
 4. Compass logs the user in. On the first visit, the user accepts the Compass terms of use on the consent screen.
 5. Compass opens the page that the `action` of the request asks for.
 6. When the conversation ends, a button sends the user back to the `return_url` of the request, on your platform.
-7. Your server fetches what the conversation produced with `GET /integration/users/{external_id}/results`.
+7. Your server fetches what the conversation produced with `GET /integration/users/{external_id}/results`, or
+   receives it in a [webhook](webhooks.md) when the conversation ends.
 
 ## Before you start
 
@@ -43,9 +45,11 @@ One user per call. Every call returns a new hand-off link.
 | `email` | yes | The user's email. It becomes their Compass account and is stored in lower case. Compass sends no email when it creates the account. |
 | `action` | no | Where the link takes the user. `build_profile` (default) opens the conversation that builds the skills report. `create` opens the Compass home page. |
 | `return_url` | no | Where the user goes back to when the conversation ends. See [Return URL](#return-url). |
+| `webhook_url`, `webhook_secret` | no | Where Compass sends the results when the conversation ends, and the key that encrypts them. See [Webhooks](webhooks.md). |
 
 A request with any other field (a name, a gender, an education level) gets `422`. Compass stores the `external_id`, the
-email, the creation date, the `return_url` and a SHA-256 hash of the link token, nothing else from your platform.
+email, the creation date, the `return_url`, the `webhook_url` and `webhook_secret`, and a SHA-256 hash of the link
+token, nothing else from your platform.
 
 ```bash
 curl -i -X POST "$BACKEND_URL/integration/users" \
@@ -83,7 +87,7 @@ safe to repeat a call after a timeout or a `500`: the new call finishes what the
 | `200` | The user already existed with this `external_id` and `email`. | Same as `201`. Earlier links of this user no longer work. |
 | `403` | The `x-api-key` header is missing or not accepted. | Check the key with the operator. |
 | `409` | The user cannot be created or opened. The `error_code` field of the body gives the reason (next table). | Repeating the same call gives the same answer. |
-| `422` | The body is invalid, or its `return_url` is not allowed on the instance. `detail` lists each problem. | Fix the request. |
+| `422` | The body is invalid, its `return_url` or `webhook_url` is not allowed on the instance, or it has a `webhook_url` while the instance has webhooks off. `detail` lists each problem. | Fix the request. |
 | `500` | An unexpected error in Compass. | Repeat the call later. If it keeps failing, send the `correlation_id` of the response to the operator. |
 
 | `error_code` | Meaning | What to do |
@@ -201,8 +205,6 @@ curl -s "$BACKEND_URL/integration/users/EXT-000123/results" -H "x-api-key: $API_
 
 ## Not in this version
 
-- **A webhook when the conversation ends.** Until then, fetch the results when the user comes back, or check them
-  from time to time.
 - The skills report as a PDF. The results above hold its content.
 - Several users in one call, changing a user's email, deleting a user.
 - Choosing the language per user. The conversation uses the language of the instance.
@@ -222,6 +224,14 @@ conversation ends, the button in Compass brings you back to http://localhost:310
 return button needs `http://localhost:3100` in the instance's allow-list: ask the operator, or see the
 [getting-started guide](../getting-started/README.md#optional-integration-api).
 
+To try the [webhooks](webhooks.md) too, add a secret. The instance needs webhooks on, with `http://localhost:3100` in
+its webhook allow-list. The return page then also shows the notification the example received:
+
+```bash
+COMPASS_WEBHOOK_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))") \
+  COMPASS_API_KEY=<a key from API_KEYS> node example.mjs
+```
+
 ```javascript
 // A partner platform in one file, to try the Compass integration API.
 // No dependencies, Node.js 20 or later:
@@ -233,12 +243,23 @@ return button needs `http://localhost:3100` in the instance's allow-list: ask th
 // When the conversation ends, the button in Compass brings the browser back to /return, which fetches
 // the results. The operator must allow http://localhost:3100 in BACKEND_INTEGRATION_RETURN_URL_ORIGINS.
 // The key stays on the server: never put it in a web page.
+//
+// Webhooks (optional): set COMPASS_WEBHOOK_SECRET (32 random bytes, base64url) and the server also asks Compass to
+// POST the results to /webhook when the conversation ends. The instance must have webhooks on, with
+// http://localhost:3100 in BACKEND_INTEGRATION_WEBHOOK_URL_ORIGINS. See webhooks.md.
 import { createServer } from "node:http";
+import { createDecipheriv } from "node:crypto";
 
 const BACKEND_URL = (process.env.COMPASS_BACKEND_URL ?? "http://localhost:8080").replace(/\/$/, "");
 const API_KEY = process.env.COMPASS_API_KEY;
 const PORT = Number(process.env.PORT ?? 3100);
 const PUBLIC_URL = `http://localhost:${PORT}`;
+const WEBHOOK_SECRET = process.env.COMPASS_WEBHOOK_SECRET;
+
+// The latest webhook notification per external_id, and the delivery ids already processed. A real platform keeps
+// them in its database.
+const notifications = new Map();
+const processedDeliveries = new Set();
 
 if (!API_KEY) {
   console.error("Set COMPASS_API_KEY to one of the keys in API_KEYS of the Compass instance.");
@@ -256,6 +277,10 @@ createServer(async (req, res) => {
     // A real platform knows who comes back from its own session. This example has no session, so it puts the
     // external_id in its own return URL.
     user.return_url = `${PUBLIC_URL}/return?external_id=${encodeURIComponent(user.external_id ?? "")}`;
+    if (WEBHOOK_SECRET) {
+      user.webhook_url = `${PUBLIC_URL}/webhook`;
+      user.webhook_secret = WEBHOOK_SECRET;
+    }
 
     let response;
     try {
@@ -287,6 +312,26 @@ createServer(async (req, res) => {
     return sendPage(res, response.status, user, error);
   }
 
+  if (req.method === "POST" && req.url === "/webhook" && WEBHOOK_SECRET) {
+    let notification;
+    try {
+      notification = decryptNotification(await readBody(req), WEBHOOK_SECRET);
+    } catch (e) {
+      // not made with our secret, or changed on the way: not from Compass
+      res.writeHead(400).end();
+      return;
+    }
+    // answer first; a repeat of a delivery already processed is answered and ignored
+    res.writeHead(200).end();
+    if (processedDeliveries.has(notification.delivery_id)) return;
+    processedDeliveries.add(notification.delivery_id);
+    console.log(`Webhook ${notification.event} for ${notification.external_id} (${notification.delivery_id})`);
+    if (notification.event === "conversation.completed") {
+      notifications.set(notification.external_id, notification);
+    }
+    return;
+  }
+
   if (req.method === "GET" && req.url.startsWith("/return")) {
     const externalId = new URL(req.url, PUBLIC_URL).searchParams.get("external_id") ?? "";
     let response;
@@ -306,6 +351,19 @@ createServer(async (req, res) => {
 
   sendPage(res, 200, {});
 }).listen(PORT, () => console.log(`Partner platform on http://localhost:${PORT}, calling ${BACKEND_URL}`));
+
+// See webhooks.md: the body is a JWE (dir, A256GCM) whose key is the webhook secret.
+function decryptNotification(body, secret) {
+  const [header, encryptedKey, iv, ciphertext, tag] = body.split(".");
+  const { alg, enc } = JSON.parse(Buffer.from(header, "base64url"));
+  if (alg !== "dir" || enc !== "A256GCM" || encryptedKey !== "") throw new Error("Not a Compass notification");
+  const decipher = createDecipheriv("aes-256-gcm", Buffer.from(secret, "base64url"), Buffer.from(iv, "base64url"));
+  decipher.setAAD(Buffer.from(header, "ascii"));
+  decipher.setAuthTag(Buffer.from(tag, "base64url"));
+  // final() throws if the secret is wrong or the body was changed
+  const plaintext = Buffer.concat([decipher.update(Buffer.from(ciphertext, "base64url")), decipher.final()]);
+  return JSON.parse(plaintext);
+}
 
 function readBody(req) {
   return new Promise((resolve) => {
@@ -353,6 +411,7 @@ function sendPage(res, status, user, error) {
 // What the platform would store in its own profile of the user: the latest completed conversation.
 function sendResults(res, status, externalId, results, error) {
   const completed = results?.conversations.find((c) => c.conversation_completed);
+  const notification = notifications.get(externalId);
   const experiences = (completed?.experiences ?? []).map((e) => `
     <li><strong>${escape(e.experience_title ?? "")}</strong>${e.company ? `, ${escape(e.company)}` : ""}
       <ul>${e.top_skills.map((s) => `<li>${escape(s.preferredLabel)}</li>`).join("")}</ul>
@@ -374,6 +433,9 @@ function sendResults(res, status, externalId, results, error) {
   ${results && !completed ? "<p>The conversation is not completed yet.</p>" : ""}
   ${completed ? `<p>Conversation completed. Experiences and top skills:</p><ul>${experiences}</ul>` : ""}
   ${results ? `<details><summary>Full response</summary><pre>${escape(JSON.stringify(results, null, 2))}</pre></details>` : ""}
+  ${WEBHOOK_SECRET ? (notification
+    ? `<details><summary>Webhook received, sent at ${escape(notification.sent_at)}</summary><pre>${escape(JSON.stringify(notification, null, 2))}</pre></details>`
+    : "<p>No webhook received yet. It arrives within about 10 seconds of the end of the conversation: reload the page.</p>") : ""}
   <p><a href="/">Back to the form</a></p>
 </body>
 </html>`);
