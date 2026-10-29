@@ -294,6 +294,9 @@ application_config = ApplicationConfig(
     handoff_link_ttl_minutes=os.getenv("BACKEND_HANDOFF_LINK_TTL_MINUTES") or DEFAULT_HANDOFF_LINK_TTL_MINUTES,
     integration_return_url_origins=[o.strip() for o in os.getenv("BACKEND_INTEGRATION_RETURN_URL_ORIGINS", "").split(",")
                                     if o.strip()],
+    integration_webhooks_enabled=os.getenv("BACKEND_INTEGRATION_WEBHOOKS_ENABLED", "").lower() in ("1", "true"),
+    integration_webhook_url_origins=[o.strip() for o in
+                                     os.getenv("BACKEND_INTEGRATION_WEBHOOK_URL_ORIGINS", "").split(",") if o.strip()],
     admin_firebase_tenant_id=os.getenv("ADMIN_FIREBASE_TENANT_ID", ""),
     tracing_config=load_tracing_config(_version_info),
     llm_provider=os.getenv("LLM_PROVIDER") or "gemini",

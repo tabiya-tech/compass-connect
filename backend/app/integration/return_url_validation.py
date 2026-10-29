@@ -1,6 +1,7 @@
 """
 The return URL: where Compass sends a user created by another platform when they are done. Only origins in the
 instance's allow-list are accepted, so a key holder cannot make Compass send users to any site (open redirect).
+The webhook URL is checked the same way, against its own allow-list, so Compass cannot be made to call any server.
 """
 
 from typing import Optional
@@ -33,16 +34,17 @@ def _origin(url: str) -> Optional[tuple[str, str, int]]:
     return scheme, parts.hostname, _DEFAULT_PORTS[scheme] if port is None else port
 
 
-def validate_return_url(url: str, allowed_origins: list[str]) -> None:
+def validate_return_url(url: str, allowed_origins: list[str], field: str = "return_url") -> None:
     """
     :param allowed_origins: as configured, e.g. ["https://partner.example.org"]
+    :param field: the name of the URL in the error messages
     :raises InvalidReturnUrlError: unless the URL is https (http only on localhost) and its origin is allowed
     """
     origin = _origin(url)
     if origin is None:
-        raise InvalidReturnUrlError("return_url must be an absolute https URL.")
+        raise InvalidReturnUrlError(f"{field} must be an absolute https URL.")
     scheme, host, _ = origin
     if scheme == "http" and host not in ("localhost", "127.0.0.1"):
-        raise InvalidReturnUrlError("return_url must use https (http only for localhost).")
+        raise InvalidReturnUrlError(f"{field} must use https (http only for localhost).")
     if origin not in {_origin(allowed) for allowed in allowed_origins}:
-        raise InvalidReturnUrlError("return_url is not allowed on this instance.")
+        raise InvalidReturnUrlError(f"{field} is not allowed on this instance.")

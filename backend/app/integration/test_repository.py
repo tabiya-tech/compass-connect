@@ -6,7 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo.errors import DuplicateKeyError
 
 from app.integration.repository import ExternalUserRepository, DuplicateExternalUserError
-from app.integration.types import ExternalUser, HandoffLink, HandoffAction
+from app.integration.types import ExternalUser, HandoffLink, HandoffAction, Webhook
 from common_libs.time_utilities import get_now, truncate_microseconds
 
 
@@ -102,11 +102,34 @@ class TestExternalUserRepository:
     @pytest.mark.parametrize("given_set", [
         pytest.param(lambda r: r.set_user_id("unknown", "user-1", get_now()), id="user id"),
         pytest.param(lambda r: r.set_link("unknown", _link(), get_now()), id="link"),
+        pytest.param(lambda r: r.set_webhook("unknown", None, get_now()), id="webhook"),
     ])
     async def test_set_on_unknown_user_fails(self, repository: Awaitable[ExternalUserRepository], given_set):
         repository = await repository
         with pytest.raises(ValueError):
             await given_set(repository)
+
+    @pytest.mark.asyncio
+    async def test_set_and_remove_webhook(self, repository: Awaitable[ExternalUserRepository]):
+        repository = await repository
+        # GIVEN a user
+        await repository.insert(_user())
+        assert (await repository.find_by_external_id("ext-1")).webhook is None
+
+        # WHEN a webhook is set
+        given_webhook = Webhook(url="https://api.partner.example.org/hook", secret="s" * 43)
+        await repository.set_webhook("ext-1", given_webhook, get_now())
+
+        # THEN it is read back with its secret
+        actual = (await repository.find_by_external_id("ext-1")).webhook
+        assert actual.url == given_webhook.url
+        assert actual.secret.get_secret_value() == "s" * 43
+
+        # WHEN it is removed
+        await repository.set_webhook("ext-1", None, get_now())
+
+        # THEN the user has none
+        assert (await repository.find_by_external_id("ext-1")).webhook is None
 
     @pytest.mark.asyncio
     async def test_find_by_valid_link(self, repository: Awaitable[ExternalUserRepository]):

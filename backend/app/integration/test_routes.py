@@ -12,11 +12,12 @@ from app.errors.handlers import register_exception_handlers
 from app.integration.return_url_validation import InvalidReturnUrlError
 from app.integration.routes import add_integration_routes, get_integration_service
 from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError, \
-    ExternalUserNotFoundError, ExternalUserResultsResponse, ConversationResults
+    ExternalUserNotFoundError, ExternalUserResultsResponse, ConversationResults, InvalidWebhookError
 from app.integration.types import CreateExternalUserResponse, ExternalUserResponse, HandoffLinkResponse, \
     HandoffAction, ExternalUserConflict, HandoffExchangeResponse
 
 _API_KEY = "test-api-key"
+_WEBHOOK_SECRET = "s" * 43  # nosec B105 # test fixture, not a credential
 _CREATED_AT = datetime(2026, 10, 15, 12, 0, tzinfo=timezone.utc)
 
 
@@ -102,6 +103,32 @@ class TestCreateUserRoute:
         assert actual.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
         mocked_service.create_user.assert_not_called()
 
+    def test_webhook_not_allowed_is_422(self, client: TestClient, mocked_service: AsyncMock):
+        mocked_service.create_user.side_effect = InvalidWebhookError("webhooks are not enabled on this instance.")
+
+        actual = _post_user(client, {"external_id": "ext-1", "email": "person@example.com",
+                                     "webhook_url": "https://api.partner.example.org/hook",
+                                     "webhook_secret": _WEBHOOK_SECRET})
+
+        assert actual.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        assert actual.json()["detail"] == "webhooks are not enabled on this instance."
+
+    def test_webhook_secret_is_not_in_the_response(self, client: TestClient, mocked_service: AsyncMock):
+        # GIVEN the service stores the webhook
+        given = _response()
+        given.user.webhook_url = "https://api.partner.example.org/hook"
+        mocked_service.create_user.return_value = (True, given)
+
+        # WHEN the platform sends a webhook URL and secret
+        actual = _post_user(client, {"external_id": "ext-1", "email": "person@example.com",
+                                     "webhook_url": "https://api.partner.example.org/hook",
+                                     "webhook_secret": _WEBHOOK_SECRET})
+
+        # THEN the service gets the secret, and the response has the URL but not the secret
+        assert mocked_service.create_user.await_args.args[0].webhook_secret.get_secret_value() == _WEBHOOK_SECRET
+        assert actual.json()["user"]["webhook_url"] == "https://api.partner.example.org/hook"
+        assert _WEBHOOK_SECRET not in actual.text
+
     def test_request_is_normalised_and_defaults_to_build_profile(self, client: TestClient,
                                                                   mocked_service: AsyncMock):
         # GIVEN the service creates the user
@@ -144,6 +171,19 @@ class TestCreateUserRoute:
                      id="unknown action"),
         pytest.param({"external_id": "ext-1", "email": "person@example.com", "gender": "F"},
                      id="unknown field (no personal data beyond the email)"),
+        pytest.param({"external_id": "ext-1", "email": "person@example.com",
+                      "webhook_url": "https://api.partner.example.org/hook"}, id="webhook_url without a secret"),
+        pytest.param({"external_id": "ext-1", "email": "person@example.com", "webhook_secret": _WEBHOOK_SECRET},
+                     id="webhook_secret without a url"),
+        pytest.param({"external_id": "ext-1", "email": "person@example.com",
+                      "webhook_url": "https://api.partner.example.org/hook", "webhook_secret": "s" * 42},
+                     id="webhook_secret too short"),
+        pytest.param({"external_id": "ext-1", "email": "person@example.com",
+                      "webhook_url": "https://api.partner.example.org/hook", "webhook_secret": "s" * 42 + "="},
+                     id="webhook_secret with padding or not base64url"),
+        pytest.param({"external_id": "ext-1", "email": "person@example.com",
+                      "webhook_url": "https://api.partner.example.org/" + "x" * 2048,
+                      "webhook_secret": _WEBHOOK_SECRET}, id="webhook_url longer than 2048"),
     ])
     def test_invalid_body_is_422(self, client: TestClient, mocked_service: AsyncMock, given_body: dict):
         actual = _post_user(client, given_body)

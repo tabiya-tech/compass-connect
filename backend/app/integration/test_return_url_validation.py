@@ -34,3 +34,10 @@ def test_refused(given_url: str, given_allowed: list[str]):
     with pytest.raises(InvalidReturnUrlError) as e:
         validate_return_url(given_url, given_allowed)
     assert str(e.value)
+
+
+def test_errors_name_the_field():
+    # the webhook URL is checked by the same function: its errors must not talk about return_url
+    with pytest.raises(InvalidReturnUrlError) as e:
+        validate_return_url("https://other.example.org/", _ALLOWED, field="webhook_url")
+    assert str(e.value) == "webhook_url is not allowed on this instance."

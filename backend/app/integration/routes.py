@@ -10,7 +10,7 @@ from app.integration.firebase import get_integration_firebase
 from app.integration.repository import ExternalUserRepository
 from app.integration.return_url_validation import InvalidReturnUrlError
 from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError, \
-    ExternalUserNotFoundError, ExternalUserResultsResponse
+    ExternalUserNotFoundError, ExternalUserResultsResponse, InvalidWebhookError
 from app.integration.types import CreateExternalUserRequest, CreateExternalUserResponse, ExternalUserConflict, \
     HandoffExchangeRequest, HandoffExchangeResponse, EXTERNAL_ID_PATTERN
 from app.server_dependencies.db_dependencies import CompassDBProvider
@@ -47,6 +47,8 @@ async def get_integration_service(
         frontend_url=os.getenv("FRONTEND_URL", "").rstrip("/"),
         default_language=app_config.language_config.default_locale.value,
         return_url_origins=app_config.integration_return_url_origins,
+        webhooks_enabled=app_config.integration_webhooks_enabled,
+        webhook_url_origins=app_config.integration_webhook_url_origins,
     )
 
 
@@ -70,7 +72,8 @@ def add_integration_routes(app: FastAPI):
             HTTPStatus.FORBIDDEN: {"model": HTTPErrorResponse, "description": "Missing or wrong x-api-key."},
             HTTPStatus.CONFLICT: {"model": HTTPErrorResponse,
                                   "description": "error_code: " + ", ".join(c.value for c in ExternalUserConflict)},
-            HTTPStatus.UNPROCESSABLE_ENTITY: {"description": "Invalid body, or a return_url that is not allowed."},
+            HTTPStatus.UNPROCESSABLE_ENTITY: {"description": "Invalid body, a return_url or webhook_url that is not allowed, "
+                                                             "or a webhook_url while webhooks are not enabled."},
             HTTPStatus.INTERNAL_SERVER_ERROR: {"model": HTTPErrorResponse},
         },
         name="create external user",
@@ -86,7 +89,7 @@ def add_integration_routes(app: FastAPI):
             raise HTTPExceptionWithErrorCode(status_code=HTTPStatus.CONFLICT,
                                              detail=_CONFLICT_DETAILS[e.conflict],
                                              error_code=e.conflict.value) from e
-        except InvalidReturnUrlError as e:
+        except (InvalidReturnUrlError, InvalidWebhookError) as e:
             raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail=str(e)) from e
         response.status_code = HTTPStatus.CREATED if created else HTTPStatus.OK
         return body
