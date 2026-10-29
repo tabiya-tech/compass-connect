@@ -39,3 +39,14 @@ async def get_webhook_notifier() -> WebhookNotifier:
                     http_client=httpx.AsyncClient(),
                     enabled=get_application_config().integration_webhooks_enabled)
     return _webhook_notifier_singleton
+
+
+async def close_webhook_notifier() -> None:
+    """
+    On shutdown: close the HTTP client of the notifier, if one was created.
+    """
+    global _webhook_notifier_singleton
+    async with _webhook_notifier_lock:
+        if _webhook_notifier_singleton is not None:
+            await _webhook_notifier_singleton.close()
+            _webhook_notifier_singleton = None

@@ -98,6 +98,9 @@ class WebhookNotifier:
         await self._send(delivery)
         return True
 
+    async def close(self) -> None:
+        await self._http_client.aclose()
+
     async def _send(self, delivery: WebhookDelivery) -> None:
         now = _now()
         delivery.attempts += 1
