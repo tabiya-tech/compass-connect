@@ -128,6 +128,10 @@ class Webhook(BaseModel):
     """
     url: str
     secret: SecretStr
+    """
+    Stored as it is, not hashed: Compass needs it to encrypt each notification. Whoever can read it can also read the
+    results it protects, which are in the same database.
+    """
 
 
 class ExternalUser(BaseModel):

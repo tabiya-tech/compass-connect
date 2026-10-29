@@ -72,8 +72,9 @@ def add_integration_routes(app: FastAPI):
             HTTPStatus.FORBIDDEN: {"model": HTTPErrorResponse, "description": "Missing or wrong x-api-key."},
             HTTPStatus.CONFLICT: {"model": HTTPErrorResponse,
                                   "description": "error_code: " + ", ".join(c.value for c in ExternalUserConflict)},
-            HTTPStatus.UNPROCESSABLE_ENTITY: {"description": "Invalid body, a return_url or webhook_url that is not allowed, "
-                                                             "or a webhook_url while webhooks are not enabled."},
+            HTTPStatus.UNPROCESSABLE_ENTITY: {
+                "description": "Invalid body, a return_url or webhook_url that is not allowed, or a webhook_url while "
+                               "webhooks are not enabled."},
             HTTPStatus.INTERNAL_SERVER_ERROR: {"model": HTTPErrorResponse},
         },
         name="create external user",
