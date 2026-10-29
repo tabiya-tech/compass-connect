@@ -23,6 +23,7 @@ pydantic = "^2.7.3"
 pydantic-settings = "^2.3.1"
 fastapi = "^0.111.0"
 pyjwt = "^2.8.0"
+cryptography = "^43.0.0"
 sentry-sdk = {extras = ["fastapi"], version = "^2.35.0"}
 pympler="^1.1"
 firebase-admin = "6.5.0"
