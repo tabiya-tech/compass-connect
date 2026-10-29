@@ -38,9 +38,11 @@ from app.i18n.language_config import get_language_config
 from app.middleware.correlation_id_middleware import CorrelationIdMiddleware
 from app.errors.handlers import register_exception_handlers
 
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 from app.users.routes import add_users_routes
+from app.integration.webhooks.get_webhook_notifier import get_webhook_notifier, close_webhook_notifier
+from app.integration.webhooks.sending_loop import send_due_webhooks
 from app.conversations.poc import add_poc_routes
 from app.app_config import ApplicationConfig, LLMProvider, set_application_config, get_application_config, \
     DEFAULT_HANDOFF_LINK_TTL_MINUTES
@@ -373,11 +375,24 @@ async def lifespan(_app: FastAPI):
     # so that plugins will be loaded after the application is initialized.
     await feature_loader.init(application_db)
 
+    # Send the webhook notifications of the integration API (first attempts and retries), if enabled
+    webhook_sending = None
+    if app_cfg.integration_webhooks_enabled:
+        webhook_sending = asyncio.create_task(send_due_webhooks(await get_webhook_notifier()))
+        logger.info("Webhook notifications enabled.")
+
     logger.info("Application started successfully.")
     # noinspection PyUnresolvedReferences
     _app.state.startup_complete.set()  # signal startup complete
 
     yield
+
+    # Stop sending webhook notifications before the database connections are closed
+    if webhook_sending is not None:
+        webhook_sending.cancel()
+        with suppress(asyncio.CancelledError):
+            await webhook_sending
+    await close_webhook_notifier()
 
     # Tear down features before shutting down the application
     # this is important to ensure that the features are properly cleaned up
