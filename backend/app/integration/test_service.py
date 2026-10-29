@@ -3,6 +3,7 @@ from datetime import timedelta
 from typing import Awaitable, Optional
 from unittest.mock import AsyncMock
 
+import httpx
 import pytest
 import pytest_mock
 from pydantic import ValidationError
@@ -22,6 +23,11 @@ from app.integration.service import IntegrationService, ExternalUserConflictErro
     ExternalUserNotFoundError, InvalidWebhookError, hash_link_token
 from app.integration.types import CreateExternalUserRequest, HandoffAction, ExternalUserConflict, HandoffLink, \
     ExternalUser
+from app.integration.webhooks.events import ConversationCompleted
+from app.integration.webhooks.notifier import WebhookNotifier
+from app.integration.webhooks.repository import WebhookDeliveryRepository
+from app.integration.webhooks.testing import decrypt
+from app.integration.webhooks.types import WebhookEvent, WebhookNotification, DeliveryStatus
 from app.users.repositories import UserPreferenceRepository
 from app.users.preferences_service import UserPreferencesService
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
@@ -77,6 +83,7 @@ class _Setup:
     metrics_service: AsyncMock
     state_manager: ApplicationStateManager
     state_store: DatabaseApplicationStateStore
+    db: AsyncIOMotorDatabase
 
 
 @pytest.fixture(scope="function")
@@ -92,7 +99,7 @@ async def setup(in_memory_application_database: Awaitable[AsyncIOMotorDatabase],
     state_manager = ApplicationStateManager(store=state_store)
     service = _service(users, user_preferences, UserPreferencesService(user_preferences, metrics_service),
                        state_store, firebase, webhooks_enabled=True)
-    return _Setup(service, firebase, users, user_preferences, metrics_service, state_manager, state_store)
+    return _Setup(service, firebase, users, user_preferences, metrics_service, state_manager, state_store, db)
 
 
 def _service(users, user_preferences, user_preferences_service, state_store, firebase, *,
@@ -620,3 +627,39 @@ class TestGetResults:
 
         with pytest.raises(ExternalUserNotFoundError):
             await s.service.get_results("ext-1")
+
+
+class TestConversationCompletedWebhook:
+    @pytest.mark.asyncio
+    async def test_the_platform_gets_the_results_when_the_conversation_is_completed(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a user created with a webhook, who finished their conversation with one experience
+        await s.service.create_user(_webhook_request())
+        session_id = (await _sessions_of(s))[0]
+        await _save_conversation(s, session_id, ConversationPhase.ENDED, explored=[_experience("Cajera")])
+        # AND the platform's server, which takes every notification
+        received = []
+
+        def _platform(request: httpx.Request) -> httpx.Response:
+            received.append(request)
+            return httpx.Response(200)
+
+        notifier = WebhookNotifier(users=s.users, deliveries=WebhookDeliveryRepository(s.db),
+                                   events=[ConversationCompleted(s.service.get_results)],
+                                   http_client=httpx.AsyncClient(transport=httpx.MockTransport(_platform)),
+                                   enabled=True)
+
+        # WHEN the end of the conversation is emitted, as the conversation service does, and then sent
+        user_id = (await s.users.find_by_external_id("ext-1")).user_id
+        delivery_id = await notifier.emit(WebhookEvent.CONVERSATION_COMPLETED, user_id,
+                                          ConversationCompleted.event_ref(session_id))
+        await notifier.attempt()
+
+        # THEN the platform decrypts the notification of that conversation, with the same results as the endpoint
+        _, plaintext = decrypt(received[0].content.decode("ascii"), _WEBHOOK_SECRET)
+        actual = WebhookNotification.model_validate_json(plaintext)
+        assert actual.external_id == "ext-1"
+        assert actual.data["session_id"] == session_id
+        assert actual.data["results"] == (await s.service.get_results("ext-1")).model_dump(mode="json")
+        assert actual.data["results"]["conversations"][0]["experiences"][0]["experience_title"] == "Cajera"
+        assert (await WebhookDeliveryRepository(s.db).find_by_id(delivery_id)).status == DeliveryStatus.DELIVERED

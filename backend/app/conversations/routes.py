@@ -37,6 +37,8 @@ from app.conversations.service import (
 from app.conversations.types import ConversationInput, ConversationResponse
 from app.errors.constants import NO_PERMISSION_FOR_SESSION
 from app.errors.errors import UnauthorizedSessionAccessError
+from app.integration.webhooks.get_webhook_notifier import get_webhook_notifier
+from app.integration.webhooks.notifier import WebhookNotifier
 from app.observability.treatment_group import set_treatment_group
 from app.job_preferences.get_job_preferences_service import get_job_preferences_service
 from app.job_preferences.service import IJobPreferencesService
@@ -81,6 +83,7 @@ async def get_conversation_service(
     user_recommendations_service: IUserRecommendationsService = Depends(
         get_user_recommendations_service
     ),
+    webhook_notifier: WebhookNotifier = Depends(get_webhook_notifier),
 ) -> IConversationService:
     return ConversationService(
         agent_director=agent_director,
@@ -92,6 +95,7 @@ async def get_conversation_service(
         reaction_repository=ReactionRepository(db),
         job_preferences_service=job_preferences_service,
         user_recommendations_service=user_recommendations_service,
+        webhook_notifier=webhook_notifier,
     )
 
 

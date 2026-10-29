@@ -14,6 +14,9 @@ from app.application_state import ApplicationState
 from app.conversation_memory.conversation_memory_manager import IConversationMemoryManager
 from app.conversations.reactions.repository import IReactionRepository
 from app.conversations.types import ConversationResponse
+from app.integration.webhooks.events import ConversationCompleted
+from app.integration.webhooks.notifier import WebhookNotifier
+from app.integration.webhooks.types import WebhookEvent
 from app.conversations.utils import get_messages_from_conversation_manager, filter_conversation_history, \
     get_total_explored_experiences, get_current_conversation_phase_response
 from app.sensitive_filter import sensitive_filter
@@ -127,7 +130,8 @@ class ConversationService(IConversationService):
                  conversation_memory_manager: IConversationMemoryManager,
                  reaction_repository: IReactionRepository,
                  job_preferences_service: IJobPreferencesService,
-                 user_recommendations_service: IUserRecommendationsService):
+                 user_recommendations_service: IUserRecommendationsService,
+                 webhook_notifier: WebhookNotifier):
         self._logger = logging.getLogger(ConversationService.__name__)
         self._agent_director = agent_director
         self._application_state_metrics_recorder = application_state_metrics_recorder
@@ -135,6 +139,7 @@ class ConversationService(IConversationService):
         self._reaction_repository = reaction_repository
         self._job_preferences_service = job_preferences_service
         self._user_recommendations_service = user_recommendations_service
+        self._webhook_notifier = webhook_notifier
 
     async def send(self, user_id: str, session_id: int, user_input: str, clear_memory: bool,
                    filter_pii: bool) -> ConversationResponse:
@@ -248,6 +253,12 @@ class ConversationService(IConversationService):
 
         # save the state, before responding to the user
         await self._application_state_metrics_recorder.save_state(state, user_id)
+
+        # this turn ended the conversation (a turn on an ended one is refused above): tell the platform that created
+        # the user, if any. Only recorded here, sent by the webhook retry loop; never fails the turn.
+        if state.agent_director_state.current_phase == ConversationPhase.ENDED:
+            await self._webhook_notifier.emit(WebhookEvent.CONVERSATION_COMPLETED, user_id,
+                                              ConversationCompleted.event_ref(session_id))
 
         return ConversationResponse(
             messages=response,
