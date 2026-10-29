@@ -19,7 +19,7 @@ from app.metrics.types import UserAccountCreatedEvent
 from app.integration.repository import ExternalUserRepository
 from app.integration.return_url_validation import InvalidReturnUrlError
 from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError, \
-    ExternalUserNotFoundError, hash_link_token
+    ExternalUserNotFoundError, InvalidWebhookError, hash_link_token
 from app.integration.types import CreateExternalUserRequest, HandoffAction, ExternalUserConflict, HandoffLink, \
     ExternalUser
 from app.users.repositories import UserPreferenceRepository
@@ -31,6 +31,8 @@ from common_libs.time_utilities import get_now
 _FRONTEND_URL = "https://compass.example.org"
 _TTL_MINUTES = 60
 _PARTNER_ORIGIN = "https://partner.example.org"
+_PARTNER_API_ORIGIN = "https://api.partner.example.org"
+_WEBHOOK_SECRET = "s" * 43  # nosec B105 # test fixture, not a credential
 
 
 @dataclass
@@ -88,18 +90,26 @@ async def setup(in_memory_application_database: Awaitable[AsyncIOMotorDatabase],
     metrics_service = AsyncMock(spec=IMetricsService)
     state_store = DatabaseApplicationStateStore(db)
     state_manager = ApplicationStateManager(store=state_store)
-    service = IntegrationService(
+    service = _service(users, user_preferences, UserPreferencesService(user_preferences, metrics_service),
+                       state_store, firebase, webhooks_enabled=True)
+    return _Setup(service, firebase, users, user_preferences, metrics_service, state_manager, state_store)
+
+
+def _service(users, user_preferences, user_preferences_service, state_store, firebase, *,
+             webhooks_enabled: bool) -> IntegrationService:
+    return IntegrationService(
         user_repository=users,
         user_preferences_repository=user_preferences,
-        user_preferences_service=UserPreferencesService(user_preferences, metrics_service),
+        user_preferences_service=user_preferences_service,
         application_state_store=state_store,
         firebase=firebase,  # type: ignore[arg-type]
         link_ttl_minutes=_TTL_MINUTES,
         frontend_url=_FRONTEND_URL,
         default_language="es-ES",
         return_url_origins=[_PARTNER_ORIGIN],
+        webhooks_enabled=webhooks_enabled,
+        webhook_url_origins=[_PARTNER_API_ORIGIN],
     )
-    return _Setup(service, firebase, users, user_preferences, metrics_service, state_manager, state_store)
 
 
 def _request(external_id: str = "ext-1", email: str = "person@example.com",
@@ -399,6 +409,76 @@ class TestReturnUrl:
         # THEN no user and no account are created
         assert await s.users.find_by_external_id("ext-1") is None
         assert s.firebase.created_emails == []
+
+
+def _webhook_request(webhook_url: Optional[str] = f"{_PARTNER_API_ORIGIN}/hook",
+                     webhook_secret: Optional[str] = _WEBHOOK_SECRET) -> CreateExternalUserRequest:
+    return CreateExternalUserRequest(external_id="ext-1", email="person@example.com",
+                                     webhook_url=webhook_url, webhook_secret=webhook_secret)
+
+
+class TestWebhook:
+    @pytest.mark.asyncio
+    async def test_is_stored_echoed_and_replaced_by_the_latest_call(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a user created with a webhook
+        given_url = f"{_PARTNER_API_ORIGIN}/hook"
+        _, actual_first = await s.service.create_user(_webhook_request(given_url))
+
+        # THEN the URL and secret are stored, and the response echoes the URL but not the secret
+        actual_webhook = (await s.users.find_by_external_id("ext-1")).webhook
+        assert actual_webhook.url == given_url
+        assert actual_webhook.secret.get_secret_value() == _WEBHOOK_SECRET
+        assert actual_first.user.webhook_url == given_url
+        assert _WEBHOOK_SECRET not in actual_first.model_dump_json()
+
+        # WHEN the platform calls again with another URL and secret
+        given_other_secret = "t" * 43  # nosec B105 # test fixture, not a credential
+        await s.service.create_user(_webhook_request(f"{_PARTNER_API_ORIGIN}/other", given_other_secret))
+
+        # THEN both are replaced
+        actual_webhook = (await s.users.find_by_external_id("ext-1")).webhook
+        assert actual_webhook.url == f"{_PARTNER_API_ORIGIN}/other"
+        assert actual_webhook.secret.get_secret_value() == given_other_secret
+
+        # WHEN the platform calls again without a webhook
+        _, actual_last = await s.service.create_user(_request())
+
+        # THEN it is removed
+        assert (await s.users.find_by_external_id("ext-1")).webhook is None
+        assert actual_last.user.webhook_url is None
+
+    @pytest.mark.asyncio
+    async def test_not_allowed_is_refused_before_anything_is_created(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # WHEN a platform creates a user with a webhook on a server that is not allowed (the return URL origin
+        # is not enough: webhooks have their own allow-list)
+        with pytest.raises(InvalidWebhookError) as e:
+            await s.service.create_user(_webhook_request(f"{_PARTNER_ORIGIN}/hook"))
+
+        # THEN no user and no account are created
+        assert str(e.value) == "webhook_url is not allowed on this instance."
+        assert await s.users.find_by_external_id("ext-1") is None
+        assert s.firebase.created_emails == []
+
+    @pytest.mark.asyncio
+    async def test_refused_while_webhooks_are_not_enabled(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN an instance where webhooks are not enabled
+        service = _service(s.users, s.user_preferences, UserPreferencesService(s.user_preferences, s.metrics_service),
+                           s.state_store, s.firebase, webhooks_enabled=False)
+
+        # WHEN a platform creates a user with an allowed webhook
+        with pytest.raises(InvalidWebhookError) as e:
+            await service.create_user(_webhook_request())
+
+        # THEN it is refused before anything is created: the platform must know nothing will be sent
+        assert str(e.value) == "webhooks are not enabled on this instance."
+        assert await s.users.find_by_external_id("ext-1") is None
+
+        # AND users without a webhook are still created
+        actual_created, _ = await service.create_user(_request())
+        assert actual_created is True
 
 
 def _experience(title: str) -> ExperienceEntity:

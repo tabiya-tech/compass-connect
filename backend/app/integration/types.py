@@ -1,13 +1,20 @@
+import re
 from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, SecretStr, field_validator, model_validator
 
 EXTERNAL_ID_PATTERN = r"^[A-Za-z0-9._:@-]{1,128}$"
 """
 The ids a platform can use. No `/`, so an id can be a path segment (Starlette decodes `%2F` before routing), and no
 free text, which leaves less room for personal data in the id.
+"""
+
+WEBHOOK_SECRET_PATTERN = r"[A-Za-z0-9_-]{43}"  # nosec B105 # a format, not a credential
+"""
+32 random bytes, base64url without padding (the JWK `k` format), e.g. Python `secrets.token_urlsafe(32)` or Node
+`crypto.randomBytes(32).toString("base64url")`. It is the AES-256 key of the webhook notifications.
 """
 
 
@@ -43,6 +50,16 @@ class CreateExternalUserRequest(BaseModel):
                                       description="Where the user goes back to when they are done. Its origin must "
                                                   "be allowed on the instance. Each call replaces it; a call "
                                                   "without it removes it.")
+    webhook_url: Optional[str] = Field(default=None, max_length=2048,
+                                       description="Where Compass notifies the platform about the user, e.g. when "
+                                                   "they finish their conversation. Its origin must be allowed on "
+                                                   "the instance, and webhooks enabled. Needs webhook_secret. Each "
+                                                   "call replaces it; a call without it removes it.")
+    webhook_secret: Optional[SecretStr] = Field(default=None,
+                                                description="The key that encrypts and authenticates the "
+                                                            "notifications: 32 random bytes, base64url without "
+                                                            "padding (43 characters). Chosen by the platform, never "
+                                                            "returned. Required with webhook_url.")
 
     @field_validator("email")
     @classmethod
@@ -58,6 +75,19 @@ class CreateExternalUserRequest(BaseModel):
             raise ValueError("external_id cannot be '.' or '..'")
         return value
 
+    @field_validator("webhook_secret")
+    @classmethod
+    def _secret_is_32_bytes(cls, value: Optional[SecretStr]) -> Optional[SecretStr]:
+        if value is not None and not re.fullmatch(WEBHOOK_SECRET_PATTERN, value.get_secret_value()):
+            raise ValueError("webhook_secret must be 32 random bytes, base64url without padding (43 characters)")
+        return value
+
+    @model_validator(mode="after")
+    def _webhook_url_and_secret_together(self) -> "CreateExternalUserRequest":
+        if (self.webhook_url is None) != (self.webhook_secret is None):
+            raise ValueError("webhook_url and webhook_secret must be sent together")
+        return self
+
     class Config:
         extra = "forbid"
         str_strip_whitespace = True
@@ -67,6 +97,8 @@ class ExternalUserResponse(BaseModel):
     external_id: str
     email: str
     return_url: Optional[str] = Field(default=None, description="The return URL stored by this call.")
+    webhook_url: Optional[str] = Field(default=None, description="The webhook URL stored by this call. The secret "
+                                                                 "is never returned.")
     created_at: datetime
 
 
@@ -90,6 +122,14 @@ class HandoffLink(BaseModel):
     expires_at: datetime
 
 
+class Webhook(BaseModel):
+    """
+    Where and how to notify the platform about a user, as stored. URL and secret are always set and replaced together.
+    """
+    url: str
+    secret: SecretStr
+
+
 class ExternalUser(BaseModel):
     """
     A user created by another platform through the integration API, as stored.
@@ -104,6 +144,10 @@ class ExternalUser(BaseModel):
     link: Optional[HandoffLink] = None
     """
     The only link that works for this user. Issuing a new one replaces it.
+    """
+    webhook: Optional[Webhook] = None
+    """
+    Empty: the platform is not notified about this user.
     """
     created_at: datetime
     updated_at: datetime

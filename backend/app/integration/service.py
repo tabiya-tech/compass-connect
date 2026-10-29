@@ -20,10 +20,10 @@ from app.application_state import ApplicationStateStore
 from app.conversations.experience._types import ExperienceResponse
 from app.integration.firebase import IntegrationFirebase
 from app.integration.repository import ExternalUserRepository, DuplicateExternalUserError
-from app.integration.return_url_validation import validate_return_url
+from app.integration.return_url_validation import validate_return_url, InvalidReturnUrlError
 from app.integration.types import CreateExternalUserRequest, CreateExternalUserResponse, HandoffAction, \
     HandoffLink, HandoffLinkResponse, ExternalUserConflict, ExternalUserResponse, ExternalUser, \
-    HandoffExchangeResponse
+    HandoffExchangeResponse, Webhook
 from app.users.preferences_service import IUserPreferencesService
 from app.users.repositories import IUserPreferenceRepository, UserPreferenceRepositoryError
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
@@ -61,6 +61,12 @@ class ExternalUserNotFoundError(Exception):
     """
 
 
+class InvalidWebhookError(Exception):
+    """
+    Webhooks are not enabled on this instance, or the webhook URL is not allowed. The message says which.
+    """
+
+
 class InvalidHandoffLinkError(Exception):
     """
     The link is unknown, expired or replaced, or its account can no longer use it. One error for all, on purpose.
@@ -89,7 +95,9 @@ class IntegrationService:
                  link_ttl_minutes: int,
                  frontend_url: str,
                  default_language: str,
-                 return_url_origins: list[str]):
+                 return_url_origins: list[str],
+                 webhooks_enabled: bool,
+                 webhook_url_origins: list[str]):
         self._users = user_repository
         self._user_preferences = user_preferences_repository
         self._user_preferences_service = user_preferences_service
@@ -99,6 +107,8 @@ class IntegrationService:
         self._frontend_url = frontend_url
         self._default_language = default_language
         self._return_url_origins = return_url_origins
+        self._webhooks_enabled = webhooks_enabled
+        self._webhook_url_origins = webhook_url_origins
         self._logger = logging.getLogger(self.__class__.__name__)
 
     async def create_user(self, request: CreateExternalUserRequest) -> tuple[bool, CreateExternalUserResponse]:
@@ -109,9 +119,12 @@ class IntegrationService:
         :return: whether the user was created by this request, and the response
         :raises ExternalUserConflictError: see ExternalUserConflict
         :raises InvalidReturnUrlError: before anything is created
+        :raises InvalidWebhookError: before anything is created
         """
         if request.return_url is not None:
             validate_return_url(request.return_url, self._return_url_origins)
+        if request.webhook_url is not None:
+            self._validate_webhook_url(request.webhook_url)
         external_user, created = await self._get_or_create_external_user(request)
         user = await self._ensure_firebase_user(external_user)
         if not is_plain_jobseeker(user):
@@ -122,13 +135,19 @@ class IntegrationService:
         # each call replaces it, and a call without it removes it ("": the update skips None)
         await self._user_preferences.update_user_preference(
             user.uid, UserPreferencesRepositoryUpdateRequest(return_url=request.return_url or ""))
+        # like the return URL: each call replaces it, and a call without it removes it
+        await self._users.set_webhook(
+            external_user.external_id,
+            Webhook(url=request.webhook_url, secret=request.webhook_secret) if request.webhook_url else None,
+            get_now())
         link = await self._issue_link(external_user.external_id, request.action)
 
         return created, CreateExternalUserResponse(
             result="User created, hand-off link issued." if created
             else "User already existed, new hand-off link issued.",
             user=ExternalUserResponse(external_id=external_user.external_id, email=external_user.email,
-                                      return_url=request.return_url, created_at=external_user.created_at),
+                                      return_url=request.return_url, webhook_url=request.webhook_url,
+                                      created_at=external_user.created_at),
             link=link)
 
     async def exchange_link(self, token: str) -> HandoffExchangeResponse:
@@ -185,6 +204,14 @@ class IntegrationService:
                              for experience in state.explore_experiences_director_state.explored_experiences]))
         return ExternalUserResultsResponse(external_id=external_user.external_id, email=external_user.email,
                                            conversations=conversations)
+
+    def _validate_webhook_url(self, url: str) -> None:
+        if not self._webhooks_enabled:
+            raise InvalidWebhookError("webhooks are not enabled on this instance.")
+        try:
+            validate_return_url(url, self._webhook_url_origins, field="webhook_url")
+        except InvalidReturnUrlError as e:
+            raise InvalidWebhookError(str(e)) from e
 
     async def _get_or_create_external_user(self, request: CreateExternalUserRequest) -> tuple[ExternalUser, bool]:
         existing = await self._users.find_by_external_id(request.external_id)

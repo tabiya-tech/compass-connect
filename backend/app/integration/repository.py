@@ -4,7 +4,7 @@ from typing import Mapping, Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo.errors import DuplicateKeyError
 
-from app.integration.types import ExternalUser, HandoffLink, HandoffAction
+from app.integration.types import ExternalUser, HandoffLink, HandoffAction, Webhook
 from app.server_dependencies.database_collections import Collections
 from common_libs.time_utilities import datetime_to_mongo_date, mongo_date_to_datetime
 
@@ -33,6 +33,7 @@ class ExternalUserRepository:
     @staticmethod
     def _from_db_doc(doc: Mapping) -> ExternalUser:
         link = doc.get("link")
+        webhook = doc.get("webhook")
         return ExternalUser(
             external_id=doc["external_id"],
             email=doc["email"],
@@ -40,6 +41,7 @@ class ExternalUserRepository:
             link=HandoffLink(token_hash=link["token_hash"],
                              action=HandoffAction(link["action"]),
                              expires_at=mongo_date_to_datetime(link["expires_at"])) if link else None,
+            webhook=Webhook(url=webhook["url"], secret=webhook["secret"]) if webhook else None,
             created_at=mongo_date_to_datetime(doc["created_at"]),
             updated_at=mongo_date_to_datetime(doc["updated_at"]),
         )
@@ -72,6 +74,7 @@ class ExternalUserRepository:
                 "email": user.email,
                 "user_id": user.user_id,
                 "link": None,
+                "webhook": None,
                 "created_at": datetime_to_mongo_date(user.created_at),
                 "updated_at": datetime_to_mongo_date(user.updated_at),
             })
@@ -85,6 +88,15 @@ class ExternalUserRepository:
         await self._set(external_id, {
             "link": {"token_hash": link.token_hash, "action": link.action.value,
                      "expires_at": datetime_to_mongo_date(link.expires_at)},
+            "updated_at": datetime_to_mongo_date(updated_at),
+        })
+
+    async def set_webhook(self, external_id: str, webhook: Optional[Webhook], updated_at: datetime) -> None:
+        """
+        :param webhook: None removes it
+        """
+        await self._set(external_id, {
+            "webhook": {"url": webhook.url, "secret": webhook.secret.get_secret_value()} if webhook else None,
             "updated_at": datetime_to_mongo_date(updated_at),
         })
 

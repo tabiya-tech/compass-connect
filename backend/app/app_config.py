@@ -134,6 +134,18 @@ class ApplicationConfig(BaseModel):
     Empty: return_url is refused. Loaded from the BACKEND_INTEGRATION_RETURN_URL_ORIGINS environment variable.
     """
 
+    integration_webhooks_enabled: bool = False
+    """
+    Whether the integration API notifies the calling platform's webhook_url. Off: a webhook_url is refused and nothing
+    is sent. Loaded from the BACKEND_INTEGRATION_WEBHOOKS_ENABLED environment variable.
+    """
+
+    integration_webhook_url_origins: list[str] = Field(default_factory=list)
+    """
+    The origins a webhook_url of the integration API can point to, e.g. https://api.partner.example.org. Required
+    when webhooks are enabled. Loaded from the BACKEND_INTEGRATION_WEBHOOK_URL_ORIGINS environment variable.
+    """
+
     admin_firebase_tenant_id: str
     """
     The Firebase tenant ID for admin user management operations.
@@ -201,6 +213,9 @@ class ApplicationConfig(BaseModel):
             raise ValueError("ANTHROPIC_API_KEY must be set when LLM_PROVIDER=anthropic.")
         if self.skill_linker.is_classifier and not (self.classifier_api_url and self.classifier_api_key):
             raise ValueError(f"CLASSIFIER_API_URL and CLASSIFIER_API_KEY must be set when BACKEND_SKILL_LINKER={self.skill_linker.value}.")
+        if self.integration_webhooks_enabled and not self.integration_webhook_url_origins:
+            raise ValueError("BACKEND_INTEGRATION_WEBHOOK_URL_ORIGINS must be set when "
+                             "BACKEND_INTEGRATION_WEBHOOKS_ENABLED=true.")
         return self
 
 
