@@ -85,6 +85,55 @@ def is_plain_jobseeker(user: auth.UserRecord) -> bool:
     return not user.custom_claims and not user.disabled
 
 
+class ExternalUserResultsReader:
+    """
+    What the skills conversations of an external user produced. The results endpoint and the webhook notifications
+    send the same thing, and the notifications are sent outside of a request: so this needs only these three.
+    """
+
+    def __init__(self, *,
+                 user_repository: ExternalUserRepository,
+                 user_preferences_repository: IUserPreferenceRepository,
+                 application_state_store: ApplicationStateStore):
+        self._users = user_repository
+        self._user_preferences = user_preferences_repository
+        self._application_state_store = application_state_store
+
+    async def get_results(self, external_id: str) -> ExternalUserResultsResponse:
+        """
+        What the user's skills conversations produced, newest first like the sessions, so a new conversation does
+        not hide a completed one. Only the explored experiences: the deleted ones are not in them, and the ones
+        still being explored are left out.
+
+        :raises ExternalUserNotFoundError: for an unknown external id, or one without a Firebase account yet
+        """
+        external_user = await self._users.find_by_external_id(external_id)
+        if external_user is None or external_user.user_id is None:
+            raise ExternalUserNotFoundError()
+
+        # the sessions come from the user's own preferences: a session of another user can never be read
+        preferences = await self._user_preferences.get_user_preference_by_user_id(external_user.user_id)
+        conversations = []
+        for session_id in preferences.sessions if preferences else []:
+            # the store, not the state manager: the manager saves a new empty state when the store returns None, and
+            # the store also returns None when the read fails, so a partner polling this could wipe a conversation
+            # TODO: get_state can still save healed or upgraded state, and a failed read is reported here as an
+            #  incomplete conversation. Use a read-only load and return a 5xx on failure once the store has one.
+            state = await self._application_state_store.get_state(session_id)
+            if state is None:
+                conversations.append(ConversationResults(session_id=session_id, conversation_completed=False,
+                                                         conversation_conducted_at=None, experiences=[]))
+                continue
+            conversations.append(ConversationResults(
+                session_id=session_id,
+                conversation_completed=state.agent_director_state.current_phase == ConversationPhase.ENDED,
+                conversation_conducted_at=state.agent_director_state.conversation_conducted_at,
+                experiences=[ExperienceResponse.from_experience_entity(experience, DiveInPhase.PROCESSED)
+                             for experience in state.explore_experiences_director_state.explored_experiences]))
+        return ExternalUserResultsResponse(external_id=external_user.external_id, email=external_user.email,
+                                           conversations=conversations)
+
+
 class IntegrationService:
     def __init__(self, *,
                  user_repository: ExternalUserRepository,
@@ -101,7 +150,9 @@ class IntegrationService:
         self._users = user_repository
         self._user_preferences = user_preferences_repository
         self._user_preferences_service = user_preferences_service
-        self._application_state_store = application_state_store
+        self._results = ExternalUserResultsReader(user_repository=user_repository,
+                                                  user_preferences_repository=user_preferences_repository,
+                                                  application_state_store=application_state_store)
         self._firebase = firebase
         self._link_ttl_minutes = link_ttl_minutes
         self._frontend_url = frontend_url
@@ -173,37 +224,9 @@ class IntegrationService:
 
     async def get_results(self, external_id: str) -> ExternalUserResultsResponse:
         """
-        What the user's skills conversations produced, newest first like the sessions, so a new conversation does
-        not hide a completed one. Only the explored experiences: the deleted ones are not in them, and the ones
-        still being explored are left out.
-
-        :raises ExternalUserNotFoundError: for an unknown external id, or one without a Firebase account yet
+        See ExternalUserResultsReader.get_results.
         """
-        external_user = await self._users.find_by_external_id(external_id)
-        if external_user is None or external_user.user_id is None:
-            raise ExternalUserNotFoundError()
-
-        # the sessions come from the user's own preferences: a session of another user can never be read
-        preferences = await self._user_preferences.get_user_preference_by_user_id(external_user.user_id)
-        conversations = []
-        for session_id in preferences.sessions if preferences else []:
-            # the store, not the state manager: the manager saves a new empty state when the store returns None, and
-            # the store also returns None when the read fails, so a partner polling this could wipe a conversation
-            # TODO: get_state can still save healed or upgraded state, and a failed read is reported here as an
-            #  incomplete conversation. Use a read-only load and return a 5xx on failure once the store has one.
-            state = await self._application_state_store.get_state(session_id)
-            if state is None:
-                conversations.append(ConversationResults(session_id=session_id, conversation_completed=False,
-                                                         conversation_conducted_at=None, experiences=[]))
-                continue
-            conversations.append(ConversationResults(
-                session_id=session_id,
-                conversation_completed=state.agent_director_state.current_phase == ConversationPhase.ENDED,
-                conversation_conducted_at=state.agent_director_state.conversation_conducted_at,
-                experiences=[ExperienceResponse.from_experience_entity(experience, DiveInPhase.PROCESSED)
-                             for experience in state.explore_experiences_director_state.explored_experiences]))
-        return ExternalUserResultsResponse(external_id=external_user.external_id, email=external_user.email,
-                                           conversations=conversations)
+        return await self._results.get_results(external_id)
 
     def _validate_webhook_url(self, url: str) -> None:
         if not self._webhooks_enabled:

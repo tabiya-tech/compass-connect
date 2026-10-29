@@ -218,6 +218,27 @@ class TestAttempt:
         assert actual_delivery.last_error is None
 
     @pytest.mark.asyncio
+    async def test_nothing_is_sent_while_webhooks_are_not_enabled(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a delivery recorded while webhooks were enabled, then the operator turns them off
+        given_id = await s.notifier.emit(WebhookEvent.CONVERSATION_COMPLETED, "uid-1", {"session_id": 1})
+        disabled_notifier = s.new_notifier(enabled=False)
+
+        # WHEN it is attempted
+        actual = await disabled_notifier.attempt()
+
+        # THEN nothing is sent, and it stays pending, untouched
+        assert actual is False
+        assert s.platform.requests == []
+        actual_delivery = await s.stored(given_id)
+        assert actual_delivery.status == DeliveryStatus.PENDING
+        assert actual_delivery.attempts == 0
+
+        # AND it is sent once they are turned on again
+        assert await s.notifier.attempt() is True
+        assert (await s.stored(given_id)).status == DeliveryStatus.DELIVERED
+
+    @pytest.mark.asyncio
     async def test_nothing_to_attempt(self, setup: Awaitable[_Setup]):
         s = await setup
         assert await s.notifier.attempt() is False

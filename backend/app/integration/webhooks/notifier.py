@@ -85,10 +85,13 @@ class WebhookNotifier:
 
     async def attempt(self) -> bool:
         """
-        Send the delivery due the longest, unless another attempt holds it.
+        Send the delivery due the longest, unless another attempt holds it. Nothing is sent while webhooks are not
+        enabled: deliveries recorded before they were turned off stay pending, and are sent if they are turned on again.
 
-        :return: whether a delivery was attempted (False: none is due)
+        :return: whether a delivery was attempted (False: none is due, or webhooks are not enabled)
         """
+        if not self._enabled:
+            return False
         delivery = await self._deliveries.claim(_now(), ATTEMPT_LEASE)
         if delivery is None:
             return False
