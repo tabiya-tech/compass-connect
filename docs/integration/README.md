@@ -224,13 +224,26 @@ conversation ends, the button in Compass brings you back to http://localhost:310
 return button needs `http://localhost:3100` in the instance's allow-list: ask the operator, or see the
 [getting-started guide](../getting-started/README.md#optional-integration-api).
 
-To try the [webhooks](webhooks.md) too, add a secret. The instance needs webhooks on, with `http://localhost:3100` in
-its webhook allow-list. The return page then also shows the notification the example received:
+To try the [webhooks](webhooks.md) too, add a secret. The instance needs webhooks on, with the origin of the webhook
+URL in its webhook allow-list. The return page then also shows the notification the example received.
+
+### A note containers
+
+If you are running compass locally from a docker container, you need this container to be able to reach the test server
+webhook URL, this is normally running on the default `http://localhost:3100` and a docker container wont be able to reach it. 
+
+so you need to make sure your container can reach the service or expose the service with an SSH tunnel to a public internet url
+
+For example with something like ngrok `ngrok http 3100`, allow the tunnel's origin (`https://<id>.ngrok-free.app`), and pass its URL:
 
 ```bash
 COMPASS_WEBHOOK_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))") \
+  COMPASS_WEBHOOK_URL=https://<id>.ngrok-free.app/webhook \
   COMPASS_API_KEY=<a key from API_KEYS> node example.mjs
 ```
+
+When the backend runs on the same machine as the example (the manual setup), leave `COMPASS_WEBHOOK_URL` out and allow the default
+`http://localhost:3100`.
 
 ```javascript
 // A partner platform in one file, to try the Compass integration API.
@@ -245,8 +258,9 @@ COMPASS_WEBHOOK_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).
 // The key stays on the server: never put it in a web page.
 //
 // Webhooks (optional): set COMPASS_WEBHOOK_SECRET (32 random bytes, base64url) and the server also asks Compass to
-// POST the results to /webhook when the conversation ends. The instance must have webhooks on, with
-// http://localhost:3100 in BACKEND_INTEGRATION_WEBHOOK_URL_ORIGINS. See webhooks.md.
+// POST the results to /webhook when the conversation ends. The instance must have webhooks on, with the origin of
+// the webhook URL in BACKEND_INTEGRATION_WEBHOOK_URL_ORIGINS. The webhook URL is http://localhost:3100/webhook, or
+// COMPASS_WEBHOOK_URL when Compass cannot reach this machine as localhost (in Docker: use a tunnel). See webhooks.md.
 import { createServer } from "node:http";
 import { createDecipheriv } from "node:crypto";
 
@@ -255,6 +269,7 @@ const API_KEY = process.env.COMPASS_API_KEY;
 const PORT = Number(process.env.PORT ?? 3100);
 const PUBLIC_URL = `http://localhost:${PORT}`;
 const WEBHOOK_SECRET = process.env.COMPASS_WEBHOOK_SECRET;
+const WEBHOOK_URL = process.env.COMPASS_WEBHOOK_URL ?? `${PUBLIC_URL}/webhook`;
 
 // The latest webhook notification per external_id, and the delivery ids already processed. A real platform keeps
 // them in its database.
@@ -278,7 +293,7 @@ createServer(async (req, res) => {
     // external_id in its own return URL.
     user.return_url = `${PUBLIC_URL}/return?external_id=${encodeURIComponent(user.external_id ?? "")}`;
     if (WEBHOOK_SECRET) {
-      user.webhook_url = `${PUBLIC_URL}/webhook`;
+      user.webhook_url = WEBHOOK_URL;
       user.webhook_secret = WEBHOOK_SECRET;
     }
 
