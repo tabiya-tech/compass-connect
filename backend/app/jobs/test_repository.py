@@ -19,8 +19,8 @@ class TestJobRepository:
 
         # WHEN fetching a filtered page with a total requested
         actual = await repo.fetch_jobs_page(
-            cursor="cur", limit=10, search="nurse", category="Health",
-            employment_type="full_time", location=["Lusaka", "Ndola"], skills="care",
+            cursor="cur", limit=10, search="nurse", category=["Health"],
+            employment_type=["full_time"], location=["Lusaka", "Ndola"], skills="care",
             days=30, include_total=True,
         )
 
@@ -35,13 +35,28 @@ class TestJobRepository:
             "cursor": "cur",
             "limit": 10,
             "search": "nurse",
-            "category": "Health",
-            "employment_type": "full_time",
+            "category": ["Health"],
+            "employment_type": ["full_time"],
             "location": ["Lusaka", "Ndola"],
             "skills": "care",
             "days": 30,
             "include_total": "true",
         }
+
+    @pytest.mark.asyncio
+    async def test_fetch_jobs_page_forwards_multiple_categories_and_employment_types(self):
+        # GIVEN a matching-service client returning a page
+        client = AsyncMock()
+        client.get.return_value = MatchingJobsPage(items=[])
+        repo = JobRepository(client=client)
+
+        # WHEN fetching a page with several categories and employment types selected
+        await repo.fetch_jobs_page(category=["Health", "IT"], employment_type=["full_time", "contract"])
+
+        # THEN both lists are forwarded as-is (httpx repeats list-valued query params)
+        params = client.get.call_args.kwargs["params"]
+        assert params["category"] == ["Health", "IT"]
+        assert params["employment_type"] == ["full_time", "contract"]
 
     @pytest.mark.asyncio
     async def test_fetch_jobs_page_omits_include_total_when_false(self):

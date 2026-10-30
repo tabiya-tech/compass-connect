@@ -93,8 +93,10 @@ export interface JobRow {
 
 export interface JobFilters {
   search: string;
-  category: string;
-  employmentType: string;
+  /** Selected category values; empty means no category filter is applied. */
+  category: string[];
+  /** Selected employment type values; empty means no employment type filter is applied. */
+  employmentType: string[];
   /** Selected location values; empty (or omitted) means no location filter is applied. */
   location: string[];
 }

@@ -29,16 +29,28 @@ const capitalize = (s: string) =>
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 
-const toFilterOptions = (values: string[], selectedValue: string) => {
-  const mergedValues = selectedValue === "all" ? values : Array.from(new Set([...values, selectedValue]));
-  const sortedValues = [...mergedValues].sort((a, b) => a.localeCompare(b));
-  return [{ value: "all", label: "All" }, ...sortedValues.map((value) => ({ value, label: capitalize(value) }))];
+/** Case/separator-insensitive dedup key, so "Full_time" and "Full-time" collapse to the same filter option. */
+const normalizeFilterKey = (s: string) => s.toLowerCase().replace(/[_-]+/g, " ").trim().replace(/\s+/g, " ");
+
+/** Adds `value` to `seen`/`out` unless its normalized key is already present (keeps the first-seen spelling). */
+const addUnlessDuplicateKey = (out: string[], seenKeys: Set<string>, value: string) => {
+  const key = normalizeFilterKey(value);
+  if (seenKeys.has(key)) return;
+  seenKeys.add(key);
+  out.push(value);
 };
 
-/** Like `toFilterOptions`, but for a multi-select filter: no "All" entry (the checkbox list adds its own). */
+const dedupeFilterValues = (values: string[]): string[] => {
+  const seenKeys = new Set<string>();
+  const out: string[] = [];
+  values.forEach((value) => addUnlessDuplicateKey(out, seenKeys, value));
+  return out;
+};
+
+/** Builds a multi-select filter's option list: every sampled value plus any already-selected one, deduped and sorted. */
 const toMultiFilterOptions = (values: string[], selectedValues: string[]) => {
   const selected = selectedValues.filter((v) => v !== "all");
-  const mergedValues = Array.from(new Set([...values, ...selected]));
+  const mergedValues = dedupeFilterValues([...values, ...selected]);
   const sortedValues = [...mergedValues].sort((a, b) => a.localeCompare(b));
   return sortedValues.map((value) => ({ value, label: capitalize(value) }));
 };
@@ -73,33 +85,21 @@ const buildActiveFilterChips = (
   labels: { category: string; employmentType: string; location: string }
 ): ActiveFilterChip[] => {
   const chips: ActiveFilterChip[] = [];
-  if (filters.category !== "all") {
-    chips.push({
-      key: `category:${filters.category}`,
-      label: `${labels.category}: ${capitalize(filters.category)}`,
-      onRemove: () => setFilters((f) => ({ ...f, category: "all" })),
-    });
-  }
-  if (filters.employmentType !== "all") {
-    chips.push({
-      key: `employmentType:${filters.employmentType}`,
-      label: `${labels.employmentType}: ${capitalize(filters.employmentType)}`,
-      onRemove: () => setFilters((f) => ({ ...f, employmentType: "all" })),
-    });
-  }
-  filters.location
-    .filter((v) => v !== "all")
-    .forEach((value) => {
-      chips.push({
-        key: `location:${value}`,
-        label: `${labels.location}: ${capitalize(value)}`,
-        onRemove: () => setFilters((f) => ({ ...f, location: f.location.filter((v) => v !== value) })),
+  (["category", "employmentType", "location"] as const).forEach((field) => {
+    filters[field]
+      .filter((v) => v !== "all")
+      .forEach((value) => {
+        chips.push({
+          key: `${field}:${value}`,
+          label: `${labels[field]}: ${capitalize(value)}`,
+          onRemove: () => setFilters((f) => ({ ...f, [field]: f[field].filter((v) => v !== value) })),
+        });
       });
-    });
+  });
   return chips;
 };
 
-const EMPTY_FILTERS: JobFilters = { search: "", category: "all", employmentType: "all", location: [] };
+const EMPTY_FILTERS: JobFilters = { search: "", category: [], employmentType: [], location: [] };
 const SEARCH_DEBOUNCE_MS = 300;
 // Number of recent jobs sampled once on mount to seed the filter dropdowns. A single
 // bounded request — NOT a full-dataset cursor walk — keeps the dropdowns populated from
@@ -169,9 +169,12 @@ const JobMatchingPage: React.FC = () => {
 
     const loadFilterValues = async () => {
       try {
-        const categorySet = new Set<string>();
-        const employmentTypeSet = new Set<string>();
-        const locationSet = new Set<string>();
+        const categoryKeys = new Set<string>();
+        const employmentTypeKeys = new Set<string>();
+        const locationKeys = new Set<string>();
+        const categoryValues: string[] = [];
+        const employmentTypeValues: string[] = [];
+        const locationValues: string[] = [];
 
         const result = await JobService.getInstance().listJobs({ limit: FILTER_SAMPLE_SIZE });
         result.data.forEach((doc) => {
@@ -180,17 +183,17 @@ const JobMatchingPage: React.FC = () => {
           const city = doc.city?.trim();
           const province = doc.province?.trim();
 
-          if (category) categorySet.add(category);
-          if (employmentType) employmentTypeSet.add(employmentType);
-          if (city) locationSet.add(city);
-          if (province) locationSet.add(province);
+          if (category) addUnlessDuplicateKey(categoryValues, categoryKeys, category);
+          if (employmentType) addUnlessDuplicateKey(employmentTypeValues, employmentTypeKeys, employmentType);
+          if (city) addUnlessDuplicateKey(locationValues, locationKeys, city);
+          if (province) addUnlessDuplicateKey(locationValues, locationKeys, province);
         });
 
         if (!cancelled) {
           setDatasetFilterValues({
-            category: Array.from(categorySet),
-            employmentType: Array.from(employmentTypeSet),
-            location: Array.from(locationSet),
+            category: categoryValues,
+            employmentType: employmentTypeValues,
+            location: locationValues,
           });
         }
       } catch {
@@ -206,13 +209,17 @@ const JobMatchingPage: React.FC = () => {
     };
   }, []);
 
+  const browseCategoryKey = JSON.stringify(browseFilters.category);
   const categoryOptions = useMemo(
-    () => toFilterOptions(datasetFilterValues.category, browseFilters.category),
-    [datasetFilterValues.category, browseFilters.category]
+    () => toMultiFilterOptions(datasetFilterValues.category, browseFilters.category),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [datasetFilterValues.category, browseCategoryKey]
   );
+  const browseEmploymentTypeKey = JSON.stringify(browseFilters.employmentType);
   const employmentTypeOptions = useMemo(
-    () => toFilterOptions(datasetFilterValues.employmentType, browseFilters.employmentType),
-    [datasetFilterValues.employmentType, browseFilters.employmentType]
+    () => toMultiFilterOptions(datasetFilterValues.employmentType, browseFilters.employmentType),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [datasetFilterValues.employmentType, browseEmploymentTypeKey]
   );
   const locationOptions = useMemo(
     () => toMultiFilterOptions(datasetFilterValues.location, browseFilters.location),
@@ -222,28 +229,34 @@ const JobMatchingPage: React.FC = () => {
 
   // Matched for You's filter options come from the matches already on screen.
   const matchedFilterValues = useMemo(() => {
-    const categorySet = new Set<string>();
-    const employmentTypeSet = new Set<string>();
+    const categoryKeys = new Set<string>();
+    const employmentTypeKeys = new Set<string>();
     const locationSet = new Set<string>();
+    const categoryValues: string[] = [];
+    const employmentTypeValues: string[] = [];
     matchedJobs.forEach((job) => {
-      if (job.category) categorySet.add(job.category);
-      if (job.employmentType) employmentTypeSet.add(job.employmentType);
+      if (job.category) addUnlessDuplicateKey(categoryValues, categoryKeys, job.category);
+      if (job.employmentType) addUnlessDuplicateKey(employmentTypeValues, employmentTypeKeys, job.employmentType);
       if (job.location) locationTokens(job.location).forEach((token) => locationSet.add(token));
     });
     return {
-      category: Array.from(categorySet),
-      employmentType: Array.from(employmentTypeSet),
+      category: categoryValues,
+      employmentType: employmentTypeValues,
       location: Array.from(locationSet),
     };
   }, [matchedJobs]);
 
+  const matchedCategoryKey = JSON.stringify(matchedFilters.category);
   const matchedCategoryOptions = useMemo(
-    () => toFilterOptions(matchedFilterValues.category, matchedFilters.category),
-    [matchedFilterValues.category, matchedFilters.category]
+    () => toMultiFilterOptions(matchedFilterValues.category, matchedFilters.category),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [matchedFilterValues.category, matchedCategoryKey]
   );
+  const matchedEmploymentTypeKey = JSON.stringify(matchedFilters.employmentType);
   const matchedEmploymentTypeOptions = useMemo(
-    () => toFilterOptions(matchedFilterValues.employmentType, matchedFilters.employmentType),
-    [matchedFilterValues.employmentType, matchedFilters.employmentType]
+    () => toMultiFilterOptions(matchedFilterValues.employmentType, matchedFilters.employmentType),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [matchedFilterValues.employmentType, matchedEmploymentTypeKey]
   );
   const matchedLocationOptions = useMemo(
     () => toMultiFilterOptions(matchedFilterValues.location, matchedFilters.location),
@@ -251,15 +264,23 @@ const JobMatchingPage: React.FC = () => {
     [matchedFilterValues.location, JSON.stringify(matchedFilters.location)]
   );
 
+  /** Does `value` match any of the selected filter values, case/separator-insensitively? Empty/["all"] always matches. */
+  const matchesAnySelected = (value: string, selectedValues: string[]): boolean => {
+    const selected = selectedValues.filter((v) => v !== "all");
+    if (selected.length === 0) return true;
+    const key = normalizeFilterKey(value);
+    return selected.some((selectedValue) => normalizeFilterKey(selectedValue) === key);
+  };
+
   const filteredMatchedJobs = useMemo(() => {
     return matchedJobs.filter((job) => {
-      if (matchedFilters.category !== "all" && job.category !== matchedFilters.category) return false;
-      if (matchedFilters.employmentType !== "all" && job.employmentType !== matchedFilters.employmentType) return false;
+      if (!matchesAnySelected(job.category, matchedFilters.category)) return false;
+      if (!matchesAnySelected(job.employmentType, matchedFilters.employmentType)) return false;
       if (!locationMatchesAnyWord(job.location, matchedFilters.location)) return false;
       return true;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchedJobs, matchedFilters.category, matchedFilters.employmentType, JSON.stringify(matchedFilters.location)]);
+  }, [matchedJobs, matchedCategoryKey, matchedEmploymentTypeKey, JSON.stringify(matchedFilters.location)]);
 
   /**
    * Opening the detail is what counts as viewing a listing, on both tabs — it is the point
@@ -319,7 +340,7 @@ const JobMatchingPage: React.FC = () => {
   );
 
   const clearFilters = (setFilters: React.Dispatch<React.SetStateAction<JobFilters>>) => () =>
-    setFilters((f) => ({ ...f, category: "all", employmentType: "all", location: [] }));
+    setFilters((f) => ({ ...f, category: [], employmentType: [], location: [] }));
 
   const columns: ColumnDef<JobRow>[] = useMemo(
     () => [
@@ -356,10 +377,11 @@ const JobMatchingPage: React.FC = () => {
         sortable: false,
         align: "left",
         minWidth: 120,
-        filter: {
+        multiFilter: {
+          multi: true,
           options: categoryOptions,
-          value: browseFilters.category,
-          onChange: (v) => setBrowseFilters((f) => ({ ...f, category: v })),
+          values: browseFilters.category,
+          onChange: (values) => setBrowseFilters((f) => ({ ...f, category: values })),
         },
         render: (val) => (
           <Typography variant="body2" color="text.secondary">
@@ -373,10 +395,11 @@ const JobMatchingPage: React.FC = () => {
         sortable: false,
         align: "left",
         minWidth: 100,
-        filter: {
+        multiFilter: {
+          multi: true,
           options: employmentTypeOptions,
-          value: browseFilters.employmentType,
-          onChange: (v) => setBrowseFilters((f) => ({ ...f, employmentType: v })),
+          values: browseFilters.employmentType,
+          onChange: (values) => setBrowseFilters((f) => ({ ...f, employmentType: values })),
         },
         render: (val) => {
           const palette = [
@@ -440,20 +463,22 @@ const JobMatchingPage: React.FC = () => {
         if (col.key === "category") {
           return {
             ...col,
-            filter: {
+            multiFilter: {
+              multi: true as const,
               options: matchedCategoryOptions,
-              value: matchedFilters.category,
-              onChange: (v: string) => setMatchedFilters((f) => ({ ...f, category: v })),
+              values: matchedFilters.category,
+              onChange: (values: string[]) => setMatchedFilters((f) => ({ ...f, category: values })),
             },
           };
         }
         if (col.key === "employmentType") {
           return {
             ...col,
-            filter: {
+            multiFilter: {
+              multi: true as const,
               options: matchedEmploymentTypeOptions,
-              value: matchedFilters.employmentType,
-              onChange: (v: string) => setMatchedFilters((f) => ({ ...f, employmentType: v })),
+              values: matchedFilters.employmentType,
+              onChange: (values: string[]) => setMatchedFilters((f) => ({ ...f, employmentType: values })),
             },
           };
         }
