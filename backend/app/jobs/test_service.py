@@ -136,7 +136,7 @@ class TestJobServiceListJobs:
 
         # WHEN listing jobs with filters, a cursor and include=count
         await service.list_jobs(
-            search="nurse", category="Health", employment_type="full_time",
+            search="nurse", category=["Health"], employment_type=["full_time"],
             location=["Lusaka", "Ndola"], skills="care", days=30, cursor="cur", limit=10, include="count",
         )
 
@@ -145,13 +145,29 @@ class TestJobServiceListJobs:
             "cursor": "cur",
             "limit": 10,
             "search": "nurse",
-            "category": "Health",
-            "employment_type": "full_time",
+            "category": ["Health"],
+            "employment_type": ["full_time"],
             "location": ["Lusaka", "Ndola"],
             "skills": "care",
             "days": 30,
             "include_total": True,
         }
+
+    @pytest.mark.asyncio
+    async def test_repeated_category_and_employment_type_forwarded_as_lists(self):
+        # GIVEN a service over a fake repository
+        repo = _FakeJobRepository(_page([]), MatchingJobsStats())
+        service = JobService(repository=repo)
+
+        # WHEN listing jobs with several categories and employment types
+        await service.list_jobs(
+            search=None, category=["Health", "IT"], employment_type=["full_time", "contract"],
+            location=None, skills=None, days=None, cursor=None, limit=20, include=None,
+        )
+
+        # THEN both lists reach the repository unchanged
+        assert repo.last_kwargs["category"] == ["Health", "IT"]
+        assert repo.last_kwargs["employment_type"] == ["full_time", "contract"]
 
     @pytest.mark.asyncio
     async def test_include_total_false_when_not_requested(self):

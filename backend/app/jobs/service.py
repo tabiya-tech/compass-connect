@@ -80,8 +80,8 @@ class IJobService(ABC):
     async def list_jobs(
         self,
         search: Optional[str],
-        category: Optional[str],
-        employment_type: Optional[str],
+        category: Optional[list[str]],
+        employment_type: Optional[list[str]],
         location: Optional[list[str]],
         skills: Optional[str],
         days: Optional[int],
@@ -133,8 +133,8 @@ class JobService(IJobService):
     async def list_jobs(
         self,
         search: Optional[str],
-        category: Optional[str],
-        employment_type: Optional[str],
+        category: Optional[list[str]],
+        employment_type: Optional[list[str]],
         location: Optional[list[str]],
         skills: Optional[str],
         days: Optional[int],

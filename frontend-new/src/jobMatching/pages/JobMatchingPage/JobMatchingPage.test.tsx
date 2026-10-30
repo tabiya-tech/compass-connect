@@ -86,20 +86,21 @@ const setupMatchedJobs = (rows: JobRow[]) => {
 
 const sendMetricsEvent = () => MetricsService.getInstance().sendMetricsEvent as jest.Mock;
 
-/** Opens a column's filter popover and clicks the option with the given label. */
-const selectFilterOption = async (columnKey: string, optionLabel: string) => {
+/**
+ * Opens a column's (multi-select) filter popover and checks the checkbox for the given label.
+ * Each column's popover is independent (its own open state), so switching to a *different*
+ * column requires closing the current one first (see `closeFilterPopover`) — otherwise two
+ * "All"/option checkboxes with the same name coexist in the DOM and queries become ambiguous.
+ */
+const checkFilterOption = async (columnKey: string, optionLabel: string) => {
   fireEvent.click(await screen.findByLabelText(`filter ${columnKey}`));
-  const option = await screen.findByRole("menuitem", { name: optionLabel });
+  const option = await screen.findByRole("menuitemcheckbox", { name: optionLabel });
   fireEvent.click(option);
 };
 
-/** Opens the (multi-select) location filter popover and checks the checkbox for the given label. */
-const checkLocationOption = async (optionLabel: string) => {
-  if (screen.queryByRole("menuitemcheckbox", { name: "All" }) === null) {
-    fireEvent.click(await screen.findByLabelText("filter location"));
-  }
-  const option = await screen.findByRole("menuitemcheckbox", { name: optionLabel });
-  fireEvent.click(option);
+/** Closes whichever column's filter popover is currently open. */
+const closeFilterPopover = () => {
+  fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
 };
 
 describe("JobMatchingPage job-viewed metrics", () => {
@@ -209,8 +210,8 @@ describe("JobMatchingPage Browse Jobs location filter", () => {
     render(<JobMatchingPage />);
 
     // WHEN the user checks both "Copperbelt" and "Lusaka"
-    await checkLocationOption("Copperbelt");
-    await checkLocationOption("Lusaka");
+    await checkFilterOption("location", "Copperbelt");
+    await checkFilterOption("location", "Lusaka");
 
     // THEN useJobs (and in turn the backend query) receives both selected values, not the
     // combined "Chingola Copperbelt" string
@@ -232,7 +233,7 @@ describe("JobMatchingPage Browse Jobs location filter", () => {
     render(<JobMatchingPage />);
 
     // GIVEN the user has selected a specific location
-    await checkLocationOption("Copperbelt");
+    await checkFilterOption("location", "Copperbelt");
     await waitFor(() => {
       expect((useJobs as jest.Mock).mock.calls.at(-1)?.[0]?.location).toEqual(["Copperbelt"]);
     });
@@ -245,6 +246,25 @@ describe("JobMatchingPage Browse Jobs location filter", () => {
     await waitFor(() => {
       expect((useJobs as jest.Mock).mock.calls.at(-1)?.[0]?.location).toEqual([]);
     });
+  });
+
+  test("collapses employment type spellings that only differ by case or separator into one filter option", async () => {
+    // GIVEN the sampled jobs spell the same employment type two different ways
+    (JobService.getInstance().listJobs as jest.Mock).mockResolvedValue({
+      data: [
+        { uuid: "1", employment_type: "Full_time" },
+        { uuid: "2", employment_type: "Full-time" },
+      ],
+      meta: { limit: 100, next_cursor: null, has_more: false, total: 2 },
+    });
+    setupJobs([givenJobRow()]);
+    render(<JobMatchingPage />);
+
+    // WHEN the user opens the employment type filter
+    fireEvent.click(await screen.findByLabelText("filter employmentType"));
+
+    // THEN only one option represents both spellings
+    expect(await screen.findAllByRole("menuitemcheckbox", { name: /full.time/i })).toHaveLength(1);
   });
 });
 
@@ -275,7 +295,7 @@ describe("JobMatchingPage Matched for You filters", () => {
     expect(screen.getByText("Sales Role")).toBeInTheDocument();
 
     // WHEN the user filters the Matched tab by the "Engineering" category
-    await selectFilterOption("category", "Engineering");
+    await checkFilterOption("category", "Engineering");
 
     // THEN only the matching row remains, without any refetch (getMatchedJobs is never
     // called with filter args — GET /jobs/matched doesn't accept any)
@@ -308,18 +328,19 @@ describe("JobMatchingPage Matched for You filters", () => {
     expect(await screen.findByText("Engineer Role")).toBeInTheDocument();
 
     // WHEN the user toggles category, then type, then a location, one after another
-    await selectFilterOption("category", "Engineering");
+    await checkFilterOption("category", "Engineering");
     await waitFor(() => expect(screen.queryByText("Sales Role")).not.toBeInTheDocument());
 
-    await selectFilterOption("category", "All");
+    await checkFilterOption("category", "All");
     expect(await screen.findByText("Sales Role")).toBeInTheDocument();
+    closeFilterPopover();
 
-    await selectFilterOption("employmentType", "Full Time");
+    await checkFilterOption("employmentType", "Full Time");
     await waitFor(() => expect(screen.queryByText("Sales Role")).not.toBeInTheDocument());
 
-    await selectFilterOption("employmentType", "All");
-    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
-    await checkLocationOption("Lusaka");
+    await checkFilterOption("employmentType", "All");
+    closeFilterPopover();
+    await checkFilterOption("location", "Lusaka");
     await waitFor(() => expect(screen.queryByText("Sales Role")).not.toBeInTheDocument());
 
     // THEN GET /jobs/matched was never called — Browse Jobs is the only tab that talks to the
@@ -339,14 +360,12 @@ describe("JobMatchingPage Matched for You filters", () => {
     expect(await screen.findByText("Lusaka Role")).toBeInTheDocument();
 
     // WHEN the user checks the "Ndola" token in the Matched tab's location filter
-    await checkLocationOption("Ndola");
+    await checkFilterOption("location", "Ndola");
 
     // THEN only the Ndola row remains
     await waitFor(() => expect(screen.queryByText("Lusaka Role")).not.toBeInTheDocument());
     expect(screen.getByText("Ndola Role")).toBeInTheDocument();
-
-    // close the filter popover before navigating away
-    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    closeFilterPopover();
 
     // AND switching back to Browse Jobs is unaffected by the Matched tab's filter selection
     fireEvent.click(await screen.findByRole("tab", { name: "Browse Jobs" }));
@@ -368,7 +387,7 @@ describe("JobMatchingPage Matched for You filters", () => {
 
     // WHEN the user checks "Western" — the second half of the two-word province, not a
     // standalone place name on its own
-    await checkLocationOption("Western");
+    await checkFilterOption("location", "Western");
 
     // THEN the Zambezi job still matches (its location string contains "Western"), even
     // though "Western" alone was never a correctly-segmented token
@@ -414,11 +433,12 @@ describe("JobMatchingPage active filter chips", () => {
     await screen.findByText("Software Engineer");
 
     // WHEN the user selects a category, a type, and two locations
-    await selectFilterOption("category", "Technology");
-    await selectFilterOption("employmentType", "Full Time");
-    await checkLocationOption("Copperbelt");
-    await checkLocationOption("Chingola");
-    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    await checkFilterOption("category", "Technology");
+    closeFilterPopover();
+    await checkFilterOption("employmentType", "Full Time");
+    closeFilterPopover();
+    await checkFilterOption("location", "Copperbelt");
+    await checkFilterOption("location", "Chingola");
 
     // THEN a chip appears for each active filter, one per selected location
     expect(await screen.findByText("Category: Technology")).toBeInTheDocument();
@@ -433,7 +453,7 @@ describe("JobMatchingPage active filter chips", () => {
     render(<JobMatchingPage />);
     await screen.findByText("Software Engineer");
 
-    await selectFilterOption("category", "Technology");
+    await checkFilterOption("category", "Technology");
     const chip = await screen.findByText("Category: Technology");
 
     // WHEN the chip's own remove ("x") control is clicked
@@ -445,7 +465,7 @@ describe("JobMatchingPage active filter chips", () => {
     await waitFor(() => expect(screen.queryByText("Category: Technology")).not.toBeInTheDocument());
     await waitFor(() => {
       const lastCallArgs = (useJobs as jest.Mock).mock.calls.at(-1)?.[0];
-      expect(lastCallArgs?.category).toBe("all");
+      expect(lastCallArgs?.category).toEqual([]);
     });
   });
 
@@ -456,8 +476,9 @@ describe("JobMatchingPage active filter chips", () => {
     await screen.findByText("Software Engineer");
 
     // WHEN a category filter is applied on Browse Jobs only
-    await selectFilterOption("category", "Technology");
+    await checkFilterOption("category", "Technology");
     expect(await screen.findByText("Category: Technology")).toBeInTheDocument();
+    closeFilterPopover();
 
     // AND the user switches to Matched for You
     fireEvent.click(await screen.findByRole("tab", { name: "Matched for You" }));
@@ -467,8 +488,9 @@ describe("JobMatchingPage active filter chips", () => {
     expect(screen.queryByText("Category: Technology")).not.toBeInTheDocument();
 
     // WHEN the user filters the Matched tab by its own category
-    await selectFilterOption("category", "Sales");
+    await checkFilterOption("category", "Sales");
     expect(await screen.findByText("Category: Sales")).toBeInTheDocument();
+    closeFilterPopover();
 
     // AND switches back to Browse Jobs
     fireEvent.click(await screen.findByRole("tab", { name: "Browse Jobs" }));

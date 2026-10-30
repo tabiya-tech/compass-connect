@@ -51,7 +51,9 @@ export function useJobs(filters: JobFilters): UseJobsResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
 
-  // Stable dep key for the array-valued location filter.
+  // Stable dep keys for the array-valued filters.
+  const categoryKey = JSON.stringify(filters.category);
+  const employmentTypeKey = JSON.stringify(filters.employmentType);
   const locationKey = JSON.stringify(filters.location);
 
   // Reset to the first page whenever the query context changes.
@@ -59,7 +61,7 @@ export function useJobs(filters: JobFilters): UseJobsResult {
     setCursorStack([undefined]);
     setNextCursor(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.search, filters.category, filters.employmentType, locationKey]);
+  }, [filters.search, categoryKey, employmentTypeKey, locationKey]);
 
   const currentCursor = cursorStack[cursorStack.length - 1];
 
@@ -71,11 +73,13 @@ export function useJobs(filters: JobFilters): UseJobsResult {
       setError(null);
       try {
         const searchValue = filters.search.trim();
+        const category = filters.category.filter((v) => v !== "all");
+        const employmentType = filters.employmentType.filter((v) => v !== "all");
         const location = filters.location.filter((v) => v !== "all");
         const result = await JobService.getInstance().listJobs({
           search: searchValue.length > 0 ? searchValue : undefined,
-          category: filters.category !== "all" ? filters.category : undefined,
-          employment_type: filters.employmentType !== "all" ? filters.employmentType : undefined,
+          category: category.length > 0 ? category : undefined,
+          employment_type: employmentType.length > 0 ? employmentType : undefined,
           location: location.length > 0 ? location : undefined,
           cursor: currentCursor,
           include: "count",
@@ -104,7 +108,7 @@ export function useJobs(filters: JobFilters): UseJobsResult {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentCursor, filters.search, filters.category, filters.employmentType, locationKey, reconnectVersion]);
+  }, [currentCursor, filters.search, categoryKey, employmentTypeKey, locationKey, reconnectVersion]);
 
   const goNext = useCallback(() => {
     if (nextCursor == null) return;
