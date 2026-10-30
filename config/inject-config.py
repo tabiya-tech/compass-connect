@@ -55,6 +55,13 @@ FRONTEND_ENV_MAP: Dict[str, str] = {
     # CV Upload
     "GLOBAL_ENABLE_CV_UPLOAD": "cv.enabled",
 
+    # Modules
+    "FRONTEND_DISABLED_MODULES": "modules.disabled",
+    "FRONTEND_HIDE_PROGRAM_SKILLS": "modules.hideProgramSkills",
+
+    # Text overrides
+    "FRONTEND_STRINGS_OVERRIDES": "strings",
+
     # i18n
     "FRONTEND_DEFAULT_LOCALE": "i18n.ui.defaultLocale",
     "FRONTEND_SUPPORTED_LOCALES": "i18n.ui.supportedLocales",
@@ -75,7 +82,16 @@ FRONTEND_JSON_FIELDS = {
     'FRONTEND_SENSITIVE_DATA_FIELDS',
     'FRONTEND_ILLUSTRATIONS',
     'FRONTEND_PARTNER_LOGOS',
+    'FRONTEND_DISABLED_MODULES',
+    'FRONTEND_STRINGS_OVERRIDES',
     # Add more JSON.stringify fields here
+}
+
+# JSON fields whose value in the config is complete: it replaces the one in env.js instead of being merged into it.
+# The text overrides are the whole list of a deployment's texts, so removing one (or all, with {}) restores the
+# bundled wording. Fields missing from the config keep their value either way.
+FRONTEND_REPLACED_JSON_FIELDS = {
+    'FRONTEND_STRINGS_OVERRIDES',
 }
 
 
@@ -184,9 +200,32 @@ def update_backend_env(config: Dict[str, Any], env_path: Path, namespaces: Optio
     env_path.write_text(''.join(lines))
 
 
+# btoa() only takes Latin-1 text and the frontend decodes the base64 as UTF-8 (see getEnv in envService.ts), so values
+# with other characters (e.g. "á") are wrapped to be encoded as UTF-8 first: btoa(unescape(encodeURIComponent(...))).
+# ASCII values keep the plain btoa(...) form.
+UTF8_WRAPPER_START = r'(?:unescape\(encodeURIComponent\(\s*)?'
+UTF8_WRAPPER_END = r'(?:\)\)\s*)?'
+
+
+def frontend_json_pattern(key: str, capture: bool = False) -> str:
+    payload = '(.*?)' if capture else '.*?'
+    return (rf'(?:"{re.escape(key)}"|{re.escape(key)}):\s*btoa\(\s*{UTF8_WRAPPER_START}'
+            rf'JSON\.stringify\({payload}\)\s*{UTF8_WRAPPER_END}\),')
+
+
+def frontend_scalar_pattern(key: str) -> str:
+    return rf'(?:"{re.escape(key)}"|{re.escape(key)}):\s*btoa\([^)]+\){UTF8_WRAPPER_END},'
+
+
+def btoa_expression(js_expression: str) -> str:
+    if js_expression.isascii():
+        return f'btoa({js_expression})'
+    return f'btoa(unescape(encodeURIComponent({js_expression})))'
+
+
 def extract_existing_frontend_json_value(content: str, key: str) -> Dict[str, Any]:
     """Extract the existing JSON.stringify payload for a key in env.js"""
-    pattern = rf'(?:"{re.escape(key)}"|{re.escape(key)}):\s*btoa\(\s*JSON\.stringify\((.*?)\)\s*\),'
+    pattern = frontend_json_pattern(key, capture=True)
     match = re.search(pattern, content, re.DOTALL)
     if not match:
         return {}
@@ -208,13 +247,14 @@ def format_frontend_replacement(key: str, raw_value: Any, existing_content: str)
     if key in FRONTEND_JSON_FIELDS:
         # Merge dicts if possible so config can override but keep existing keys
         existing = extract_existing_frontend_json_value(existing_content, key)
-        if isinstance(raw_value, dict) and isinstance(existing, dict):
+        if key not in FRONTEND_REPLACED_JSON_FIELDS and isinstance(raw_value, dict) and isinstance(existing, dict):
             merged = {**existing, **raw_value}
         else:
             merged = raw_value
 
         formatted_json = json.dumps(merged, indent=2, ensure_ascii=False).replace('\n', '\n    ')
-        return f'{key}: btoa(\n    JSON.stringify({formatted_json})\n  ),', re.DOTALL
+        stringified = f'\n    JSON.stringify({formatted_json})\n  '
+        return f'{key}: {btoa_expression(stringified)},', re.DOTALL
 
     if isinstance(raw_value, bool):
         rendered = 'true' if raw_value else 'false'
@@ -224,7 +264,8 @@ def format_frontend_replacement(key: str, raw_value: Any, existing_content: str)
         rendered = str(raw_value)
 
     rendered = rendered.replace('\\', '\\\\').replace('"', '\\"')
-    return f'{key}: btoa("{rendered}"),', 0
+    quoted = '"' + rendered + '"'
+    return f'{key}: {btoa_expression(quoted)},', 0
 
 
 def update_frontend_env(config: Dict[str, Any], env_js_path: Path, namespaces: Optional[Iterable[str]] = None):
@@ -244,13 +285,11 @@ def update_frontend_env(config: Dict[str, Any], env_js_path: Path, namespaces: O
     for key, raw_value in updates.items():
         replacement, flags = format_frontend_replacement(key, raw_value, content)
 
-        if key in FRONTEND_JSON_FIELDS:
-            pattern = rf'(?:"{re.escape(key)}"|{re.escape(key)}):\s*btoa\(\s*JSON\.stringify\(.*?\)\s*\),'
-        else:
-            pattern = rf'(?:"{re.escape(key)}"|{re.escape(key)}):\s*btoa\([^)]+\),'
+        pattern = frontend_json_pattern(key) if key in FRONTEND_JSON_FIELDS else frontend_scalar_pattern(key)
 
         if re.search(pattern, content, flags):
-            content = re.sub(pattern, replacement, content, count=1, flags=flags)
+            # a function as replacement: re.sub would otherwise read the escapes of the serialized value (e.g. "\n")
+            content = re.sub(pattern, lambda _match: replacement, content, count=1, flags=flags)
         else:
             content = insert_before_closing_brace(content, f'  {replacement}\n')
 

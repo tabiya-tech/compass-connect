@@ -24,7 +24,7 @@ their skills and interests based on their lived experiences.
 
 - **[Admin & Instructor Registration](admin-registration.md)**: How super admins, cross-institution admins, and instructors are registered, approved, and bootstrapped per environment.
 
-- **[Customization Guide](config/CUSTOMIZATION.md)**: Explore the customization options for detailed insights about how partners can configure branding, themes, and feature availability.
+- **[Customization Guide](docs/customization/README.md)**: Explore the customization options for detailed insights about how partners can configure branding, themes, and feature availability.
 
 
 ## Architecture Overview

@@ -94,6 +94,13 @@ window.tabiyaConfig = {
   // #       Optional Features settings
   // ################################################################
   FRONTEND_FEATURES: btoa("{}"),
+  // JSON array of the module ids to hide (their pages and the links to them), e.g. ["career_explorer", "job_matching"].
+  // Ids: skills_discovery, career_explorer, job_readiness, knowledge_hub, job_matching, faq
+  FRONTEND_DISABLED_MODULES: btoa(JSON.stringify([])),
+  // Interface text overrides per locale, keyed like the translation files, e.g. { "es-ES": { "home.hero.headline1": "Descubramos" } }.
+  // Values with non-ASCII characters (e.g. accents) need the btoa(unescape(encodeURIComponent(...))) wrapper, which
+  // config/inject-config.py adds when needed: plain btoa fails on them.
+  FRONTEND_STRINGS_OVERRIDES: btoa(unescape(encodeURIComponent(JSON.stringify({})))),
 
   // ################################################################
   // #       Branding Settings

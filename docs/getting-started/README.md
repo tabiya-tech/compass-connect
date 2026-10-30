@@ -84,6 +84,7 @@ If a check fails the stack stops and says why: `docker compose logs preflight` (
 | Use another taxonomy | set `TAXONOMY_URL` and `TAXONOMY_MODEL_ID` in `.env`, then `docker compose up -d` |
 | Load the whole taxonomy | `TAXONOMY_MODE=full` (slower and more expensive; not measured yet) |
 | Change the ports | `FRONTEND_PORT`, `BACKEND_PORT` |
+| Brand it, hide modules, change texts | set the variables of the [customization guide](../customization/README.md) in `.env`, then `docker compose up -d` |
 
 `INGRESS_MODE=direct` (the value in `.env.example`) makes the backend verify the Firebase tokens itself and limit each client IP to `BACKEND_RATE_LIMIT_PER_MINUTE` requests per minute (default `600`, `0` disables it; raise it if many users share one IP, e.g. a school network). `INGRESS_MODE=gateway` is for deployments behind the Google API Gateway: with `TARGET_ENVIRONMENT_TYPE=local` it skips the token check, so use it only on your own machine.
 

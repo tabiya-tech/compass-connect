@@ -1,5 +1,5 @@
 import React, { startTransition, useEffect, useMemo, useState } from "react";
-import { createHashRouter, Outlet, RouterProvider, useRouteError } from "react-router-dom";
+import { createHashRouter, Outlet, RouteObject, RouterProvider, useRouteError } from "react-router-dom";
 import Layout from "src/app/Layout";
 import Login from "src/auth/pages/Login/Login";
 import AuthLayout from "src/auth/components/AuthLayout/AuthLayout";
@@ -29,6 +29,7 @@ import { AuthBroadcastChannel, AuthChannelMessage } from "src/auth/services/auth
 import { getRegistrationDisabled } from "src/envService";
 import { useTranslation } from "react-i18next";
 import Home from "src/home/Home";
+import { isModuleEnabled, ModuleId } from "src/home/modulesService";
 import { AppErrorFallback } from "src/error/errorPage/AppErrorFallback";
 import BugReportButton from "../feedback/bugReport/bugReportButton/BugReportButton";
 import LegalDocumentPage from "src/legal/pages/LegalDocumentPage";
@@ -82,6 +83,13 @@ const ProtectedRouteKeys = {
   CAREER_READINESS_MODULE: "CAREER_READINESS_MODULE",
   JOB_MATCHING: "JOB_MATCHING",
 };
+
+/**
+ * The routes of a module, or none when the module is disabled for this deployment,
+ * so a direct link to a disabled module renders NotFound.
+ */
+const moduleRoutes = (moduleId: ModuleId, routes: RouteObject[]): RouteObject[] =>
+  isModuleEnabled(moduleId) ? routes : [];
 
 const NotFound: React.FC = () => {
   const { t } = useTranslation();
@@ -306,69 +314,77 @@ const App = () => {
                     </ProtectedRoute>
                   ),
                 },
-                {
-                  path: routerPaths.SKILLS_INTERESTS,
-                  handle: {
-                    title: "home.modules.skillsDiscovery",
-                    subtitle: "home.modules.skillsDiscoverySubtitle",
-                    headerColor: "secondary",
+                ...moduleRoutes("skills_discovery", [
+                  {
+                    path: routerPaths.SKILLS_INTERESTS,
+                    handle: {
+                      title: "home.modules.skillsDiscovery",
+                      subtitle: "home.modules.skillsDiscoverySubtitle",
+                      headerColor: "secondary",
+                    },
+                    element: (
+                      <ProtectedRoute key={ProtectedRouteKeys.SKILLS_INTERESTS}>
+                        <LazyLoadedChat />
+                      </ProtectedRoute>
+                    ),
                   },
-                  element: (
-                    <ProtectedRoute key={ProtectedRouteKeys.SKILLS_INTERESTS}>
-                      <LazyLoadedChat />
-                    </ProtectedRoute>
-                  ),
-                },
-                {
-                  path: routerPaths.KNOWLEDGE_HUB,
-                  handle: {},
-                  element: (
-                    <ProtectedRoute key={ProtectedRouteKeys.KNOWLEDGE_HUB}>
-                      <LazyLoadedKnowledgeHubList />
-                    </ProtectedRoute>
-                  ),
-                },
-                {
-                  path: routerPaths.KNOWLEDGE_HUB_DOCUMENT,
-                  handle: {},
-                  element: (
-                    <ProtectedRoute key={ProtectedRouteKeys.KNOWLEDGE_HUB_DOCUMENT}>
-                      <LazyLoadedKnowledgeHubDocument />
-                    </ProtectedRoute>
-                  ),
-                },
-                {
-                  path: routerPaths.CAREER_EXPLORER,
-                  handle: {
-                    title: "careerExplorer.title",
-                    subtitle: "careerExplorer.subtitle",
-                    headerColor: "primary",
+                ]),
+                ...moduleRoutes("knowledge_hub", [
+                  {
+                    path: routerPaths.KNOWLEDGE_HUB,
+                    handle: {},
+                    element: (
+                      <ProtectedRoute key={ProtectedRouteKeys.KNOWLEDGE_HUB}>
+                        <LazyLoadedKnowledgeHubList />
+                      </ProtectedRoute>
+                    ),
                   },
-                  element: (
-                    <ProtectedRoute key={ProtectedRouteKeys.CAREER_EXPLORER}>
-                      <LazyLoadedCareerExplorer />
-                    </ProtectedRoute>
-                  ),
-                },
-                {
-                  path: routerPaths.CAREER_READINESS,
-                  element: (
-                    <ProtectedRoute key={ProtectedRouteKeys.CAREER_READINESS}>
-                      <LazyLoadedCareerReadinessList />
-                    </ProtectedRoute>
-                  ),
-                },
-                {
-                  path: routerPaths.CAREER_READINESS_MODULE,
-                  handle: {
-                    headerColor: "accent",
+                  {
+                    path: routerPaths.KNOWLEDGE_HUB_DOCUMENT,
+                    handle: {},
+                    element: (
+                      <ProtectedRoute key={ProtectedRouteKeys.KNOWLEDGE_HUB_DOCUMENT}>
+                        <LazyLoadedKnowledgeHubDocument />
+                      </ProtectedRoute>
+                    ),
                   },
-                  element: (
-                    <ProtectedRoute key={ProtectedRouteKeys.CAREER_READINESS_MODULE}>
-                      <LazyLoadedCareerReadinessModule />
-                    </ProtectedRoute>
-                  ),
-                },
+                ]),
+                ...moduleRoutes("career_explorer", [
+                  {
+                    path: routerPaths.CAREER_EXPLORER,
+                    handle: {
+                      title: "careerExplorer.title",
+                      subtitle: "careerExplorer.subtitle",
+                      headerColor: "primary",
+                    },
+                    element: (
+                      <ProtectedRoute key={ProtectedRouteKeys.CAREER_EXPLORER}>
+                        <LazyLoadedCareerExplorer />
+                      </ProtectedRoute>
+                    ),
+                  },
+                ]),
+                ...moduleRoutes("job_readiness", [
+                  {
+                    path: routerPaths.CAREER_READINESS,
+                    element: (
+                      <ProtectedRoute key={ProtectedRouteKeys.CAREER_READINESS}>
+                        <LazyLoadedCareerReadinessList />
+                      </ProtectedRoute>
+                    ),
+                  },
+                  {
+                    path: routerPaths.CAREER_READINESS_MODULE,
+                    handle: {
+                      headerColor: "accent",
+                    },
+                    element: (
+                      <ProtectedRoute key={ProtectedRouteKeys.CAREER_READINESS_MODULE}>
+                        <LazyLoadedCareerReadinessModule />
+                      </ProtectedRoute>
+                    ),
+                  },
+                ]),
                 {
                   path: routerPaths.PROFILE,
                   handle: {
@@ -380,15 +396,17 @@ const App = () => {
                     </ProtectedRoute>
                   ),
                 },
-                {
-                  path: routerPaths.JOB_MATCHING,
-                  handle: {},
-                  element: (
-                    <ProtectedRoute key={ProtectedRouteKeys.JOB_MATCHING}>
-                      <LazyLoadedJobMatching />
-                    </ProtectedRoute>
-                  ),
-                },
+                ...moduleRoutes("job_matching", [
+                  {
+                    path: routerPaths.JOB_MATCHING,
+                    handle: {},
+                    element: (
+                      <ProtectedRoute key={ProtectedRouteKeys.JOB_MATCHING}>
+                        <LazyLoadedJobMatching />
+                      </ProtectedRoute>
+                    ),
+                  },
+                ]),
               ],
             },
             // Unauthenticated routes (no Layout)
@@ -465,10 +483,12 @@ const App = () => {
               path: routerPaths.TERMS_OF_USE,
               element: <LegalDocumentPage variant="terms" />,
             },
-            {
-              path: routerPaths.FAQ,
-              element: <LazyLoadedFAQPage />,
-            },
+            ...moduleRoutes("faq", [
+              {
+                path: routerPaths.FAQ,
+                element: <LazyLoadedFAQPage />,
+              },
+            ]),
             {
               path: "*",
               element: <NotFound />,

@@ -13,6 +13,7 @@ import { HandoffAction } from "src/handoff/handoff.types";
 import PrimaryButton from "src/theme/PrimaryButton/PrimaryButton";
 import { AuthenticationError } from "src/error/commonErrors";
 import { ConsentPageState } from "src/consent/components/consentPage/Consent";
+import { getEnabledModules, ModuleId } from "src/home/modulesService";
 
 const uniqueId = "7c1e5a9b-3d42-4f8e-9a61-2b0d4e8f6c13";
 
@@ -25,6 +26,30 @@ export const DATA_TEST_ID = {
 };
 
 export const HANDOFF_TOKEN_PARAM_NAME = "token";
+
+/**
+ * The module each hand-off action lands the user in, or null for the home page.
+ * To land the user in another module, add the action here (and to the backend's HandoffAction).
+ */
+const HANDOFF_ACTION_MODULE: Record<HandoffAction, ModuleId | null> = {
+  [HandoffAction.CREATE]: null,
+  [HandoffAction.BUILD_PROFILE]: "skills_discovery",
+};
+
+/**
+ * Where the hand-off action lands the user: the action's module, or the home page when the action has no module or
+ * its module is disabled for this deployment.
+ */
+export function getHandoffLandingPath(action: HandoffAction): string {
+  const moduleId = HANDOFF_ACTION_MODULE[action];
+  if (!moduleId) return routerPaths.ROOT;
+  const module = getEnabledModules().find((m) => m.id === moduleId);
+  if (!module) {
+    console.warn(`The hand-off action '${action}' lands in the disabled module '${moduleId}', landing on home instead`);
+    return routerPaths.ROOT;
+  }
+  return module.route;
+}
 
 /**
  * Logs the user in with the hand-off link token. Whoever is logged in on this device (e.g. a shared phone, or the same
@@ -66,7 +91,7 @@ const Handoff: React.FC = () => {
 
     logInWithHandoffLink(token)
       .then((action) => {
-        const landingPath = action === HandoffAction.BUILD_PROFILE ? routerPaths.SKILLS_INTERESTS : routerPaths.ROOT;
+        const landingPath = getHandoffLandingPath(action);
         const prefs = UserPreferencesStateService.getInstance().getUserPreferences();
         if (!prefs || !isAcceptedTCValid(prefs)) {
           // first visit: the consent page comes first, then the landing page

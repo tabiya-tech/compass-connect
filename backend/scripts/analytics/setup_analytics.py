@@ -38,7 +38,7 @@ Usage:
 Dependencies:
   pip install -r requirements.txt
 
-For full documentation, see config/ANALYTICS_SETUP.md (from repo root)
+For full documentation, see docs/customization/analytics.md (from repo root)
 """
 
 import argparse
