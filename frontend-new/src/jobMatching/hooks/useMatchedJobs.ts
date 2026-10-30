@@ -19,6 +19,9 @@ function mapMatchedDocToRow(doc: MatchedJobApiDocument): JobRow {
     category: doc.category ?? "",
     employmentType: doc.contract_type ?? "",
     location: doc.location ?? "",
+    // /match recommendations have no standalone city/province, only the combined string.
+    city: "",
+    province: "",
     posted: doc.posted_date ?? "",
     jobUrl: doc.URL ?? undefined,
     matchScore: score,

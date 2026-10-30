@@ -17,8 +17,9 @@ from app.jobs.repository import IJobRepository, MatchingJobListItem, MatchingJob
 
 class _FakeJobRepository(IJobRepository):
     """In-memory ``IJobRepository`` honoring the matching service's ``location``
-    query param (case-insensitive substring) and cursor pagination. Other filter
-    params are not exercised by the analytics repo and are accepted but ignored."""
+    query param (case-insensitive substring, any-of-several) and cursor pagination.
+    Other filter params are not exercised by the analytics repo and are accepted
+    but ignored."""
 
     def __init__(self, jobs: list[MatchingJobListItem], page_size: int = 100):
         self._jobs = jobs
@@ -33,7 +34,7 @@ class _FakeJobRepository(IJobRepository):
         search: Optional[str] = None,
         category: Optional[str] = None,
         employment_type: Optional[str] = None,
-        location: Optional[str] = None,
+        location: Optional[list[str]] = None,
         skills: Optional[str] = None,
         days: Optional[int] = None,
         include_total: bool = False,
@@ -42,8 +43,10 @@ class _FakeJobRepository(IJobRepository):
 
         filtered = self._jobs
         if location:
-            needle = location.strip().lower()
-            filtered = [j for j in filtered if j.location and needle in j.location.lower()]
+            needles = [v.strip().lower() for v in location if v.strip()]
+            filtered = [
+                j for j in filtered if j.location and any(n in j.location.lower() for n in needles)
+            ]
 
         start = int(cursor) if cursor else 0
         page_size = min(limit, self._page_size)
@@ -124,7 +127,7 @@ class TestGetJobDemandStats:
         result = await populated_repository.get_job_demand_stats(limit=10, location="Lusaka")
         # THEN the matching service receives the location param and j3 (Copperbelt) drops out.
         fake: _FakeJobRepository = populated_repository._job_repository  # type: ignore[assignment]
-        assert all(call["location"] == "Lusaka" for call in fake.calls)
+        assert all(call["location"] == ["Lusaka"] for call in fake.calls)
         assert result.total_jobs == 7
         assert result.jobs_with_linked_skills == 5
 
