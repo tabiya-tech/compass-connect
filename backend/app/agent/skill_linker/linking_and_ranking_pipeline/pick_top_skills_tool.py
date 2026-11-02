@@ -6,7 +6,7 @@ from typing import Optional, TypeVar
 from pydantic import BaseModel, Field
 
 from app.agent.agent_types import LLMStats
-from app.agent.linking_and_ranking_pipeline.deduplicate_entities import deduplicate_entities
+from app.agent.skill_linker.linking_and_ranking_pipeline.deduplicate_entities import deduplicate_entities
 from app.agent.llm_caller import LLMCaller
 from app.agent.penalty import get_penalty, get_penalty_for_multiple_errors
 from app.agent.prompt_template.format_prompt import replace_placeholders_with_indent

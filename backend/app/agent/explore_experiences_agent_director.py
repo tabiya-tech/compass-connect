@@ -11,8 +11,9 @@ from app.agent.collect_experiences_agent import CollectExperiencesAgent
 from app.agent.experience._experience_summarizer import ExperienceSummarizer
 from app.agent.experience.experience_entity import ExperienceEntity
 from app.agent.experience.upgrade_experience import get_editable_experience
-from app.agent.linking_and_ranking_pipeline import ExperiencePipeline, ExperiencePipelineConfig
-from app.agent.linking_and_ranking_pipeline.experience_pipeline import ClusterPipelineResult
+from app.agent.skill_linker.skill_linker import ISkillLinker
+from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.pipeline_skill_linker import PipelineSkillLinker
 from app.agent.skill_explorer_agent import SkillsExplorerAgent, SkillsExplorerAgentState
 from app.conversation_memory.conversation_memory_manager import ConversationMemoryManager, IConversationMemoryManager
 from app.server_config import REPETITION_SHORT_CIRCUIT_THRESHOLD
@@ -365,8 +366,12 @@ class ExploreExperiencesAgentDirector(Agent):
     def __init__(self, *,
                  conversation_manager: ConversationMemoryManager,
                  search_services: SearchServices,
-                 experience_pipeline_config: ExperiencePipelineConfig
+                 experience_pipeline_config: ExperiencePipelineConfig,
+                 skill_linker: ISkillLinker | None = None
                  ):
+        """
+        :param skill_linker: links the experiences to skills, defaults to the linking and ranking pipeline
+        """
         super().__init__(agent_type=AgentType.EXPLORE_EXPERIENCES_AGENT,
                          is_responsible_for_conversation_history=True)
         self._search_services = search_services
@@ -378,6 +383,8 @@ class ExploreExperiencesAgentDirector(Agent):
         )
         self._exploring_skills_agent = SkillsExplorerAgent()
         self._experience_pipeline_config = experience_pipeline_config
+        self._skill_linker = skill_linker or PipelineSkillLinker(config=experience_pipeline_config,
+                                                                 search_services=search_services)
 
     def get_collect_experiences_agent(self) -> CollectExperiencesAgent:
         return self._collect_experiences_agent
@@ -390,11 +397,7 @@ class ExploreExperiencesAgentDirector(Agent):
                              current_experience: ExperienceEntity,
                              ) -> AgentOutput:
         start = time.time()
-        pipeline = ExperiencePipeline(
-            config=self._experience_pipeline_config,
-            search_services=self._search_services
-        )
-        pipline_result = await pipeline.execute(
+        linker_result = await self._skill_linker.execute(
             experience_title=current_experience.experience_title,
             company_name=current_experience.company,
             work_type=current_experience.work_type,
@@ -404,11 +407,11 @@ class ExploreExperiencesAgentDirector(Agent):
             country_of_interest=country_of_user,
             responsibilities=current_experience.responsibilities.responsibilities
         )
-        current_experience.top_skills = pipline_result.top_skills
-        current_experience.remaining_skills = pipline_result.remaining_skills
+        current_experience.top_skills = linker_result.top_skills
+        current_experience.remaining_skills = linker_result.remaining_skills
         normalized_title = _select_normalized_title(
             original_title=current_experience.experience_title,
-            cluster_results=pipline_result.cluster_results
+            title_candidates=linker_result.title_candidates
         )
         if normalized_title:
             current_experience.normalized_experience_title = normalized_title
@@ -445,7 +448,7 @@ class ExploreExperiencesAgentDirector(Agent):
             finished=False,
             agent_type=self._agent_type,
             agent_response_time_in_sec=round(time.time() - start, 2),
-            llm_stats=pipline_result.llm_stats
+            llm_stats=linker_result.llm_stats
         )
         return agent_output
 
@@ -496,19 +499,9 @@ async def _flush_if_repeating(
 
 def _select_normalized_title(*,
                              original_title: str,
-                             cluster_results: list[ClusterPipelineResult]) -> str | None:
+                             title_candidates: list[str]) -> str | None:
     cleaned_original = (original_title or "").strip().lower()
-    candidates: list[str] = []
-
-    for cluster_result in cluster_results:
-        for title in cluster_result.contextual_titles:
-            cleaned = title.strip()
-            if cleaned:
-                candidates.append(cleaned)
-        for occupation_skill in cluster_result.esco_occupations:
-            label = occupation_skill.occupation.preferredLabel.strip()
-            if label:
-                candidates.append(label)
+    candidates = [title.strip() for title in title_candidates if title.strip()]
 
     if not candidates:
         return None

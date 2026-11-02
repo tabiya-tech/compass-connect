@@ -55,6 +55,9 @@ import { mockExperiences } from "src/experiences/experienceService/_test_utiliti
 import { getRandomSessionID } from "../features/skillsRanking/utils/getSkillsRankingState";
 import { SkillsRankingService } from "../features/skillsRanking/skillsRankingService/skillsRankingService";
 import CVService from "src/CV/CVService/CVService";
+import { useNextModule } from "src/home/useNextModule";
+import { DATA_TEST_ID as RETURN_BANNER_DATA_TEST_ID } from "src/chat/ReturnToPlatformBanner/ReturnToPlatformBanner";
+import { DATA_TEST_ID as MODULE_HANDOFF_BANNER_DATA_TEST_ID } from "src/home/components/ModuleHandoffBanner/ModuleHandoffBanner";
 
 // Mock Components ----------
 // mock the snackbar
@@ -175,6 +178,12 @@ jest.mock("src/metrics/metricsService", () => ({
     })),
   },
 }));
+
+// spy on useNextModule so a test can set the next module; it keeps the real behaviour otherwise
+jest.mock("src/home/useNextModule", () => {
+  const actual = jest.requireActual("src/home/useNextModule");
+  return { ...actual, useNextModule: jest.fn(actual.useNextModule) };
+});
 
 // mock SkillsDiscoverySidebar so it does not call ExperienceService and interfere with test mocks
 jest.mock("src/home/components/Sidebar/SkillsDiscoverySidebar", () => ({
@@ -366,6 +375,76 @@ describe("Chat", () => {
         expect.objectContaining({ isChatFinished: false, aiIsTyping: false }),
         {}
       );
+    });
+  });
+
+  describe("below the chat when the conversation is completed", () => {
+    const givenNextModule = {
+      id: "career_explorer",
+      labelKey: "home.modules.careerExplorer",
+      descriptionKey: "home.modules.careerExplorerDesc",
+      route: "/career-explorer",
+    };
+
+    beforeEach(() => {
+      (useNextModule as jest.Mock).mockReturnValue(givenNextModule);
+    });
+
+    afterEach(() => {
+      (useNextModule as jest.Mock).mockImplementation(jest.requireActual("src/home/useNextModule").useNextModule);
+    });
+
+    async function renderCompletedChat(givenReturnUrl?: string | null) {
+      // GIVEN a logged-in user with an active session
+      const givenUser: TabiyaUser = getMockUser();
+      AuthenticationStateService.getInstance().setUser(givenUser);
+      UserPreferencesStateService.getInstance().setUserPreferences({
+        ...getMockUserPreferences(givenUser, 123),
+        return_url: givenReturnUrl,
+      });
+      // AND their conversation is completed (the last message is the conclusion)
+      const givenMessages: ConversationMessage[] = [
+        ConversationMessageSender.USER,
+        ConversationMessageSender.COMPASS,
+      ].map((sender) => ({
+        message_id: nanoid(),
+        message: "foo",
+        sent_at: new Date().toISOString(),
+        sender,
+        reaction: null,
+      }));
+      jest.spyOn(ChatService.getInstance(), "getChatHistory").mockResolvedValueOnce({
+        ...getMockConversationResponse(givenMessages, ConversationPhase.ENDED, 100),
+        conversation_completed: true,
+        conversation_conducted_at: new Date().toISOString(),
+      });
+
+      // WHEN the chat is rendered
+      render(<Chat />);
+      await assertChatInitialized();
+    }
+
+    test("should show the way back instead of the next module for a user with a return url", async () => {
+      await renderCompletedChat("https://partner.example.org/perfil");
+
+      // THEN the return banner is shown
+      expect(await screen.findByTestId(RETURN_BANNER_DATA_TEST_ID.CONTAINER)).toBeInTheDocument();
+      // AND the next module banner is not
+      expect(screen.queryByTestId(MODULE_HANDOFF_BANNER_DATA_TEST_ID.CONTAINER)).not.toBeInTheDocument();
+    });
+
+    test.each([
+      ["no return url", undefined],
+      ["a null return url", null],
+      // eslint-disable-next-line no-script-url -- a URL that must be refused
+      ["a return url that is not http(s)", "javascript:alert(1)"],
+    ])("should show the next module for a user with %s", async (_description, givenReturnUrl) => {
+      await renderCompletedChat(givenReturnUrl);
+
+      // THEN the next module banner is shown, as today
+      expect(await screen.findByTestId(MODULE_HANDOFF_BANNER_DATA_TEST_ID.CONTAINER)).toBeInTheDocument();
+      // AND the return banner is not
+      expect(screen.queryByTestId(RETURN_BANNER_DATA_TEST_ID.CONTAINER)).not.toBeInTheDocument();
     });
   });
 

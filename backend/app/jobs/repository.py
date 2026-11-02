@@ -21,6 +21,8 @@ class MatchingJobListItem(BaseModel):
     url: Optional[str] = None
     opportunity_title: Optional[str] = None
     location: Optional[str] = None
+    city: Optional[str] = None
+    province: Optional[str] = None
     employer: Optional[str] = None
     employment_type: Optional[str] = None
     contract_type: Optional[str] = None
@@ -64,9 +66,9 @@ class IJobRepository(ABC):
         cursor: Optional[str] = None,
         limit: int = 20,
         search: Optional[str] = None,
-        category: Optional[str] = None,
-        employment_type: Optional[str] = None,
-        location: Optional[str] = None,
+        category: Optional[list[str]] = None,
+        employment_type: Optional[list[str]] = None,
+        location: Optional[list[str]] = None,
         skills: Optional[str] = None,
         days: Optional[int] = None,
         include_total: bool = False,
@@ -91,9 +93,9 @@ class JobRepository(IJobRepository):
         cursor: Optional[str] = None,
         limit: int = 20,
         search: Optional[str] = None,
-        category: Optional[str] = None,
-        employment_type: Optional[str] = None,
-        location: Optional[str] = None,
+        category: Optional[list[str]] = None,
+        employment_type: Optional[list[str]] = None,
+        location: Optional[list[str]] = None,
         skills: Optional[str] = None,
         days: Optional[int] = None,
         include_total: bool = False,

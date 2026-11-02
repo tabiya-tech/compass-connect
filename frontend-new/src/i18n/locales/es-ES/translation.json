@@ -280,6 +280,10 @@
       "addScreenshot": "Agregar una captura de pantalla",
       "requiredLabel": "(obligatorio)",
       "cancelButton": "Cancelar"
+    },
+    "handoffReturn": {
+      "message": "¡Listo! Vuelve a {{site}} para continuar.",
+      "backTo": "Volver a {{site}}"
     }
   },
   "auth": {
@@ -1289,7 +1293,8 @@
       "searchPlaceholder": "Busca títulos de empleo o empresas...",
       "searchAriaLabel": "Buscar empleos",
       "pageAriaLabel": "Página {{page}}",
-      "pageRange": "{{start}}–{{end}} de {{total}} elementos"
+      "pageRange": "{{start}}–{{end}} de {{total}} elementos",
+      "clearAllFilters": "Borrar todo"
     },
     "columns": {
       "jobTitle": "Título del Empleo",

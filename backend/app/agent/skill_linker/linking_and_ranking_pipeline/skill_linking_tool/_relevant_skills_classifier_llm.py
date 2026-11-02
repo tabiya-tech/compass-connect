@@ -1,4 +1,4 @@
-from app.agent.linking_and_ranking_pipeline.relevant_entities_classifier_llm import RelevantEntitiesClassifierLLM, RelevantEntityClassifierOutput
+from app.agent.skill_linker.linking_and_ranking_pipeline.relevant_entities_classifier_llm import RelevantEntitiesClassifierLLM, RelevantEntityClassifierOutput
 from app.vector_search.esco_entities import SkillEntity
 
 

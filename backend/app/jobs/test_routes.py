@@ -33,9 +33,9 @@ class _MockJobService(IJobService):
     async def list_jobs(
         self,
         search: Optional[str],
-        category: Optional[str],
-        employment_type: Optional[str],
-        location: Optional[str],
+        category: Optional[list[str]],
+        employment_type: Optional[list[str]],
+        location: Optional[list[str]],
         skills: Optional[str],
         days: Optional[int],
         cursor: Optional[str],
@@ -129,10 +129,57 @@ class TestJobsRoutes:
         # THEN the query params are forwarded verbatim to the service
         assert response.status_code == HTTPStatus.OK
         assert captured["skills"] == "welding"
-        assert captured["category"] == "Eng"
+        assert captured["category"] == ["Eng"]
         assert captured["cursor"] == "abc"
         assert captured["include"] == "count"
         assert response.json()["meta"]["next_cursor"] == "nxt"
+
+    def test_get_jobs_forwards_repeated_location_params_as_a_list(self, client_with_mock_service: tuple[TestClient, _MockJobService], monkeypatch):
+        # GIVEN a service that captures the forwarded arguments
+        client, service = client_with_mock_service
+        captured: dict = {}
+
+        async def _capture(*_args, **kwargs):
+            captured.update(kwargs)
+            return PaginatedListResponse(
+                data=[],
+                meta=PaginatedListMeta(limit=kwargs["limit"], next_cursor=None, has_more=False, total=0),
+            )
+
+        monkeypatch.setattr(service, "list_jobs", _capture)
+
+        # WHEN GET /jobs is called with the location param repeated
+        response = client.get("/jobs?location=Lusaka&location=Ndola")
+
+        # THEN the repeated query param is forwarded as a list, letting a user select several locations
+        assert response.status_code == HTTPStatus.OK
+        assert captured["location"] == ["Lusaka", "Ndola"]
+
+    def test_get_jobs_forwards_repeated_category_and_employment_type_as_lists(
+        self, client_with_mock_service: tuple[TestClient, _MockJobService], monkeypatch
+    ):
+        # GIVEN a service that captures the forwarded arguments
+        client, service = client_with_mock_service
+        captured: dict = {}
+
+        async def _capture(*_args, **kwargs):
+            captured.update(kwargs)
+            return PaginatedListResponse(
+                data=[],
+                meta=PaginatedListMeta(limit=kwargs["limit"], next_cursor=None, has_more=False, total=0),
+            )
+
+        monkeypatch.setattr(service, "list_jobs", _capture)
+
+        # WHEN GET /jobs is called with category and employment_type repeated
+        response = client.get(
+            "/jobs?category=Health&category=IT&employment_type=full_time&employment_type=contract"
+        )
+
+        # THEN both repeated query params are forwarded as lists, letting a user select several of each
+        assert response.status_code == HTTPStatus.OK
+        assert captured["category"] == ["Health", "IT"]
+        assert captured["employment_type"] == ["full_time", "contract"]
 
 
 _MatchedFixtureMocks = dict

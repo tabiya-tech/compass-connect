@@ -40,6 +40,9 @@ class DatabaseApplicationStateStore(ApplicationStateStore):
         healed by filling the missing parts with defaults to preserve
         the surviving user data.
         """
+        # TODO: reads are not read-only: healing and upgrades save the state, so a read can write a stale snapshot
+        #  over newer data. A failed read also returns None, the same as a session with no state, so callers cannot
+        #  tell the two apart. Add a read-only load that raises on failure.
         try:
 
             # Get the states of the different components from the database

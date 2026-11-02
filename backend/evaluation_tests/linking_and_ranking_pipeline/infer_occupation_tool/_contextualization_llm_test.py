@@ -6,7 +6,7 @@ import pytest
 from _pytest.logging import LogCaptureFixture
 
 from app.agent.experience import WorkType
-from app.agent.linking_and_ranking_pipeline.infer_occupation_tool._contextualization_llm import _ContextualizationLLM
+from app.agent.skill_linker.linking_and_ranking_pipeline.infer_occupation_tool._contextualization_llm import _ContextualizationLLM
 from app.countries import Country
 from app.i18n.translation_service import get_i18n_manager
 from common_libs.test_utilities.guard_caplog import guard_caplog, assert_log_error_warnings

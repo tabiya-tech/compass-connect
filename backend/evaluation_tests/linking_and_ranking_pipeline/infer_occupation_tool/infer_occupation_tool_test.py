@@ -6,7 +6,7 @@ from typing import Awaitable
 
 import pytest
 
-from app.agent.linking_and_ranking_pipeline.infer_occupation_tool import InferOccupationTool
+from app.agent.skill_linker.linking_and_ranking_pipeline.infer_occupation_tool import InferOccupationTool
 from app.i18n.translation_service import get_i18n_manager
 from app.vector_search.vector_search_dependencies import SearchServices
 from common_libs.test_utilities.guard_caplog import guard_caplog, assert_log_error_warnings

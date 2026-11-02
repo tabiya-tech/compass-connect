@@ -3,7 +3,7 @@ import random
 
 import pytest
 
-from app.agent.linking_and_ranking_pipeline.pick_top_skills_tool import PickTopSkillsTool
+from app.agent.skill_linker.linking_and_ranking_pipeline.pick_top_skills_tool import PickTopSkillsTool
 from app.vector_search.esco_entities import SkillEntity
 from common_libs.test_utilities.guard_caplog import guard_caplog, assert_log_error_warnings
 from evaluation_tests.compass_test_case import CompassTestCase

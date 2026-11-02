@@ -208,9 +208,18 @@ def add_jobs_routes(app: FastAPI, authentication: Optional[Authentication] = Non
     async def list_jobs(
         response: Response,
         search: Optional[str] = Query(default=None, description="Search by job title"),
-        category: Optional[str] = Query(default=None, description="Filter by job category"),
-        employment_type: Optional[str] = Query(default=None, description="Filter by employment type"),
-        location: Optional[str] = Query(default=None, description="Filter by job location"),
+        category: Optional[list[str]] = Query(
+            default=None,
+            description="Filter by job category; repeat to match any of several (e.g. ?category=Health&category=IT)",
+        ),
+        employment_type: Optional[list[str]] = Query(
+            default=None,
+            description="Filter by employment type; repeat to match any of several (e.g. ?employment_type=full_time&employment_type=contract)",
+        ),
+        location: Optional[list[str]] = Query(
+            default=None,
+            description="Filter by job location; repeat to match any of several (e.g. ?location=Lusaka&location=Ndola)",
+        ),
         skills: Optional[str] = Query(default=None, description="Filter by skill label (case-insensitive substring)"),
         days: Optional[int] = Query(default=None, ge=1, le=3650, description="Only include jobs posted within the last N days"),
         cursor: Optional[str] = Query(default=None, description="Pagination cursor (next_cursor) from the previous response"),

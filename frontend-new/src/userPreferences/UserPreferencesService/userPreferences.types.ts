@@ -22,6 +22,8 @@ export type UserPreference = {
   sensitive_personal_data_requirement: SensitivePersonalDataRequirement;
   has_sensitive_personal_data: boolean;
   experiments: UserPreferencesExperiments;
+  // set by the integration API only: where to send a user created by another platform back to when they are done
+  return_url?: string | null;
 };
 
 type CreatePreferencesSpecBase = {

@@ -20,9 +20,12 @@ function parseJson<T>(responseBody: string, errorFactory: RestAPIErrorFactory): 
 
 export interface ListJobsParams {
   search?: string;
-  category?: string;
-  employment_type?: string;
-  location?: string;
+  /** Repeated as multiple `category` query params; any job matching any one qualifies. */
+  category?: string[];
+  /** Repeated as multiple `employment_type` query params; any job matching any one qualifies. */
+  employment_type?: string[];
+  /** Repeated as multiple `location` query params; any job matching any one qualifies. */
+  location?: string[];
   skills?: string;
   cursor?: string;
   include?: string;
@@ -47,9 +50,9 @@ export default class JobService {
   async listJobs(params: ListJobsParams = {}): Promise<JobsApiResponse> {
     const query = new URLSearchParams();
     if (params.search) query.set("search", params.search);
-    if (params.category) query.set("category", params.category);
-    if (params.employment_type) query.set("employment_type", params.employment_type);
-    if (params.location) query.set("location", params.location);
+    params.category?.forEach((value) => query.append("category", value));
+    params.employment_type?.forEach((value) => query.append("employment_type", value));
+    params.location?.forEach((value) => query.append("location", value));
     if (params.skills) query.set("skills", params.skills);
     if (params.cursor) query.set("cursor", params.cursor);
     if (params.include) query.set("include", params.include);

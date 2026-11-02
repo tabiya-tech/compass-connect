@@ -4,7 +4,7 @@ import random
 import pytest
 from _pytest.logging import LogCaptureFixture
 
-from app.agent.linking_and_ranking_pipeline.skill_linking_tool._relevant_skills_classifier_llm import \
+from app.agent.skill_linker.linking_and_ranking_pipeline.skill_linking_tool._relevant_skills_classifier_llm import \
     _RelevantSkillsClassifierLLM
 from app.i18n.translation_service import get_i18n_manager
 from app.vector_search.esco_entities import SkillEntity

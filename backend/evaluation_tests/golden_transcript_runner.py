@@ -18,7 +18,7 @@ from app.i18n.locale_date_format import reset_date_format_cache
 from app.i18n.types import Locale
 from app.i18n.translation_service import get_i18n_manager
 from app.version.types import Version
-from app.agent.linking_and_ranking_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
 from evaluation_tests.baseline_metrics_collector import BaselineMetricsCollector
 from evaluation_tests.conversation_libs import conversation_generator
 from evaluation_tests.conversation_libs.conversation_test_function import LLMSimulatedUser

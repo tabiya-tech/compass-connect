@@ -2,6 +2,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
+from app.agent.skill_linker.skill_linker_type import SkillLinkerType
 from app.career_explorer.config import CareerExplorerConfig
 from app.countries import Country
 from app.i18n.language_config import LanguageConfig
@@ -127,6 +128,12 @@ class ApplicationConfig(BaseModel):
     Loaded from the BACKEND_HANDOFF_LINK_TTL_MINUTES environment variable.
     """
 
+    integration_return_url_origins: list[str] = Field(default_factory=list)
+    """
+    The origins a return_url of the integration API can point to, e.g. https://partner.example.org.
+    Empty: return_url is refused. Loaded from the BACKEND_INTEGRATION_RETURN_URL_ORIGINS environment variable.
+    """
+
     admin_firebase_tenant_id: str
     """
     The Firebase tenant ID for admin user management operations.
@@ -182,12 +189,18 @@ class ApplicationConfig(BaseModel):
     Set via OLLAMA_BASE_URL environment variable.
     """
 
+    skill_linker: SkillLinkerType = SkillLinkerType.LINKING_AND_RANKING_PIPELINE
+    classifier_api_url: Optional[str] = None
+    classifier_api_key: Optional[str] = None
+
     @model_validator(mode='after')
     def check_cv_upload_configurations(self) -> "ApplicationConfig":
         if self.enable_cv_upload and not self.cv_storage_bucket:
             raise ValueError("The cv_storage_bucket must be provided when the cv upload feature is enabled.")
         if self.llm_provider == "anthropic" and not self.anthropic_api_key:
             raise ValueError("ANTHROPIC_API_KEY must be set when LLM_PROVIDER=anthropic.")
+        if self.skill_linker.is_classifier and not (self.classifier_api_url and self.classifier_api_key):
+            raise ValueError(f"CLASSIFIER_API_URL and CLASSIFIER_API_KEY must be set when BACKEND_SKILL_LINKER={self.skill_linker.value}.")
         return self
 
 

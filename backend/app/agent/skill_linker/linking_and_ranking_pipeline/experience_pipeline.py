@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict
 
 from app.agent.agent_types import LLMStats
 from app.agent.experience.work_type import WorkType
-from app.agent.linking_and_ranking_pipeline.cluster_responsibilities_tool import ClusterResponsibilitiesTool
+from app.agent.skill_linker.linking_and_ranking_pipeline.cluster_responsibilities_tool import ClusterResponsibilitiesTool
 from app.context_vars import session_id_ctx_var
 from app.vector_search.esco_entities import SkillEntity, OccupationSkillEntity
 from app.vector_search.vector_search_dependencies import SearchServices
@@ -17,8 +17,8 @@ from common_libs.observability.tracing import sampled_scope, traced_observation,
 from .infer_occupation_tool import InferOccupationTool
 from .pick_top_skills_tool import PickTopSkillsTool
 from .skill_linking_tool import SkillLinkingTool
-from ...app_config import ApplicationConfig
-from ...countries import Country
+from app.app_config import ApplicationConfig
+from app.countries import Country
 
 
 class ExperiencePipelineConfig(BaseModel):

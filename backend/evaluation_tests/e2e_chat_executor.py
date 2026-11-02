@@ -8,7 +8,7 @@ from app.user_recommendations.services.service import IUserRecommendationsServic
 from app.user_recommendations.types import UserRecommendations
 from app.agent.agent_types import AgentInput, AgentOutput
 from app.agent.experience import ExperienceEntity
-from app.agent.linking_and_ranking_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
 from app.application_state import ApplicationState
 from app.conversation_memory.conversation_memory_manager import ConversationMemoryManager
 from app.conversation_memory.conversation_memory_types import ConversationContext

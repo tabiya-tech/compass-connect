@@ -4,7 +4,7 @@ import logging
 import pytest
 from _pytest.logging import LogCaptureFixture
 
-from app.agent.linking_and_ranking_pipeline.cluster_responsibilities_tool.cluster_responsibilties_tool import ClusterResponsibilitiesTool, Cluster
+from app.agent.skill_linker.linking_and_ranking_pipeline.cluster_responsibilities_tool.cluster_responsibilties_tool import ClusterResponsibilitiesTool, Cluster
 from common_libs.test_utilities.guard_caplog import guard_caplog, assert_log_error_warnings
 from evaluation_tests.compass_test_case import CompassTestCase
 from evaluation_tests.get_test_cases_to_run_func import get_test_cases_to_run

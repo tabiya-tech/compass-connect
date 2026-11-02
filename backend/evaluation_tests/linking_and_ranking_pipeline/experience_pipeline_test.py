@@ -1,10 +1,17 @@
 import logging
+import os
+from dataclasses import dataclass, field
 from typing import Optional, Awaitable
 
 import pytest
 
 from app.agent.experience.work_type import WorkType
-from app.agent.linking_and_ranking_pipeline import ExperiencePipeline, ExperiencePipelineConfig
+from app.agent.skill_linker.classifier.classifier_client import ClassifierClient
+from app.agent.skill_linker.classifier.classifier_skill_linker import ClassifierSkillLinker, ClassifierSkillLinkerConfig
+from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.pipeline_skill_linker import PipelineSkillLinker
+from app.agent.skill_linker.skill_linker import ISkillLinker
+from app.agent.skill_linker.skill_linker_type import SkillLinkerType
 from app.countries import Country
 from app.i18n.translation_service import get_i18n_manager
 from app.i18n.types import Locale
@@ -250,7 +257,6 @@ test_cases = [
         expected_top_skills=['guarantee customer satisfaction']
     ),
     ExperiencePipelineTestCase(
-        skip_force="force",
         name="argentina_asistente_ventas",
         given_experience_title="Asistente de ventas",
         locale=Locale.ES_AR,
@@ -261,7 +267,6 @@ test_cases = [
         expected_top_skills=[]
     ),
     ExperiencePipelineTestCase(
-        skip_force="force",
         name="argentina_casa_madre",
         locale=Locale.ES_AR,
         given_experience_title="Trabajo en casa",
@@ -274,27 +279,89 @@ test_cases = [
 ]
 
 
+@dataclass
+class _SkillLinkerResults:
+    runs: int = 0
+    passed_runs: int = 0
+    expected_skills: int = 0
+    found_expected_skills: int = 0
+    failed_cases: list[str] = field(default_factory=list)
+
+
+@pytest.fixture(scope="module")
+def skill_linker_results(request: pytest.FixtureRequest):
+    """
+    Collects the results of every run per skill linker type, and reports the success rate of each linker
+    at the end of the module, so that the linkers can be compared on the same test cases.
+    """
+    results: dict[SkillLinkerType, _SkillLinkerResults] = {}
+    yield results
+
+    lines = ["", "Experience pipeline success rate per skill linker:"]
+    for skill_linker_type, result in results.items():
+        pass_rate = result.passed_runs / result.runs if result.runs else 0.0
+        recall = result.found_expected_skills / result.expected_skills if result.expected_skills else 1.0
+        lines.append(f" - {skill_linker_type.value}: {result.passed_runs}/{result.runs} runs passed ({pass_rate:.0%}), "
+                     f"expected skills found: {result.found_expected_skills}/{result.expected_skills} ({recall:.0%})")
+        if result.failed_cases:
+            lines.append(f"     failed: {', '.join(sorted(set(result.failed_cases)))}")
+    logging.info("\n".join(lines))
+    terminal_reporter = request.config.pluginmanager.get_plugin("terminalreporter")
+    if terminal_reporter is not None:
+        terminal_reporter.write_line("\n".join(lines))
+
+
+def _get_skill_linker(skill_linker_type: SkillLinkerType,
+                      search_services: SearchServices,
+                      pipeline_config: ExperiencePipelineConfig,
+                      classifier_config: ClassifierSkillLinkerConfig) -> ISkillLinker:
+    if not skill_linker_type.is_classifier:
+        return PipelineSkillLinker(config=pipeline_config, search_services=search_services)
+
+    # The classifier linkers call the real Tabiya classifier API, so they need its credentials.
+    classifier_api_url = os.getenv("CLASSIFIER_API_URL")
+    classifier_api_key = os.getenv("CLASSIFIER_API_KEY")
+    if not classifier_api_url or not classifier_api_key:
+        pytest.skip(f"CLASSIFIER_API_URL and CLASSIFIER_API_KEY must be set to evaluate the {skill_linker_type.value} skill linker")
+    return ClassifierSkillLinker(
+        version=skill_linker_type,
+        client=ClassifierClient(base_url=classifier_api_url, api_key=classifier_api_key),
+        skill_search_service=search_services.skill_search_service,
+        config=classifier_config
+    )
+
+
+def _get_logger(skill_linker: ISkillLinker) -> logging.Logger:
+    if isinstance(skill_linker, PipelineSkillLinker):
+        return skill_linker._pipeline._logger
+    return skill_linker._logger
+
+
 @pytest.mark.asyncio
 @pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
 @pytest.mark.repeat(3)
+@pytest.mark.parametrize("skill_linker_type", list(SkillLinkerType), ids=[t.value for t in SkillLinkerType])
 @pytest.mark.parametrize("test_case", get_test_cases_to_run(test_cases), ids=[test_case.name for test_case in get_test_cases_to_run(test_cases)])
-async def test_experience_pipeline(test_case: ExperiencePipelineTestCase, setup_search_services: Awaitable[SearchServices], caplog: pytest.LogCaptureFixture):
+async def test_experience_pipeline(test_case: ExperiencePipelineTestCase,
+                                   skill_linker_type: SkillLinkerType,
+                                   setup_search_services: Awaitable[SearchServices],
+                                   skill_linker_results: dict[SkillLinkerType, _SkillLinkerResults],
+                                   caplog: pytest.LogCaptureFixture):
     search_services = await setup_search_services
-    given_config = ExperiencePipelineConfig()
-    experience_pipeline = ExperiencePipeline(
-        config=given_config,
-        search_services=search_services
-    )
+    given_pipeline_config = ExperiencePipelineConfig()
+    given_classifier_config = ClassifierSkillLinkerConfig()
+    skill_linker = _get_skill_linker(skill_linker_type, search_services, given_pipeline_config, given_classifier_config)
     get_i18n_manager().set_locale(test_case.locale)
+    result = skill_linker_results.setdefault(skill_linker_type, _SkillLinkerResults())
 
     # Set the capl-og at the level in question - 1 to ensure that the root logger is set to the correct level.
     # However, this is not enough as a logger can be set up in the agent in such a way that it does not propagate
     # the log messages to the root logger. For this reason, we add additional guards.
     with caplog.at_level(logging.INFO):
         # Guards to ensure that the loggers are correctly set up,
-        guard_caplog(logger=experience_pipeline._logger, caplog=caplog)
-        # When the skill linking tool is called with the given occupation and responsibilities
-        response = await experience_pipeline.execute(
+        guard_caplog(logger=_get_logger(skill_linker), caplog=caplog)
+        # When the skill linker is called with the given experience and responsibilities
+        response = await skill_linker.execute(
             experience_title=test_case.given_experience_title,
             responsibilities=test_case.given_responsibilities,
             company_name=test_case.given_company_name,
@@ -305,16 +372,31 @@ async def test_experience_pipeline(test_case: ExperiencePipelineTestCase, setup_
         # Then the expected top skills are returned
         actual_top_skill_preferred_labels = [skill.preferredLabel for skill in response.top_skills]
 
+        logging.log(logging.INFO, "Skill linker: %s", skill_linker_type.value)
         logging.log(logging.INFO, "Found Skills Occupations (labels): \n -%s", "\n -".join(sorted(actual_top_skill_preferred_labels)))
         logging.log(logging.INFO, "Expected Skills (labels): \n -%s", "\n -".join(sorted(test_case.expected_top_skills)))
 
+        # record the run for the success rate of the skill linker
+        found_expected_skills = set(test_case.expected_top_skills) & set(actual_top_skill_preferred_labels)
+        is_success = len(found_expected_skills) == len(set(test_case.expected_top_skills))
+        result.runs += 1
+        result.passed_runs += int(is_success)
+        result.expected_skills += len(set(test_case.expected_top_skills))
+        result.found_expected_skills += len(found_expected_skills)
+        if not is_success:
+            result.failed_cases.append(test_case.name)
+
         # AND the expected top skills are in the actual top skills
-        if not set(test_case.expected_top_skills).issubset(set(actual_top_skill_preferred_labels)):
+        if not is_success:
             # do the assertion in a way that the test fails and the diff can be shown in the IDE
             assert sorted(actual_top_skill_preferred_labels) == sorted(test_case.expected_top_skills)
 
-        # AND the number of skills returned is equal to the number of configured clusters
-        assert len(actual_top_skill_preferred_labels) == given_config.number_of_clusters
+        # AND the number of top skills returned matches the configuration of the skill linker
+        if skill_linker_type.is_classifier:
+            # the classifier returns at most the configured number of top skills, depending on the entities it extracted
+            assert 0 < len(actual_top_skill_preferred_labels) <= given_classifier_config.number_of_top_skills
+        else:
+            assert len(actual_top_skill_preferred_labels) == given_pipeline_config.number_of_clusters
 
         # AND the logs should not contain any errors
         assert_log_error_warnings(caplog=caplog, expect_errors_in_logs=False, expect_warnings_in_logs=True)

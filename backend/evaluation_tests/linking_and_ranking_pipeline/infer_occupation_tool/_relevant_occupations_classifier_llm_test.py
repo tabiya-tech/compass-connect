@@ -7,7 +7,7 @@ import pytest
 from _pytest.logging import LogCaptureFixture
 from bson import ObjectId
 
-from app.agent.linking_and_ranking_pipeline.infer_occupation_tool._relevant_occupations_classifier_llm import \
+from app.agent.skill_linker.linking_and_ranking_pipeline.infer_occupation_tool._relevant_occupations_classifier_llm import \
     _RelevantOccupationsClassifierLLM
 from app.i18n.translation_service import get_i18n_manager
 from app.vector_search.esco_entities import OccupationEntity
