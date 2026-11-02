@@ -205,16 +205,22 @@ def update_backend_env(config: Dict[str, Any], env_path: Path, namespaces: Optio
 # ASCII values keep the plain btoa(...) form.
 UTF8_WRAPPER_START = r'(?:unescape\(encodeURIComponent\(\s*)?'
 UTF8_WRAPPER_END = r'(?:\)\)\s*)?'
+# A double-quoted JS/JSON string, matched whole so that parentheses or commas in a text (e.g. "(paid)), study") are
+# not taken for the end of the btoa(...) expression.
+QUOTED_STRING = r'"(?:[^"\\]|\\.)*"'
 
 
 def frontend_json_pattern(key: str, capture: bool = False) -> str:
-    payload = '(.*?)' if capture else '.*?'
+    payload = rf'(?:{QUOTED_STRING}|[^"])*?'
+    if capture:
+        payload = f'({payload})'
     return (rf'(?:"{re.escape(key)}"|{re.escape(key)}):\s*btoa\(\s*{UTF8_WRAPPER_START}'
             rf'JSON\.stringify\({payload}\)\s*{UTF8_WRAPPER_END}\),')
 
 
 def frontend_scalar_pattern(key: str) -> str:
-    return rf'(?:"{re.escape(key)}"|{re.escape(key)}):\s*btoa\([^)]+\){UTF8_WRAPPER_END},'
+    return (rf'(?:"{re.escape(key)}"|{re.escape(key)}):\s*btoa\(\s*{UTF8_WRAPPER_START}'
+            rf'{QUOTED_STRING}\s*{UTF8_WRAPPER_END}\),')
 
 
 def btoa_expression(js_expression: str) -> str:

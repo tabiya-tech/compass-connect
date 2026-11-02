@@ -29,6 +29,9 @@ export const ModuleProgressCard: React.FC<ModuleProgressCardProps> = ({ profileS
   const theme = useTheme();
   const { t } = useTranslation();
   const safeOverallProgress = Math.max(0, Math.min(100, Math.round(profileStrength.overall)));
+  const enabledRows = COMPONENT_ROWS.filter((row) => profileStrength[row.key]);
+  // The overall score is scaled to the enabled components, so each one's weight is shown as its share of their total.
+  const enabledMax = enabledRows.reduce((sum, row) => sum + profileStrength[row.key]!.max, 0);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: theme.fixedSpacing(theme.tabiyaSpacing.sm) }}>
@@ -88,10 +91,11 @@ export const ModuleProgressCard: React.FC<ModuleProgressCardProps> = ({ profileS
 
               {/* Breakdowns */}
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {COMPONENT_ROWS.filter((row) => profileStrength[row.key]).map((row, index) => {
+                {enabledRows.map((row, index) => {
                   const { points, max } = profileStrength[row.key]!;
                   const label = t(row.labelKey);
                   const safeComponentProgress = Math.max(0, Math.min(100, (points / max) * 100));
+                  const weight = enabledMax > 0 ? Math.round((max / enabledMax) * 100) : 0;
                   return (
                     <Box
                       key={row.key}
@@ -117,7 +121,7 @@ export const ModuleProgressCard: React.FC<ModuleProgressCardProps> = ({ profileS
                         }}
                       />
                       <Typography variant="body2" color="text.secondary" fontWeight="bold" sx={{ textAlign: "right" }}>
-                        {max}%
+                        {weight}%
                       </Typography>
                     </Box>
                   );
