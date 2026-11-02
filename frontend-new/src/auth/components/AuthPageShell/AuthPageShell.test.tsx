@@ -6,6 +6,7 @@ import React from "react";
 import { render, screen } from "src/_test_utilities/test-utils";
 import AuthPageShell, { DATA_TEST_ID } from "src/auth/components/AuthPageShell/AuthPageShell";
 import { getDisabledModules } from "src/envService";
+import { ModuleId } from "src/home/modulesService";
 
 describe("AuthPageShell", () => {
   beforeEach(() => {
@@ -23,7 +24,7 @@ describe("AuthPageShell", () => {
 
   test("should not show the help button when the help page is disabled", () => {
     // GIVEN the help page is disabled
-    (getDisabledModules as jest.Mock).mockReturnValue(["faq"]);
+    (getDisabledModules as jest.Mock).mockReturnValue([ModuleId.FAQ]);
 
     // WHEN the shell is rendered
     render(<AuthPageShell logoUrl="/logo.svg" />);

@@ -10,6 +10,7 @@ import { DATA_TEST_ID as HERO_DATA_TEST_ID } from "src/home/components/HomeHero/
 import { DATA_TEST_ID as CTA_DATA_TEST_ID } from "src/home/components/HomeCtaGrid/HomeCtaGrid";
 import { DATA_TEST_ID as JOB_READY_DATA_TEST_ID } from "src/home/components/HomeJobReadyList/HomeJobReadyList";
 import { getDisabledModules } from "src/envService";
+import { ModuleId } from "src/home/modulesService";
 
 jest.mock("src/experiences/ExperiencesDrawerProvider", () => ({
   useExperiencesDrawer: () => ({
@@ -93,7 +94,11 @@ describe("Home", () => {
 
     test("should not offer the disabled modules", () => {
       // GIVEN the career explorer, career readiness and job matching modules are disabled
-      (getDisabledModules as jest.Mock).mockReturnValue(["career_explorer", "job_readiness", "job_matching"]);
+      (getDisabledModules as jest.Mock).mockReturnValue([
+        ModuleId.CAREER_EXPLORER,
+        ModuleId.JOB_READINESS,
+        ModuleId.JOB_MATCHING,
+      ]);
 
       // WHEN the Home page is rendered
       render(<Home />);
@@ -108,7 +113,11 @@ describe("Home", () => {
 
     test("should not show the CTA grid when every module of its cards is disabled", () => {
       // GIVEN the modules of every CTA card are disabled
-      (getDisabledModules as jest.Mock).mockReturnValue(["skills_discovery", "career_explorer", "job_matching"]);
+      (getDisabledModules as jest.Mock).mockReturnValue([
+        ModuleId.SKILLS_DISCOVERY,
+        ModuleId.CAREER_EXPLORER,
+        ModuleId.JOB_MATCHING,
+      ]);
 
       // WHEN the Home page is rendered
       render(<Home />);

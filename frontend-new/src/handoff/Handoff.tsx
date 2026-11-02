@@ -33,7 +33,7 @@ export const HANDOFF_TOKEN_PARAM_NAME = "token";
  */
 const HANDOFF_ACTION_MODULE: Record<HandoffAction, ModuleId | null> = {
   [HandoffAction.CREATE]: null,
-  [HandoffAction.BUILD_PROFILE]: "skills_discovery",
+  [HandoffAction.BUILD_PROFILE]: ModuleId.SKILLS_DISCOVERY,
 };
 
 /**

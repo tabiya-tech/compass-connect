@@ -58,6 +58,7 @@ import CVService from "src/CV/CVService/CVService";
 import { useNextModule } from "src/home/useNextModule";
 import { DATA_TEST_ID as RETURN_BANNER_DATA_TEST_ID } from "src/chat/ReturnToPlatformBanner/ReturnToPlatformBanner";
 import { DATA_TEST_ID as MODULE_HANDOFF_BANNER_DATA_TEST_ID } from "src/home/components/ModuleHandoffBanner/ModuleHandoffBanner";
+import { ModuleId } from "src/home/modulesService";
 
 // Mock Components ----------
 // mock the snackbar
@@ -380,7 +381,7 @@ describe("Chat", () => {
 
   describe("below the chat when the conversation is completed", () => {
     const givenNextModule = {
-      id: "career_explorer",
+      id: ModuleId.CAREER_EXPLORER,
       labelKey: "home.modules.careerExplorer",
       descriptionKey: "home.modules.careerExplorerDesc",
       route: "/career-explorer",

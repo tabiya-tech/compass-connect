@@ -15,6 +15,7 @@ import ModuleHandoffBanner from "src/home/components/ModuleHandoffBanner/ModuleH
 import { useNextModule } from "src/home/useNextModule";
 import SubNavBar from "src/navigation/SubNavBar/SubNavBar";
 import { useUserProfileContext } from "src/profile/UserProfileContext";
+import { ModuleId } from "src/home/modulesService";
 
 const uniqueId = "e5f6a7b8-c9d0-1e2f-3a4b-5c6d7e8f9a0b";
 
@@ -31,7 +32,7 @@ const CareerReadinessModule: React.FC = () => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [moduleCompleted, setModuleCompleted] = useState(false);
   const [conversationLoadError, setConversationLoadError] = useState<unknown>(null);
-  const topLevelNextModule = useNextModule("job_readiness");
+  const topLevelNextModule = useNextModule(ModuleId.JOB_READINESS);
 
   // Read modules from shared context — already fetched by UserProfileProvider
   const { profileData, errors, refreshModules } = useUserProfileContext();
