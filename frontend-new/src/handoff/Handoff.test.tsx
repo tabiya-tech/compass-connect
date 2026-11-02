@@ -16,6 +16,7 @@ import AuthenticationService from "src/auth/services/Authentication.service";
 import UserPreferencesStateService from "src/userPreferences/UserPreferencesStateService";
 import { UserPreference } from "src/userPreferences/UserPreferencesService/userPreferences.types";
 import * as envService from "src/envService";
+import { ModuleId } from "src/home/modulesService";
 
 // Mock the router so we can spy on navigation and inject the location.
 jest.mock("react-router-dom", () => {
@@ -124,7 +125,9 @@ describe("Handoff", () => {
 
   test("should land the user on home when the module of the action is disabled", async () => {
     // GIVEN the deployment disables the module the conversation link lands in
-    const getDisabledModulesSpy = jest.spyOn(envService, "getDisabledModules").mockReturnValue(["skills_discovery"]);
+    const getDisabledModulesSpy = jest
+      .spyOn(envService, "getDisabledModules")
+      .mockReturnValue([ModuleId.SKILLS_DISCOVERY]);
     // AND a link to the conversation, for a user who already gave the consent
     setSearch("?token=link-token");
     exchangeSpy.mockResolvedValue({ custom_token: givenCustomToken, action: HandoffAction.BUILD_PROFILE });

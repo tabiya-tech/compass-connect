@@ -2,7 +2,7 @@ import { ConversationPhase } from "src/chat/chatProgressbar/types";
 import { Experience, WorkType } from "src/experiences/experienceService/experiences.types";
 import type { ModuleSummary } from "src/careerReadiness/types";
 import type { UserSectorEngagementItem } from "src/careerExplorer/services/CareerExplorerService";
-import type { ModuleId } from "src/home/modulesService";
+import { ModuleId } from "src/home/modulesService";
 
 export interface ProfileStrengthInput {
   phase: ConversationPhase | null;
@@ -36,11 +36,11 @@ export type ProfileStrengthBreakdown = Partial<Record<ProfileStrengthComponentKe
 
 // The module each component measures. Modules without a component (e.g. faq) do not change the score.
 const COMPONENT_MODULE: Record<ProfileStrengthComponentKey, ModuleId> = {
-  experienceCollection: "skills_discovery",
-  skillsDiscovery: "skills_discovery",
-  preferences: "skills_discovery",
-  careerReadiness: "job_readiness",
-  careerExplorer: "career_explorer",
+  experienceCollection: ModuleId.SKILLS_DISCOVERY,
+  skillsDiscovery: ModuleId.SKILLS_DISCOVERY,
+  preferences: ModuleId.SKILLS_DISCOVERY,
+  careerReadiness: ModuleId.JOB_READINESS,
+  careerExplorer: ModuleId.CAREER_EXPLORER,
 };
 
 // Component weights, summing to 100.

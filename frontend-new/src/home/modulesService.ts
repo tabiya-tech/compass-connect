@@ -4,13 +4,14 @@ import { getDisabledModules } from "src/envService";
 /**
  * The ids of the modules, also used in `FRONTEND_DISABLED_MODULES` to hide them.
  */
-export type ModuleId =
-  | "skills_discovery"
-  | "career_explorer"
-  | "job_readiness"
-  | "knowledge_hub"
-  | "job_matching"
-  | "faq";
+export enum ModuleId {
+  SKILLS_DISCOVERY = "skills_discovery",
+  CAREER_EXPLORER = "career_explorer",
+  JOB_READINESS = "job_readiness",
+  KNOWLEDGE_HUB = "knowledge_hub",
+  JOB_MATCHING = "job_matching",
+  FAQ = "faq",
+}
 
 export interface Module {
   id: ModuleId;
@@ -30,40 +31,40 @@ export interface Module {
  */
 const DEFAULT_MODULES: Module[] = [
   {
-    id: "skills_discovery",
+    id: ModuleId.SKILLS_DISCOVERY,
     labelKey: "home.modules.skillsDiscovery",
     descriptionKey: "home.modules.skillsDiscoveryDesc",
     route: routerPaths.SKILLS_INTERESTS,
-    nextModuleId: "career_explorer",
+    nextModuleId: ModuleId.CAREER_EXPLORER,
   },
   {
-    id: "career_explorer",
+    id: ModuleId.CAREER_EXPLORER,
     labelKey: "home.modules.careerExplorer",
     descriptionKey: "home.modules.careerExplorerDesc",
     route: routerPaths.CAREER_EXPLORER,
   },
   {
-    id: "job_readiness",
+    id: ModuleId.JOB_READINESS,
     labelKey: "home.modules.jobReadiness",
     descriptionKey: "home.modules.jobReadinessDesc",
     route: routerPaths.CAREER_READINESS,
-    nextModuleId: "knowledge_hub",
+    nextModuleId: ModuleId.KNOWLEDGE_HUB,
   },
   {
-    id: "knowledge_hub",
+    id: ModuleId.KNOWLEDGE_HUB,
     labelKey: "home.modules.knowledgeHub",
     descriptionKey: "home.modules.knowledgeHubDesc",
     route: routerPaths.KNOWLEDGE_HUB,
   },
   {
-    id: "job_matching",
+    id: ModuleId.JOB_MATCHING,
     labelKey: "home.modules.jobMatching",
     descriptionKey: "home.modules.jobMatchingDesc",
     route: routerPaths.JOB_MATCHING,
   },
   {
     // the help page: not a step of the journey, so no module hands off to it
-    id: "faq",
+    id: ModuleId.FAQ,
     labelKey: "nav.needHelp",
     descriptionKey: "faq.lede",
     route: routerPaths.FAQ,

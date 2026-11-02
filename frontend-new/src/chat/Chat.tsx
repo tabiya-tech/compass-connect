@@ -46,6 +46,7 @@ import SkillsDiscoverySidebar from "src/home/components/Sidebar/SkillsDiscoveryS
 import { useCvUpload } from "src/chat/hooks/useCvUpload";
 import { useInactivityBackdrop } from "src/chat/hooks/useInactivityBackdrop";
 import { useRefreshGuard } from "src/chat/hooks/useRefreshGuard";
+import { ModuleId } from "src/home/modulesService";
 
 export { INACTIVITY_TIMEOUT, CHECK_INACTIVITY_INTERVAL } from "src/chat/hooks/useInactivityBackdrop";
 export { MAX_UPLOAD_POLL_MS } from "src/chat/hooks/useCvUpload";
@@ -121,7 +122,7 @@ export const Chat: React.FC<Readonly<ChatProps>> = ({
   const { enqueueSnackbar } = useSnackbar();
   const [messages, setMessages] = useState<IChatMessage<any>[]>([]);
   const [conversationCompleted, setConversationCompleted] = useState<boolean>(false);
-  const nextModule = useNextModule("skills_discovery");
+  const nextModule = useNextModule(ModuleId.SKILLS_DISCOVERY);
   // only users created by another platform through the integration API have one
   const returnUrl = UserPreferencesStateService.getInstance().getUserPreferences()?.return_url;
   const [exploredExperiences, setExploredExperiences] = useState<number>(0);

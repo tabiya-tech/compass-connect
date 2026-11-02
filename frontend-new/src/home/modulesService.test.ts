@@ -6,12 +6,12 @@ import { getEnabledModules, isModuleEnabled, ModuleId } from "src/home/modulesSe
 import { useNextModule } from "src/home/useNextModule";
 
 const ALL_MODULE_IDS: ModuleId[] = [
-  "skills_discovery",
-  "career_explorer",
-  "job_readiness",
-  "knowledge_hub",
-  "job_matching",
-  "faq",
+  ModuleId.SKILLS_DISCOVERY,
+  ModuleId.CAREER_EXPLORER,
+  ModuleId.JOB_READINESS,
+  ModuleId.KNOWLEDGE_HUB,
+  ModuleId.JOB_MATCHING,
+  ModuleId.FAQ,
 ];
 
 describe("modulesService", () => {
@@ -40,17 +40,24 @@ describe("modulesService", () => {
 
   test("should leave out the disabled modules", () => {
     // GIVEN some modules are disabled
-    jest.spyOn(EnvServiceModule, "getDisabledModules").mockReturnValue(["career_explorer", "job_matching"]);
+    jest
+      .spyOn(EnvServiceModule, "getDisabledModules")
+      .mockReturnValue([ModuleId.CAREER_EXPLORER, ModuleId.JOB_MATCHING]);
 
     // WHEN the enabled modules are requested
     const actualModules = getEnabledModules();
 
     // THEN the disabled modules are not returned
-    expect(actualModules.map((m) => m.id)).toEqual(["skills_discovery", "job_readiness", "knowledge_hub", "faq"]);
+    expect(actualModules.map((m) => m.id)).toEqual([
+      ModuleId.SKILLS_DISCOVERY,
+      ModuleId.JOB_READINESS,
+      ModuleId.KNOWLEDGE_HUB,
+      ModuleId.FAQ,
+    ]);
     // AND they are not enabled
-    expect(isModuleEnabled("career_explorer")).toBe(false);
-    expect(isModuleEnabled("job_matching")).toBe(false);
-    expect(isModuleEnabled("skills_discovery")).toBe(true);
+    expect(isModuleEnabled(ModuleId.CAREER_EXPLORER)).toBe(false);
+    expect(isModuleEnabled(ModuleId.JOB_MATCHING)).toBe(false);
+    expect(isModuleEnabled(ModuleId.SKILLS_DISCOVERY)).toBe(true);
   });
 
   test("should ignore an unknown module id, warning about it once", () => {
@@ -74,18 +81,18 @@ describe("modulesService", () => {
       jest.spyOn(EnvServiceModule, "getDisabledModules").mockReturnValue([]);
 
       // WHEN the next module of skills discovery is requested
-      const actualNextModule = useNextModule("skills_discovery");
+      const actualNextModule = useNextModule(ModuleId.SKILLS_DISCOVERY);
 
       // THEN the career explorer is returned
-      expect(actualNextModule?.id).toBe("career_explorer");
+      expect(actualNextModule?.id).toBe(ModuleId.CAREER_EXPLORER);
     });
 
     test("should return null when the next module is disabled", () => {
       // GIVEN the career explorer is disabled
-      jest.spyOn(EnvServiceModule, "getDisabledModules").mockReturnValue(["career_explorer"]);
+      jest.spyOn(EnvServiceModule, "getDisabledModules").mockReturnValue([ModuleId.CAREER_EXPLORER]);
 
       // WHEN the next module of skills discovery is requested
-      const actualNextModule = useNextModule("skills_discovery");
+      const actualNextModule = useNextModule(ModuleId.SKILLS_DISCOVERY);
 
       // THEN no next module is suggested
       expect(actualNextModule).toBeNull();

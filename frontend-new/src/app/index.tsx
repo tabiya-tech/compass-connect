@@ -314,7 +314,7 @@ const App = () => {
                     </ProtectedRoute>
                   ),
                 },
-                ...moduleRoutes("skills_discovery", [
+                ...moduleRoutes(ModuleId.SKILLS_DISCOVERY, [
                   {
                     path: routerPaths.SKILLS_INTERESTS,
                     handle: {
@@ -329,7 +329,7 @@ const App = () => {
                     ),
                   },
                 ]),
-                ...moduleRoutes("knowledge_hub", [
+                ...moduleRoutes(ModuleId.KNOWLEDGE_HUB, [
                   {
                     path: routerPaths.KNOWLEDGE_HUB,
                     handle: {},
@@ -349,7 +349,7 @@ const App = () => {
                     ),
                   },
                 ]),
-                ...moduleRoutes("career_explorer", [
+                ...moduleRoutes(ModuleId.CAREER_EXPLORER, [
                   {
                     path: routerPaths.CAREER_EXPLORER,
                     handle: {
@@ -364,7 +364,7 @@ const App = () => {
                     ),
                   },
                 ]),
-                ...moduleRoutes("job_readiness", [
+                ...moduleRoutes(ModuleId.JOB_READINESS, [
                   {
                     path: routerPaths.CAREER_READINESS,
                     element: (
@@ -396,7 +396,7 @@ const App = () => {
                     </ProtectedRoute>
                   ),
                 },
-                ...moduleRoutes("job_matching", [
+                ...moduleRoutes(ModuleId.JOB_MATCHING, [
                   {
                     path: routerPaths.JOB_MATCHING,
                     handle: {},
@@ -483,7 +483,7 @@ const App = () => {
               path: routerPaths.TERMS_OF_USE,
               element: <LegalDocumentPage variant="terms" />,
             },
-            ...moduleRoutes("faq", [
+            ...moduleRoutes(ModuleId.FAQ, [
               {
                 path: routerPaths.FAQ,
                 element: <LazyLoadedFAQPage />,
