@@ -103,6 +103,29 @@ class UpdateFrontendEnvTest(unittest.TestCase):
         self.assertIn('GLOBAL_PRODUCT_NAME: btoa("Compass"),', actual_content)
         self.assertIn('FRONTEND_META_DESCRIPTION: btoa(unescape(encodeURIComponent("descripción"))),', actual_content)
 
+    def test_replaces_a_text_override_containing_closing_parentheses(self):
+        # GIVEN a text override with parentheses and a comma, as in the end of the btoa(...) expression, is injected
+        self.inject({"strings": {"en-US": {"home.hero.body": "Discover skills (from work (paid)), study and life."}}})
+
+        # WHEN a new one replaces it
+        actual_content = self.inject({"strings": {"en-US": {"home.hero.body": "Replaced"}}})
+
+        # THEN the whole old override is replaced, leaving none of its text behind
+        self.assertEqual(self.overrides_in(actual_content), {"en-US": {"home.hero.body": "Replaced"}})
+        self.assertNotIn("study and life", actual_content)
+
+    def test_replaces_a_text_value_containing_closing_parentheses(self):
+        # GIVEN a text value with parentheses and a comma is injected
+        self.inject({"branding": {"metaDescription": "Skills (paid), study"}})
+
+        # WHEN a new value replaces it
+        actual_content = self.inject({"branding": {"metaDescription": "Replaced"}})
+
+        # THEN the old value is replaced in place, not left beside a second key
+        self.assertIn('FRONTEND_META_DESCRIPTION: btoa("Replaced"),', actual_content)
+        self.assertNotIn("study", actual_content)
+        self.assertEqual(actual_content.count("FRONTEND_META_DESCRIPTION"), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
