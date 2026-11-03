@@ -34,7 +34,7 @@ class ClassifierClient:
                           extract_entities: list[ClassifierEntityType],
                           top_k: int,
                           min_similarity: float) -> ClassifierV1Response:
-        return await self._classify(ClassifierV1Response, "v1",
+        return await self._classify(ClassifierV1Response, ClassifierApiVersion.V1,
                                     title=title, description=description, extract_entities=extract_entities,
                                     top_k=top_k, min_similarity=min_similarity)
 
@@ -44,7 +44,7 @@ class ClassifierClient:
                           extract_entities: list[ClassifierEntityType],
                           top_k: int,
                           min_similarity: float) -> ClassifierV2Response:
-        return await self._classify(ClassifierV2Response, "v2",
+        return await self._classify(ClassifierV2Response, ClassifierApiVersion.V2,
                                     title=title, description=description, extract_entities=extract_entities,
                                     top_k=top_k, min_similarity=min_similarity)
 
@@ -54,7 +54,7 @@ class ClassifierClient:
                         extract_entities: list[ClassifierEntityType],
                         top_k: int,
                         min_similarity: float) -> Response_:
-        url = f"{self._base_url}/{version}/classify"
+        url = f"{self._base_url}/{version.value}/classify"
         payload = {
             "title": title,
             "description": description,

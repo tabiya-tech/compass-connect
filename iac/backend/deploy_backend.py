@@ -85,6 +85,7 @@ class BackendServiceConfig:
     skill_linker: Optional[str]
     classifier_api_url: Optional[str]
     classifier_api_key: Optional[str]
+    classifier_api_version: Optional[str]
     inline_phase_transition: Optional[str]
     career_explorer_config: Optional[str]
     plain_personal_data_fields: Optional[str]
@@ -544,6 +545,9 @@ def _deploy_cloud_run_service(
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="CLASSIFIER_API_KEY",
                             value=backend_service_cfg.classifier_api_key or ""),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="CLASSIFIER_API_VERSION",
+                            value=backend_service_cfg.classifier_api_version or ""),
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="COMPASS_INLINE_PHASE_TRANSITION",
                             value=backend_service_cfg.inline_phase_transition),
