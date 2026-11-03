@@ -3,8 +3,8 @@ from app.agent.agent_director.abstract_agent_director import AbstractAgentDirect
 from app.agent.agent_types import AgentInput, AgentOutput
 from app.agent.explore_experiences_agent_director import ExploreExperiencesAgentDirector
 from app.agent.farewell_agent import FarewellAgent
-from app.agent.skill_linker.skill_linker import ISkillLinker
-from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.linker import ISkillLinker
+from app.agent.skill_linker.llm_pipeline import ExperiencePipelineConfig
 from app.agent.welcome_agent import WelcomeAgent
 from app.conversation_memory.conversation_memory_manager import \
     ConversationMemoryManager

@@ -11,9 +11,9 @@ from app.agent.collect_experiences_agent import CollectExperiencesAgent
 from app.agent.experience._experience_summarizer import ExperienceSummarizer
 from app.agent.experience.experience_entity import ExperienceEntity
 from app.agent.experience.upgrade_experience import get_editable_experience
-from app.agent.skill_linker.skill_linker import ISkillLinker
-from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
-from app.agent.skill_linker.pipeline_skill_linker import PipelineSkillLinker
+from app.agent.skill_linker.linker import ISkillLinker
+from app.agent.skill_linker.llm_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.llm_pipeline import PipelineSkillLinker
 from app.agent.skill_explorer_agent import SkillsExplorerAgent, SkillsExplorerAgentState
 from app.conversation_memory.conversation_memory_manager import ConversationMemoryManager, IConversationMemoryManager
 from app.server_config import REPETITION_SHORT_CIRCUIT_THRESHOLD

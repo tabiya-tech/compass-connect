@@ -2,7 +2,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
-from app.agent.skill_linker.skill_linker_type import SkillLinkerType
+from app.agent.skill_linker.config import SkillLinkerType
 from app.career_explorer.config import CareerExplorerConfig
 from app.countries import Country
 from app.i18n.language_config import LanguageConfig
