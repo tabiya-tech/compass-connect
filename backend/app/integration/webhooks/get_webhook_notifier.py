@@ -37,7 +37,8 @@ async def get_webhook_notifier() -> WebhookNotifier:
                     deliveries=WebhookDeliveryRepository(application_db),
                     events=[ConversationCompleted(results.get_results)],
                     http_client=httpx.AsyncClient(),
-                    enabled=get_application_config().integration_webhooks_enabled)
+                    enabled=get_application_config().integration_webhooks_enabled,
+                    url_origins=get_application_config().integration_webhook_url_origins)
     return _webhook_notifier_singleton
 
 

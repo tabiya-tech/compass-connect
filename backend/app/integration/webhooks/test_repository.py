@@ -5,7 +5,7 @@ import pytest
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.integration.webhooks.repository import WebhookDeliveryRepository
-from app.integration.webhooks.types import WebhookDelivery, WebhookEvent, DeliveryStatus
+from app.integration.webhooks.types import WebhookDelivery, WebhookEvent, DeliveryStatus, WebhookAttempt
 from common_libs.time_utilities import get_now, truncate_microseconds
 
 _LEASE = timedelta(minutes=1)
@@ -73,8 +73,30 @@ class TestWebhookDeliveryRepository:
         now = truncate_microseconds(get_now())
         given = (await repository.find_by_id("d-1")).model_copy(update={
             "status": DeliveryStatus.DELIVERED, "attempts": 2, "url": "https://api.partner.example.org/hook",
-            "last_attempt_at": now, "last_status_code": 204, "lease_until": now})
+            "last_attempt_at": now, "last_status_code": 204, "lease_until": now,
+            "history": [WebhookAttempt(at=now, error="HTTP 503", status_code=503),
+                        WebhookAttempt(at=now, status_code=204)]})
 
-        await repository.save_outcome(given)
+        assert await repository.save_outcome(given) is True
 
         assert await repository.find_by_id("d-1") == given
+
+    @pytest.mark.asyncio
+    async def test_an_attempt_that_outlived_its_lease_stores_nothing(
+            self, repository: Awaitable[WebhookDeliveryRepository]):
+        repository = await repository
+        # GIVEN an attempt that claimed a delivery, then held it past its lease, so another attempt claimed it
+        await repository.insert(_delivery("d-1"))
+        now = get_now()
+        given_stale = await repository.claim(now, _LEASE)
+        given_current = await repository.claim(now + _LEASE, _LEASE)
+
+        # WHEN the stale attempt saves its outcome
+        actual = await repository.save_outcome(given_stale.model_copy(update={"status": DeliveryStatus.FAILED}))
+
+        # THEN nothing is stored: the delivery is still as the current attempt claimed it
+        assert actual is False
+        assert await repository.find_by_id("d-1") == given_current
+        # AND the current attempt still saves its own
+        assert await repository.save_outcome(
+            given_current.model_copy(update={"status": DeliveryStatus.DELIVERED})) is True

@@ -190,6 +190,25 @@ class TestCreateUserRoute:
         assert actual.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
         mocked_service.create_user.assert_not_called()
 
+    @pytest.mark.parametrize("given_body", [
+        pytest.param({"external_id": "ext-1", "email": "person@example.com", "webhook_secret": _WEBHOOK_SECRET},
+                     id="webhook_secret without a url (an error of the whole body)"),
+        pytest.param({"external_id": "ext-1", "email": "person@example.com",
+                      "webhook_url": "https://api.partner.example.org/hook", "webhook_secret": "t" * 42},
+                     id="webhook_secret too short (an error of the field)"),
+        pytest.param({"external_id": "", "email": "person@example.com",
+                      "webhook_url": "https://api.partner.example.org/hook", "webhook_secret": _WEBHOOK_SECRET},
+                     id="valid webhook_secret, another field invalid"),
+    ])
+    def test_webhook_secret_is_not_in_a_422(self, client: TestClient, given_body: dict):
+        # WHEN a body with a webhook secret is rejected
+        actual = _post_user(client, given_body)
+
+        # THEN the errors are returned, without the secret
+        assert actual.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        assert actual.json()["detail"]
+        assert given_body["webhook_secret"] not in actual.text
+
     @pytest.mark.parametrize("given_api_key", [None, "wrong-key"])
     def test_missing_or_wrong_api_key_is_rejected(self, client: TestClient, mocked_service: AsyncMock,
                                                   given_api_key: str | None):

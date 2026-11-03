@@ -4,6 +4,7 @@ which sends the deliveries that are due until the platform takes them or the ret
 and the retries are the same code. Nothing here is specific to one event: see events.py.
 """
 
+import asyncio
 import logging
 import uuid
 from datetime import timedelta, datetime
@@ -13,10 +14,12 @@ import httpx
 from pydantic import SecretStr
 
 from app.integration.repository import ExternalUserRepository
+from app.integration.return_url_validation import validate_return_url, InvalidReturnUrlError
 from app.integration.webhooks.events import WebhookEventDefinition, DataNotReadyError
 from app.integration.webhooks.jwe import encrypt_webhook_payload
 from app.integration.webhooks.repository import WebhookDeliveryRepository
-from app.integration.webhooks.types import WebhookEvent, WebhookDelivery, DeliveryStatus, WebhookNotification
+from app.integration.webhooks.types import WebhookEvent, WebhookDelivery, DeliveryStatus, WebhookNotification, \
+    WebhookAttempt
 from common_libs.time_utilities import get_now, truncate_microseconds
 
 RETRY_DELAYS = (timedelta(minutes=1), timedelta(minutes=5), timedelta(minutes=30), timedelta(hours=2),
@@ -31,6 +34,9 @@ How long an attempt holds its delivery. Longer than the request timeout plus bui
 """
 
 REQUEST_TIMEOUT_SECONDS = 10
+"""
+For the whole request, from connecting to the status of the answer.
+"""
 CONTENT_TYPE = "application/jose"
 DELIVERY_ID_HEADER = "X-Compass-Delivery-Id"
 
@@ -47,12 +53,15 @@ class WebhookNotifier:
                  events: list[WebhookEventDefinition],
                  http_client: httpx.AsyncClient,
                  enabled: bool,
+                 url_origins: list[str],
                  retry_delays: tuple[timedelta, ...] = RETRY_DELAYS):
         self._users = users
         self._deliveries = deliveries
         self._events = {definition.event: definition for definition in events}
         self._http_client = http_client
         self._enabled = enabled
+        # checked again before every attempt: an origin the operator no longer allows gets nothing more
+        self._url_origins = url_origins
         self._retry_delays = retry_delays
         self._logger = logging.getLogger(self.__class__.__name__)
 
@@ -80,7 +89,9 @@ class WebhookNotifier:
                 return None
             return delivery.id
         except Exception:  # pylint: disable=broad-except
-            self._logger.exception("Could not record a %s webhook delivery", event.value)
+            # not retried: the platform can still get the results from the results endpoint
+            self._logger.exception("Could not record a %s webhook delivery for user %s, %s", event.value, user_id,
+                                   dict(event_ref))
             return None
 
     async def attempt(self) -> bool:
@@ -112,10 +123,18 @@ class WebhookNotifier:
         if external_user is None or external_user.webhook is None:
             # the platform removed it: nowhere to send it to, and it does not want it
             delivery.status, delivery.last_error = DeliveryStatus.FAILED, "webhook removed"
-            await self._deliveries.save_outcome(delivery)
+            await self._save_outcome(delivery)
             return
 
         delivery.url = external_user.webhook.url
+        try:
+            validate_return_url(delivery.url, self._url_origins, field="webhook_url")
+        except InvalidReturnUrlError:
+            # the operator removed its origin after the platform set it: nothing is sent there any more
+            delivery.status, delivery.last_error = DeliveryStatus.FAILED, "origin not allowed"
+            await self._save_outcome(delivery)
+            return
+
         delivery.last_error = await self._post(delivery, external_user.webhook.secret, now)
         if delivery.last_error is None:
             delivery.status = DeliveryStatus.DELIVERED
@@ -128,7 +147,14 @@ class WebhookNotifier:
             delivery.next_attempt_at = now + self._retry_delays[delivery.attempts - 1]
             self._logger.warning("Webhook delivery %s attempt %d failed: %s, next at %s", delivery.id,
                                  delivery.attempts, delivery.last_error, delivery.next_attempt_at.isoformat())
-        await self._deliveries.save_outcome(delivery)
+        await self._save_outcome(delivery)
+
+    async def _save_outcome(self, delivery: WebhookDelivery) -> None:
+        delivery.history.append(WebhookAttempt(at=delivery.last_attempt_at, status_code=delivery.last_status_code,
+                                               error=delivery.last_error))
+        if not await self._deliveries.save_outcome(delivery):
+            self._logger.warning("Webhook delivery %s attempt %d outlived its lease, its outcome is not stored",
+                                 delivery.id, delivery.attempts)
 
     async def _post(self, delivery: WebhookDelivery, secret: SecretStr, now: datetime) -> Optional[str]:
         """
@@ -142,16 +168,21 @@ class WebhookNotifier:
             notification = WebhookNotification(event=delivery.event, version=definition.version,
                                                delivery_id=delivery.id, sent_at=now,
                                                external_id=delivery.external_id, data=data)
-            response = await self._http_client.post(
-                delivery.url, content=encrypt_webhook_payload(notification, secret),
-                headers={"Content-Type": CONTENT_TYPE, DELIVERY_ID_HEADER: delivery.id},
-                timeout=REQUEST_TIMEOUT_SECONDS, follow_redirects=False)
-        except (DataNotReadyError, httpx.HTTPError) as e:
+            content = encrypt_webhook_payload(notification, secret)
+            # httpx's timeout is per network operation: a platform answering a byte at a time would hold the loop
+            async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
+                # streamed, so the body of the answer is never read: only its status is needed
+                async with self._http_client.stream(
+                        "POST", delivery.url, content=content,
+                        headers={"Content-Type": CONTENT_TYPE, DELIVERY_ID_HEADER: delivery.id},
+                        timeout=REQUEST_TIMEOUT_SECONDS, follow_redirects=False) as response:
+                    status_code, is_success = response.status_code, response.is_success
+        except (DataNotReadyError, httpx.HTTPError, TimeoutError) as e:
             # expected: retried later, the warning of the attempt is enough
-            return "timeout" if isinstance(e, httpx.TimeoutException) else type(e).__name__
+            return "timeout" if isinstance(e, (httpx.TimeoutException, TimeoutError)) else type(e).__name__
         except Exception as e:  # pylint: disable=broad-except
             # a bug, not the platform: still retried, like a platform that is down
             self._logger.exception("Could not send the webhook delivery %s", delivery.id)
             return type(e).__name__
-        delivery.last_status_code = response.status_code
-        return None if response.is_success else f"HTTP {response.status_code}"
+        delivery.last_status_code = status_code
+        return None if is_success else f"HTTP {status_code}"

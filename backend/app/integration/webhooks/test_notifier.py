@@ -18,7 +18,8 @@ from app.integration.webhooks.testing import decrypt
 from app.integration.webhooks.types import WebhookEvent, DeliveryStatus, WebhookNotification
 from common_libs.time_utilities import get_now, truncate_microseconds
 
-_URL = "https://api.partner.example.org/hook"
+_ORIGIN = "https://api.partner.example.org"
+_URL = f"{_ORIGIN}/hook"
 _RETRY_AT_ONCE = (timedelta(0), timedelta(0))
 """
 Two retries without waiting: 3 attempts in all.
@@ -81,11 +82,14 @@ class _Setup:
     Retries at once (_RETRY_AT_ONCE), so a test does not wait.
     """
 
-    def new_notifier(self, *, enabled: bool = True,
-                     retry_delays: tuple[timedelta, ...] = _RETRY_AT_ONCE) -> WebhookNotifier:
+    def new_notifier(self, *, enabled: bool = True, url_origins: Optional[list[str]] = None,
+                     retry_delays: tuple[timedelta, ...] = _RETRY_AT_ONCE,
+                     transport: Optional[httpx.AsyncBaseTransport] = None) -> WebhookNotifier:
         return WebhookNotifier(users=self.users, deliveries=self.deliveries, events=[self.event],
-                               http_client=httpx.AsyncClient(transport=httpx.MockTransport(self.platform.handle)),
-                               enabled=enabled, retry_delays=retry_delays)
+                               http_client=httpx.AsyncClient(
+                                   transport=transport or httpx.MockTransport(self.platform.handle)),
+                               enabled=enabled, url_origins=[_ORIGIN] if url_origins is None else url_origins,
+                               retry_delays=retry_delays)
 
     async def stored(self, delivery_id: str):
         return await self.deliveries.find_by_id(delivery_id)
@@ -292,6 +296,8 @@ class TestAttempt:
         assert actual.status == DeliveryStatus.FAILED
         assert actual.attempts == 3
         assert actual.last_error == "HTTP 503"
+        # AND the outcome of every attempt is kept
+        assert [(attempt.status_code, attempt.error) for attempt in actual.history] == [(503, "HTTP 503")] * 3
 
     @pytest.mark.asyncio
     async def test_a_retry_uses_the_current_webhook_and_data(self, setup: Awaitable[_Setup]):
@@ -329,6 +335,45 @@ class TestAttempt:
         actual = await s.stored(given_id)
         assert actual.status == DeliveryStatus.FAILED
         assert actual.last_error == "webhook removed"
+
+    @pytest.mark.asyncio
+    async def test_failed_when_the_origin_is_no_longer_allowed(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a recorded delivery, then the operator stops allowing the origin of the webhook
+        given_id = await s.notifier.emit(WebhookEvent.CONVERSATION_COMPLETED, "uid-1", {"session_id": 1})
+        notifier = s.new_notifier(url_origins=["https://other.example.org"])
+
+        # WHEN it is attempted
+        await notifier.attempt()
+
+        # THEN nothing is sent, and it is failed
+        assert s.platform.requests == []
+        actual = await s.stored(given_id)
+        assert actual.status == DeliveryStatus.FAILED
+        assert actual.last_error == "origin not allowed"
+
+    @pytest.mark.asyncio
+    async def test_a_platform_that_does_not_answer_in_time_is_a_timeout(self, setup: Awaitable[_Setup],
+                                                                         mocker: pytest_mock.MockerFixture):
+        s = await setup
+        # GIVEN a recorded delivery, and a platform that answers after the deadline of the whole request
+        # (httpx's own timeout is per network operation, and not enforced by the mock transport)
+        mocker.patch("app.integration.webhooks.notifier.REQUEST_TIMEOUT_SECONDS", 0.05)
+
+        async def _slow_platform(_: httpx.Request) -> httpx.Response:
+            await asyncio.sleep(5)
+            return httpx.Response(200)
+
+        notifier = s.new_notifier(transport=httpx.MockTransport(_slow_platform))
+        given_id = await notifier.emit(WebhookEvent.CONVERSATION_COMPLETED, "uid-1", {"session_id": 1})
+
+        # WHEN it is attempted
+        await asyncio.wait_for(notifier.attempt(), timeout=2)
+
+        # THEN the attempt gives up at the deadline, and it is retried later
+        actual = await s.stored(given_id)
+        assert actual.status == DeliveryStatus.PENDING
+        assert actual.last_error == "timeout"
 
     @pytest.mark.asyncio
     async def test_retried_when_the_data_is_not_ready(self, setup: Awaitable[_Setup]):

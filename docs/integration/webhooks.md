@@ -143,7 +143,7 @@ When an attempt fails, Compass tries again after 1 minute, 5 minutes, 30 minutes
   latest call, with the results as they are at that moment.
 - When Compass cannot read the conversation at the time of an attempt, the attempt fails and is retried. Compass does not send incomplete results.
 
-Compass stores the outcome of every notification. Ask the operator if one did not reach you. The results stay available from the results endpoint whether or not a notification arrived.
+Compass stores the outcome of every attempt of every notification. Ask the operator if one did not reach you. The results stay available from the results endpoint whether or not a notification arrived.
 
 **For the future**
 

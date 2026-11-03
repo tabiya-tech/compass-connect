@@ -31,6 +31,18 @@ class DeliveryStatus(Enum):
     FAILED = "failed"
 
 
+class WebhookAttempt(BaseModel):
+    """
+    The outcome of one attempt to send a delivery.
+    """
+    at: datetime
+    status_code: Optional[int] = None
+    error: Optional[str] = None
+    """
+    None if the platform took it.
+    """
+
+
 class WebhookDelivery(BaseModel):
     """
     One notification and the outcome of its attempts, as stored. Neither the body nor the data are kept: each attempt
@@ -53,6 +65,11 @@ class WebhookDelivery(BaseModel):
     one backend process today, but the lease also makes an attempt interrupted by a restart be retried once the lease
     is over, and keeps it right if several instances run the retries.
     """
+    claim_id: Optional[str] = None
+    """
+    Set by every claim. Only the attempt that holds the claim saves its outcome: one that outlived its lease cannot
+    overwrite the outcome of the attempt that claimed the delivery after it.
+    """
     url: Optional[str] = None
     """
     Where the last attempt was sent.
@@ -60,4 +77,8 @@ class WebhookDelivery(BaseModel):
     last_attempt_at: Optional[datetime] = None
     last_status_code: Optional[int] = None
     last_error: Optional[str] = None
+    history: list[WebhookAttempt] = Field(default_factory=list)
+    """
+    Every attempt, oldest first. The last_* fields are the last of them.
+    """
     created_at: datetime

@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta
 from typing import Mapping, Optional
 
@@ -5,7 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
-from app.integration.webhooks.types import WebhookDelivery, DeliveryStatus, WebhookEvent
+from app.integration.webhooks.types import WebhookDelivery, DeliveryStatus, WebhookEvent, WebhookAttempt
 from app.server_dependencies.database_collections import Collections
 from common_libs.time_utilities import datetime_to_mongo_date, mongo_date_to_datetime
 
@@ -37,10 +38,13 @@ class WebhookDeliveryRepository:
             attempts=doc["attempts"],
             next_attempt_at=mongo_date_to_datetime(doc["next_attempt_at"]),
             lease_until=mongo_date_to_datetime(doc["lease_until"]),
+            claim_id=doc.get("claim_id"),
             url=doc.get("url"),
             last_attempt_at=mongo_date_to_datetime(doc.get("last_attempt_at")),
             last_status_code=doc.get("last_status_code"),
             last_error=doc.get("last_error"),
+            history=[WebhookAttempt(at=mongo_date_to_datetime(attempt["at"]), status_code=attempt.get("status_code"),
+                                    error=attempt.get("error")) for attempt in doc.get("history", [])],
             created_at=mongo_date_to_datetime(doc["created_at"]),
         )
 
@@ -55,6 +59,8 @@ class WebhookDeliveryRepository:
             "last_attempt_at": _date(delivery.last_attempt_at),
             "last_status_code": delivery.last_status_code,
             "last_error": delivery.last_error,
+            "history": [{"at": datetime_to_mongo_date(attempt.at), "status_code": attempt.status_code,
+                         "error": attempt.error} for attempt in delivery.history],
         }
 
     async def insert(self, delivery: WebhookDelivery) -> bool:
@@ -68,6 +74,7 @@ class WebhookDeliveryRepository:
                 "external_id": delivery.external_id,
                 "event_ref": delivery.event_ref,
                 "created_at": datetime_to_mongo_date(delivery.created_at),
+                "claim_id": delivery.claim_id,
                 **self._outcome_fields(delivery),
             })
             return True
@@ -91,14 +98,19 @@ class WebhookDeliveryRepository:
                 "next_attempt_at": {"$lte": datetime_to_mongo_date(now)},
                 "lease_until": {"$lte": datetime_to_mongo_date(now)},
             },
-            {"$set": {"lease_until": datetime_to_mongo_date(now + lease)}},
+            {"$set": {"lease_until": datetime_to_mongo_date(now + lease), "claim_id": str(uuid.uuid4())}},
             sort=[("next_attempt_at", 1)],
             return_document=ReturnDocument.AFTER,
         )
         return self._from_db_doc(doc) if doc else None
 
-    async def save_outcome(self, delivery: WebhookDelivery) -> None:
+    async def save_outcome(self, delivery: WebhookDelivery) -> bool:
         """
-        Store the outcome of an attempt, by the attempt that holds the delivery.
+        Store the outcome of an attempt, by the attempt that holds the delivery. Nothing is stored if another attempt
+        claimed it since (this one outlived its lease).
+
+        :return: whether it was stored
         """
-        await self._collection.update_one({"_id": {"$eq": delivery.id}}, {"$set": self._outcome_fields(delivery)})
+        result = await self._collection.update_one({"_id": {"$eq": delivery.id}, "claim_id": {"$eq": delivery.claim_id}},
+                                                   {"$set": self._outcome_fields(delivery)})
+        return result.matched_count == 1

@@ -647,7 +647,7 @@ class TestConversationCompletedWebhook:
         notifier = WebhookNotifier(users=s.users, deliveries=WebhookDeliveryRepository(s.db),
                                    events=[ConversationCompleted(s.service.get_results)],
                                    http_client=httpx.AsyncClient(transport=httpx.MockTransport(_platform)),
-                                   enabled=True)
+                                   enabled=True, url_origins=[_PARTNER_API_ORIGIN])
 
         # WHEN the end of the conversation is emitted, as the conversation service does, and then sent
         user_id = (await s.users.find_by_external_id("ext-1")).user_id
