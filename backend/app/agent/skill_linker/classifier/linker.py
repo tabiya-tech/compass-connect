@@ -6,10 +6,9 @@ from app.agent.experience.work_type import WorkType
 from app.agent.skill_linker.classifier.adapters import ClassifierAdapterV1, ClassifierAdapterV2, \
     IClassifierAdapter
 from app.agent.skill_linker.classifier.config import ClassifierSkillLinkerConfig
-from app.agent.skill_linker.classifier.client import ClassifierClient, ClassifierServiceError
+from app.agent.skill_linker.classifier.client import ClassifierApiVersion, ClassifierClient, ClassifierServiceError
 from app.agent.skill_linker.classifier.skill_ranking import rank_skills
 from app.agent.skill_linker.linker import ISkillLinker, SkillLinkerResponse
-from app.agent.skill_linker.config import SkillLinkerType
 from app.countries import Country
 from app.vector_search.esco_search_service import SkillSearchService
 from common_libs.observability.tracing import traced_observation, update_observation
@@ -25,7 +24,7 @@ class ClassifierSkillLinker(ISkillLinker):
     """
 
     def __init__(self, *,
-                 version: SkillLinkerType,
+                 version: ClassifierApiVersion,
                  client: ClassifierClient,
                  skill_search_service: Optional[SkillSearchService] = None,
                  config: Optional[ClassifierSkillLinkerConfig] = None):
@@ -73,14 +72,14 @@ class ClassifierSkillLinker(ISkillLinker):
 
 
 def _create_adapter(*,
-                    version: SkillLinkerType,
+                    version: ClassifierApiVersion,
                     client: ClassifierClient,
                     skill_search_service: Optional[SkillSearchService],
                     config: ClassifierSkillLinkerConfig) -> IClassifierAdapter:
-    if version == SkillLinkerType.CLASSIFIER_V2:
+    if version == ClassifierApiVersion.V2:
         return ClassifierAdapterV2(client=client, config=config)
-    if version == SkillLinkerType.CLASSIFIER_V1:
+    if version == ClassifierApiVersion.V1:
         if skill_search_service is None:
             raise ValueError("The classifier v1 skill linker requires a skill search service to resolve the matched labels")
         return ClassifierAdapterV1(client=client, config=config, skill_search_service=skill_search_service)
-    raise ValueError(f"ClassifierSkillLinker does not support the skill linker type: {version.value}")
+    raise ValueError(f"ClassifierSkillLinker does not support the classifier API version: {version}")

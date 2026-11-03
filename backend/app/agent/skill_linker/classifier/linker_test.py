@@ -3,11 +3,11 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from app.agent.experience.work_type import WorkType
-from app.agent.skill_linker.classifier import ClassifierSkillLinker, ClassifierSkillLinkerConfig
+from app.agent.skill_linker.classifier import ClassifierApiVersion, ClassifierSkillLinkerConfig
 from app.agent.skill_linker.classifier.adapters import ClassifierAdapterV1, ClassifierAdapterV2
 from app.agent.skill_linker.classifier.client import ClassifierClient, ClassifierServiceError, \
     ClassifierV2Response
-from app.agent.skill_linker.config import SkillLinkerType
+from app.agent.skill_linker.classifier.linker import ClassifierSkillLinker
 from app.countries import Country
 
 
@@ -28,26 +28,19 @@ async def _execute(linker: ClassifierSkillLinker):
 
 
 class TestInit:
-    def test_rejects_non_classifier_version(self):
-        # GIVEN the linking and ranking pipeline type
-        # WHEN the classifier linker is created with it
-        # THEN a ValueError is raised
-        with pytest.raises(ValueError):
-            ClassifierSkillLinker(version=SkillLinkerType.LINKING_AND_RANKING_PIPELINE, client=MagicMock())
-
     def test_v1_requires_skill_search_service(self):
-        # GIVEN the v1 classifier type and no skill search service
+        # GIVEN the v1 classifier API version and no skill search service
         # WHEN the classifier linker is created
         # THEN a ValueError is raised
         with pytest.raises(ValueError):
-            ClassifierSkillLinker(version=SkillLinkerType.CLASSIFIER_V1, client=MagicMock())
+            ClassifierSkillLinker(version=ClassifierApiVersion.V1, client=MagicMock())
 
     @pytest.mark.parametrize("version, expected_adapter_class", [
-        (SkillLinkerType.CLASSIFIER_V1, ClassifierAdapterV1),
-        (SkillLinkerType.CLASSIFIER_V2, ClassifierAdapterV2),
+        (ClassifierApiVersion.V1, ClassifierAdapterV1),
+        (ClassifierApiVersion.V2, ClassifierAdapterV2),
     ])
-    def test_uses_the_adapter_of_the_version(self, version: SkillLinkerType, expected_adapter_class: type):
-        # GIVEN a classifier version
+    def test_uses_the_adapter_of_the_version(self, version: ClassifierApiVersion, expected_adapter_class: type):
+        # GIVEN a classifier API version
         # WHEN the classifier linker is created
         linker = ClassifierSkillLinker(version=version, client=MagicMock(), skill_search_service=MagicMock())
 
@@ -67,7 +60,7 @@ class TestExecute:
         given_client = MagicMock(spec=ClassifierClient)
         given_client.classify_v2 = AsyncMock(return_value=given_response)
         # AND a classifier v2 linker that keeps 1 top skill
-        linker = ClassifierSkillLinker(version=SkillLinkerType.CLASSIFIER_V2, client=given_client,
+        linker = ClassifierSkillLinker(version=ClassifierApiVersion.V2, client=given_client,
                                        config=ClassifierSkillLinkerConfig(number_of_top_skills=1))
 
         # WHEN the linker is executed
@@ -85,7 +78,7 @@ class TestExecute:
         # GIVEN a classifier that fails
         given_client = MagicMock(spec=ClassifierClient)
         given_client.classify_v2 = AsyncMock(side_effect=ClassifierServiceError("boom"))
-        linker = ClassifierSkillLinker(version=SkillLinkerType.CLASSIFIER_V2, client=given_client)
+        linker = ClassifierSkillLinker(version=ClassifierApiVersion.V2, client=given_client)
 
         # WHEN the linker is executed
         actual_response = await _execute(linker)

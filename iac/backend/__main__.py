@@ -123,6 +123,7 @@ def main():
         skill_linker=getenv("BACKEND_SKILL_LINKER", False, False),
         classifier_api_url=getenv("CLASSIFIER_API_URL", False, False),
         classifier_api_key=getenv("CLASSIFIER_API_KEY", True, False),
+        classifier_api_version=getenv("CLASSIFIER_API_VERSION", False, False),
 
         # Phase transition behavior (optional)
         inline_phase_transition=getenv("COMPASS_INLINE_PHASE_TRANSITION", False, False),

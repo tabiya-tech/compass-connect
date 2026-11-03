@@ -7,21 +7,13 @@ class SkillLinkerType(str, Enum):
     Selected via the BACKEND_SKILL_LINKER environment variable.
     """
 
-    LINKING_AND_RANKING_PIPELINE = "linking_and_ranking_pipeline"
+    LLM_PIPELINE = "llm_pipeline"
     """
     The original, LLM based linking and ranking pipeline (clustering, occupation inference, skill linking and ranking).
     """
 
-    CLASSIFIER_V1 = "classifier_v1"
+    CLASSIFIER = "classifier"
     """
-    The Tabiya classifier API, using the /v1/classify endpoint.
+    The Tabiya classifier API, its version is selected via the CLASSIFIER_API_VERSION environment variable
+    (see app.agent.skill_linker.classifier.ClassifierApiVersion).
     """
-
-    CLASSIFIER_V2 = "classifier_v2"
-    """
-    The Tabiya classifier API, using the /v2/classify endpoint.
-    """
-
-    @property
-    def is_classifier(self) -> bool:
-        return self in (SkillLinkerType.CLASSIFIER_V1, SkillLinkerType.CLASSIFIER_V2)
