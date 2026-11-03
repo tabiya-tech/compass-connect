@@ -7,8 +7,8 @@ from app.conversations.phase_state_machine import JourneyPhase
 from app.agent.agent_types import AgentInput, AgentOutput, AgentType
 from app.agent.explore_experiences_agent_director import ExploreExperiencesAgentDirector
 from app.agent.farewell_agent import FarewellAgent
-from app.agent.skill_linker.skill_linker import ISkillLinker
-from app.agent.skill_linker.linking_and_ranking_pipeline import ExperiencePipelineConfig
+from app.agent.skill_linker.linker import ISkillLinker
+from app.agent.skill_linker.llm_pipeline import ExperiencePipelineConfig
 from app.agent.preference_elicitation_agent.agent import PreferenceElicitationAgent
 from app.agent.recommender_advisor_agent.agent import RecommenderAdvisorAgent
 from app.matching.get_service import get_matching_service

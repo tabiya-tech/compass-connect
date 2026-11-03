@@ -46,7 +46,7 @@ from app.app_config import ApplicationConfig, LLMProvider, set_application_confi
     DEFAULT_HANDOFF_LINK_TTL_MINUTES
 from app.version.utils import load_version_info
 from app.agent.config import ModelTier
-from app.agent.skill_linker.skill_linker_type import SkillLinkerType
+from app.agent.skill_linker.config import SkillLinkerType
 from common_libs.llm.models_utils import resolve_model_name
 from common_libs.logging.log_utilities import setup_logging_config
 from common_libs.observability.config import TracingConfig, parse_tracing_config
