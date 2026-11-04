@@ -4,6 +4,7 @@ from typing import Mapping, Any, TypeAlias, Union, Optional
 
 from pydantic import BaseModel, Field, model_validator, json
 
+from app.channels.types import Channel
 from app.conversations.feedback.services.types import AnsweredQuestions
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
 
@@ -140,6 +141,17 @@ class UserPreferences(BaseModel):
     """
     return_url - Where to send a user created by the integration API back to the other platform.
     """
+    # validate_default so that use_enum_values also turns the default into its value; else the default stays an Enum,
+    # which the mongo driver cannot encode
+    channel: Channel = Field(default=Channel.WEB_APP, validate_default=True)
+    """
+    channel - Where the user talks to Compass. Users created through a chat bot get their bot channel.
+    """
+    channel_user_id: str | None = None
+    """
+    channel_user_id - The id of the user on their bot channel (e.g. the Telegram user id). None for the web app.
+    Personal data: never log it.
+    """
     experiments: Experiments = Field(default_factory=dict)
     """
     experiments - A dictionary mapping experiment namespaces to their configuration
@@ -176,6 +188,8 @@ class UserPreferences(BaseModel):
             ),
             experiments=doc.get("experiments", {}),
             return_url=doc.get("return_url") or None,
+            channel=doc.get("channel") or Channel.WEB_APP,
+            channel_user_id=doc.get("channel_user_id"),
         )
 
     class Config:

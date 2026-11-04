@@ -58,6 +58,9 @@ def _mock_user_preference_repository() -> IUserPreferenceRepository:
         async def get_user_preference_by_user_id(self, user_id: str) -> UserPreferences | None:
             raise NotImplementedError()
 
+        async def get_user_preference_by_channel_user_id(self, channel, channel_user_id: str):
+            raise NotImplementedError()
+
         async def get_experiments_by_user_ids(self, user_ids: list[str]) -> list[UserPreferences]:
             raise NotImplementedError()
 

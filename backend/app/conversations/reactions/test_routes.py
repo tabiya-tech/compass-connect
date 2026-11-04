@@ -58,6 +58,9 @@ def _create_test_client_with_mocks(auth) -> TestClientWithMocks:
         async def get_user_preference_by_user_id(self, user_id: str) -> UserPreferences:
             raise NotImplementedError()
 
+        async def get_user_preference_by_channel_user_id(self, channel, channel_user_id: str):
+            raise NotImplementedError()
+
         async def update_user_preference(self, user_id: str,
                                          request: UserPreferencesRepositoryUpdateRequest) -> UserPreferences:
             raise NotImplementedError()
