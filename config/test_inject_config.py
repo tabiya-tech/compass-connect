@@ -26,19 +26,22 @@ class UpdateFrontendEnvTest(unittest.TestCase):
         inject_config.update_frontend_env(config, self.env_js)
         return self.env_js.read_text()
 
+    def inject_overrides(self, overrides):
+        return self.inject({"i18n": {"ui": {"localeTextOverrides": overrides}}})
+
     def test_replaces_a_text_override_with_escapes_verbatim(self):
         # GIVEN text overrides with a line break, a backslash and quotes are injected
-        self.inject({"strings": {"es-ES": {"home.hero.body": "uno\ndos"}}})
+        self.inject_overrides({"es-ES": {"home.hero.body": "uno\ndos"}})
         given_overrides = {"es-ES": {"home.hero.body": 'línea uno\nlínea dos \\ "tres"'}}
 
         # WHEN new ones replace them
-        actual_content = self.inject({"strings": given_overrides})
+        actual_content = self.inject_overrides(given_overrides)
 
         # THEN env.js holds them as serialized, with no raw line break inside the string
-        actual_overrides = inject_config.extract_existing_frontend_json_value(actual_content, "FRONTEND_STRINGS_OVERRIDES")
+        actual_overrides = inject_config.extract_existing_frontend_json_value(actual_content, "FRONTEND_LOCALE_TEXT_OVERRIDES")
         self.assertEqual(actual_overrides, given_overrides)
         # AND the key appears once
-        self.assertEqual(actual_content.count("FRONTEND_STRINGS_OVERRIDES"), 1)
+        self.assertEqual(actual_content.count("FRONTEND_LOCALE_TEXT_OVERRIDES"), 1)
 
     def test_replaces_a_text_value_with_escapes_verbatim(self):
         # GIVEN a text value is injected
@@ -51,35 +54,35 @@ class UpdateFrontendEnvTest(unittest.TestCase):
         self.assertIn('FRONTEND_META_DESCRIPTION: btoa("C:\\\\path \\"quoted\\""),', actual_content)
 
     def overrides_in(self, content):
-        return inject_config.extract_existing_frontend_json_value(content, "FRONTEND_STRINGS_OVERRIDES")
+        return inject_config.extract_existing_frontend_json_value(content, "FRONTEND_LOCALE_TEXT_OVERRIDES")
 
     def test_replaces_the_text_overrides_with_the_ones_supplied(self):
         # GIVEN text overrides for two locales are injected
-        self.inject({"strings": {"es-ES": {"home.hero.body": "texto"}, "en-US": {"common.ok": "Fine"}}})
+        self.inject_overrides({"es-ES": {"home.hero.body": "texto"}, "en-US": {"common.ok": "Fine"}})
 
         # WHEN a config with one locale only is injected
-        actual_content = self.inject({"strings": {"en-US": {"common.ok": "Okay"}}})
+        actual_content = self.inject_overrides({"en-US": {"common.ok": "Okay"}})
 
         # THEN the overrides of the removed locale are gone
         self.assertEqual(self.overrides_in(actual_content), {"en-US": {"common.ok": "Okay"}})
 
-    def test_removes_every_text_override_when_strings_is_empty(self):
+    def test_removes_every_text_override_when_they_are_empty(self):
         # GIVEN text overrides are injected
-        self.inject({"strings": {"es-ES": {"home.hero.body": "texto"}}})
+        self.inject_overrides({"es-ES": {"home.hero.body": "texto"}})
 
-        # WHEN an empty strings block is injected
-        actual_content = self.inject({"strings": {}})
+        # WHEN empty text overrides are injected
+        actual_content = self.inject_overrides({})
 
         # THEN no override is left, so the bundled texts are used
         self.assertEqual(self.overrides_in(actual_content), {})
 
-    def test_keeps_the_text_overrides_when_strings_is_not_supplied(self):
+    def test_keeps_the_text_overrides_when_they_are_not_supplied(self):
         # GIVEN text overrides are injected
         given_overrides = {"es-ES": {"home.hero.body": "texto"}}
-        self.inject({"strings": given_overrides})
+        self.inject_overrides(given_overrides)
 
-        # WHEN a config without a strings block is injected
-        actual_content = self.inject({"branding": {"appName": "Other"}})
+        # WHEN a config with other i18n.ui settings but without text overrides is injected
+        actual_content = self.inject({"i18n": {"ui": {"defaultLocale": "es-ES"}}})
 
         # THEN the overrides are kept
         self.assertEqual(self.overrides_in(actual_content), given_overrides)
@@ -105,10 +108,10 @@ class UpdateFrontendEnvTest(unittest.TestCase):
 
     def test_replaces_a_text_override_containing_closing_parentheses(self):
         # GIVEN a text override with parentheses and a comma, as in the end of the btoa(...) expression, is injected
-        self.inject({"strings": {"en-US": {"home.hero.body": "Discover skills (from work (paid)), study and life."}}})
+        self.inject_overrides({"en-US": {"home.hero.body": "Discover skills (from work (paid)), study and life."}})
 
         # WHEN a new one replaces it
-        actual_content = self.inject({"strings": {"en-US": {"home.hero.body": "Replaced"}}})
+        actual_content = self.inject_overrides({"en-US": {"home.hero.body": "Replaced"}})
 
         # THEN the whole old override is replaced, leaving none of its text behind
         self.assertEqual(self.overrides_in(actual_content), {"en-US": {"home.hero.body": "Replaced"}})

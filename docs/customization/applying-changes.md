@@ -29,8 +29,9 @@ Connect. The [reference](reference.md) lists the variable of each setting.
 
 1. Copy `config/default.json` to a file named after your deployment, for example `config/connect.json`.
 2. Change the values in your file. Only the values you change need to be included: settings missing from your file
-   keep the value already in the backend `.env` and the frontend `env.js`. `strings` is the exception: when your file
-   has it, it replaces all the text overrides, so `"strings": {}` restores the built-in texts.
+   keep the value already in the backend `.env` and the frontend `env.js`. `i18n.ui.localeTextOverrides` is the
+   exception: when your file has it, it replaces all the text overrides, so `"localeTextOverrides": {}` restores the
+   built-in texts.
 3. From the `config` directory, run the inject script:
 
    ```bash

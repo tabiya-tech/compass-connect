@@ -87,7 +87,6 @@
     "disabled": [],
     "hideProgramSkills": false
   },
-  "strings": {},
   "skillsReport": {
     "logos": [
       {
@@ -136,7 +135,8 @@
         "en-GB",
         "es-ES",
         "es-AR"
-      ]
+      ],
+      "localeTextOverrides": {}
     },
     "conversation": {
       "default_locale": "en-US",

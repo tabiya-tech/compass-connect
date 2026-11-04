@@ -69,7 +69,7 @@ describe("utils", () => {
     });
   });
 
-  describe("applyStringsOverrides", () => {
+  describe("applyLocaleTextOverrides", () => {
     const givenResources = {
       home: { hero: { headline1: "Let's discover", headline2: "Your skills" } },
       common: { ok: "OK" },
@@ -81,7 +81,7 @@ describe("utils", () => {
 
     test("should return the resources unchanged when there are no overrides", () => {
       // WHEN no overrides are applied
-      const actualResources = Utils.applyStringsOverrides(Locale.EN_US, givenResources, undefined);
+      const actualResources = Utils.applyLocaleTextOverrides(Locale.EN_US, givenResources, undefined);
 
       // THEN the same resources are returned
       expect(actualResources).toBe(givenResources);
@@ -92,7 +92,7 @@ describe("utils", () => {
       const givenOverrides = { "home.hero.headline1": "Discover", "common.ok": "Fine" };
 
       // WHEN the overrides are applied
-      const actualResources = Utils.applyStringsOverrides(Locale.EN_US, givenResources, givenOverrides);
+      const actualResources = Utils.applyLocaleTextOverrides(Locale.EN_US, givenResources, givenOverrides);
 
       // THEN the named texts are replaced and the others kept
       expect(actualResources).toEqual({
@@ -111,7 +111,7 @@ describe("utils", () => {
       ["is not a string", { "home.hero.headline1": 42 }],
     ])("should skip an override that %s, with a warning", (_description, givenOverrides) => {
       // WHEN the override is applied
-      const actualResources = Utils.applyStringsOverrides(Locale.EN_US, givenResources, givenOverrides);
+      const actualResources = Utils.applyLocaleTextOverrides(Locale.EN_US, givenResources, givenOverrides);
 
       // THEN the resources are unchanged
       expect(actualResources).toEqual(givenResources);

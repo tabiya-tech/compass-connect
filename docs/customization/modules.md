@@ -60,7 +60,7 @@ FRONTEND_SUPPORTED_LOCALES=["es-ES"]
 BACKEND_LANGUAGE_CONFIG={"default_locale":"es-ES","available_locales":[{"locale":"es-ES","date_format":"DD/MM/YYYY"}]}
 GLOBAL_COUNTRY_NAME=Your Country
 FRONTEND_PARTNER_LOGOS=[{"src":"https://www.example.org/logo.svg","alt":"Example Organization","height":40}]
-FRONTEND_STRINGS_OVERRIDES={"es-ES":{"home.hero.body":"Conversa con {{appName}} y descubre las habilidades que has ganado en tu trabajo, tus estudios y tu vida diaria. Al final obtendrás un informe de habilidades para compartir.","home.footer.collaboration":"{{appName}} es una herramienta gratuita de orientación profesional ofrecida por Example Organization en {{country}}."}}
+FRONTEND_LOCALE_TEXT_OVERRIDES={"es-ES":{"home.hero.body":"Conversa con {{appName}} y descubre las habilidades que has ganado en tu trabajo, tus estudios y tu vida diaria. Al final obtendrás un informe de habilidades para compartir.","home.footer.collaboration":"{{appName}} es una herramienta gratuita de orientación profesional ofrecida por Example Organization en {{country}}."}}
 ```
 
 - `home.hero.body` and `home.footer.collaboration` are the texts that mention the other modules and the default

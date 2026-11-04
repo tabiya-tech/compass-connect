@@ -23,9 +23,9 @@ Every setting, its environment variable and its page. With Docker, set the varia
 | `modules.hideProgramSkills` | `FRONTEND_HIDE_PROGRAM_SKILLS` | frontend | [Modules](modules.md#other-switches) |
 | `cv.enabled` | `GLOBAL_ENABLE_CV_UPLOAD` | backend and frontend | [Modules](modules.md#other-switches) |
 | `faq.tutorialVideoUrl` | `FRONTEND_FAQ_TUTORIAL_VIDEO_URL` | frontend | [Modules](modules.md#other-switches) |
-| `strings` | `FRONTEND_STRINGS_OVERRIDES` | frontend | [Interface Texts](texts.md) |
 | `i18n.ui.defaultLocale` | `FRONTEND_DEFAULT_LOCALE` | frontend | [Languages](languages.md) |
 | `i18n.ui.supportedLocales` | `FRONTEND_SUPPORTED_LOCALES` | frontend | [Languages](languages.md) |
+| `i18n.ui.localeTextOverrides` | `FRONTEND_LOCALE_TEXT_OVERRIDES` | frontend | [Interface Texts](texts.md) |
 | `i18n.conversation` | `BACKEND_LANGUAGE_CONFIG` | backend | [Languages](languages.md) |
 | `auth.disableLoginCode` | `GLOBAL_DISABLE_LOGIN_CODE` | frontend | [Sign-In](sign-in.md) |
 | `auth.disableRegistrationCode` | `GLOBAL_DISABLE_REGISTRATION_CODE` | backend and frontend | [Sign-In](sign-in.md) |

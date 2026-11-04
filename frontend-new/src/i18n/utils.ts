@@ -2,11 +2,11 @@ import { type Resource, type ResourceLanguage } from "i18next";
 import { Locale } from "./constants";
 
 /**
- * Returns the resources of the locale with the text overrides of the deployment (see `getStringsOverrides`) applied.
+ * Returns the resources of the locale with the text overrides of the deployment (see `getLocaleTextOverrides`) applied.
  * Each key is dotted, as in the translation files (e.g. `home.hero.headline1`), and must name an existing text.
  * Overrides that are not text or name no existing text are skipped with a warning, so a typo never breaks the page.
  */
-export function applyStringsOverrides(
+export function applyLocaleTextOverrides(
   locale: Locale,
   resourceLanguage: ResourceLanguage,
   overrides: Record<string, unknown> | undefined
