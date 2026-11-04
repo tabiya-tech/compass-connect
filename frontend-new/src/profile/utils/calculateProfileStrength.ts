@@ -2,7 +2,7 @@ import { ConversationPhase } from "src/chat/chatProgressbar/types";
 import { Experience, WorkType } from "src/experiences/experienceService/experiences.types";
 import type { ModuleSummary } from "src/careerReadiness/types";
 import type { UserSectorEngagementItem } from "src/careerExplorer/services/CareerExplorerService";
-import { ModuleId } from "src/home/modulesService";
+import { PlatformModule } from "src/home/modulesService";
 
 export interface ProfileStrengthInput {
   phase: ConversationPhase | null;
@@ -14,7 +14,7 @@ export interface ProfileStrengthInput {
   modules: ModuleSummary[];
   sectors: UserSectorEngagementItem[];
   /** The modules of the deployment: components of other modules are left out. Defaults to every module. */
-  enabledModules?: ModuleId[];
+  enabledModules?: PlatformModule[];
 }
 
 export interface ProfileStrengthComponent {
@@ -35,12 +35,12 @@ export type ProfileStrengthBreakdown = Partial<Record<ProfileStrengthComponentKe
 };
 
 // The module each component measures. Modules without a component (e.g. faq) do not change the score.
-const COMPONENT_MODULE: Record<ProfileStrengthComponentKey, ModuleId> = {
-  experienceCollection: ModuleId.SKILLS_DISCOVERY,
-  skillsDiscovery: ModuleId.SKILLS_DISCOVERY,
-  preferences: ModuleId.SKILLS_DISCOVERY,
-  careerReadiness: ModuleId.JOB_READINESS,
-  careerExplorer: ModuleId.CAREER_EXPLORER,
+const COMPONENT_MODULE: Record<ProfileStrengthComponentKey, PlatformModule> = {
+  experienceCollection: PlatformModule.SKILLS_DISCOVERY,
+  skillsDiscovery: PlatformModule.SKILLS_DISCOVERY,
+  preferences: PlatformModule.SKILLS_DISCOVERY,
+  careerReadiness: PlatformModule.JOB_READINESS,
+  careerExplorer: PlatformModule.CAREER_EXPLORER,
 };
 
 // Component weights, summing to 100.

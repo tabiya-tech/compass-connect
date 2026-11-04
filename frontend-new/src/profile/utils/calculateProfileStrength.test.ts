@@ -7,7 +7,7 @@ import { ConversationPhase } from "src/chat/chatProgressbar/types";
 import { DiveInPhase, Experience, WorkType } from "src/experiences/experienceService/experiences.types";
 import type { ModuleSummary, ModuleStatus } from "src/careerReadiness/types";
 import type { UserSectorEngagementItem } from "src/careerExplorer/services/CareerExplorerService";
-import { ModuleId } from "src/home/modulesService";
+import { PlatformModule } from "src/home/modulesService";
 
 const getModule = (status: ModuleStatus, index: number = 0): ModuleSummary => ({
   id: `module-${index}`,
@@ -414,12 +414,12 @@ describe("calculateProfileStrength", () => {
         getDefaultInput({
           ...givenProfile,
           enabledModules: [
-            ModuleId.SKILLS_DISCOVERY,
-            ModuleId.CAREER_EXPLORER,
-            ModuleId.JOB_READINESS,
-            ModuleId.KNOWLEDGE_HUB,
-            ModuleId.JOB_MATCHING,
-            ModuleId.FAQ,
+            PlatformModule.SKILLS_DISCOVERY,
+            PlatformModule.CAREER_EXPLORER,
+            PlatformModule.JOB_READINESS,
+            PlatformModule.KNOWLEDGE_HUB,
+            PlatformModule.JOB_MATCHING,
+            PlatformModule.FAQ,
           ],
         })
       );
@@ -434,7 +434,7 @@ describe("calculateProfileStrength", () => {
       // GIVEN only the skills conversation (and modules without a component) is enabled
       const input = getDefaultInput({
         ...completedConversation,
-        enabledModules: [ModuleId.SKILLS_DISCOVERY, ModuleId.FAQ],
+        enabledModules: [PlatformModule.SKILLS_DISCOVERY, PlatformModule.FAQ],
       });
 
       // WHEN the profile strength is calculated
@@ -452,7 +452,7 @@ describe("calculateProfileStrength", () => {
       // GIVEN the skills conversation is disabled
       const input = getDefaultInput({
         ...completedReadinessAndExplorer,
-        enabledModules: [ModuleId.CAREER_EXPLORER, ModuleId.JOB_READINESS, ModuleId.KNOWLEDGE_HUB],
+        enabledModules: [PlatformModule.CAREER_EXPLORER, PlatformModule.JOB_READINESS, PlatformModule.KNOWLEDGE_HUB],
       });
 
       // WHEN the profile strength is calculated
@@ -471,7 +471,7 @@ describe("calculateProfileStrength", () => {
       const input = getDefaultInput({
         ...completedConversation,
         modules: Array.from({ length: 3 }, (_, i) => getModule("COMPLETED", i)),
-        enabledModules: [ModuleId.SKILLS_DISCOVERY, ModuleId.JOB_READINESS],
+        enabledModules: [PlatformModule.SKILLS_DISCOVERY, PlatformModule.JOB_READINESS],
       });
 
       // WHEN the profile strength is calculated
@@ -487,7 +487,7 @@ describe("calculateProfileStrength", () => {
       const input = getDefaultInput({
         ...completedConversation,
         ...completedReadinessAndExplorer,
-        enabledModules: [ModuleId.SKILLS_DISCOVERY, ModuleId.CAREER_EXPLORER],
+        enabledModules: [PlatformModule.SKILLS_DISCOVERY, PlatformModule.CAREER_EXPLORER],
       });
 
       // WHEN the profile strength is calculated
@@ -502,7 +502,7 @@ describe("calculateProfileStrength", () => {
       // GIVEN only modules without a component are enabled
       const input = getDefaultInput({
         ...completedConversation,
-        enabledModules: [ModuleId.KNOWLEDGE_HUB, ModuleId.FAQ],
+        enabledModules: [PlatformModule.KNOWLEDGE_HUB, PlatformModule.FAQ],
       });
 
       // WHEN the profile strength is calculated

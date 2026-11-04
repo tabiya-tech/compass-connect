@@ -41,7 +41,7 @@ import { LocalesLabels } from "src/i18n/constants";
 import { useExperiencesDrawer } from "src/experiences/ExperiencesDrawerProvider";
 import { useUserProfileContext } from "src/profile/UserProfileContext";
 import { useRebuildProfile } from "src/chat/RebuildProfileContext";
-import { isModuleEnabled, ModuleId } from "src/home/modulesService";
+import { isModuleEnabled, PlatformModule } from "src/home/modulesService";
 
 const uniqueId = "c3a8f1d2-7b4e-4c9a-a5d6-8e3f2b1c0d9e";
 
@@ -123,8 +123,8 @@ const NavBar: React.FC<NavBarProps> = ({ headerColor = "primary" }) => {
   const currentPath = location.pathname;
   const isOnDashboard = currentPath === "/" || currentPath === "";
   const isOnPathways = currentPath.startsWith(routerPaths.KNOWLEDGE_HUB);
-  const isKnowledgeHubEnabled = isModuleEnabled(ModuleId.KNOWLEDGE_HUB);
-  const isFaqEnabled = isModuleEnabled(ModuleId.FAQ);
+  const isKnowledgeHubEnabled = isModuleEnabled(PlatformModule.KNOWLEDGE_HUB);
+  const isFaqEnabled = isModuleEnabled(PlatformModule.FAQ);
   const isOnFaq = currentPath === routerPaths.FAQ;
 
   const handleReportBug = useCallback(() => {

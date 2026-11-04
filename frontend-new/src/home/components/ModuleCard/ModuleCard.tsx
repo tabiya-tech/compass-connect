@@ -2,7 +2,7 @@ import React, { startTransition } from "react";
 import { Box, Card, CardActionArea, Typography, Chip, useTheme } from "@mui/material";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Module } from "src/home/modulesService";
+import { PlatformModuleConfig } from "src/home/modulesService";
 import { TranslationKey } from "src/react-i18next";
 import AutoAwesomeOutlined from "@mui/icons-material/AutoAwesomeOutlined";
 import SchoolOutlined from "@mui/icons-material/SchoolOutlined";
@@ -26,7 +26,7 @@ export const DATA_TEST_ID = {
 };
 
 export interface ModuleCardProps {
-  module: Module;
+  module: PlatformModuleConfig;
   badgeStatus?: BadgeStatus;
 }
 

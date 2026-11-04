@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import ModuleCard from "src/home/components/ModuleCard/ModuleCard";
-import { Module, ModuleId } from "src/home/modulesService";
+import { PlatformModuleConfig, PlatformModule } from "src/home/modulesService";
 
 const meta: Meta<typeof ModuleCard> = {
   title: "Home/ModuleCard",
@@ -26,8 +26,8 @@ export default meta;
 type Story = StoryObj<typeof ModuleCard>;
 
 // Mock module data using real translation keys
-const mockModule: Module = {
-  id: ModuleId.SKILLS_DISCOVERY,
+const mockModule: PlatformModuleConfig = {
+  id: PlatformModule.SKILLS_DISCOVERY,
   labelKey: "home.modules.skillsDiscovery",
   descriptionKey: "home.modules.skillsDiscoveryDesc",
   route: "/skills-interests",

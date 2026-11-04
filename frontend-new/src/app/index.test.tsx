@@ -20,7 +20,7 @@ import { routerPaths } from "src/app/routerPaths";
 import { AuthBroadcastChannel, AuthChannelMessage } from "src/auth/services/authBroadcastChannel/authBroadcastChannel";
 import * as EnvServiceModule from "src/envService";
 import { createHashRouter, RouteObject } from "react-router-dom";
-import { ModuleId } from "src/home/modulesService";
+import { PlatformModule } from "src/home/modulesService";
 
 // Mock UserProfileContext so route content renders without API calls
 jest.mock("src/profile/UserProfileContext", () => ({
@@ -253,7 +253,7 @@ describe("index", () => {
       // GIVEN the career readiness and job matching modules are disabled
       jest
         .spyOn(EnvServiceModule, "getDisabledModules")
-        .mockReturnValue([ModuleId.JOB_READINESS, ModuleId.JOB_MATCHING, ModuleId.FAQ]);
+        .mockReturnValue([PlatformModule.JOB_READINESS, PlatformModule.JOB_MATCHING, PlatformModule.FAQ]);
       jest.spyOn(AuthenticationStateService.prototype, "loadToken").mockImplementation(() => {});
 
       // WHEN the app is rendered
