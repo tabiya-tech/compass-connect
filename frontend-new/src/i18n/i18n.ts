@@ -2,10 +2,10 @@ import i18n, { type ResourceLanguage } from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { DEFAULT_LOCALE, FALL_BACK_LOCALE, Locale, SupportedLocales } from "./constants";
-import { applyStringsOverrides, constructLocaleResources } from "./utils";
+import { applyLocaleTextOverrides, constructLocaleResources } from "./utils";
 import { ConfigurationError } from "../error/commonErrors";
 import { parseEnvSupportedLocales } from "./languageContextMenu/parseEnvSupportedLocales";
-import { getProductName, getCountryName, getStringsOverrides } from "src/envService";
+import { getProductName, getCountryName, getLocaleTextOverrides } from "src/envService";
 
 // --- Import translations ---
 import enGb from "./locales/en-GB/translation.json";
@@ -29,12 +29,12 @@ import { updateLanguage } from "../auth/firebaseConfig";
 
 // The deployment's text overrides, merged into each locale before the resources are built,
 // so the locale's other names (e.g. `es` for es-ES) get them too.
-const stringsOverrides = getStringsOverrides();
-Object.keys(stringsOverrides)
+const localeTextOverrides = getLocaleTextOverrides();
+Object.keys(localeTextOverrides)
   .filter((locale) => !SupportedLocales.includes(locale as Locale))
   .forEach((locale) => console.warn(`Text overrides for unknown locale '${locale}', ignoring them`));
 const withOverrides = (locale: Locale, resourceLanguage: ResourceLanguage): ResourceLanguage =>
-  applyStringsOverrides(locale, resourceLanguage, stringsOverrides[locale]);
+  applyLocaleTextOverrides(locale, resourceLanguage, localeTextOverrides[locale]);
 
 const resources = {
   // For each locale, construct the locale resources for each possible case

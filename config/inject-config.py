@@ -59,12 +59,10 @@ FRONTEND_ENV_MAP: Dict[str, str] = {
     "FRONTEND_DISABLED_MODULES": "modules.disabled",
     "FRONTEND_HIDE_PROGRAM_SKILLS": "modules.hideProgramSkills",
 
-    # Text overrides
-    "FRONTEND_STRINGS_OVERRIDES": "strings",
-
     # i18n
     "FRONTEND_DEFAULT_LOCALE": "i18n.ui.defaultLocale",
     "FRONTEND_SUPPORTED_LOCALES": "i18n.ui.supportedLocales",
+    "FRONTEND_LOCALE_TEXT_OVERRIDES": "i18n.ui.localeTextOverrides",
 
     # Sensitive data Fields
     "FRONTEND_SENSITIVE_DATA_FIELDS": "sensitiveData.fields",
@@ -83,7 +81,7 @@ FRONTEND_JSON_FIELDS = {
     'FRONTEND_ILLUSTRATIONS',
     'FRONTEND_PARTNER_LOGOS',
     'FRONTEND_DISABLED_MODULES',
-    'FRONTEND_STRINGS_OVERRIDES',
+    'FRONTEND_LOCALE_TEXT_OVERRIDES',
     # Add more JSON.stringify fields here
 }
 
@@ -91,7 +89,7 @@ FRONTEND_JSON_FIELDS = {
 # The text overrides are the whole list of a deployment's texts, so removing one (or all, with {}) restores the
 # bundled wording. Fields missing from the config keep their value either way.
 FRONTEND_REPLACED_JSON_FIELDS = {
-    'FRONTEND_STRINGS_OVERRIDES',
+    'FRONTEND_LOCALE_TEXT_OVERRIDES',
 }
 
 

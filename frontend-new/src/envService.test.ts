@@ -31,7 +31,7 @@ import {
   getFaqTutorialVideoUrl,
   getPartnerLogos,
   getDisabledModules,
-  getStringsOverrides,
+  getLocaleTextOverrides,
   getCountryName,
   getProgramSkillsVisibility,
 } from "./envService";
@@ -298,55 +298,59 @@ describe("FRONTEND_DISABLED_MODULES Getter (getDisabledModules) tests", () => {
   });
 });
 
-describe("FRONTEND_STRINGS_OVERRIDES Getter (getStringsOverrides) tests", () => {
+describe("FRONTEND_LOCALE_TEXT_OVERRIDES Getter (getLocaleTextOverrides) tests", () => {
   const givenConfig = (value: string | undefined) =>
     Object.defineProperty(window, "tabiyaConfig", {
-      value: value === undefined ? {} : { FRONTEND_STRINGS_OVERRIDES: value },
+      value: value === undefined ? {} : { FRONTEND_LOCALE_TEXT_OVERRIDES: value },
       writable: true,
     });
   // base64 of the UTF-8 bytes, as the env.js generators write it
   const encode = (text: string) => btoa(String.fromCharCode(...Array.from(new TextEncoder().encode(text))));
 
-  test("should return an empty object when the FRONTEND_STRINGS_OVERRIDES is not set", () => {
-    // GIVEN the FRONTEND_STRINGS_OVERRIDES environment variable is not set
+  test("should return an empty object when the FRONTEND_LOCALE_TEXT_OVERRIDES is not set", () => {
+    // GIVEN the FRONTEND_LOCALE_TEXT_OVERRIDES environment variable is not set
     givenConfig(undefined);
-    // WHEN getStringsOverrides is called
+    // WHEN getLocaleTextOverrides is called
     // THEN expect it to return an empty object
-    expect(getStringsOverrides()).toEqual({});
+    expect(getLocaleTextOverrides()).toEqual({});
   });
 
   test("should return the decoded overrides, keeping accented characters", () => {
     // GIVEN overrides with accented characters
     const givenOverrides = { "es-ES": { "home.hero.headline1": "Descubramos tus habilidades y fortalezas también" } };
     givenConfig(encode(JSON.stringify(givenOverrides)));
-    // WHEN getStringsOverrides is called
+    // WHEN getLocaleTextOverrides is called
     // THEN expect it to return the overrides
-    expect(getStringsOverrides()).toEqual(givenOverrides);
+    expect(getLocaleTextOverrides()).toEqual(givenOverrides);
   });
 
   test("should drop a locale whose overrides are not an object, logging an error", () => {
     // GIVEN one locale's overrides are not an object
     givenConfig(encode(JSON.stringify({ "es-ES": { "common.ok": "Vale" }, "en-US": "foo" })));
-    // WHEN getStringsOverrides is called
+    // WHEN getLocaleTextOverrides is called
     // THEN expect only the valid locale to be returned
-    expect(getStringsOverrides()).toEqual({ "es-ES": { "common.ok": "Vale" } });
+    expect(getLocaleTextOverrides()).toEqual({ "es-ES": { "common.ok": "Vale" } });
     // AND an error to have been logged
     expect(console.error).toHaveBeenCalledWith(
-      new EnvError("FRONTEND_STRINGS_OVERRIDES: the overrides of 'en-US' must be a JSON object")
+      new EnvError("FRONTEND_LOCALE_TEXT_OVERRIDES: the overrides of 'en-US' must be a JSON object")
     );
   });
 
   test.each([
-    ["not valid JSON", "not-json", new EnvError("Error parsing FRONTEND_STRINGS_OVERRIDES JSON", expect.any(Error))],
-    ["a JSON array", JSON.stringify([]), new EnvError("FRONTEND_STRINGS_OVERRIDES must be a JSON object")],
+    [
+      "not valid JSON",
+      "not-json",
+      new EnvError("Error parsing FRONTEND_LOCALE_TEXT_OVERRIDES JSON", expect.any(Error)),
+    ],
+    ["a JSON array", JSON.stringify([]), new EnvError("FRONTEND_LOCALE_TEXT_OVERRIDES must be a JSON object")],
   ])(
-    "should return an empty object and log an error when the FRONTEND_STRINGS_OVERRIDES is %s",
+    "should return an empty object and log an error when the FRONTEND_LOCALE_TEXT_OVERRIDES is %s",
     (_d, givenValue, expectedError) => {
-      // GIVEN the FRONTEND_STRINGS_OVERRIDES environment variable is invalid
+      // GIVEN the FRONTEND_LOCALE_TEXT_OVERRIDES environment variable is invalid
       givenConfig(btoa(givenValue));
-      // WHEN getStringsOverrides is called
+      // WHEN getLocaleTextOverrides is called
       // THEN expect it to return an empty object
-      expect(getStringsOverrides()).toEqual({});
+      expect(getLocaleTextOverrides()).toEqual({});
       // AND an error to have been logged
       expect(console.error).toHaveBeenCalledWith(expectedError);
     }

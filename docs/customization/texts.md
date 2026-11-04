@@ -5,19 +5,23 @@ translation files. Texts you do not override keep their built-in translation.
 
 | Setting | `.env` variable | Values | Default |
 |---|---|---|---|
-| `strings` | `FRONTEND_STRINGS_OVERRIDES` | `{ "<locale>": { "<key>": "<text>" } }` | `{}` (built-in texts) |
+| `i18n.ui.localeTextOverrides` | `FRONTEND_LOCALE_TEXT_OVERRIDES` | `{ "<locale>": { "<key>": "<text>" } }` | `{}` (built-in texts) |
 
 ```bash
-FRONTEND_STRINGS_OVERRIDES={"es-ES":{"home.hero.headline1":"Descubramos","home.hero.body":"Conversa con {{appName}} y obtén tu informe de habilidades."}}
+FRONTEND_LOCALE_TEXT_OVERRIDES={"es-ES":{"home.hero.headline1":"Descubramos","home.hero.body":"Conversa con {{appName}} y obtén tu informe de habilidades."}}
 ```
 
 The same in a config file (see [Applying Changes](applying-changes.md#without-docker-local-development)):
 
 ```json
-"strings": {
-  "es-ES": {
-    "home.hero.headline1": "Descubramos",
-    "home.hero.body": "Conversa con {{appName}} y obtén tu informe de habilidades."
+"i18n": {
+  "ui": {
+    "localeTextOverrides": {
+      "es-ES": {
+        "home.hero.headline1": "Descubramos",
+        "home.hero.body": "Conversa con {{appName}} y obtén tu informe de habilidades."
+      }
+    }
   }
 }
 ```

@@ -22,7 +22,7 @@ export enum EnvVariables {
   FRONTEND_ENABLE_NEW_SESSION = "FRONTEND_ENABLE_NEW_SESSION",
   FRONTEND_FEATURES = "FRONTEND_FEATURES",
   FRONTEND_DISABLED_MODULES = "FRONTEND_DISABLED_MODULES",
-  FRONTEND_STRINGS_OVERRIDES = "FRONTEND_STRINGS_OVERRIDES",
+  FRONTEND_LOCALE_TEXT_OVERRIDES = "FRONTEND_LOCALE_TEXT_OVERRIDES",
   FRONTEND_DISABLE_SOCIAL_AUTH = "FRONTEND_DISABLE_SOCIAL_AUTH",
   FRONTEND_SUPPORTED_LOCALES = "FRONTEND_SUPPORTED_LOCALES",
   FRONTEND_DEFAULT_LOCALE = "FRONTEND_DEFAULT_LOCALE",
@@ -225,33 +225,35 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
- * Returns the interface text overrides of this deployment, configured via `FRONTEND_STRINGS_OVERRIDES` as a JSON object
+ * Returns the interface text overrides of this deployment, configured via `FRONTEND_LOCALE_TEXT_OVERRIDES` as a JSON object
  * of locales, each mapping translation keys (dotted, as in the translation files) to their text.
  *
  * Returns an empty object (no overrides) when the variable is unset, is not a JSON object, or cannot be parsed
  * (an `EnvError` is logged in the latter two cases). Locales whose value is not an object are dropped, with an `EnvError`.
- * The keys and texts themselves are checked when they are applied (see `applyStringsOverrides`).
+ * The keys and texts themselves are checked when they are applied (see `applyLocaleTextOverrides`).
  */
-export const getStringsOverrides = (): Record<string, Record<string, unknown>> => {
-  const jsonString = getEnv(EnvVariables.FRONTEND_STRINGS_OVERRIDES);
+export const getLocaleTextOverrides = (): Record<string, Record<string, unknown>> => {
+  const jsonString = getEnv(EnvVariables.FRONTEND_LOCALE_TEXT_OVERRIDES);
   if (!jsonString) {
     return {};
   }
   try {
     const parsed = JSON.parse(jsonString);
     if (!isPlainObject(parsed)) {
-      console.error(new EnvError("FRONTEND_STRINGS_OVERRIDES must be a JSON object"));
+      console.error(new EnvError("FRONTEND_LOCALE_TEXT_OVERRIDES must be a JSON object"));
       return {};
     }
     return Object.fromEntries(
       Object.entries(parsed).filter((entry): entry is [string, Record<string, unknown>] => {
         if (isPlainObject(entry[1])) return true;
-        console.error(new EnvError(`FRONTEND_STRINGS_OVERRIDES: the overrides of '${entry[0]}' must be a JSON object`));
+        console.error(
+          new EnvError(`FRONTEND_LOCALE_TEXT_OVERRIDES: the overrides of '${entry[0]}' must be a JSON object`)
+        );
         return false;
       })
     );
   } catch (e) {
-    console.error(new EnvError("Error parsing FRONTEND_STRINGS_OVERRIDES JSON", e));
+    console.error(new EnvError("Error parsing FRONTEND_LOCALE_TEXT_OVERRIDES JSON", e));
     return {};
   }
 };
