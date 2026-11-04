@@ -7,7 +7,7 @@ import { IsOnlineContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import { routerPaths } from "src/app/routerPaths";
 import PrimaryButton from "src/theme/PrimaryButton/PrimaryButton";
 import SecondaryButton from "src/theme/SecondaryButton/SecondaryButton";
-import { isModuleEnabled, ModuleId } from "src/home/modulesService";
+import { isModuleEnabled, PlatformModule } from "src/home/modulesService";
 
 const uniqueId = "b2c3d4e5-f6a7-8901-bcde-f23456789012";
 
@@ -166,9 +166,9 @@ const HomeCtaGrid: React.FC = () => {
   const jobMatchesBg = theme.palette.quaternary.main;
 
   // each card leads to a module: cards of modules disabled for this deployment are not shown, the others share the row
-  const showProfile = isModuleEnabled(ModuleId.SKILLS_DISCOVERY);
-  const showPaths = isModuleEnabled(ModuleId.CAREER_EXPLORER);
-  const showJobs = isModuleEnabled(ModuleId.JOB_MATCHING);
+  const showProfile = isModuleEnabled(PlatformModule.SKILLS_DISCOVERY);
+  const showPaths = isModuleEnabled(PlatformModule.CAREER_EXPLORER);
+  const showJobs = isModuleEnabled(PlatformModule.JOB_MATCHING);
   const shownBackgrounds = [showProfile && profileCardBg, showPaths && pathwaysCardBg, showJobs && jobMatchesBg].filter(
     (bg): bg is string => !!bg
   );

@@ -11,7 +11,7 @@ import HomeCtaGrid from "src/home/components/HomeCtaGrid/HomeCtaGrid";
 import HomeJobReadyList from "src/home/components/HomeJobReadyList/HomeJobReadyList";
 import HomeSidebar from "src/home/components/Sidebar/HomeSidebar";
 import { useUserProfileContext } from "src/profile/UserProfileContext";
-import { isModuleEnabled, ModuleId } from "src/home/modulesService";
+import { isModuleEnabled, PlatformModule } from "src/home/modulesService";
 
 const uniqueId = "f1a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c";
 
@@ -34,7 +34,7 @@ const Home: React.FC = () => {
   const modulesLoadError = Boolean(errors?.modules);
   const modulesConnectionError = isConnectionError(errors?.modules);
   const careerReadinessModules = profileData?.modules ?? [];
-  const showJobReadyList = isModuleEnabled(ModuleId.JOB_READINESS);
+  const showJobReadyList = isModuleEnabled(PlatformModule.JOB_READINESS);
   const moduleErrorMessage = modulesConnectionError
     ? t("common.errors.api.serverConnectionError")
     : t("error.errorPage.defaultMessage", { appName });

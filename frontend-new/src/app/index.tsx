@@ -29,7 +29,7 @@ import { AuthBroadcastChannel, AuthChannelMessage } from "src/auth/services/auth
 import { getRegistrationDisabled } from "src/envService";
 import { useTranslation } from "react-i18next";
 import Home from "src/home/Home";
-import { isModuleEnabled, ModuleId } from "src/home/modulesService";
+import { isModuleEnabled, PlatformModule } from "src/home/modulesService";
 import { AppErrorFallback } from "src/error/errorPage/AppErrorFallback";
 import BugReportButton from "../feedback/bugReport/bugReportButton/BugReportButton";
 import LegalDocumentPage from "src/legal/pages/LegalDocumentPage";
@@ -88,8 +88,8 @@ const ProtectedRouteKeys = {
  * The routes of a module, or none when the module is disabled for this deployment,
  * so a direct link to a disabled module renders NotFound.
  */
-const moduleRoutes = (moduleId: ModuleId, routes: RouteObject[]): RouteObject[] =>
-  isModuleEnabled(moduleId) ? routes : [];
+const moduleRoutes = (platformModule: PlatformModule, routes: RouteObject[]): RouteObject[] =>
+  isModuleEnabled(platformModule) ? routes : [];
 
 const NotFound: React.FC = () => {
   const { t } = useTranslation();
@@ -314,7 +314,7 @@ const App = () => {
                     </ProtectedRoute>
                   ),
                 },
-                ...moduleRoutes(ModuleId.SKILLS_DISCOVERY, [
+                ...moduleRoutes(PlatformModule.SKILLS_DISCOVERY, [
                   {
                     path: routerPaths.SKILLS_INTERESTS,
                     handle: {
@@ -329,7 +329,7 @@ const App = () => {
                     ),
                   },
                 ]),
-                ...moduleRoutes(ModuleId.KNOWLEDGE_HUB, [
+                ...moduleRoutes(PlatformModule.KNOWLEDGE_HUB, [
                   {
                     path: routerPaths.KNOWLEDGE_HUB,
                     handle: {},
@@ -349,7 +349,7 @@ const App = () => {
                     ),
                   },
                 ]),
-                ...moduleRoutes(ModuleId.CAREER_EXPLORER, [
+                ...moduleRoutes(PlatformModule.CAREER_EXPLORER, [
                   {
                     path: routerPaths.CAREER_EXPLORER,
                     handle: {
@@ -364,7 +364,7 @@ const App = () => {
                     ),
                   },
                 ]),
-                ...moduleRoutes(ModuleId.JOB_READINESS, [
+                ...moduleRoutes(PlatformModule.JOB_READINESS, [
                   {
                     path: routerPaths.CAREER_READINESS,
                     element: (
@@ -396,7 +396,7 @@ const App = () => {
                     </ProtectedRoute>
                   ),
                 },
-                ...moduleRoutes(ModuleId.JOB_MATCHING, [
+                ...moduleRoutes(PlatformModule.JOB_MATCHING, [
                   {
                     path: routerPaths.JOB_MATCHING,
                     handle: {},
@@ -483,7 +483,7 @@ const App = () => {
               path: routerPaths.TERMS_OF_USE,
               element: <LegalDocumentPage variant="terms" />,
             },
-            ...moduleRoutes(ModuleId.FAQ, [
+            ...moduleRoutes(PlatformModule.FAQ, [
               {
                 path: routerPaths.FAQ,
                 element: <LazyLoadedFAQPage />,

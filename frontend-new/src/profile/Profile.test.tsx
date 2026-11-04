@@ -55,7 +55,7 @@ import type { ModuleSummary } from "src/careerReadiness/types";
 import { getDisabledModules } from "src/envService";
 import { DATA_TEST_ID as CAREER_EXPLORER_CARD_DATA_TEST_ID } from "./components/CareerExplorerCard/CareerExplorerCard";
 import { DATA_TEST_ID as MODULE_PROGRESS_CARD_DATA_TEST_ID } from "./components/ModuleProgressCard/ModuleProgressCard";
-import { ModuleId } from "src/home/modulesService";
+import { PlatformModule } from "src/home/modulesService";
 
 const makeModule = (id: string, status: ModuleSummary["status"]): ModuleSummary => ({
   id,
@@ -284,7 +284,7 @@ describe("Profile Component", () => {
 
     test("should not show the pathways card when knowledge_hub is disabled", () => {
       // GIVEN the knowledge hub, which the card shows and links to, is disabled
-      (getDisabledModules as jest.Mock).mockReturnValue([ModuleId.KNOWLEDGE_HUB]);
+      (getDisabledModules as jest.Mock).mockReturnValue([PlatformModule.KNOWLEDGE_HUB]);
 
       // WHEN the Profile component is rendered
       render(<Profile {...getDefaultProps()} />);
@@ -295,7 +295,7 @@ describe("Profile Component", () => {
 
     test("should keep the pathways card when only career_explorer is disabled", () => {
       // GIVEN only the career explorer is disabled
-      (getDisabledModules as jest.Mock).mockReturnValue([ModuleId.CAREER_EXPLORER]);
+      (getDisabledModules as jest.Mock).mockReturnValue([PlatformModule.CAREER_EXPLORER]);
 
       // WHEN the Profile component is rendered
       render(<Profile {...getDefaultProps()} />);
@@ -306,7 +306,7 @@ describe("Profile Component", () => {
 
     test("should leave the disabled modules out of the profile strength breakdown", () => {
       // GIVEN career readiness and career explorer are disabled
-      (getDisabledModules as jest.Mock).mockReturnValue([ModuleId.JOB_READINESS, ModuleId.CAREER_EXPLORER]);
+      (getDisabledModules as jest.Mock).mockReturnValue([PlatformModule.JOB_READINESS, PlatformModule.CAREER_EXPLORER]);
 
       // WHEN the Profile component is rendered
       render(<Profile {...getDefaultProps()} />);
@@ -319,9 +319,9 @@ describe("Profile Component", () => {
     test("should not show the profile strength when no enabled module has a component", () => {
       // GIVEN every module with a profile strength component is disabled
       (getDisabledModules as jest.Mock).mockReturnValue([
-        ModuleId.SKILLS_DISCOVERY,
-        ModuleId.JOB_READINESS,
-        ModuleId.CAREER_EXPLORER,
+        PlatformModule.SKILLS_DISCOVERY,
+        PlatformModule.JOB_READINESS,
+        PlatformModule.CAREER_EXPLORER,
       ]);
 
       // WHEN the Profile component is rendered
@@ -333,7 +333,7 @@ describe("Profile Component", () => {
 
     test("should not show the career readiness banner when job_readiness is disabled", () => {
       // GIVEN the career readiness module is disabled
-      (getDisabledModules as jest.Mock).mockReturnValue([ModuleId.JOB_READINESS]);
+      (getDisabledModules as jest.Mock).mockReturnValue([PlatformModule.JOB_READINESS]);
 
       // WHEN the Profile component is rendered
       render(<Profile {...getDefaultProps()} />);

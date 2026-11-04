@@ -4,7 +4,7 @@ import "src/_test_utilities/envServiceMock";
 import React from "react";
 import { render, screen, userEvent, within } from "src/_test_utilities/test-utils";
 import ModuleCard, { DATA_TEST_ID } from "./ModuleCard";
-import { Module, ModuleId } from "src/home/modulesService";
+import { PlatformModuleConfig, PlatformModule } from "src/home/modulesService";
 
 const mockNavigate = jest.fn();
 
@@ -17,8 +17,8 @@ jest.mock("react-router-dom", () => {
   };
 });
 
-const baseModule: Module = {
-  id: ModuleId.SKILLS_DISCOVERY,
+const baseModule: PlatformModuleConfig = {
+  id: PlatformModule.SKILLS_DISCOVERY,
   labelKey: "home.modules.skillsDiscovery",
   descriptionKey: "home.modules.skillsDiscoveryDesc",
   route: "/skills-interests",
