@@ -28,3 +28,4 @@ class Collections:
     PILOT_WHITELIST: str = "pilot_whitelist"
     USER_INSTITUTION_ASSIGNMENT: str = "user_institution_assignment"
     EXTERNAL_USERS: str = "external_users"
+    WEBHOOK_DELIVERIES: str = "webhook_deliveries"

@@ -7,6 +7,7 @@ from httpx import ASGITransport, AsyncClient
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from starlette.datastructures import State
 
+from app.app_config import set_application_config, get_application_config
 from app.server_dependencies.db_dependencies import CompassDBProvider
 from common_libs.test_utilities.setup_env_vars import setup_env_vars, teardown_env_vars
 
@@ -21,6 +22,7 @@ class TestServer:
         teardown_env_vars()
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize("given_webhooks_enabled", [False, True], ids=["webhooks off", "webhooks on"])
     async def test_server_up(self,
                              in_memory_userdata_database: Awaitable[AsyncIOMotorDatabase],
                              in_memory_taxonomy_database: Awaitable[AsyncIOMotorDatabase],
@@ -29,7 +31,8 @@ class TestServer:
                              in_memory_career_explorer_database: Awaitable[AsyncIOMotorDatabase],
                              in_memory_jobs_database: Awaitable[AsyncIOMotorDatabase],
                              mocker: pytest_mock.MockFixture,
-                             setup_env: None
+                             setup_env: None,
+                             given_webhooks_enabled: bool
                              ):
         """
         Integration test for the backend server application.
@@ -79,6 +82,13 @@ class TestServer:
         # NOTE: Using TestClient as a context manager is also an option. However, since it is not an async context manager,
         # if TestClient is used this way, the application's lifecycle startup and shutdown events will not occur
         # in the same event loop as the test. This can cause issues, especially with asynchronous code.
+        # with webhooks on, the lifespan also starts the loop that sends them, and stops it on shutdown. Set on the
+        # config the lifespan reads: the database fixtures above replace the one the server module built.
+        set_application_config(get_application_config().model_copy(update={
+            "integration_webhooks_enabled": given_webhooks_enabled,
+            "integration_webhook_url_origins": ["https://api.partner.example.org"]}))
+        webhook_sending = mocker.spy(app_module, "send_due_webhooks")
+
         async with lifespan(app):
             async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:  # noqa
                 """
@@ -95,6 +105,11 @@ class TestServer:
                 assert response.status_code == 200
                 # AND the response should be a JSON object
                 assert response.json() is not None
+
+        # AND the webhook loop was started only with webhooks on
+        assert webhook_sending.call_count == (1 if given_webhooks_enabled else 0)
+        # AND the application shuts down
+        assert app.state.shutdown_complete.is_set()
 
     def test_direct_ingress_requires_firebase_project_id(self, monkeypatch: pytest.MonkeyPatch):
         """
