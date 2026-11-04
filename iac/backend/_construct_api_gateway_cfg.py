@@ -12,6 +12,25 @@ from google.auth.transport.requests import Request
 from lib import Version
 
 
+def _set_array_items(param: dict, schema: dict, openapi3: dict):
+    """
+    Swagger 2.0 requires `items` on array parameters, otherwise the API Gateway rejects the config
+    ("Cannot convert to service config"). Repeated query params (?a=1&a=2) also need `collectionFormat: multi`.
+    """
+    if schema.get('type') != 'array':
+        return
+    items = schema.get('items', {})
+    if '$ref' in items:
+        # e.g. list[SomeEnum]: inline the referenced schema's type and enum
+        ref_schema = openapi3.get('components', {}).get('schemas', {}).get(items['$ref'].split('/')[-1], {})
+        items = ref_schema
+    param['items'] = {'type': items.get('type', 'string')}
+    if 'enum' in items:
+        param['items']['enum'] = items['enum']
+    if param.get('in') == 'query':
+        param['collectionFormat'] = 'multi'
+
+
 def _convert_open_api_3_to_2(openapi3: dict):
     """
     Convert OpenAPI 3.1 to OpenAPI 2.0 format for GCP API Gateway configuration.
@@ -37,6 +56,7 @@ def _convert_open_api_3_to_2(openapi3: dict):
                     if schema:
                         if 'type' in schema:
                             param['type'] = schema['type']
+                            _set_array_items(param, schema, openapi3)
                         elif 'anyOf' in schema:
                             # Handle nullable types (e.g. Optional[str] → anyOf: [{type: string}, {type: null}])
                             # Pick the first non-null type for Swagger 2.0 compatibility.
@@ -46,6 +66,7 @@ def _convert_open_api_3_to_2(openapi3: dict):
                             for entry in non_null_entries:
                                 if 'type' in entry:
                                     param['type'] = entry['type']
+                                    _set_array_items(param, entry, openapi3)
                                     break
                                 elif '$ref' in entry:
                                     ref_name = entry['$ref'].split('/')[-1]
