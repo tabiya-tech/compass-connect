@@ -4,6 +4,7 @@ import pytest
 from datetime import datetime, timezone
 from typing import Awaitable
 
+from app.channels.types import Channel
 from app.users.repositories import UserPreferenceRepository, UserPreferenceRepositoryError
 from app.users.types import UserPreferences, UserPreferencesRepositoryUpdateRequest, PossibleExperimentValues
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
@@ -432,3 +433,91 @@ class TestGetExperimentsByUserIds:
 
         # THEN the experiments should be returned only once for the unique user id
         assert actual_experiments == {given_user_id: given_experiments}
+
+
+@pytest.mark.asyncio
+class TestGetUserPreferenceByChannelUserId:
+    async def test_returns_the_user_of_the_channel_user(self, get_user_preference_repository: Awaitable[UserPreferenceRepository]):
+        # GIVEN a user created through Telegram
+        given_user_id = get_random_printable_string(10)
+        given_channel_user_id = "100200300"
+        repository = await get_user_preference_repository
+        await repository.insert_user_preference(given_user_id, UserPreferences(
+            language="en",
+            sensitive_personal_data_requirement=SensitivePersonalDataRequirement.NOT_AVAILABLE,
+            channel=Channel.TELEGRAM,
+            channel_user_id=given_channel_user_id
+        ))
+
+        # WHEN getting the user by their channel user id
+        actual = await repository.get_user_preference_by_channel_user_id(Channel.TELEGRAM, given_channel_user_id)
+
+        # THEN the user id and the preferences are returned
+        assert actual is not None
+        actual_user_id, actual_preferences = actual
+        assert actual_user_id == given_user_id
+        assert actual_preferences.channel == Channel.TELEGRAM.value
+        assert actual_preferences.channel_user_id == given_channel_user_id
+
+    async def test_returns_none_for_another_channel(self, get_user_preference_repository: Awaitable[UserPreferenceRepository]):
+        # GIVEN a user created through Telegram
+        given_channel_user_id = "100200300"
+        repository = await get_user_preference_repository
+        await repository.insert_user_preference(get_random_printable_string(10), UserPreferences(
+            sensitive_personal_data_requirement=SensitivePersonalDataRequirement.NOT_AVAILABLE,
+            channel=Channel.TELEGRAM,
+            channel_user_id=given_channel_user_id
+        ))
+
+        # WHEN getting the WhatsApp user with the same id
+        actual = await repository.get_user_preference_by_channel_user_id(Channel.WHATSAPP, given_channel_user_id)
+
+        # THEN no user is returned
+        assert actual is None
+
+    async def test_web_app_users_default_to_the_web_app_channel(self, get_user_preference_repository: Awaitable[UserPreferenceRepository]):
+        # GIVEN a user of the web app, stored before the channel existed
+        given_user_id = get_random_printable_string(10)
+        repository = await get_user_preference_repository
+        await repository.collection.insert_one({"user_id": given_user_id, "language": "en", "sessions": [1]})
+
+        # WHEN getting the user
+        actual = await repository.get_user_preference_by_user_id(given_user_id)
+
+        # THEN the user is on the web app, without a channel user id
+        assert actual.channel == Channel.WEB_APP.value
+        assert actual.channel_user_id is None
+
+    async def test_insert_rejects_a_second_user_for_the_same_channel_user(self, get_user_preference_repository: Awaitable[UserPreferenceRepository]):
+        # GIVEN a user created through Telegram
+        given_channel_user_id = "100200300"
+        repository = await get_user_preference_repository
+        await repository.insert_user_preference(get_random_printable_string(10), UserPreferences(
+            sensitive_personal_data_requirement=SensitivePersonalDataRequirement.NOT_AVAILABLE,
+            channel=Channel.TELEGRAM,
+            channel_user_id=given_channel_user_id
+        ))
+
+        # WHEN inserting another user for the same Telegram user
+        # THEN an error is raised
+        with pytest.raises(UserPreferenceRepositoryError):
+            await repository.insert_user_preference(get_random_printable_string(10), UserPreferences(
+                sensitive_personal_data_requirement=SensitivePersonalDataRequirement.NOT_AVAILABLE,
+                channel=Channel.TELEGRAM,
+                channel_user_id=given_channel_user_id
+            ))
+
+    async def test_many_web_app_users_have_no_channel_user_id(self, get_user_preference_repository: Awaitable[UserPreferenceRepository]):
+        # GIVEN a user of the web app
+        repository = await get_user_preference_repository
+        await repository.insert_user_preference(get_random_printable_string(10), UserPreferences(
+            sensitive_personal_data_requirement=SensitivePersonalDataRequirement.NOT_AVAILABLE
+        ))
+
+        # WHEN inserting another user of the web app
+        actual = await repository.insert_user_preference(get_random_printable_string(10), UserPreferences(
+            sensitive_personal_data_requirement=SensitivePersonalDataRequirement.NOT_AVAILABLE
+        ))
+
+        # THEN it is inserted
+        assert actual is not None

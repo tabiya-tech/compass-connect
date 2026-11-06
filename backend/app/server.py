@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.admin.registrations import add_admin_registrations_routes
 from app.admin.routes import get_admin_routes
+from app.channels.routes import add_channels_routes
 from app.conversations.routes import add_conversation_routes
 from app.countries import Country, get_country_from_string
 from app.invitations import add_user_invitations_routes
@@ -551,6 +552,11 @@ app.include_router(search_router)
 # Add integration routes (users created by other platforms, hand-off links)
 ############################################
 add_integration_routes(app)
+
+############################################
+# Add channels routes (chat bots: Telegram, WhatsApp)
+############################################
+add_channels_routes(app)
 
 ############################################
 # Add metrics routes

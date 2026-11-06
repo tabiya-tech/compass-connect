@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 
 from fastapi import Depends
 
+from app.channels.types import Channel
 from app.metrics.services.get_metrics_service import get_metrics_service
 from app.metrics.services.service import IMetricsService
 from app.metrics.types import UserAccountCreatedEvent
@@ -28,12 +29,17 @@ class IUserPreferencesService(ABC):
                                           language: str | None,
                                           invitation_code: str | None,
                                           client_id: str | None,
-                                          sensitive_personal_data_requirement: SensitivePersonalDataRequirement
+                                          sensitive_personal_data_requirement: SensitivePersonalDataRequirement,
+                                          channel: Channel = Channel.WEB_APP,
+                                          channel_user_id: str | None = None
                                           ) -> UserPreferences:
         """
         Create the preferences of a new user, with their first conversation session, and record the account creation.
-        Shared by the registration route (POST /users/preferences) and the integration API, which creates the user on
-        the server.
+        Shared by the registration route (POST /users/preferences), the integration API and the channels API, which
+        create the user on the server.
+
+        :param channel: Where the user talks to Compass, the web app by default.
+        :param channel_user_id: The id of the user on their chat bot channel, None for the web app.
 
         :return: UserPreferences - the newly created preferences
         :raises UserPreferenceRepositoryError: if the insert fails, e.g. the preferences of the user already exist
@@ -52,7 +58,9 @@ class UserPreferencesService(IUserPreferencesService):
                                           language: str | None,
                                           invitation_code: str | None,
                                           client_id: str | None,
-                                          sensitive_personal_data_requirement: SensitivePersonalDataRequirement
+                                          sensitive_personal_data_requirement: SensitivePersonalDataRequirement,
+                                          channel: Channel = Channel.WEB_APP,
+                                          channel_user_id: str | None = None
                                           ) -> UserPreferences:
         # Generating a 64-bit integer session ID
         sessions = [generate_new_session_id()]
@@ -62,7 +70,9 @@ class UserPreferencesService(IUserPreferencesService):
             invitation_code=invitation_code,
             client_id=client_id,
             sensitive_personal_data_requirement=sensitive_personal_data_requirement,
-            sessions=sessions
+            sessions=sessions,
+            channel=channel,
+            channel_user_id=channel_user_id
         ))
 
         # Record user account creation metric

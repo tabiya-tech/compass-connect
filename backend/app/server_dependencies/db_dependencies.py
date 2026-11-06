@@ -197,6 +197,12 @@ class CompassDBProvider:
             await application_db.get_collection(Collections.USER_PREFERENCES).create_index([
                 ("user_id", 1)
             ], unique=True)
+            # One user per chat bot user (channel, channel_user_id). Web app users have no channel_user_id, so only the
+            # set values are unique.
+            await application_db.get_collection(Collections.USER_PREFERENCES).create_index([
+                ("channel", 1),
+                ("channel_user_id", 1)
+            ], unique=True, partialFilterExpression={"channel_user_id": {"$type": "string"}})
 
             # Create the user invitations indexes
             await application_db.get_collection(Collections.USER_INVITATIONS).create_index([

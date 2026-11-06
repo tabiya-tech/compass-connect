@@ -2,7 +2,9 @@ import logging
 from abc import ABC, abstractmethod
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.errors import DuplicateKeyError
 
+from app.channels.types import Channel
 from app.server_dependencies.database_collections import Collections
 from common_libs.time_utilities import datetime_to_mongo_date, get_now
 from app.users.types import UserPreferences, UserPreferencesRepositoryUpdateRequest, Experiments, UserExperiments, PossibleExperimentValues
@@ -30,6 +32,19 @@ class IUserPreferenceRepository(ABC):
             The user_id to search for
         :return: UserPreferences | None
             The user preferences if found, else None
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def get_user_preference_by_channel_user_id(self, channel: Channel,
+                                                     channel_user_id: str) -> tuple[str, UserPreferences] | None:
+        """
+        Get the user preferences of the user created through a chat bot channel
+        :param channel: Channel - The channel of the user
+        :param channel_user_id: str - The id of the user on the channel
+        :return: tuple[str, UserPreferences] | None
+            The user_id and the user preferences if found, else None
+        :raises UserPreferenceRepositoryError: if the read fails
         """
         raise NotImplementedError()
 
@@ -106,6 +121,22 @@ class UserPreferenceRepository(IUserPreferenceRepository):
             logger.exception(e)
             raise UserPreferenceRepositoryError("Failed to get user preferences") from e
 
+    async def get_user_preference_by_channel_user_id(self, channel: Channel,
+                                                     channel_user_id: str) -> tuple[str, UserPreferences] | None:
+        try:
+            _doc = await self.collection.find_one({"channel": {"$eq": channel.value},
+                                                   "channel_user_id": {"$eq": channel_user_id}})
+
+            if not _doc:
+                return None
+
+            return _doc["user_id"], UserPreferences.from_document(_doc)
+
+        except Exception as e:
+            # do not log the channel user id, it is personal data
+            logger.exception(e)
+            raise UserPreferenceRepositoryError("Failed to get user preferences by channel user id") from e
+
     async def get_experiments_by_user_id(self, user_id: str) -> Experiments:
         experiments = await self.get_experiments_by_user_ids([user_id])
         return experiments.get(user_id, {})
@@ -151,6 +182,9 @@ class UserPreferenceRepository(IUserPreferenceRepository):
 
             await self.collection.insert_one(payload)
             return await self.get_user_preference_by_user_id(user_id=user_id)
+        except DuplicateKeyError as e:
+            # not logged: the error has the duplicate key, which can be personal data (e.g. a channel user id)
+            raise UserPreferenceRepositoryError("Failed to insert user preferences, they already exist") from e
         except Exception as e:
             logger.exception(e)
             raise UserPreferenceRepositoryError("Failed to insert user preferences") from e
