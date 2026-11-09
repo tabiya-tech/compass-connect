@@ -203,6 +203,10 @@ class CompassDBProvider:
                 ("channel", 1),
                 ("channel_user_id", 1)
             ], unique=True, partialFilterExpression={"channel_user_id": {"$type": "string"}})
+            # One BWS task waiting for an answer per session of a chat bot user
+            await application_db.get_collection(Collections.CHANNEL_PENDING_BWS_ANSWERS).create_index([
+                ("session_id", 1)
+            ], unique=True)
 
             # Create the user invitations indexes
             await application_db.get_collection(Collections.USER_INVITATIONS).create_index([

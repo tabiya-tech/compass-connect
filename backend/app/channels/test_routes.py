@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 
 from app.app_config import ApplicationConfig, set_application_config
 from app.channels.routes import add_channels_routes, get_channel_gateway_service, ChannelUserIdRedactionFilter
-from app.channels.service import IChannelGatewayService, ChannelUserNotFoundError, HELLO_WORLD_MESSAGE
+from app.channels.service import IChannelGatewayService, ChannelUserNotFoundError
 from app.channels.types import Channel, OutgoingMessage
 from app.errors.handlers import register_exception_handlers
 
@@ -113,16 +113,16 @@ class TestInitializeConversationRoute:
 
 
 class TestSendMessageRoute:
-    def test_returns_hello_world(self, client: TestClient, mocked_service: AsyncMock):
-        # GIVEN the service replies "Hello world"
-        mocked_service.handle_sent_message.return_value = [OutgoingMessage(text=HELLO_WORLD_MESSAGE)]
+    def test_returns_the_replies(self, client: TestClient, mocked_service: AsyncMock):
+        # GIVEN the service replies with a message and choices
+        mocked_service.handle_sent_message.return_value = [OutgoingMessage(text="Hello!", choices=["Let's start"])]
 
         # WHEN the bot sends a message of a Telegram user
         actual = _post_message(client, {"channel": "telegram", "channel_user_id": _CHANNEL_USER_ID, "text": "hi"})
 
-        # THEN the response is OK with "Hello world"
+        # THEN the response is OK with the replies
         assert actual.status_code == HTTPStatus.OK
-        assert actual.json() == [{"text": HELLO_WORLD_MESSAGE, "choices": [], "document": None}]
+        assert actual.json() == [{"text": "Hello!", "choices": ["Let's start"], "document": None}]
         # AND the service got the message
         actual_message = mocked_service.handle_sent_message.await_args.args[0]
         assert actual_message.channel == Channel.TELEGRAM

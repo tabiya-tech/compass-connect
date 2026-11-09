@@ -248,5 +248,17 @@
     "thisPath": "este percurso"
   },
   "welcomeAgentRephrase": "Desculpe, não entendi isso. Pode reformular, por favor?",
-  "simpleLlmAgentFailure": "Estou com algumas dificuldades neste momento, pode repetir o que disse, por favor?"
+  "simpleLlmAgentFailure": "Estou com algumas dificuldades neste momento, pode repetir o que disse, por favor?",
+  "channels": {
+    "bwsMostPrompt": "Which one would you like the *most*? Reply with its letter.",
+    "bwsLeastPrompt": "And which one would you like the *least*? Reply with its letter.",
+    "conversationCompleted": "Send /report to get your skills report, or /restart to start a new conversation.",
+    "help": "I'm Compass. I help you discover your skills and the careers that match them. Just reply to my messages to continue our conversation.\n\n/start - continue your conversation\n/restart - start a new conversation\n/report - get your skills report\n/help - show this message",
+    "welcomeBack": "Welcome back! Reply to my last message to continue where you left off.",
+    "reportNotAvailable": "Your skills report is not available on this channel yet.",
+    "conversationConcluded": "This conversation has ended. Send /report to get your skills report, or /restart to start a new conversation.",
+    "messageTooLong": "Your message is too long. Please keep it under {max_length} characters.",
+    "emptyMessage": "Please type a message, or send /help to see what you can do.",
+    "unexpectedError": "Sorry, something went wrong on our side. Please try again in a moment."
+  }
 }

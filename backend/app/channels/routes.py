@@ -3,14 +3,21 @@ import re
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Path
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.app_config import get_application_config
+from app.channels.repository import ChannelStateRepository
 from app.channels.service import ChannelGatewayService, ChannelUserNotFoundError, IChannelGatewayService
 from app.channels.types import CHANNEL_USER_ID_PATTERN, IncomingMessage, InitializeConversationRequest, \
     OutgoingMessage
 from app.constants.errors import HTTPErrorResponse
+from app.conversations.routes import get_conversation_service
+from app.conversations.service import IConversationService
+from app.server_dependencies.db_dependencies import CompassDBProvider
 from app.users.auth import ApiKeyAuth
 from app.users.get_user_preferences_repository import get_user_preferences_repository
+from app.users.plain_personal_data.routes import get_plain_personal_data_service
+from app.users.plain_personal_data.service import IPlainPersonalDataService
 from app.users.preferences_service import IUserPreferencesService, get_user_preferences_service
 from app.users.repositories import IUserPreferenceRepository
 
@@ -38,11 +45,17 @@ class ChannelUserIdRedactionFilter(logging.Filter):
 async def get_channel_gateway_service(
         user_preferences_repository: IUserPreferenceRepository = Depends(get_user_preferences_repository),
         user_preferences_service: IUserPreferencesService = Depends(get_user_preferences_service),
+        conversation_service: IConversationService = Depends(get_conversation_service),
+        plain_personal_data_service: IPlainPersonalDataService = Depends(get_plain_personal_data_service),
+        application_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_application_db),
 ) -> IChannelGatewayService:
     app_config = get_application_config()
     return ChannelGatewayService(
         user_preferences_repository=user_preferences_repository,
         user_preferences_service=user_preferences_service,
+        conversation_service=conversation_service,
+        plain_personal_data_service=plain_personal_data_service,
+        channel_state_repository=ChannelStateRepository(application_db),
         default_language=app_config.language_config.default_locale.value,
     )
 
@@ -90,7 +103,9 @@ def add_channels_routes(app: FastAPI):
         },
         name="send channel message",
         description="Send a message (typed text or a command) the user sent on the channel, and get the messages to "
-                    "send them back. For now the reply is always \"Hello world\".")
+                    "send them back. The text goes to the user's Compass conversation. The commands are /start, "
+                    "/restart, /report and /help. An error of the conversation (e.g. a conversation that already "
+                    "ended) is a message to the user, not an error status.")
     async def _send_message(message: IncomingMessage,
                             channel_user_id: str = Path(pattern=CHANNEL_USER_ID_PATTERN),
                             service: IChannelGatewayService = Depends(get_channel_gateway_service)

@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Literal, Optional
+from typing import Optional
 
 from pydantic import BaseModel, field_serializer, field_validator, Field
 from enum import Enum
@@ -49,6 +49,15 @@ class ConversationMessageSender(int, Enum):
     COMPASS = 1
 
 
+# There should be a contract between this enum and the frontend.
+# Refer to the file frontend-new/src/chat/ChatService/ChatService.types.ts#ConversationMessage.
+class ConversationMessageType(str, Enum):
+    TEXT = "TEXT"
+    """ A normal chat message """
+    BWS_TASK = "BWS_TASK"
+    """ An interactive BWS (best-worst scaling) card, with its task in the metadata """
+
+
 # TODO: The UserConversationMessage and CompassConversationmessage types have diverged
 # add a type for each
 class ConversationMessage(BaseModel):
@@ -68,7 +77,7 @@ class ConversationMessage(BaseModel):
     quick_reply_options: list[QuickReplyOption] | None = None
     """Optional quick-reply button options for this message"""
 
-    message_type: Literal["TEXT", "BWS_TASK"] = "TEXT"
+    message_type: ConversationMessageType = ConversationMessageType.TEXT
     """Type of message — TEXT for normal chat, BWS_TASK for interactive BWS card"""
 
     metadata: Optional[dict] = None
