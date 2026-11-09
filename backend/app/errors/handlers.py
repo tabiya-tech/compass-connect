@@ -16,6 +16,13 @@ logger = logging.getLogger(__name__)
 
 _GENERIC_DETAIL = "Oops! Something went wrong."
 
+_SECRET_FIELDS = frozenset({"webhook_secret"})
+"""
+Request fields whose value is never sent back. A validation error repeats what was sent in `input`: the field's own
+value, or the whole body for an error of the model (e.g. two fields that must be sent together).
+"""
+_REDACTED = "**********"
+
 
 def _sentry_enabled() -> bool:
     return os.getenv("BACKEND_ENABLE_SENTRY") == "True"
@@ -55,6 +62,15 @@ async def _unhandled_exception_handler(_: Request, exc: Exception) -> JSONRespon
     return _build_response(HTTPStatus.INTERNAL_SERVER_ERROR, _GENERIC_DETAIL, sentry_event_id)
 
 
+def _redact_secrets(error: dict) -> dict:
+    value = error.get("input")
+    if error.get("loc") and error["loc"][-1] in _SECRET_FIELDS:
+        return {**error, "input": _REDACTED}
+    if isinstance(value, dict) and _SECRET_FIELDS & value.keys():
+        return {**error, "input": {k: _REDACTED if k in _SECRET_FIELDS else v for k, v in value.items()}}
+    return error
+
+
 async def _validation_exception_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
     # Preserve FastAPI's default validation payload shape in `detail` so clients that parse it keep working,
     # while still attaching the correlation id for support lookups.
@@ -62,7 +78,7 @@ async def _validation_exception_handler(_: Request, exc: RequestValidationError)
     body = {
         # jsonable_encoder makes the error list JSON-safe: custom validators raise ValueError,
         # which pydantic puts as a raw exception object in `ctx`, and json.dumps cannot serialize it.
-        "detail": jsonable_encoder(exc.errors()),
+        "detail": jsonable_encoder([_redact_secrets(error) for error in exc.errors()]),
         "correlation_id": correlation_id if correlation_id != ":none:" else None,
     }
     return JSONResponse(

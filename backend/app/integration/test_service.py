@@ -3,6 +3,7 @@ from datetime import timedelta
 from typing import Awaitable, Optional
 from unittest.mock import AsyncMock
 
+import httpx
 import pytest
 import pytest_mock
 from pydantic import ValidationError
@@ -19,9 +20,14 @@ from app.metrics.types import UserAccountCreatedEvent
 from app.integration.repository import ExternalUserRepository
 from app.integration.return_url_validation import InvalidReturnUrlError
 from app.integration.service import IntegrationService, ExternalUserConflictError, InvalidHandoffLinkError, \
-    ExternalUserNotFoundError, hash_link_token
+    ExternalUserNotFoundError, InvalidWebhookError, hash_link_token
 from app.integration.types import CreateExternalUserRequest, HandoffAction, ExternalUserConflict, HandoffLink, \
     ExternalUser
+from app.integration.webhooks.events import ConversationCompleted
+from app.integration.webhooks.notifier import WebhookNotifier
+from app.integration.webhooks.repository import WebhookDeliveryRepository
+from app.integration.webhooks.testing import decrypt
+from app.integration.webhooks.types import WebhookEvent, WebhookNotification, DeliveryStatus
 from app.users.repositories import UserPreferenceRepository
 from app.users.preferences_service import UserPreferencesService
 from app.users.sensitive_personal_data.types import SensitivePersonalDataRequirement
@@ -31,6 +37,8 @@ from common_libs.time_utilities import get_now
 _FRONTEND_URL = "https://compass.example.org"
 _TTL_MINUTES = 60
 _PARTNER_ORIGIN = "https://partner.example.org"
+_PARTNER_API_ORIGIN = "https://api.partner.example.org"
+_WEBHOOK_SECRET = "s" * 43  # nosec B105 # test fixture, not a credential
 
 
 @dataclass
@@ -75,6 +83,7 @@ class _Setup:
     metrics_service: AsyncMock
     state_manager: ApplicationStateManager
     state_store: DatabaseApplicationStateStore
+    db: AsyncIOMotorDatabase
 
 
 @pytest.fixture(scope="function")
@@ -88,18 +97,26 @@ async def setup(in_memory_application_database: Awaitable[AsyncIOMotorDatabase],
     metrics_service = AsyncMock(spec=IMetricsService)
     state_store = DatabaseApplicationStateStore(db)
     state_manager = ApplicationStateManager(store=state_store)
-    service = IntegrationService(
+    service = _service(users, user_preferences, UserPreferencesService(user_preferences, metrics_service),
+                       state_store, firebase, webhooks_enabled=True)
+    return _Setup(service, firebase, users, user_preferences, metrics_service, state_manager, state_store, db)
+
+
+def _service(users, user_preferences, user_preferences_service, state_store, firebase, *,
+             webhooks_enabled: bool) -> IntegrationService:
+    return IntegrationService(
         user_repository=users,
         user_preferences_repository=user_preferences,
-        user_preferences_service=UserPreferencesService(user_preferences, metrics_service),
+        user_preferences_service=user_preferences_service,
         application_state_store=state_store,
         firebase=firebase,  # type: ignore[arg-type]
         link_ttl_minutes=_TTL_MINUTES,
         frontend_url=_FRONTEND_URL,
         default_language="es-ES",
         return_url_origins=[_PARTNER_ORIGIN],
+        webhooks_enabled=webhooks_enabled,
+        webhook_url_origins=[_PARTNER_API_ORIGIN],
     )
-    return _Setup(service, firebase, users, user_preferences, metrics_service, state_manager, state_store)
 
 
 def _request(external_id: str = "ext-1", email: str = "person@example.com",
@@ -401,6 +418,76 @@ class TestReturnUrl:
         assert s.firebase.created_emails == []
 
 
+def _webhook_request(webhook_url: Optional[str] = f"{_PARTNER_API_ORIGIN}/hook",
+                     webhook_secret: Optional[str] = _WEBHOOK_SECRET) -> CreateExternalUserRequest:
+    return CreateExternalUserRequest(external_id="ext-1", email="person@example.com",
+                                     webhook_url=webhook_url, webhook_secret=webhook_secret)
+
+
+class TestWebhook:
+    @pytest.mark.asyncio
+    async def test_is_stored_echoed_and_replaced_by_the_latest_call(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a user created with a webhook
+        given_url = f"{_PARTNER_API_ORIGIN}/hook"
+        _, actual_first = await s.service.create_user(_webhook_request(given_url))
+
+        # THEN the URL and secret are stored, and the response echoes the URL but not the secret
+        actual_webhook = (await s.users.find_by_external_id("ext-1")).webhook
+        assert actual_webhook.url == given_url
+        assert actual_webhook.secret.get_secret_value() == _WEBHOOK_SECRET
+        assert actual_first.user.webhook_url == given_url
+        assert _WEBHOOK_SECRET not in actual_first.model_dump_json()
+
+        # WHEN the platform calls again with another URL and secret
+        given_other_secret = "t" * 43  # nosec B105 # test fixture, not a credential
+        await s.service.create_user(_webhook_request(f"{_PARTNER_API_ORIGIN}/other", given_other_secret))
+
+        # THEN both are replaced
+        actual_webhook = (await s.users.find_by_external_id("ext-1")).webhook
+        assert actual_webhook.url == f"{_PARTNER_API_ORIGIN}/other"
+        assert actual_webhook.secret.get_secret_value() == given_other_secret
+
+        # WHEN the platform calls again without a webhook
+        _, actual_last = await s.service.create_user(_request())
+
+        # THEN it is removed
+        assert (await s.users.find_by_external_id("ext-1")).webhook is None
+        assert actual_last.user.webhook_url is None
+
+    @pytest.mark.asyncio
+    async def test_not_allowed_is_refused_before_anything_is_created(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # WHEN a platform creates a user with a webhook on a server that is not allowed (the return URL origin
+        # is not enough: webhooks have their own allow-list)
+        with pytest.raises(InvalidWebhookError) as e:
+            await s.service.create_user(_webhook_request(f"{_PARTNER_ORIGIN}/hook"))
+
+        # THEN no user and no account are created
+        assert str(e.value) == "webhook_url is not allowed on this instance."
+        assert await s.users.find_by_external_id("ext-1") is None
+        assert s.firebase.created_emails == []
+
+    @pytest.mark.asyncio
+    async def test_refused_while_webhooks_are_not_enabled(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN an instance where webhooks are not enabled
+        service = _service(s.users, s.user_preferences, UserPreferencesService(s.user_preferences, s.metrics_service),
+                           s.state_store, s.firebase, webhooks_enabled=False)
+
+        # WHEN a platform creates a user with an allowed webhook
+        with pytest.raises(InvalidWebhookError) as e:
+            await service.create_user(_webhook_request())
+
+        # THEN it is refused before anything is created: the platform must know nothing will be sent
+        assert str(e.value) == "webhooks are not enabled on this instance."
+        assert await s.users.find_by_external_id("ext-1") is None
+
+        # AND users without a webhook are still created
+        actual_created, _ = await service.create_user(_request())
+        assert actual_created is True
+
+
 def _experience(title: str) -> ExperienceEntity:
     return ExperienceEntity(uuid=f"uuid-{title}", experience_title=title, top_skills=[
         SkillEntity(id="1", UUID="skill-1", preferredLabel="atender a los clientes", altLabels=[],
@@ -540,3 +627,39 @@ class TestGetResults:
 
         with pytest.raises(ExternalUserNotFoundError):
             await s.service.get_results("ext-1")
+
+
+class TestConversationCompletedWebhook:
+    @pytest.mark.asyncio
+    async def test_the_platform_gets_the_results_when_the_conversation_is_completed(self, setup: Awaitable[_Setup]):
+        s = await setup
+        # GIVEN a user created with a webhook, who finished their conversation with one experience
+        await s.service.create_user(_webhook_request())
+        session_id = (await _sessions_of(s))[0]
+        await _save_conversation(s, session_id, ConversationPhase.ENDED, explored=[_experience("Cajera")])
+        # AND the platform's server, which takes every notification
+        received = []
+
+        def _platform(request: httpx.Request) -> httpx.Response:
+            received.append(request)
+            return httpx.Response(200)
+
+        notifier = WebhookNotifier(users=s.users, deliveries=WebhookDeliveryRepository(s.db),
+                                   events=[ConversationCompleted(s.service.get_results)],
+                                   http_client=httpx.AsyncClient(transport=httpx.MockTransport(_platform)),
+                                   enabled=True, url_origins=[_PARTNER_API_ORIGIN])
+
+        # WHEN the end of the conversation is emitted, as the conversation service does, and then sent
+        user_id = (await s.users.find_by_external_id("ext-1")).user_id
+        delivery_id = await notifier.emit(WebhookEvent.CONVERSATION_COMPLETED, user_id,
+                                          ConversationCompleted.event_ref(session_id))
+        await notifier.attempt()
+
+        # THEN the platform decrypts the notification of that conversation, with the same results as the endpoint
+        _, plaintext = decrypt(received[0].content.decode("ascii"), _WEBHOOK_SECRET)
+        actual = WebhookNotification.model_validate_json(plaintext)
+        assert actual.external_id == "ext-1"
+        assert actual.data["session_id"] == session_id
+        assert actual.data["results"] == (await s.service.get_results("ext-1")).model_dump(mode="json")
+        assert actual.data["results"]["conversations"][0]["experiences"][0]["experience_title"] == "Cajera"
+        assert (await WebhookDeliveryRepository(s.db).find_by_id(delivery_id)).status == DeliveryStatus.DELIVERED
