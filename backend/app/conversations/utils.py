@@ -8,8 +8,8 @@ from app.conversations.phase_state_machine import JourneyPhase
 from app.agent.explore_experiences_agent_director import ConversationPhase as CounselingConversationPhase
 from app.application_state import ApplicationState
 from app.conversation_memory.conversation_memory_types import ConversationHistory, ConversationContext
-from app.conversations.types import ConversationMessage, ConversationMessageSender, MessageReaction, \
-    ConversationPhaseResponse, CurrentConversationPhaseResponse, QuickReplyOption
+from app.conversations.types import ConversationMessage, ConversationMessageSender, ConversationMessageType, \
+    MessageReaction, ConversationPhaseResponse, CurrentConversationPhaseResponse, QuickReplyOption
 from app.conversations.reactions.types import Reaction
 from app.conversations.constants import (
     BEGINNING_CONVERSATION_PERCENTAGE,
@@ -63,9 +63,9 @@ async def filter_conversation_history(history: 'ConversationHistory', reactions_
                 break
         # Determine message_type from metadata interaction_type if present
         _output_metadata = turn.output.metadata if hasattr(turn.output, 'metadata') else None
-        _message_type = "TEXT"
+        _message_type = ConversationMessageType.TEXT
         if _output_metadata and _output_metadata.get("task_id") is not None and "alternatives" in _output_metadata:
-            _message_type = "BWS_TASK"
+            _message_type = ConversationMessageType.BWS_TASK
 
         # Only attach quick_reply_options to the last COMPASS message
         quick_reply_options = None
@@ -108,9 +108,9 @@ async def get_messages_from_conversation_manager(context: 'ConversationContext',
     for turn in turns:
         turn.output.sent_at = datetime.now(timezone.utc)
         _output_metadata = turn.output.metadata if hasattr(turn.output, 'metadata') else None
-        _message_type = "TEXT"
+        _message_type = ConversationMessageType.TEXT
         if _output_metadata and _output_metadata.get("task_id") is not None and "alternatives" in _output_metadata:
-            _message_type = "BWS_TASK"
+            _message_type = ConversationMessageType.BWS_TASK
 
         # Only attach quick_reply_options to the last message in this batch
         quick_reply_options = None
