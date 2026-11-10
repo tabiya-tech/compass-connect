@@ -1,0 +1,104 @@
+{
+  "description": "es-ES translations, accented and mixed-case skill labels (alphabetical sorting), program without school",
+  "locale": "es-ES",
+  "appName": "Njila",
+  "config": {},
+  "props": {
+    "name": "José Martínez Núñez",
+    "email": "jose@example.es",
+    "location": "Málaga, España",
+    "school": "",
+    "program": "Técnico en Comercio",
+    "conversationConductedAt": "2025-02-28T08:00:00Z",
+    "experiences": [
+      {
+        "UUID": "e1",
+        "timeline": {
+          "start": "marzo 2021",
+          "end": "junio 2023"
+        },
+        "experience_title": "Dependiente de zapatería",
+        "company": "Calzados Peña",
+        "location": "Málaga",
+        "work_type": "FORMAL_SECTOR_WAGED_EMPLOYMENT",
+        "summary": "Atendí a clientes, gestioné el inventario y organicé el escaparate de la tienda durante la campaña de verano.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "a",
+            "preferredLabel": "árbol de decisiones",
+            "description": "Usar árboles de decisión.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "b",
+            "preferredLabel": "Zapatería artesanal",
+            "description": "Fabricar zapatos a mano.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "c",
+            "preferredLabel": "atender a clientes",
+            "description": "Atención al público en mostrador.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "d",
+            "preferredLabel": "año fiscal",
+            "description": "Gestionar el cierre del año fiscal.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      },
+      {
+        "UUID": "e2",
+        "timeline": {
+          "start": "2015",
+          "end": ""
+        },
+        "experience_title": "Granja familiar",
+        "company": "",
+        "location": "Ronda",
+        "work_type": "UNSEEN_UNPAID",
+        "summary": "Ayudé en la granja de mis abuelos.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "d",
+            "preferredLabel": "año fiscal",
+            "description": "Gestionar el cierre del año fiscal.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "e",
+            "preferredLabel": "Ética profesional",
+            "description": "Actuar con ética.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "f",
+            "preferredLabel": "edición de vídeo",
+            "description": "Editar vídeos cortos.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "g",
+            "preferredLabel": "ñandú",
+            "description": "Cuidar ñandúes en la granja.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      }
+    ]
+  }
+}

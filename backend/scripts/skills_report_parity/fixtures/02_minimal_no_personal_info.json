@@ -1,0 +1,31 @@
+{
+  "description": "No personal information, a single uncategorized experience without skills, summary, dates, company or location",
+  "locale": "en-US",
+  "appName": "Compass",
+  "config": {},
+  "props": {
+    "name": "",
+    "email": "",
+    "location": "",
+    "school": "",
+    "program": "",
+    "conversationConductedAt": "2024-12-31T23:59:59Z",
+    "experiences": [
+      {
+        "UUID": "e1",
+        "timeline": {
+          "start": "",
+          "end": ""
+        },
+        "experience_title": "Helping at my uncle's shop",
+        "company": "",
+        "location": "",
+        "work_type": null,
+        "summary": null,
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": []
+      }
+    ]
+  }
+}

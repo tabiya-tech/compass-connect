@@ -1,0 +1,18 @@
+{
+  "skillsReportTitle": "Informe de habilidades",
+  "skillsDescriptionTitle": "Descripción de habilidades",
+  "experiencesTitle": "EXPERIENCIAS",
+  "selfEmploymentTitle": "Trabajo por cuenta propia",
+  "salaryWorkTitle": "Trabajo asalariado",
+  "unpaidWorkTitle": "Trabajo no remunerado",
+  "traineeWorkTitle": "Trabajo como aprendiz",
+  "uncategorizedTitle": "Sin categoría",
+  "topSkillsTitle": "Habilidades principales: ",
+  "skillsDescriptionText": "A continuación encontrarás una lista de las habilidades descubiertas durante tu conversación con {appName}, junto con sus descripciones.",
+  "disclaimer": {
+    "part1": "Aviso: ",
+    "part2": "Las habilidades listadas se basan en una conversación con el candidato, no han sido verificadas o validadas por Tabiya y pueden ser inexactas. ",
+    "part3": "La información debe ser verificada antes de usarla para la búsqueda de empleo, entrevistas o para crear un CV. Para revisar esta información, vuelve a hablar con {appName} o crea un CV completo basado en este informe."
+  },
+  "bodyText": "Este informe resume la información clave recopilada durante una conversación con {appName} el {date}. {appName} es un chatbot de IA que ayuda a los buscadores de empleo a explorar sus habilidades y experiencias. Este informe presenta la experiencia laboral del candidato y las habilidades identificadas en cada experiencia. Esta información puede usarse para guiar la búsqueda de empleo y resaltar sus habilidades al postular, especialmente durante entrevistas con posibles empleadores. Puede ser un buen punto de partida para crear un CV completo."
+}

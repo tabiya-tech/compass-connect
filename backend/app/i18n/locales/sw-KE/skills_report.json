@@ -1,0 +1,18 @@
+{
+  "skillsReportTitle": "Ripoti ya Ujuzi",
+  "skillsDescriptionTitle": "Maelezo ya Ujuzi",
+  "experiencesTitle": "UZOEFU",
+  "selfEmploymentTitle": "Kujiajiri",
+  "salaryWorkTitle": "Kazi ya Mshahara",
+  "unpaidWorkTitle": "Kazi Isiyolipwa",
+  "traineeWorkTitle": "Kazi ya Mfunzwa",
+  "uncategorizedTitle": "Haijaainishwa",
+  "topSkillsTitle": "Ujuzi wa Juu: ",
+  "skillsDescriptionText": "Hapa chini, utapata orodha ya ujuzi uliogunduliwa wakati wa mazungumzo yako na {appName}, pamoja na maelezo yake.",
+  "disclaimer": {
+    "part1": "Kanusho: ",
+    "part2": "Ujuzi ulioorodheshwa unategemea mazungumzo na mgombea, haujathibitishwa na Tabiya, na unaweza kuwa si sahihi. ",
+    "part3": "Taarifa inapaswa kukaguliwa kabla ya kutumika kwa kutafuta kazi, mahojiano ya kazi, au kuunda CV."
+  },
+  "bodyText": "Ripoti hii inafupisha taarifa muhimu zilizokusanywa wakati wa mazungumzo na {appName} tarehe {date}. {appName} ni chatbot ya AI inayosaidia watafutaji wa kazi kuchunguza ujuzi na uzoefu wao."
+}

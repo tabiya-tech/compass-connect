@@ -1,0 +1,77 @@
+{
+  "description": "Typographic quotes, dashes, ampersands, HTML-like text, apostrophes, hyphenated words, non-latin-1 latin letters, empty normalized title",
+  "locale": "en-US",
+  "appName": "Compass & Co",
+  "config": {},
+  "props": {
+    "name": "Zoë O’Connor-Smith",
+    "email": "zoe+cv@example.com",
+    "location": "Côte d’Ivoire",
+    "school": "École «Polytechnique»",
+    "program": "B.Sc. (Hons) — Data & AI",
+    "conversationConductedAt": "2022-02-03T04:05:06+03:00",
+    "experiences": [
+      {
+        "UUID": "e1",
+        "timeline": {
+          "start": "2021–2022",
+          "end": ""
+        },
+        "experience_title": "Data <b>entry</b> clerk",
+        "company": "O’Reilly & Sons",
+        "location": "Abidjan",
+        "work_type": "FORMAL_SECTOR_WAGED_EMPLOYMENT",
+        "summary": "Typed 1,000+ records/day; cross-checked “edge cases” & re-entered mis-keyed values.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "a",
+            "preferredLabel": "use Microsoft® Excel™",
+            "description": "Use “spreadsheets” — lots of them; 100% accuracy & speed… don't stop.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "b",
+            "preferredLabel": "x",
+            "description": "A one-letter label.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "c",
+            "preferredLabel": "Ąćęłńóśźż handling",
+            "description": "Łódź-based work.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ],
+        "normalized_experience_title": ""
+      },
+      {
+        "UUID": "e2",
+        "timeline": {
+          "start": "2018",
+          "end": "2020"
+        },
+        "experience_title": "Self-employed tailor",
+        "company": "",
+        "location": "",
+        "work_type": "SELF_EMPLOYMENT",
+        "summary": "Not listed in the report (no self-employment section)",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "d",
+            "preferredLabel": "sew garments",
+            "description": "Sew pieces of garments.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      }
+    ]
+  }
+}
