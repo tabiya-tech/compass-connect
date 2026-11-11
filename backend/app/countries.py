@@ -8,6 +8,7 @@ class Country(Enum):
     ZAMBIA = "Zambia"
     FRANCE = "France"
     ARGENTINA = "Argentina"
+    HONDURAS = "Honduras"
     UNSPECIFIED = "Unspecified"
 
 
@@ -154,5 +155,19 @@ _GLOSSARY = {
         Remisería/Remisera - Remisero (private hire car driver)
         Parrilla - Grill
         Verdulería - Green grocery
+        """),
+    Country.HONDURAS:
+        dedent("""\
+        Chamba - A job or gig
+        Pulpería / Pulpero(a) - Small neighbourhood corner shop / its shopkeeper
+        Maquila - Export assembly factory, mostly textiles and apparel (common in the Sula Valley)
+        Operario(a) de maquila - Production line worker in a maquila
+        Agente de call center - Customer service agent in a call center, often bilingual (Spanish/English)
+        Jornalero(a) - Day labourer, e.g. on coffee, banana, melon or palm farms
+        Mototaxi - Motorcycle taxi
+        Cobrador(a) - Fare collector on a bus or "rapidito" (minibus)
+        Baleadas - Popular Honduran street food; "baleadera" is a woman who makes and sells them
+        Décimo tercer mes / Décimo cuarto mes - Mandatory extra month's salary paid in December / June
+        INFOP - National vocational training institute (Instituto Nacional de Formación Profesional)
         """),
 }
