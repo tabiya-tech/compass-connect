@@ -12,6 +12,16 @@ Tests cover:
 import json
 import pytest
 from app.agent.preference_elicitation_agent import bws_utils
+from app.context_vars import user_language_ctx_var
+from app.i18n.types import Locale
+
+
+@pytest.fixture
+def given_locale(request):
+    """Set the user locale for one test (the package conftest sets en-US by default)."""
+    token = user_language_ctx_var.set(request.param)
+    yield request.param
+    user_language_ctx_var.reset(token)
 
 
 class TestLoadingFunctions:
@@ -48,6 +58,33 @@ class TestLoadingFunctions:
         assert labels["4.A.4.b.4"] == "Leading and encouraging your team"
         assert "4.A.2.b.1" in labels
         assert labels["4.A.2.b.1"] == "Making choices and fixing problems"
+
+    def test_every_wa_item_has_a_spanish_label(self):
+        """Every WA item should have a non-empty Spanish label."""
+        # GIVEN the WA items
+        given_items = bws_utils.load_wa_items()
+
+        # THEN each one has a Spanish label
+        assert all(item.get("WA_Element_Name_spanish", "").strip() for item in given_items)
+
+    @pytest.mark.parametrize("given_locale,expected_label", [
+        (Locale.ES_AR, "Liderar y motivar a tu equipo"),
+        (Locale.ES_ES, "Liderar y motivar a tu equipo"),
+        (Locale.PT_MZ, "Liderar e incentivar a sua equipa"),
+        (Locale.SW_KE, "Kuongoza na kuhamasisha timu yako"),
+        (Locale.EN_GB, "Leading and encouraging your team"),
+    ], indirect=["given_locale"])
+    def test_load_wa_labels_uses_the_active_locale(self, given_locale: Locale, expected_label: str):
+        """Should return the WA labels in the user's language."""
+        # GIVEN the user's locale is set
+        assert user_language_ctx_var.get() == given_locale
+
+        # WHEN the WA labels are loaded
+        actual_labels = bws_utils.load_wa_labels()
+
+        # THEN the labels are in the user's language
+        assert len(actual_labels) == 37
+        assert actual_labels["4.A.4.b.4"] == expected_label
 
     def test_bws_tasks_cover_all_wa_items(self):
         """All 37 WA items should appear in at least one task."""
@@ -212,8 +249,54 @@ class TestParseResponse:
         ]
 
         for text_input in invalid_inputs:
-            with pytest.raises(ValueError, match="Could not understand your response"):
+            with pytest.raises(ValueError, match="I could not understand your answer"):
                 bws_utils.parse_bws_response(text_input, self.task_items)
+
+    @pytest.mark.parametrize("given_text_input", [
+        # Spanish, following the es-AR/es-ES example hint
+        "Más: A, Menos: E",
+        "mas a menos e",
+        "Prefiero A y no me gusta E",
+        # Portuguese, following the pt-MZ example hint
+        "Mais: A, Menos: E",
+        "Prefiro A e não gosto de E",
+        # Swahili, following the sw-KE example hint
+        "Zaidi: A, Kidogo: E",
+        "Napendelea A na sipendi E",
+        "Kidogo zaidi: E, Zaidi: A",
+        # Numbers in another language
+        "Más: 1, Menos: 5",
+    ])
+    def test_parse_text_in_other_languages(self, given_text_input: str):
+        """Should understand the typed reply format each locale's hint shows the user."""
+        # GIVEN a typed reply in one of the supported languages that picks A (1) as most and E (5) as least
+
+        # WHEN the reply is parsed
+        actual_best, actual_worst = bws_utils.parse_bws_response(given_text_input, self.task_items)
+
+        # THEN the first item is the best and the last item is the worst
+        assert actual_best == "4.A.4.b.4"
+        assert actual_worst == "4.A.2.b.5"
+
+    @pytest.mark.parametrize("given_locale,expected_start", [
+        (Locale.ES_AR, "No pude entender tu respuesta"),
+        (Locale.ES_ES, "No he podido entender tu respuesta"),
+        (Locale.PT_MZ, "Não consegui entender a sua resposta"),
+        (Locale.SW_KE, "Sikuelewa jibu lako"),
+    ], indirect=["given_locale"])
+    def test_parse_invalid_input_error_is_localized(self, given_locale: Locale, expected_start: str):
+        """Should show the 'could not understand' message in the user's language."""
+        # GIVEN the user's locale is not English
+        assert user_language_ctx_var.get() == given_locale
+        # AND an unparseable reply
+        given_text_input = "gibberish"
+
+        # WHEN the reply is parsed
+        with pytest.raises(ValueError) as actual_error:
+            bws_utils.parse_bws_response(given_text_input, self.task_items)
+
+        # THEN the error message is in the user's language
+        assert str(actual_error.value).startswith(expected_start)
 
     def test_parse_fallback_from_json_to_text(self):
         """Should fall back to text parsing if JSON is invalid."""

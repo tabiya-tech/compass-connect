@@ -20,11 +20,14 @@ from app.agent.preference_elicitation_agent.types import (
 from app.agent.llm_caller import LLMCaller
 from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import (
+    LLM,
     LLMConfig,
     LOW_TEMPERATURE_GENERATION_CONFIG,
     JSON_GENERATION_CONFIG
 )
 from app.agent.agent_types import LLMStats
+from app.i18n.translation_service import get_i18n_manager
+from app.i18n.types import Locale
 
 
 class PreferenceExtractionResult(BaseModel):
@@ -55,7 +58,8 @@ class PreferenceExtractionResult(BaseModel):
 
     suggested_follow_up: str = Field(
         default="",
-        description="A follow-up question if clarification would help (required when confidence is below 0.7), or an empty string.")
+        description="A follow-up question if clarification would help (required when confidence is below 0.7), or an empty string. "
+                    "It is shown to the user as-is, so write it in the user's language, see the '<Language>' section.")
     """Suggested follow-up question to clarify preferences"""
 
     class Config:
@@ -188,6 +192,28 @@ _EXTRACTION_SYSTEM_INSTRUCTIONS = """
 """
 
 
+def _build_extraction_system_instructions(locale: Locale) -> str:
+    """
+    Build the extraction system instructions for the given locale.
+
+    Only suggested_follow_up is shown to the user, so only that field is localized. The other
+    fields stay in English because downstream code matches on their values (e.g. the
+    "strongly_prefer" enum strings in inferred_preferences). This is why the generic
+    get_language_style() block, which asks for all extracted data to be translated, is not used.
+    """
+    language_label = locale.label()
+    language_section = f"""
+<Language>
+    - CRITICAL: The user is having this conversation in {language_label}.
+    - The suggested_follow_up question is shown to the user as-is, so you MUST write it ONLY in {language_label}.
+      The examples in these instructions are in English; translate their meaning, never copy them.
+    - Write it in very simple, everyday {language_label}, in one short sentence.
+    - Keep every other field (reasoning, stated_reasons, inferred_preferences keys and values) in English, exactly in the formats described.
+</Language>
+"""
+    return _EXTRACTION_SYSTEM_INSTRUCTIONS.replace("</System Instructions>", f"{language_section}</System Instructions>")
+
+
 class PreferenceExtractor:
     """
     Extracts preference signals from user responses to vignettes.
@@ -214,10 +240,10 @@ class PreferenceExtractor:
             generation_config=LOW_TEMPERATURE_GENERATION_CONFIG | JSON_GENERATION_CONFIG
         )
 
-        self._extraction_llm = get_llm(
-            system_instructions=_EXTRACTION_SYSTEM_INSTRUCTIONS,
-            config=llm_config
-        )
+        self._llm_config = llm_config
+        # The system instructions name the user's language (for the follow-up question), which
+        # depends on the per-request locale. Built on request and memoized per locale.
+        self._extraction_llm_by_locale: dict[Locale, LLM] = {}
 
         # Initialize LLM caller with typed response model
         self._llm_caller: LLMCaller[PreferenceExtractionResult] = LLMCaller[PreferenceExtractionResult](
@@ -268,7 +294,7 @@ class PreferenceExtractor:
         # Call LLM to extract preferences
         try:
             result, llm_stats = await self._llm_caller.call_llm(
-                llm=self._extraction_llm,  # LLM already has system instructions
+                llm=self._get_extraction_llm(),  # LLM already has system instructions
                 llm_input=full_input,
                 logger=self._logger
             )
@@ -294,6 +320,23 @@ class PreferenceExtractor:
                 confidence=0.0
             )
             return default_result, []
+
+    def _get_extraction_llm(self) -> LLM:
+        """
+        Get the extraction LLM for the current request locale, constructing it on first use.
+
+        This must be called during execution (when the locale context variable is set), not in
+        the constructor, so the follow-up question is written in the user's current language.
+        """
+        locale = get_i18n_manager().get_locale()
+        llm = self._extraction_llm_by_locale.get(locale)
+        if llm is None:
+            llm = get_llm(
+                system_instructions=_build_extraction_system_instructions(locale),
+                config=self._llm_config
+            )
+            self._extraction_llm_by_locale[locale] = llm
+        return llm
 
     def _build_context_prompt(self, vignette: Vignette) -> str:
         """

@@ -127,7 +127,8 @@
       "example": "\n_Exemplo: \"Mais: B, Menos: D\" ou \"Prefiro C e não gosto de A\"_",
       "waIntro": "Óptimo! Agora que entendo o que é importante para si num emprego, vamos descobrir quais as actividades de trabalho que mais lhe interessam.\n\nVou mostrar-lhe grupos de actividades de trabalho. Para cada grupo, diga-me:\n• Que actividade **gostaria mais** de fazer no trabalho?\n• Qual **gostaria menos**?\n\n",
       "waListHeader": "Aqui estão 5 actividades de trabalho:\n\n",
-      "waChoosePrompt": "Qual **gostaria mais**? E qual **gostaria menos**?\n"
+      "waChoosePrompt": "Qual **gostaria mais**? E qual **gostaria menos**?\n",
+      "parseError": "Não consegui entender a sua resposta. Diga-me qual opção gosta **mais** e qual gosta **menos**, usando letras (A-E) ou números (1-5). Por exemplo: \"Mais: B, Menos: D\""
     }
   },
   "recommenderAdvisor": {

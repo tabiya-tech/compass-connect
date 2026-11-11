@@ -19,7 +19,16 @@ _WA_LABEL_FIELD_DEFAULT = "WA_Element_Name_simplified"
 _WA_LABEL_FIELD_BY_LOCALE: Dict[Locale, str] = {
     Locale.SW_KE: "WA_Element_Name_swahili",
     Locale.PT_MZ: "WA_Element_Name_portuguese",
+    Locale.ES_AR: "WA_Element_Name_spanish",
+    Locale.ES_ES: "WA_Element_Name_spanish",
 }
+
+# Words users type to mark their most/least liked option in a typed BWS reply. They cover the
+# wording of the "example" hint in every locale's messages.json (preferenceElicitation.bws.example),
+# so a user who follows the hint in their own language is understood. All languages are accepted
+# regardless of the active locale: users may mix languages, and the words don't collide.
+_BWS_MOST_KEYWORDS = r"(?:\bmost|\bbest|\bprefer|\bm[aá]s|\bprefiero|\bmais|\bprefiro|(?<!kidogo )\bzaidi|\bnapendelea)"
+_BWS_LEAST_KEYWORDS = r"(?:\bleast|\bworst|\bdislike|\bmenos|\bno me gusta|\bn[aã]o gosto de|\bkidogo(?: zaidi)?|\bsipendi)"
 
 
 def _resolve_wa_label_field() -> str:
@@ -235,6 +244,7 @@ def parse_bws_response(user_message: str, task_occupations: List[str]) -> Tuple[
     - Plain text: "Most: B, Least: D"
     - Plain text: "most 3 least 1"
     - Plain text: "I prefer C and dislike A"
+    - Plain text in other locales: "Más: B, Menos: D", "Prefiero C y no me gusta A", ...
 
     Args:
         user_message: User's message (plain text or JSON string)
@@ -274,8 +284,8 @@ def parse_bws_response(user_message: str, task_occupations: List[str]) -> Tuple[
     import re
 
     # Look for letters A-E
-    most_match = re.search(r'(?:most|best|prefer)[:\s]+([a-e])', message)
-    least_match = re.search(r'(?:least|worst|dislike)[:\s]+([a-e])', message)
+    most_match = re.search(_BWS_MOST_KEYWORDS + r'[:\s]+([a-e])\b', message)
+    least_match = re.search(_BWS_LEAST_KEYWORDS + r'[:\s]+([a-e])\b', message)
 
     if most_match and least_match:
         best_letter = most_match.group(1).upper()
@@ -289,8 +299,8 @@ def parse_bws_response(user_message: str, task_occupations: List[str]) -> Tuple[
             return task_occupations[best_idx], task_occupations[worst_idx]
 
     # Pattern 2: "most 2 least 4" (numbers 1-5)
-    most_num_match = re.search(r'(?:most|best|prefer)[:\s]+(\d)', message)
-    least_num_match = re.search(r'(?:least|worst|dislike)[:\s]+(\d)', message)
+    most_num_match = re.search(_BWS_MOST_KEYWORDS + r'[:\s]+(\d)', message)
+    least_num_match = re.search(_BWS_LEAST_KEYWORDS + r'[:\s]+(\d)', message)
 
     if most_num_match and least_num_match:
         best_num = int(most_num_match.group(1))
@@ -300,9 +310,5 @@ def parse_bws_response(user_message: str, task_occupations: List[str]) -> Tuple[
         if 1 <= best_num <= len(task_occupations) and 1 <= worst_num <= len(task_occupations):
             return task_occupations[best_num - 1], task_occupations[worst_num - 1]
 
-    # If we can't parse, raise error for LLM to handle
-    raise ValueError(
-        "Could not understand your response. Please specify which option you like MOST "
-        "and which you like LEAST using letters (A-E) or numbers (1-5). "
-        "For example: 'Most: B, Least: D'"
-    )
+    # If we can't parse, raise an error; its message is shown to the user as-is, so it is localized.
+    raise ValueError(t("messages", "preferenceElicitation.bws.parseError"))
