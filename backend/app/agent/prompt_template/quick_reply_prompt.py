@@ -10,7 +10,7 @@ QUICK_REPLY_PROMPT = """\
     Include quick_reply_options for:
     - Yes/no questions: [{"label": "Yes"}, {"label": "No"}]
     - Confirmation questions (e.g. "Is X correct?"): [{"label": "Yes, that's correct"}, {"label": "No, I'd like to change it"}]
-    - "Do you have any other X?" questions: [{"label": "Yes"}, {"label": "No, that's all"}]
+    - "Have you had any other X?" / "Do you have any other X?" questions: [{"label": "Yes"}, {"label": "No, that's all"}]
     - Starters: [{"label": "Let's start!"}, {"label": "What can you help with?"}]
 
     CRITICAL: When your message text contains a short list of options (bulleted, numbered,
@@ -27,7 +27,7 @@ QUICK_REPLY_PROMPT = """\
     Do not offer multiple options as if they were each independently checkable.
 
     Do NOT include quick_reply_options when:
-    - The question requires a detailed, personal, or free-text answer (e.g. "What was your job title?", "Where did you work?")
+    - The question requires a detailed, personal, or free-text answer (e.g. "What was your role in that job?", "Where did you work?")
     - The options would be long paragraphs
     - You are not asking a question
 """

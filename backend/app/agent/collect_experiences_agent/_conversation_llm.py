@@ -427,7 +427,7 @@ class _ConversationLLM:
                 Do NOT ask me to confirm or review each individual experience. Simply move on to asking if I have more experiences of the current type.
                 
                 When you have finished collecting information for an experience and there are no incomplete experiences remaining for the current work type, 
-                ask me: "Do you have any other [work type description] experiences?" (e.g., "Do you have any other unpaid trainee work experiences?")
+                ask me: "Have you had any other [work type description] experiences?" (e.g., "Have you had any other unpaid trainee work experiences?")
                 
                 Only at the very end, after we have explored all work types, will you provide a recap of all experiences and ask if I want to add or change anything.
                 
@@ -698,7 +698,7 @@ def _ask_experience_type_question(work_type: WorkType) -> str:
     elif work_type == WorkType.UNPAID_WORK:
         return "Have you done any unpaid work (e.g. unpaid trainee or internship, volunteering, caregiving, or helping in a household)?"
     elif work_type == WorkType.FORMAL_SECTOR_UNPAID_TRAINEE_WORK:
-        return "Do you have any other unpaid work as a trainee for a company or organization?"
+        return "Have you done any other unpaid work as a trainee for a company or organization?"
     elif work_type == WorkType.UNSEEN_UNPAID:
         return "Have you done any unpaid work such as community volunteering, caregiving for your own or another family, or helping in a household?"
     elif work_type == WorkType.FORMAL_SECTOR_WAGED_EMPLOYMENT:
@@ -743,7 +743,7 @@ def _get_explore_experiences_instructions(*,
         For each work experience, ask me questions to gather information following the '#Gather Details' instructions.
         
         When you have finished collecting all required information for an experience and there are no incomplete experiences remaining, 
-        ask me: "Do you have any other {experiences_in_type}?" (e.g., "Do you have any other unpaid trainee work experiences?")
+        ask me: "Have you had any other {experiences_in_type}?" (e.g., "Have you had any other unpaid trainee work experiences?")
         Do NOT ask me to confirm or review each individual experience. Simply ask if I have more experiences of this type.
         
         Only move to the next work type after I have explicitly stated I have no more experiences of the current type.
