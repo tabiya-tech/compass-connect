@@ -416,6 +416,18 @@ class CollectExperiencesAgent(Agent):
                 )
                 return conversation_llm_output
 
+            if did_update:
+                # The message above was generated in parallel with the transition decision, while we were still
+                # exploring the previous work type. It is either the generic "let's move on" text (no question) or
+                # a question about the previous type, so the user would be left without a prompt about the next
+                # type until they typed again. Generate the opening of the next work type instead.
+                conversation_llm_output = await self._open_next_work_type(
+                    previous_output=conversation_llm_output,
+                    context=context,
+                    user_input=user_input,
+                    collected_data=collected_data,
+                )
+
         elif transition_decision == TransitionDecision.END_CONVERSATION:
             conversation_llm_output.finished = True
             self.logger.info(
@@ -441,6 +453,45 @@ class CollectExperiencesAgent(Agent):
             )
 
         return conversation_llm_output
+
+    async def _open_next_work_type(self, *,
+                                   previous_output: ConversationLLMAgentOutput,
+                                   context: ConversationContext,
+                                   user_input: AgentInput,
+                                   collected_data: list[CollectedData]) -> ConversationLLMAgentOutput:
+        """
+        Generate the message that opens the exploration of the next unexplored work type.
+
+        Uses the conversation LLM's first-visit prompt, which introduces a work type and asks its opening question
+        without looking at the conversation history. This prevents the LLM from reading the user's last answer
+        (e.g. "no" to paid work) as an answer about the next work type.
+        Falls back to the previous output if the LLM does not return a usable opening question.
+        """
+        next_type = self._state.unexplored_types[0]
+        next_output = await _ConversationLLM().execute(
+            first_time_visit=True,
+            context=context,
+            user_input=user_input,
+            country_of_user=self._state.country_of_user,
+            persona_type=self._state.persona_type,
+            collected_data=collected_data,
+            last_referenced_experience_index=-1,
+            exploring_type=next_type,
+            unexplored_types=self._state.unexplored_types,
+            explored_types=self._state.explored_types,
+            logger=self.logger)
+
+        if (next_output is None
+                or not next_output.message_for_user.strip()
+                or next_output.finished
+                or next_output.exploring_type_finished):
+            self.logger.warning("Could not generate the opening question for work type %s; "
+                                "keeping the previous message.", next_type.name)
+            return previous_output
+
+        self.logger.info("Generated the opening question for the next work type: %s", next_type.name)
+        next_output.llm_stats = previous_output.llm_stats + next_output.llm_stats
+        return next_output
 
     def get_experiences(self) -> list[ExperienceEntity]:
         """
