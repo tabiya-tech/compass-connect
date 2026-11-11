@@ -127,7 +127,8 @@
       "example": "\n_Example: \"Most: B, Least: D\" or \"I prefer C and dislike A\"_",
       "waIntro": "Great! Now that I understand what matters to you in a job, let's figure out which work activities interest you most.\n\nI'll show you groups of work activities. For each group, tell me:\n• Which activity would you **most** enjoy doing at work?\n• Which would you **least** enjoy?\n\n",
       "waListHeader": "Here are 5 work activities:\n\n",
-      "waChoosePrompt": "Which would you **most** enjoy? And which would you **least** enjoy?\n"
+      "waChoosePrompt": "Which would you **most** enjoy? And which would you **least** enjoy?\n",
+      "parseError": "I could not understand your answer. Please tell me which option you like **most** and which you like **least**, using letters (A-E) or numbers (1-5). For example: \"Most: B, Least: D\""
     }
   },
   "recommenderAdvisor": {
