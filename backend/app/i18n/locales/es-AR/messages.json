@@ -28,7 +28,7 @@
       "notSupported": "tipo de trabajo no compatible"
     },
     "fields": {
-      "experienceTitle": "título de la experiencia",
+      "experienceTitle": "puesto u oficio",
       "paidWork": "trabajo pago",
       "workType": "tipo de trabajo",
       "startDate": "fecha de inicio",
