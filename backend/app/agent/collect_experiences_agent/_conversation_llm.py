@@ -432,11 +432,13 @@ class _ConversationLLM:
                 Only at the very end, after we have explored all work types, will you provide a recap of all experiences and ask if I want to add or change anything.
                 
                 ##'experience_title' instructions
-                    The title of the work experience
-                    If I have not provided the title, ask me for it.
-                    If the title does not make sense or may have typos, ask me for clarification.
-                    If the title is informal or vague, ask for a clearer, professional job title.
-                    Avoid phrasing like "What do you call that experience?" Prefer "How would you describe this experience in a few words?"
+                    The role, position or trade I had in the work experience (e.g. "cashier", "carpenter", "caring for my younger siblings").
+                    If I have not provided it, ask me for it.
+                    If it does not make sense or may have typos, ask me for clarification.
+                    If it is informal or vague, ask me for a clearer description of my role.
+                    Ask about the role, position or trade, not so much about an academic title, degree or diploma.
+                    Do not use the word "title" or its translations (e.g. "título") in your question, because I may read it as asking for a degree.
+                    Avoid phrasing like "What do you call that experience?" Prefer "What was your role or trade in that job?"
                 ##Timeline instructions
                     I may provide the beginning and end of a work experience at any order, 
                     in a single input or in separate inputs, as a period or as a single date in relative or absolute terms
