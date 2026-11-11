@@ -11,6 +11,7 @@ from app.agent.skill_linker.classifier.linker import ClassifierSkillLinker
 from app.agent.skill_linker.llm_pipeline import ExperiencePipelineConfig, PipelineSkillLinker
 from app.agent.skill_linker.linker import ISkillLinker
 from app.agent.skill_linker.config import SkillLinkerType
+from app.agent.skill_linker.reranker import GoogleIdTokenProvider, LlmRerankerClient, SkillReranker
 from app.countries import Country
 from app.i18n.translation_service import get_i18n_manager
 from app.i18n.types import Locale
@@ -281,21 +282,25 @@ test_cases = [
 @dataclass(frozen=True)
 class _SkillLinkerVariant:
     """
-    A skill linker configuration to evaluate: the skill linker type and, for the classifier, its API version.
+    A skill linker configuration to evaluate: the skill linker type and, for the classifier, its API version and
+    whether its candidates are reranked by the LLM reranker.
     """
     skill_linker_type: SkillLinkerType
     classifier_api_version: Optional[ClassifierApiVersion] = None
+    reranked: bool = False
 
     @property
     def name(self) -> str:
         if self.classifier_api_version is None:
             return self.skill_linker_type.value
-        return f"{self.skill_linker_type.value}_{self.classifier_api_version.value}"
+        name = f"{self.skill_linker_type.value}_{self.classifier_api_version.value}"
+        return f"{name}_reranked" if self.reranked else name
 
 
 _SKILL_LINKER_VARIANTS = [
     _SkillLinkerVariant(SkillLinkerType.LLM_PIPELINE),
     *(_SkillLinkerVariant(SkillLinkerType.CLASSIFIER, version) for version in ClassifierApiVersion),
+    _SkillLinkerVariant(SkillLinkerType.CLASSIFIER, ClassifierApiVersion.V2, reranked=True),
 ]
 
 
@@ -343,11 +348,20 @@ def _get_skill_linker(skill_linker_variant: _SkillLinkerVariant,
     classifier_api_key = os.getenv("CLASSIFIER_API_KEY")
     if not classifier_api_url or not classifier_api_key:
         pytest.skip(f"CLASSIFIER_API_URL and CLASSIFIER_API_KEY must be set to evaluate the {skill_linker_variant.name} skill linker")
+    reranker = None
+    if skill_linker_variant.reranked:
+        # The reranked linker also calls the real LLM reranker, with the Google ID token of the current credentials.
+        llm_reranker_url = os.getenv("LLM_RERANKER_URL")
+        if not llm_reranker_url:
+            pytest.skip(f"LLM_RERANKER_URL must be set to evaluate the {skill_linker_variant.name} skill linker")
+        reranker = SkillReranker(client=LlmRerankerClient(
+            base_url=llm_reranker_url, token_provider=GoogleIdTokenProvider(audience=llm_reranker_url)))
     return ClassifierSkillLinker(
         version=skill_linker_variant.classifier_api_version,
         client=ClassifierClient(base_url=classifier_api_url, api_key=classifier_api_key),
         skill_search_service=search_services.skill_search_service,
-        config=classifier_config
+        config=classifier_config,
+        reranker=reranker
     )
 
 

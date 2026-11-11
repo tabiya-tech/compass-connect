@@ -8,6 +8,7 @@ from app.agent.skill_linker.classifier.adapters import ClassifierAdapterV1, Clas
 from app.agent.skill_linker.classifier.client import ClassifierClient, ClassifierServiceError, \
     ClassifierV2Response
 from app.agent.skill_linker.classifier.linker import ClassifierSkillLinker
+from app.agent.skill_linker.reranker import LlmRerankerServiceError, SkillReranker
 from app.countries import Country
 
 
@@ -17,6 +18,22 @@ def _match(entity_type: str, uuid: str, score: float) -> dict:
 
 def _entity(entity_type: str, matches: list[dict]) -> dict:
     return {"entity_type": entity_type, "surface_form": "", "span": {"start": 0, "end": 1}, "matches": matches}
+
+
+def _given_v2_client() -> MagicMock:
+    """A classifier with best matches a (0.9) and c (0.8), and remaining match b (0.5)."""
+    given_client = MagicMock(spec=ClassifierClient)
+    given_client.classify_v2 = AsyncMock(return_value=ClassifierV2Response.model_validate({"entities": [
+        _entity("skill", [_match("skill", "a", 0.9), _match("skill", "b", 0.5)]),
+        _entity("skill", [_match("skill", "c", 0.8)]),
+    ]}))
+    return given_client
+
+
+def _given_reranker(**kwargs) -> MagicMock:
+    reranker = MagicMock(spec=SkillReranker)
+    reranker.rerank = AsyncMock(**kwargs)
+    return reranker
 
 
 async def _execute(linker: ClassifierSkillLinker):
@@ -86,3 +103,88 @@ class TestExecute:
         # THEN no skills are returned and no exception is raised
         assert actual_response.top_skills == []
         assert actual_response.remaining_skills == []
+
+
+class TestExecuteWithReranker:
+    @pytest.mark.asyncio
+    async def test_reranked_skills_are_the_top_skills(self):
+        # GIVEN a reranker that picks b, then c
+        given_reranker = MagicMock(spec=SkillReranker)
+
+        async def rerank(**kwargs):
+            by_uuid = {skill.UUID: skill for skill in kwargs["candidates"]}
+            return [by_uuid["b"], by_uuid["c"]]
+
+        given_reranker.rerank = AsyncMock(side_effect=rerank)
+        linker = ClassifierSkillLinker(version=ClassifierApiVersion.V2, client=_given_v2_client(),
+                                       config=ClassifierSkillLinkerConfig(number_of_top_skills=4),
+                                       reranker=given_reranker)
+
+        # WHEN the linker is executed
+        actual_response = await _execute(linker)
+
+        # THEN the reranker got every candidate, sorted by score, and the experience
+        actual_kwargs = given_reranker.rerank.call_args.kwargs
+        assert [skill.UUID for skill in actual_kwargs["candidates"]] == ["a", "c", "b"]
+        assert actual_kwargs["experience_title"] == "Baker"
+        assert actual_kwargs["responsibilities"] == ["I bake bread", "I sell pastries"]
+        assert actual_kwargs["max_skills"] == 4
+        # AND the reranked skills are the top skills, in the reranker's order
+        assert [skill.UUID for skill in actual_response.top_skills] == ["b", "c"]
+        # AND the other candidates are the remaining skills
+        assert [skill.UUID for skill in actual_response.remaining_skills] == ["a"]
+
+    @pytest.mark.asyncio
+    async def test_sends_at_most_max_rerank_candidates(self):
+        # GIVEN a linker that sends at most 2 candidates to the reranker, which picks c
+        given_reranker = MagicMock(spec=SkillReranker)
+
+        async def rerank(**kwargs):
+            return [skill for skill in kwargs["candidates"] if skill.UUID == "c"]
+
+        given_reranker.rerank = AsyncMock(side_effect=rerank)
+        linker = ClassifierSkillLinker(version=ClassifierApiVersion.V2, client=_given_v2_client(),
+                                       config=ClassifierSkillLinkerConfig(max_rerank_candidates=2),
+                                       reranker=given_reranker)
+
+        # WHEN the linker is executed
+        actual_response = await _execute(linker)
+
+        # THEN only the 2 best scoring candidates are reranked
+        assert [skill.UUID for skill in given_reranker.rerank.call_args.kwargs["candidates"]] == ["a", "c"]
+        # AND the candidates that were not sent are still remaining skills
+        assert [skill.UUID for skill in actual_response.top_skills] == ["c"]
+        assert [skill.UUID for skill in actual_response.remaining_skills] == ["a", "b"]
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("given_reranker_behaviour", [
+        {"side_effect": LlmRerankerServiceError("boom")},
+        {"return_value": []},
+    ], ids=["reranker error", "reranker picks nothing"])
+    async def test_keeps_the_classifier_ranking(self, given_reranker_behaviour: dict):
+        # GIVEN a reranker that fails or picks nothing
+        linker = ClassifierSkillLinker(version=ClassifierApiVersion.V2, client=_given_v2_client(),
+                                       config=ClassifierSkillLinkerConfig(number_of_top_skills=1),
+                                       reranker=_given_reranker(**given_reranker_behaviour))
+
+        # WHEN the linker is executed
+        actual_response = await _execute(linker)
+
+        # THEN the classifier ranking is kept and no exception is raised
+        assert [skill.UUID for skill in actual_response.top_skills] == ["a"]
+        assert [skill.UUID for skill in actual_response.remaining_skills] == ["c", "b"]
+
+    @pytest.mark.asyncio
+    async def test_does_not_call_the_reranker_without_candidates(self):
+        # GIVEN a classifier that matches nothing
+        given_client = MagicMock(spec=ClassifierClient)
+        given_client.classify_v2 = AsyncMock(return_value=ClassifierV2Response.model_validate({"entities": []}))
+        given_reranker = _given_reranker(return_value=[])
+        linker = ClassifierSkillLinker(version=ClassifierApiVersion.V2, client=given_client, reranker=given_reranker)
+
+        # WHEN the linker is executed
+        actual_response = await _execute(linker)
+
+        # THEN the reranker is not called
+        given_reranker.rerank.assert_not_called()
+        assert actual_response.top_skills == []

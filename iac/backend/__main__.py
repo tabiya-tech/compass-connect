@@ -124,6 +124,7 @@ def main():
         classifier_api_url=getenv("CLASSIFIER_API_URL", False, False),
         classifier_api_key=getenv("CLASSIFIER_API_KEY", True, False),
         classifier_api_version=getenv("CLASSIFIER_API_VERSION", False, False),
+        llm_reranker_url=getenv("LLM_RERANKER_URL", False, False),
 
         # Phase transition behavior (optional)
         inline_phase_transition=getenv("COMPASS_INLINE_PHASE_TRANSITION", False, False),

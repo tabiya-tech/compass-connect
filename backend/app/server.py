@@ -311,6 +311,7 @@ application_config = ApplicationConfig(
     classifier_api_url=os.getenv("CLASSIFIER_API_URL") or None,
     classifier_api_key=os.getenv("CLASSIFIER_API_KEY") or None,
     classifier_api_version=os.getenv("CLASSIFIER_API_VERSION") or ClassifierApiVersion.V2,
+    llm_reranker_url=os.getenv("LLM_RERANKER_URL") or None,
     telegram_config=parse_telegram_config(bot_token=os.getenv("BACKEND_TELEGRAM_BOT_TOKEN"),
                                           webhook_secret=os.getenv("BACKEND_TELEGRAM_WEBHOOK_SECRET"),
                                           webhook_url=os.getenv("BACKEND_TELEGRAM_WEBHOOK_URL"),
@@ -322,8 +323,9 @@ set_application_config(application_config)
 if os.getenv("LLM_MODEL_NAME"):
     logger.warning("LLM_MODEL_NAME is no longer supported and is ignored, use LLM_DEFAULT_MODEL instead.")
 if application_config.skill_linker == SkillLinkerType.CLASSIFIER:
-    logger.info("Skill linker: %s, API version: %s", application_config.skill_linker.value,
-                application_config.classifier_api_version.value)
+    logger.info("Skill linker: %s, API version: %s, LLM reranker: %s", application_config.skill_linker.value,
+                application_config.classifier_api_version.value,
+                "enabled" if application_config.llm_reranker_url else "disabled")
 else:
     logger.info("Skill linker: %s", application_config.skill_linker.value)
 logger.info("LLM provider: %s, models: %s", application_config.llm_provider,
