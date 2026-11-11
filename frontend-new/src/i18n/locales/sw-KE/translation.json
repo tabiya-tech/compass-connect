@@ -173,7 +173,9 @@
       "typingChatMessage": {
         "typing": "Inaandika",
         "thinking": "Tafadhali subiri, nafikiri",
-        "thinkingPreferenceElicitation": "Inafikiria jibu lako…"
+        "thinkingPreferenceElicitation": "Inafikiria jibu lako…",
+        "stillWorking": "Hii inaweza kuchukua muda kidogo, bado ninashughulikia",
+        "thanksForWaiting": "Asante kwa subira yako, bado ninaandaa jibu lako"
       },
       "bwsTaskMessage": {
         "whichWouldYouPrefer": "Ungependa ipi?",
