@@ -259,6 +259,8 @@
     "conversationConcluded": "This conversation has ended. Send /report to get your skills report, or /restart to start a new conversation.",
     "messageTooLong": "Your message is too long. Please keep it under {max_length} characters.",
     "emptyMessage": "Please type a message, or send /help to see what you can do.",
-    "unexpectedError": "Sorry, something went wrong on our side. Please try again in a moment."
+    "unexpectedError": "Sorry, something went wrong on our side. Please try again in a moment.",
+    "unsupportedMessage": "Sorry, I can only read text messages. Please type your answer.",
+    "documentUnavailable": "Sorry, I could not send the file right now. Please try again later."
   }
 }

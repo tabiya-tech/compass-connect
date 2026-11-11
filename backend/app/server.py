@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.admin.registrations import add_admin_registrations_routes
 from app.admin.routes import get_admin_routes
+from app.channels.bots.registry import build_channel_bots
+from app.channels.bots.telegram.config import parse_telegram_config
 from app.channels.routes import add_channels_routes
 from app.conversations.routes import add_conversation_routes
 from app.countries import Country, get_country_from_string
@@ -309,6 +311,10 @@ application_config = ApplicationConfig(
     classifier_api_url=os.getenv("CLASSIFIER_API_URL") or None,
     classifier_api_key=os.getenv("CLASSIFIER_API_KEY") or None,
     classifier_api_version=os.getenv("CLASSIFIER_API_VERSION") or ClassifierApiVersion.V2,
+    telegram_config=parse_telegram_config(bot_token=os.getenv("BACKEND_TELEGRAM_BOT_TOKEN"),
+                                          webhook_secret=os.getenv("BACKEND_TELEGRAM_WEBHOOK_SECRET"),
+                                          webhook_url=os.getenv("BACKEND_TELEGRAM_WEBHOOK_URL"),
+                                          backend_url=backend_url),
 )
 
 set_application_config(application_config)
@@ -347,6 +353,12 @@ feature_loader = FeatureLoader(application_config=application_config)
 
 
 ############################################
+# Initialize the chat bots (Telegram)
+############################################
+channel_bots = build_channel_bots(application_config)
+
+
+############################################
 # Initiate the FastAPI app
 ############################################
 
@@ -382,11 +394,22 @@ async def lifespan(_app: FastAPI):
     # so that plugins will be loaded after the application is initialized.
     await feature_loader.init(application_db)
 
+    # Start the chat bots once the databases are ready: they register their webhooks in the background.
+    for channel_bot in channel_bots:
+        await channel_bot.start()
+
     logger.info("Application started successfully.")
     # noinspection PyUnresolvedReferences
     _app.state.startup_complete.set()  # signal startup complete
 
     yield
+
+    # Let the chat bots finish the turns in progress while the features and the databases are still up.
+    for channel_bot in channel_bots:
+        try:
+            await channel_bot.stop()
+        except Exception as e:  # pylint: disable=broad-except
+            logger.exception("Failed to stop the %s bot: %s", channel_bot.channel.value, e)
 
     # Tear down features before shutting down the application
     # this is important to ensure that the features are properly cleaned up
@@ -557,6 +580,8 @@ add_integration_routes(app)
 # Add channels routes (chat bots: Telegram, WhatsApp)
 ############################################
 add_channels_routes(app)
+for _channel_bot in channel_bots:
+    app.include_router(_channel_bot.router())
 
 ############################################
 # Add metrics routes

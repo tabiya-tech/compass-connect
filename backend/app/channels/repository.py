@@ -3,9 +3,12 @@ from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
+from pymongo.errors import DuplicateKeyError
 
 from app.channels.bws_renderer import BwsTask
+from app.channels.types import Channel
 from app.server_dependencies.database_collections import Collections
+from common_libs.time_utilities import get_now
 
 
 class PendingBwsAnswer(BaseModel):
@@ -51,10 +54,21 @@ class IChannelStateRepository(ABC):
         """
         raise NotImplementedError()
 
+    @abstractmethod
+    async def record_received_update(self, channel: Channel, update_id: int) -> bool:
+        """
+        Remember that the bot received an update of the channel (e.g. a Telegram update), for a day.
+
+        :return: True the first time, False if the update was already received (the channel sent it again)
+        :raises Exception: if any database error occurs
+        """
+        raise NotImplementedError()
+
 
 class ChannelStateRepository(IChannelStateRepository):
     def __init__(self, db: AsyncIOMotorDatabase):
         self._collection = db.get_collection(Collections.CHANNEL_PENDING_BWS_ANSWERS)
+        self._received_updates = db.get_collection(Collections.CHANNEL_RECEIVED_UPDATES)
 
     async def get_pending_bws_answer(self, session_id: int) -> Optional[PendingBwsAnswer]:
         doc = await self._collection.find_one({"session_id": {"$eq": session_id}})
@@ -68,3 +82,11 @@ class ChannelStateRepository(IChannelStateRepository):
 
     async def delete_pending_bws_answer(self, session_id: int) -> None:
         await self._collection.delete_one({"session_id": {"$eq": session_id}})
+
+    async def record_received_update(self, channel: Channel, update_id: int) -> bool:
+        try:
+            await self._received_updates.insert_one(
+                {"channel": channel.value, "update_id": update_id, "received_at": get_now()})
+            return True
+        except DuplicateKeyError:
+            return False
