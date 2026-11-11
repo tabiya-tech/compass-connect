@@ -182,7 +182,8 @@
         "most": "Zambiri:",
         "least": "Zochepera:",
         "submit": "Tumizani",
-        "submitted": "Yatumizidwa"
+        "submitted": "Yatumizidwa",
+        "progress": "{{taskNumber}} mwa {{totalTasks}}"
       },
       "conversationConclusionFooter": {
         "youCanNow": "Tsopano mungathe",

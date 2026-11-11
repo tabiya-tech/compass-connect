@@ -17,6 +17,13 @@ class Operation(CollectedData):
     data_operation: str
 
 
+def _is_same_title(new_title: str, current_title: str | None) -> bool:
+    """Whether two experience titles are the same, ignoring letter case and surrounding spaces."""
+    if current_title is None:
+        return False
+    return new_title.strip().casefold() == current_title.strip().casefold()
+
+
 class OperationsProcessor:
     """
     Handles the complex logic for processing experience data operations.
@@ -97,8 +104,10 @@ class OperationsProcessor:
 
             # Update fields if they are not None
             if _data.experience_title is not None:
-                if _data.experience_title != to_update.experience_title:
+                if not _is_same_title(_data.experience_title, to_update.experience_title):
                     # Reset normalized title to allow re-normalization on title changes.
+                    # Changes in letter case or surrounding spaces only ("Cajera" -> "cajera") keep it,
+                    # so the slow occupation matching is not run again for the same title.
                     to_update.normalized_experience_title = None
                 to_update.experience_title = _data.experience_title
             if _data.paid_work is not None:
