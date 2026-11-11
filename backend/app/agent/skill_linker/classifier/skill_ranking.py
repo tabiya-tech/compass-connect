@@ -16,16 +16,12 @@ class SkillCandidate(BaseModel):
     """
 
 
-def rank_skills(candidates: list[SkillCandidate], *,
-                number_of_top_skills: int) -> tuple[list[SkillEntity], list[SkillEntity]]:
+def deduplicate_candidates(candidates: list[SkillCandidate]) -> list[SkillCandidate]:
     """
-    Rank the skill candidates into the top skills and the remaining skills of the experience.
+    Deduplicate the skill candidates by UUID, keeping the highest score. A skill is a best match if it was
+    the best match of at least one extracted entity.
 
-    The candidates are deduplicated by UUID, keeping the highest score. A skill is a top skill candidate
-    if it was the best match of at least one extracted entity. The best scoring top skill candidates
-    are the top skills, every other skill is a remaining skill. Both lists are sorted by score, descending.
-
-    :return: (top_skills, remaining_skills)
+    :return: The unique candidates, sorted by score, descending.
     """
     best_by_uuid: dict[str, SkillCandidate] = {}
     for candidate in candidates:
@@ -37,8 +33,21 @@ def rank_skills(candidates: list[SkillCandidate], *,
             skill=candidate.skill if candidate.skill.score > existing.skill.score else existing.skill,
             is_best_match=candidate.is_best_match or existing.is_best_match
         )
+    return sorted(best_by_uuid.values(), key=lambda c: c.skill.score, reverse=True)
 
-    by_score = sorted(best_by_uuid.values(), key=lambda c: c.skill.score, reverse=True)
+
+def rank_skills(candidates: list[SkillCandidate], *,
+                number_of_top_skills: int) -> tuple[list[SkillEntity], list[SkillEntity]]:
+    """
+    Rank the skill candidates into the top skills and the remaining skills of the experience.
+
+    The candidates are deduplicated by UUID (see deduplicate_candidates). A skill is a top skill candidate
+    if it was the best match of at least one extracted entity. The best scoring top skill candidates
+    are the top skills, every other skill is a remaining skill. Both lists are sorted by score, descending.
+
+    :return: (top_skills, remaining_skills)
+    """
+    by_score = deduplicate_candidates(candidates)
     top_skill_candidates = [c.skill for c in by_score if c.is_best_match]
     top_skills = top_skill_candidates[:number_of_top_skills]
     top_skills_uuids = {skill.UUID for skill in top_skills}

@@ -195,6 +195,12 @@ class ApplicationConfig(BaseModel):
     classifier_api_url: Optional[str] = None
     classifier_api_key: Optional[str] = None
     classifier_api_version: ClassifierApiVersion = ClassifierApiVersion.V2
+    llm_reranker_url: Optional[str] = None
+    """
+    URL of the LLM reranker service. When set, the classifier skill linker reranks the classifier's skill
+    candidates with it. Only used when skill_linker is "classifier".
+    Set via LLM_RERANKER_URL environment variable.
+    """
 
     telegram_config: Optional[TelegramConfig] = None
     """

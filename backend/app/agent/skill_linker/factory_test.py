@@ -58,6 +58,48 @@ class TestGetSkillLinker:
         assert isinstance(actual_linker._adapter, expected_adapter_class)
 
 
+    @pytest.mark.parametrize("llm_reranker_url, expect_reranker", [
+        (None, False),
+        ("https://reranker.test", True),
+    ])
+    def test_classifier_reranks_only_when_reranker_url_is_set(self, setup_application_config: ApplicationConfig,
+                                                              llm_reranker_url: str | None, expect_reranker: bool):
+        # GIVEN an application config with the classifier skill linker, with or without an LLM reranker URL
+        given_config = setup_application_config.model_copy(update={
+            "skill_linker": SkillLinkerType.CLASSIFIER,
+            "classifier_api_url": "https://classifier.test",
+            "classifier_api_key": "key",
+            "llm_reranker_url": llm_reranker_url,
+        })
+
+        # WHEN the skill linker is created
+        actual_linker = get_skill_linker(application_config=given_config,
+                                         search_services=MagicMock(),
+                                         experience_pipeline_config=ExperiencePipelineConfig())
+
+        # THEN the classifier linker has a reranker only if the URL is set
+        assert isinstance(actual_linker, ClassifierSkillLinker)
+        assert (actual_linker._reranker is not None) == expect_reranker
+
+    def test_reranker_token_provider_is_shared_across_linkers(self, setup_application_config: ApplicationConfig):
+        # GIVEN an application config with the classifier skill linker and an LLM reranker URL
+        given_config = setup_application_config.model_copy(update={
+            "skill_linker": SkillLinkerType.CLASSIFIER,
+            "classifier_api_url": "https://classifier.test",
+            "classifier_api_key": "key",
+            "llm_reranker_url": "https://reranker.test",
+        })
+
+        # WHEN two skill linkers are created (one per request)
+        actual_linkers = [get_skill_linker(application_config=given_config,
+                                           search_services=MagicMock(),
+                                           experience_pipeline_config=ExperiencePipelineConfig()) for _ in range(2)]
+
+        # THEN they share the ID token provider, so the token is cached across requests
+        actual_token_providers = [linker._reranker._client._token_provider for linker in actual_linkers]
+        assert actual_token_providers[0] is actual_token_providers[1]
+
+
 class TestApplicationConfig:
     def test_classifier_requires_url_and_key(self, setup_application_config: ApplicationConfig):
         # GIVEN a classifier skill linker without the classifier url and api key
