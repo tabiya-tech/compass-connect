@@ -113,7 +113,7 @@ const BWSTaskMessage: React.FC<BWSTaskMessageProps> = ({ taskId, taskNumber, tot
             }}
           />
           <Typography variant="caption" sx={{ whiteSpace: "nowrap", color: theme.palette.text.secondary }}>
-            {taskNumber} of {totalTasks}
+            {t("chat.chatMessage.bwsTaskMessage.progress", { taskNumber, totalTasks })}
           </Typography>
         </Box>
 

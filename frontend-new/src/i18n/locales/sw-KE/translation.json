@@ -182,7 +182,8 @@
         "most": "Zaidi:",
         "least": "Kidogo:",
         "submit": "Wasilisha",
-        "submitted": "Imewasilishwa"
+        "submitted": "Imewasilishwa",
+        "progress": "{{taskNumber}} kati ya {{totalTasks}}"
       },
       "conversationConclusionFooter": {
         "youCanNow": "Sasa unaweza",

@@ -286,6 +286,31 @@ class TestExperienceDataProcessor:
         assert experience.end_date == "2022"  # Unchanged
         assert experience.paid_work is True  # Unchanged
 
+    @pytest.mark.parametrize("given_new_title, expected_normalized_title", [
+        ("cajera", "Cajero/a"),  # only the letter case changed
+        ("  Cajera ", "Cajero/a"),  # only surrounding spaces changed
+        ("Cajera de supermercado", None),  # the title changed
+    ])
+    def test_update_title_keeps_normalized_title_unless_title_changes(
+            self, processor, given_new_title, expected_normalized_title):
+        """Should keep the normalized title when the title only differs in letter case or spaces, so it is not matched again."""
+        # GIVEN an existing experience with a normalized title
+        given_experience = _create_collected_data(index=0, experience_title="Cajera")
+        given_experience.normalized_experience_title = "Cajero/a"
+
+        # AND an update operation with a new title
+        given_experiences_data = [
+            create_experience_data(data_operation="UPDATE", index=0, experience_title=given_new_title)
+        ]
+
+        # WHEN processing the experience operations
+        _, actual_collected_data = processor.process(given_experiences_data, [given_experience], 2)
+
+        # THEN the title is updated
+        assert actual_collected_data[0].experience_title == given_new_title
+        # AND the normalized title is kept only if the title is the same
+        assert actual_collected_data[0].normalized_experience_title == expected_normalized_title
+
     def test_update_invalid_index(self, processor, mock_logger):
         """Should handle update with invalid index gracefully."""
         # GIVEN existing collected data with one experience

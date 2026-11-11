@@ -140,7 +140,8 @@
         "most": "Most:",
         "least": "Least:",
         "submit": "Submit",
-        "submitted": "Submitted"
+        "submitted": "Submitted",
+        "progress": "{{taskNumber}} of {{totalTasks}}"
       },
       "conversationConclusionFooter": {
         "youCanNow": "You can now",
