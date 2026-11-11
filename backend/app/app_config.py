@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, model_validator
 from app.agent.skill_linker.classifier import ClassifierApiVersion
 from app.agent.skill_linker.config import SkillLinkerType
 from app.career_explorer.config import CareerExplorerConfig
+from app.channels.bots.telegram.config import TelegramConfig
 from app.countries import Country
 from app.i18n.language_config import LanguageConfig
 from app.users.cv.constants import DEFAULT_MAX_UPLOADS_PER_USER, DEFAULT_RATE_LIMIT_PER_MINUTE
@@ -194,6 +195,12 @@ class ApplicationConfig(BaseModel):
     classifier_api_url: Optional[str] = None
     classifier_api_key: Optional[str] = None
     classifier_api_version: ClassifierApiVersion = ClassifierApiVersion.V2
+
+    telegram_config: Optional[TelegramConfig] = None
+    """
+    The Telegram bot settings, or None when the bot is off.
+    Loaded from the BACKEND_TELEGRAM_* environment variables, see `parse_telegram_config`.
+    """
 
     @model_validator(mode='after')
     def check_cv_upload_configurations(self) -> "ApplicationConfig":

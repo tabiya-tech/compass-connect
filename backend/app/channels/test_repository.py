@@ -5,6 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.channels.bws_renderer import BwsAlternative, BwsTask
 from app.channels.repository import ChannelStateRepository, PendingBwsAnswer
+from app.channels.types import Channel
 from app.server_dependencies.database_collections import Collections
 
 
@@ -119,3 +120,31 @@ class TestDeletePendingBwsAnswer:
 
         # THEN nothing fails, and there is still no pending answer
         assert await repository.get_pending_bws_answer(1) is None
+
+
+@pytest.mark.asyncio
+class TestRecordReceivedUpdate:
+    async def test_records_an_update_once(self, get_db: Awaitable[AsyncIOMotorDatabase]):
+        # GIVEN an update a bot received
+        repository = ChannelStateRepository(await get_db)
+        given_update_id = 1001
+
+        # WHEN it is recorded, then recorded again (the channel sent it again)
+        first = await repository.record_received_update(Channel.TELEGRAM, given_update_id)
+        second = await repository.record_received_update(Channel.TELEGRAM, given_update_id)
+
+        # THEN it is new the first time only
+        assert first is True
+        assert second is False
+
+    async def test_the_same_id_on_another_channel_is_another_update(self,
+                                                                    get_db: Awaitable[AsyncIOMotorDatabase]):
+        # GIVEN an update received on Telegram
+        repository = ChannelStateRepository(await get_db)
+        await repository.record_received_update(Channel.TELEGRAM, 1002)
+
+        # WHEN an update with the same id is received on WhatsApp
+        actual = await repository.record_received_update(Channel.WHATSAPP, 1002)
+
+        # THEN it is a new update
+        assert actual is True
