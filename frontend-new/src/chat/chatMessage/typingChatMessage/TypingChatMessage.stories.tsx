@@ -33,6 +33,13 @@ export const ShownWhenThinking: Story = {
   },
 };
 
+export const ShownWhenStillWorking: Story = {
+  name: "Long wait — still working (after 1s, then 9s)",
+  args: {
+    waitBeforeThinking: 1000,
+  },
+};
+
 // Stories to verify the pulse animation on the loading text
 export const PulsingTypingState: Story = {
   name: "Pulsing — Typing state",

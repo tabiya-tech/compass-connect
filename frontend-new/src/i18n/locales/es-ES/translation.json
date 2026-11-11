@@ -131,7 +131,9 @@
       "typingChatMessage": {
         "typing": "Escribiendo",
         "thinking": "Por favor, espera, esto podría tomar un momento",
-        "thinkingPreferenceElicitation": "Pensando en tu respuesta…"
+        "thinkingPreferenceElicitation": "Pensando en tu respuesta…",
+        "stillWorking": "Esto puede tardar un poco, sigo trabajando",
+        "thanksForWaiting": "Gracias por tu paciencia, sigo preparando tu respuesta"
       },
       "bwsTaskMessage": {
         "whichWouldYouPrefer": "¿Cuál preferirías?",

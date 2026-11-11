@@ -173,7 +173,9 @@
       "typingChatMessage": {
         "typing": "Kulemba",
         "thinking": "Chonde dikirani, ndikuganiza",
-        "thinkingPreferenceElicitation": "Ndikuganiza za yankho lanu…"
+        "thinkingPreferenceElicitation": "Ndikuganiza za yankho lanu…",
+        "stillWorking": "Izi zingatenge kanthawi, ndikugwirabe ntchito",
+        "thanksForWaiting": "Zikomo chifukwa chodikira, ndikukonzekerabe yankho lanu"
       },
       "bwsTaskMessage": {
         "whichWouldYouPrefer": "Mukakonda chiyani?",
