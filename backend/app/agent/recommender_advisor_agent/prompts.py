@@ -14,13 +14,14 @@ from app.agent.prompt_template.agent_prompt_template import (
 from app.agent.prompt_template.locale_style import get_language_style
 from app.countries import Country, get_country_glossary
 from app.agent.recommender_advisor_agent.labor_market_contexts import (
+    HONDURAN_LABOR_MARKET_CONTEXT,
     KENYAN_LABOR_MARKET_CONTEXT,
     ZAMBIAN_LABOR_MARKET_CONTEXT,
 )
 
 # ========== COUNTRY-SPECIFIC LABOR MARKET CONTEXT ==========
 # Context strings are defined in labor_market_contexts.py to keep this file navigable.
-# KENYAN_LABOR_MARKET_CONTEXT and ZAMBIAN_LABOR_MARKET_CONTEXT are imported above.
+# The KENYAN, ZAMBIAN and HONDURAN labor market contexts are imported above.
 
 
 # ========== BASE PROMPT TEMPLATE ==========
@@ -1103,6 +1104,8 @@ Use these terms naturally when they fit the conversation. Don't force them - onl
             labor_market_context = KENYAN_LABOR_MARKET_CONTEXT
         elif country_of_user == Country.ZAMBIA:
             labor_market_context = ZAMBIAN_LABOR_MARKET_CONTEXT
+        elif country_of_user == Country.HONDURAS:
+            labor_market_context = HONDURAN_LABOR_MARKET_CONTEXT
 
         # Add country-specific guidance
         localization_guidance = f"""

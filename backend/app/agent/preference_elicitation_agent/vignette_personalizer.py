@@ -259,6 +259,25 @@ Example Output:
                 "- Include local context (Nairobi traffic, M-Pesa, NHIF/NSSF benefits)\n"
                 "- Make jobs feel relevant to THEIR background, not generic"
             )
+        if country == Country.HONDURAS:
+            return (
+                "Country Context Guidelines:\n"
+                "- Use realistic Honduran job types and employers: maquilas (textile/apparel factories in "
+                "San Pedro Sula, Choloma, Villanueva), call centers (often bilingual), supermarkets and retail "
+                "(La Colonia, Diunsa), banks (BAC Credomatic, Banco Atlántida, Ficohsa), telecoms (Tigo, Claro), "
+                "restaurants, construction, agriculture (coffee, bananas, melon, palm oil), small family businesses "
+                "and pulperías\n"
+                "- Currency is the Honduran lempira (HNL); write amounts as \"L 15,000 al mes\" or \"15,000 lempiras\", "
+                "never pesos, dollars or any other currency\n"
+                "- For reference, the 2026 monthly minimum wage is about L 9,600 to L 19,300 depending on the sector "
+                "and company size (maquila about L 12,930); entry-level jobs usually pay L 10,000 to L 30,000\n"
+                "- Include local context: commuting by bus or rapidito in Tegucigalpa or San Pedro Sula, "
+                "IHSS (social security) and RAP contributions, the mandatory décimo tercer and décimo cuarto mes, "
+                "and the fact that most jobs are informal (no contract or social security)\n"
+                "- Users are not only young people: many are adults who returned from the United States or other "
+                "countries, so fit the jobs to their age and experience (including work done abroad)\n"
+                "- Make jobs feel relevant to THEIR background, not generic"
+            )
         # Generic fallback for unspecified or other countries
         return (
             "Country Context Guidelines:\n"

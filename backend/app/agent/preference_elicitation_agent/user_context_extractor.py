@@ -191,6 +191,19 @@ Example Output:
                 "- Farming, shamba roles = Agriculture\n"
                 "- Jua Kali (informal artisan) = Manufacturing/Artisan"
             )
+        if country == Country.HONDURAS:
+            return (
+                "For Honduran context, recognize local companies and roles:\n"
+                "- Tigo, Claro = Telecoms; BAC Credomatic, Banco Atlántida, Ficohsa = Finance\n"
+                "- La Colonia, Diunsa, pulpería (corner shop) roles = Retail\n"
+                "- Operario(a) de maquila (garment factory worker) = Manufacturing\n"
+                "- Agente de call center = Customer service / Business process outsourcing\n"
+                "- Teaching roles = Education\n"
+                "- Mototaxi driver, bus or rapidito cobrador = Transportation\n"
+                "- Jornalero(a) on coffee, banana, melon or palm farms = Agriculture\n"
+                "- Many users returned from the United States or other countries: work done abroad "
+                "(construction, cleaning, kitchens, factories, landscaping, caregiving) counts as real experience"
+            )
         return (
             "Recognize local companies, informal job titles, and sector-specific roles "
             "based on the user's described location and context."
