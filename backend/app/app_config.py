@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, model_validator
 from app.agent.skill_linker.classifier import ClassifierApiVersion
 from app.agent.skill_linker.config import SkillLinkerType
 from app.career_explorer.config import CareerExplorerConfig
-from app.channels.bots.telegram.config import TelegramConfig
+from app.channels.config import ChannelsConfig
 from app.countries import Country
 from app.i18n.language_config import LanguageConfig
 from app.users.cv.constants import DEFAULT_MAX_UPLOADS_PER_USER, DEFAULT_RATE_LIMIT_PER_MINUTE
@@ -202,10 +202,10 @@ class ApplicationConfig(BaseModel):
     Set via LLM_RERANKER_URL environment variable.
     """
 
-    telegram_config: Optional[TelegramConfig] = None
+    channels_config: ChannelsConfig = Field(default_factory=ChannelsConfig)
     """
-    The Telegram bot settings, or None when the bot is off.
-    Loaded from the BACKEND_TELEGRAM_* environment variables, see `parse_telegram_config`.
+    The channels of this deployment: the /api/channels/** routes and the chat bots. Off by default.
+    Loaded from BACKEND_ENABLE_CHANNELS, BACKEND_ENABLE_TELEGRAM_BOT and BACKEND_TELEGRAM_*, see `parse_channels_config`.
     """
 
     @model_validator(mode='after')

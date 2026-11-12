@@ -1,10 +1,13 @@
 from datetime import datetime, timezone
+from enum import Enum
 from typing import Literal, final, Any, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
 from .common import hash_metric_value
 from app.app_config import get_application_config
+from app.channels.types import Channel
+from app.context_vars import channel_ctx_var
 from app.conversations.reactions.types import ReactionKind, DislikeReason
 from app.metrics.constants import EventType
 from common_libs.time_utilities import get_now
@@ -41,6 +44,12 @@ class AbstractCompassMetricEvent(BaseModel):
     timestamp: datetime = Field(default_factory=get_now)
     """
     timestamp - the timestamp of the event
+    """
+
+    channel: str = Field(default_factory=lambda: (channel_ctx_var.get() or Channel.WEB_APP).value)
+    """
+    channel - where the event comes from: "web-app", or the chat bot, e.g. "telegram".
+    Taken from the context the channels set (see app.channels.observability.set_channel_context), the web app otherwise.
     """
 
     class Config:
@@ -179,6 +188,88 @@ class JobMatchesGeneratedEvent(AbstractUserAccountEvent):
             event_type=EventType.JOB_MATCHES_GENERATED,
             matches_count=matches_count,
             relevant_experiments=relevant_experiments or {},
+        )
+
+    class Config:
+        extra = "forbid"
+
+
+@final
+class BotUserAccountCreatedEvent(AbstractUserAccountEvent):
+    """
+    A metric event representing the creation of the anonymous Compass user of a chat bot user (e.g. on Telegram).
+
+    The account also counts in USER_ACCOUNT_CREATED, with the same channel: this event counts the bot accounts alone.
+    """
+
+    def __init__(self, *, user_id: str, channel: Channel, client_id: str | None = None,
+                 relevant_experiments: dict[str, str] | None = None):
+        super().__init__(
+            user_id=user_id,
+            client_id=client_id,
+            channel=channel.value,
+            event_type=EventType.BOT_USER_ACCOUNT_CREATED,
+            relevant_experiments=relevant_experiments or {},
+        )
+
+    class Config:
+        extra = "forbid"
+
+
+@final
+class BotConversationInitializedEvent(AbstractUserAccountEvent):
+    """
+    A metric event representing a chat bot user opening the bot (e.g. /start on Telegram) and getting the welcome
+    message of their conversation.
+    """
+    is_new_user: bool
+    """
+    is_new_user - whether the Compass user of the bot user was created by this initialization
+    """
+
+    def __init__(self, *, user_id: str, channel: Channel, is_new_user: bool, client_id: str | None = None,
+                 relevant_experiments: dict[str, str] | None = None):
+        super().__init__(
+            user_id=user_id,
+            client_id=client_id,
+            channel=channel.value,
+            event_type=EventType.BOT_CONVERSATION_INITIALIZED,
+            is_new_user=is_new_user,
+            relevant_experiments=relevant_experiments or {},
+        )
+
+    class Config:
+        extra = "forbid"
+
+
+class BotRegistrationStatus(str, Enum):
+    """
+    The outcome of a chat bot registering itself with its channel (e.g. the Telegram webhook) when it starts.
+    """
+    REGISTERED = "registered"
+    """the webhook or the commands were registered again"""
+    UNCHANGED = "unchanged"
+    """the channel already had them"""
+    FAILED = "failed"
+    """the channel could not be reached"""
+
+
+@final
+class BotInitializedEvent(AbstractCompassMetricEvent):
+    """
+    A metric event representing a chat bot starting with the backend, and registering itself with its channel (e.g.
+    the Telegram webhook). Not about a user.
+    """
+    registration_status: BotRegistrationStatus
+    """
+    registration_status - whether the bot registered itself with its channel again, found it unchanged, or failed
+    """
+
+    def __init__(self, *, channel: Channel, registration_status: BotRegistrationStatus):
+        super().__init__(
+            channel=channel.value,
+            event_type=EventType.BOT_INITIALIZED,
+            registration_status=registration_status,
         )
 
     class Config:

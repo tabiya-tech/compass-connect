@@ -10,6 +10,8 @@ from pydantic import ValidationError
 
 from app.agent.experience import WorkType
 from app.app_config import ApplicationConfig, set_application_config
+from app.channels.types import Channel
+from app.context_vars import channel_ctx_var
 from app.conversations.reactions.types import ReactionKind, DislikeReason
 from app.metrics.constants import EventType
 from app.metrics.types import (
@@ -712,3 +714,24 @@ class TestSkillChangedEvent:
                 action=action,
                 extra_field=given_extra_field  # type: ignore
             )
+
+
+class TestChannel:
+    def test_the_channel_is_the_web_app_by_default(self, setup_application_config):
+        # WHEN an event is created outside a channel
+        actual = UserAccountCreatedEvent(user_id="foo")
+
+        # THEN it comes from the web app
+        assert actual.channel == "web-app"
+
+    def test_the_channel_is_the_one_of_the_context(self, setup_application_config):
+        # GIVEN the work comes from the telegram bot
+        token = channel_ctx_var.set(Channel.TELEGRAM)
+        try:
+            # WHEN an event is created
+            actual = UserAccountCreatedEvent(user_id="foo")
+        finally:
+            channel_ctx_var.reset(token)
+
+        # THEN it comes from telegram
+        assert actual.channel == "telegram"

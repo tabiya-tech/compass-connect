@@ -92,11 +92,15 @@ class BackendServiceConfig:
     plain_personal_data_fields: Optional[str]
     extra_allowed_origins: Optional[str]
 
-    # Telegram bot (optional): Telegram is off when the token is not set.
+    # Channels (optional): off unless enable_channels is "true", see docs/channels/deployment.md.
+    enable_channels: Optional[str]
+    """ BACKEND_ENABLE_CHANNELS: "true" registers the /api/channels/** routes. """
+    enable_telegram_bot: Optional[str]
+    """ BACKEND_ENABLE_TELEGRAM_BOT: "true" runs the Telegram bot. Needs enable_channels. """
     telegram_bot_token: Optional[str]
-    """ The token of the Telegram bot, from @BotFather. Should be a secret. """
+    """ The token of the Telegram bot, from @BotFather, required when the bot is enabled. A secret. """
     telegram_webhook_secret: Optional[str]
-    """ Telegram sends it with every update, to authenticate the webhook. Should be a secret. """
+    """ Telegram sends it with every update, to authenticate the webhook. Required with the token. A secret. """
     telegram_webhook_url: Optional[str]
     """ The public URL of the webhook, {backend_url}/api/channels/telegram/webhook by default. """
 
@@ -578,6 +582,12 @@ def _deploy_cloud_run_service(
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="BACKEND_TELEGRAM_WEBHOOK_SECRET",
                             value=backend_service_cfg.telegram_webhook_secret or ""),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="BACKEND_ENABLE_CHANNELS",
+                            value=backend_service_cfg.enable_channels or ""),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="BACKEND_ENABLE_TELEGRAM_BOT",
+                            value=backend_service_cfg.enable_telegram_bot or ""),
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="BACKEND_TELEGRAM_WEBHOOK_URL",
                             value=backend_service_cfg.telegram_webhook_url or ""),

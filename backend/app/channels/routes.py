@@ -13,6 +13,8 @@ from app.channels.types import CHANNEL_USER_ID_PATTERN, IncomingMessage, Initial
 from app.constants.errors import HTTPErrorResponse
 from app.conversations.routes import get_conversation_service
 from app.conversations.service import IConversationService
+from app.metrics.services.get_metrics_service import get_metrics_service
+from app.metrics.services.service import IMetricsService
 from app.server_dependencies.db_dependencies import CompassDBProvider
 from app.users.auth import ApiKeyAuth
 from app.users.get_user_preferences_repository import get_user_preferences_repository
@@ -48,6 +50,7 @@ async def get_channel_gateway_service(
         conversation_service: IConversationService = Depends(get_conversation_service),
         plain_personal_data_service: IPlainPersonalDataService = Depends(get_plain_personal_data_service),
         application_db: AsyncIOMotorDatabase = Depends(CompassDBProvider.get_application_db),
+        metrics_service: IMetricsService = Depends(get_metrics_service),
 ) -> IChannelGatewayService:
     app_config = get_application_config()
     return ChannelGatewayService(
@@ -56,6 +59,7 @@ async def get_channel_gateway_service(
         conversation_service=conversation_service,
         plain_personal_data_service=plain_personal_data_service,
         channel_state_repository=ChannelStateRepository(application_db),
+        metrics_service=metrics_service,
         default_language=app_config.language_config.default_locale.value,
     )
 

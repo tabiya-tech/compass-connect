@@ -6,15 +6,18 @@ from abc import ABC, abstractmethod
 from typing import Awaitable, Callable, Optional, TypeVar
 
 import httpx
+import sentry_sdk
 from fastapi import APIRouter
 
 from app.channels.bots.events import EventKind, IncomingEvent
 from app.channels.bots.text import split_text
+from app.channels.observability import ChannelOperation, capture_gateway_error, set_channel_context
 from app.channels.service import ChannelUserNotFoundError, IChannelGatewayService
 from app.channels.types import Channel, Document, IncomingMessage, OutgoingMessage
 from app.conversations.constants import MAX_MESSAGE_LENGTH
 from app.i18n.translation_service import get_i18n_manager, t
 from app.i18n.types import Locale
+from app.metrics.services.service import IMetricsService
 
 T = TypeVar("T")
 
@@ -77,8 +80,12 @@ class ChannelBot(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def start(self) -> None:
-        """ Called when the backend starts, e.g. to register the webhook. Must not fail the startup. """
+    async def start(self, metrics_service: IMetricsService) -> None:
+        """
+        Called when the backend starts, e.g. to register the webhook. Must not fail the startup.
+
+        :param metrics_service: to record that the bot initialized (BOT_INITIALIZED)
+        """
         raise NotImplementedError()
 
     @abstractmethod
@@ -108,7 +115,18 @@ class ChannelBot(ABC):
     async def handle(self, event: IncomingEvent, service: IChannelGatewayService) -> None:
         """
         Handle what the user did: pass it to the channels service, and send the user the messages it returns.
+
+        Runs in its own Sentry isolation scope: it usually runs in the background, after the webhook answered, and its
+        channel tags must not reach other work.
         """
+        with sentry_sdk.isolation_scope():
+            await self._handle(event, service)
+
+    async def _handle(self, event: IncomingEvent, service: IChannelGatewayService) -> None:
+        operation = ChannelOperation.COMMAND if event.kind == EventKind.COMMAND else \
+            ChannelOperation.CONVERSATION_MESSAGE
+        set_channel_context(self.channel, operation)
+
         # The texts of the bot are in the default language until the service sets the language of the user.
         get_i18n_manager().set_locale(self._default_locale)
 
@@ -129,11 +147,17 @@ class ChannelBot(ABC):
             try:
                 messages = await self._while_typing(event.user_id, self._call_service(event, service))
             except Exception as e:  # pylint: disable=broad-except
+                capture_gateway_error(e)
                 self._logger.exception("Failed to handle a %s event: %s", event.kind.value, e)
                 await self.send_text(event.user_id, t("messages", "channels.unexpectedError"), None)
                 return
 
-            await self._send_messages(event.user_id, messages)
+            try:
+                await self._send_messages(event.user_id, messages)
+            except Exception as e:
+                # the channel did not take the reply (e.g. Telegram is down, or the user blocked the bot)
+                capture_gateway_error(e)
+                raise
 
     async def _call_service(self, event: IncomingEvent, service: IChannelGatewayService) -> list[OutgoingMessage]:
         if event.kind == EventKind.COMMAND:

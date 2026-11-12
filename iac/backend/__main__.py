@@ -134,7 +134,9 @@ def main():
         plain_personal_data_fields=getenv("PLAIN_PERSONAL_DATA_FIELDS", False, False),
         extra_allowed_origins=getenv("EXTRA_ALLOWED_ORIGINS", False, False),
 
-        # Telegram bot (optional)
+        # Channels: the /api/channels/** routes and the chat bots (optional, off by default)
+        enable_channels=getenv("BACKEND_ENABLE_CHANNELS", False, False),
+        enable_telegram_bot=getenv("BACKEND_ENABLE_TELEGRAM_BOT", False, False),
         telegram_bot_token=getenv("BACKEND_TELEGRAM_BOT_TOKEN", True, False),
         telegram_webhook_secret=getenv("BACKEND_TELEGRAM_WEBHOOK_SECRET", True, False),
         telegram_webhook_url=getenv("BACKEND_TELEGRAM_WEBHOOK_URL", False, False),
