@@ -1,0 +1,9 @@
+{
+  "pdf": {
+    "canonical_sha256": "d9366d8ffeabc2c4ddf13e2f7e0e93fde8b559a9b061bbc4dfff15d1b92e6586",
+    "pages": 2
+  },
+  "docx": {
+    "canonical_sha256": "0c6cb26ec7d52e86270dbe201f16bf6a043bef3b7db3cd222bbeadd984f35ef1"
+  }
+}

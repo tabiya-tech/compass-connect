@@ -1,0 +1,18 @@
+{
+  "skillsReportTitle": "Relatório de Competências",
+  "skillsDescriptionTitle": "Descrição de Competências",
+  "experiencesTitle": "EXPERIÊNCIAS",
+  "selfEmploymentTitle": "Trabalho por conta própria",
+  "salaryWorkTitle": "Trabalho Assalariado",
+  "unpaidWorkTitle": "Trabalho Não Remunerado",
+  "traineeWorkTitle": "Trabalho de Estagiário",
+  "uncategorizedTitle": "Não Categorizado",
+  "topSkillsTitle": "Principais Competências: ",
+  "skillsDescriptionText": "Abaixo, encontrará uma lista das competências descobertas durante a sua conversa com o {appName}, juntamente com as suas descrições.",
+  "disclaimer": {
+    "part1": "Aviso legal: ",
+    "part2": "As competências listadas baseiam-se numa conversa com o candidato, não são verificadas ou validadas pela Tabiya e podem ser imprecisas. ",
+    "part3": "A informação deve ser verificada antes de ser utilizada para procura de emprego, entrevistas de emprego ou para a criação de um CV. Para rever esta informação, fale novamente com o {appName} ou crie um CV completo baseado neste relatório."
+  },
+  "bodyText": "Este relatório resume a informação fundamental recolhida durante uma conversa com o {appName} em {date}. O {appName} é um chatbot de IA que ajuda quem procura emprego a explorar as suas competências e experiências. Este relatório apresenta a experiência de trabalho do candidato e as competências identificadas em cada experiência. Esta informação pode ser usada para guiar a procura de emprego e destacar as competências ao candidatar-se a empregos, especialmente durante entrevistas com potenciais empregadores. Pode ser um bom ponto de partida para a criação de um CV completo."
+}

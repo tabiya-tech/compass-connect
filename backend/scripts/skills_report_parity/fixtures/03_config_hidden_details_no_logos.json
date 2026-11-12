@@ -1,0 +1,90 @@
+{
+  "description": "Config hides the summary and every optional experience detail (title, summary, location, dates, company); no logos",
+  "locale": "en-GB",
+  "appName": "Njila",
+  "config": {
+    "logos": [],
+    "report": {
+      "summary": {
+        "show": false
+      },
+      "experienceDetails": {
+        "title": false,
+        "summary": false,
+        "location": false,
+        "dateRange": false,
+        "companyName": false
+      }
+    }
+  },
+  "props": {
+    "name": "Brian Otieno",
+    "email": "",
+    "location": "Kisumu",
+    "school": "",
+    "program": "",
+    "conversationConductedAt": "2025-01-05",
+    "experiences": [
+      {
+        "UUID": "e1",
+        "timeline": {
+          "start": "2020",
+          "end": "2021"
+        },
+        "experience_title": "Cashier",
+        "company": "Tuskys",
+        "location": "Kisumu",
+        "work_type": "FORMAL_SECTOR_WAGED_EMPLOYMENT",
+        "summary": "Worked the till.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "a",
+            "preferredLabel": "clean premises",
+            "description": "Clean the premises.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "b",
+            "preferredLabel": "welcome customers",
+            "description": "Greet customers when they arrive.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "c",
+            "preferredLabel": "operate cash register",
+            "description": "Register and handle cash transactions by using a point of sale register.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      },
+      {
+        "UUID": "e2",
+        "timeline": {
+          "start": "2019",
+          "end": ""
+        },
+        "experience_title": "Volunteer cleaner",
+        "company": "Church",
+        "location": "",
+        "work_type": "UNSEEN_UNPAID",
+        "summary": "Cleaned on Sundays.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "a",
+            "preferredLabel": "clean premises",
+            "description": "Clean the premises.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      }
+    ]
+  }
+}

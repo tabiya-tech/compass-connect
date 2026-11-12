@@ -1,0 +1,79 @@
+{
+  "description": "All personal info, every work type, summaries, multi-page skills glossary",
+  "locale": "en-GB",
+  "appName": "Compass",
+  "config": {},
+  "props": {
+    "name": "Amina Wanjiru",
+    "email": "amina.wanjiru@example.com",
+    "location": "Nairobi, Kenya",
+    "school": "University of Nairobi",
+    "program": "BSc Agricultural Economics",
+    "conversationConductedAt": "2025-03-14T09:30:00Z",
+    "experiences": [
+      {
+        "UUID": "exp-1",
+        "timeline": { "start": "2019", "end": "2022" },
+        "experience_title": "Shop assistant",
+        "normalized_experience_title": "Retail Sales Assistant",
+        "company": "Naivas Supermarket",
+        "location": "Nairobi",
+        "work_type": "FORMAL_SECTOR_WAGED_EMPLOYMENT",
+        "summary": "Served customers at the till, restocked shelves and handled daily cash reconciliation for a busy branch with over 2,000 customers per day.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          { "UUID": "s1", "preferredLabel": "handle cash transactions", "description": "Manage cash and card payments accurately, issue receipts and reconcile the till at the end of a shift.", "altLabels": [], "orderIndex": 0 },
+          { "UUID": "s2", "preferredLabel": "assist customers", "description": "Provide support and advice to customers in making purchase decisions by finding out their needs, selecting suitable services and products for them and politely answering questions about products and services.", "altLabels": [], "orderIndex": 1 },
+          { "UUID": "s3", "preferredLabel": "stock shelves", "description": "Fill shelves with merchandise to be sold.", "altLabels": [], "orderIndex": 2 },
+          { "UUID": "s4", "preferredLabel": "maintain store cleanliness", "description": "Keep the store tidy and clean by hovering and mopping.", "altLabels": [], "orderIndex": 3 }
+        ]
+      },
+      {
+        "UUID": "exp-2",
+        "timeline": { "start": "2015", "end": "" },
+        "experience_title": "Caring for my younger siblings",
+        "company": "",
+        "location": "Kisumu",
+        "work_type": "UNSEEN_UNPAID",
+        "summary": "Looked after three younger siblings, prepared meals and helped with homework.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          { "UUID": "s5", "preferredLabel": "care for children", "description": "Look after children by feeding, dressing and supervising them.", "altLabels": [], "orderIndex": 0 },
+          { "UUID": "s2", "preferredLabel": "assist customers", "description": "Provide support and advice to customers in making purchase decisions by finding out their needs, selecting suitable services and products for them and politely answering questions about products and services.", "altLabels": [], "orderIndex": 1 },
+          { "UUID": "s6", "preferredLabel": "prepare meals", "description": "Prepare simple, nutritious meals for a household on a limited budget.", "altLabels": [], "orderIndex": 2 }
+        ]
+      },
+      {
+        "UUID": "exp-3",
+        "timeline": { "start": "", "end": "2023" },
+        "experience_title": "Agricultural extension intern",
+        "company": "Ministry of Agriculture",
+        "location": "",
+        "work_type": "FORMAL_SECTOR_UNPAID_TRAINEE_WORK",
+        "summary": null,
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          { "UUID": "s7", "preferredLabel": "advise farmers", "description": "Provide technical and economic advice in order to optimise the quality and production of agricultural products.", "altLabels": [], "orderIndex": 0 }
+        ]
+      },
+      {
+        "UUID": "exp-4",
+        "timeline": { "start": "", "end": "" },
+        "experience_title": "Selling mandazi at the market",
+        "company": "Own business",
+        "location": "Mombasa",
+        "work_type": null,
+        "summary": "Baked and sold mandazi every weekend.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          { "UUID": "s8", "preferredLabel": "bake goods", "description": "Carry out all tasks for baking such as oven preparation and product loading, until the baked goods are discharged from it.", "altLabels": [], "orderIndex": 0 },
+          { "UUID": "s9", "preferredLabel": "negotiate prices", "description": "Arrange an agreement on the price of products provided or offered.", "altLabels": [], "orderIndex": 1 }
+        ]
+      }
+    ]
+  }
+}

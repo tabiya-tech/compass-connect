@@ -1,0 +1,46 @@
+{
+  "description": "sw-KE translations, school without program, trainee work only",
+  "locale": "sw-KE",
+  "appName": "Compass",
+  "config": {},
+  "props": {
+    "name": "Halima Juma",
+    "email": "halima@example.co.ke",
+    "location": "",
+    "school": "Chuo Kikuu cha Nairobi",
+    "program": "",
+    "conversationConductedAt": "2025-06-01T00:00:00Z",
+    "experiences": [
+      {
+        "UUID": "e1",
+        "timeline": {
+          "start": "Januari 2024",
+          "end": "Machi 2024"
+        },
+        "experience_title": "Mwanafunzi wa mafunzo kazini",
+        "company": "Benki ya Ushirika",
+        "location": "Nairobi",
+        "work_type": "FORMAL_SECTOR_UNPAID_TRAINEE_WORK",
+        "summary": "Nilisaidia katika huduma kwa wateja na utunzaji wa kumbukumbu.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "a",
+            "preferredLabel": "kuhudumia wateja",
+            "description": "Kusaidia wateja kwa kuwasikiliza na kuwapa huduma bora.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "b",
+            "preferredLabel": "kutunza kumbukumbu",
+            "description": "Kuhifadhi kumbukumbu za kifedha kwa usahihi.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      }
+    ]
+  }
+}

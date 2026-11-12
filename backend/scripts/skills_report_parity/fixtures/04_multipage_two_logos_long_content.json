@@ -1,0 +1,418 @@
+{
+  "description": "Two logos (SVG + PNG) with custom sizes, many experiences across pages, long summaries with new lines, a URL that cannot be hyphenated, many skills",
+  "locale": "en-GB",
+  "appName": "Compass",
+  "config": {
+    "logos": [
+      {
+        "url": "/njila-logo-dark.svg",
+        "docxStyles": {
+          "width": 100,
+          "height": 51
+        },
+        "pdfStyles": {
+          "height": 40
+        }
+      },
+      {
+        "url": "/oxford-logo.png",
+        "docxStyles": {
+          "width": 140,
+          "height": 41
+        },
+        "pdfStyles": {
+          "height": 30
+        }
+      }
+    ]
+  },
+  "props": {
+    "name": "Wanjiku Kamau-Odhiambo",
+    "email": "wanjiku.kamau.odhiambo@an-unusually-long-domain-name.example.co.ke",
+    "location": "Eldoret",
+    "school": "Moi University",
+    "program": "Diploma in Cooperative Management",
+    "conversationConductedAt": "2023-07-09T12:00:00.000Z",
+    "experiences": [
+      {
+        "UUID": "x0",
+        "timeline": {
+          "start": "2010",
+          "end": "2011"
+        },
+        "experience_title": "Cooperative coordinator 1",
+        "company": "Umoja Savings & Credit Cooperative Society Limited",
+        "location": "Eldoret, Uasin Gishu County",
+        "work_type": "FORMAL_SECTOR_WAGED_EMPLOYMENT",
+        "summary": "Coordinated the daily operations of a community-based savings and credit cooperative, including record keeping, member onboarding, loan appraisal and repayment follow-up. Introduced a simple spreadsheet-based bookkeeping system that reduced reconciliation errors and improved transparency for members.\nTrained twelve volunteers on customer service, anti-fraud procedures and conflict resolution, and represented the cooperative at district-level stakeholder meetings with microfinance institutions, non-governmental organisations and local government officials.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "s0",
+            "preferredLabel": "manage financial resources",
+            "description": "Control and manage budgets and financial resources providing capable stewardship in financial administration.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s1",
+            "preferredLabel": "keep records of finances",
+            "description": "Keep track of and finalise all formal documents representing the financial transactions of a business or project.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s2",
+            "preferredLabel": "train employees",
+            "description": "Lead and guide employees through a process in which they are taught the necessary skills for the perspective job. Organise activities aimed at introducing the work and systems or improving the performance of individuals and groups in organisational settings.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s3",
+            "preferredLabel": "resolve conflicts",
+            "description": "Take ownership of the handling of all complaints and disputes showing empathy and understanding to achieve resolution.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s4",
+            "preferredLabel": "perform loan appraisal",
+            "description": "Assess the creditworthiness of loan applicants by analysing their financial situation, collateral and repayment capacity.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ],
+        "normalized_experience_title": "Savings and Credit Cooperative Coordinator"
+      },
+      {
+        "UUID": "x1",
+        "timeline": {
+          "start": "2011",
+          "end": "2012"
+        },
+        "experience_title": "Cooperative coordinator 2",
+        "company": "Umoja Savings & Credit Cooperative Society Limited",
+        "location": "Eldoret, Uasin Gishu County",
+        "work_type": "FORMAL_SECTOR_WAGED_EMPLOYMENT",
+        "summary": "Short summary.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "s1",
+            "preferredLabel": "keep records of finances",
+            "description": "Keep track of and finalise all formal documents representing the financial transactions of a business or project.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s2",
+            "preferredLabel": "train employees",
+            "description": "Lead and guide employees through a process in which they are taught the necessary skills for the perspective job. Organise activities aimed at introducing the work and systems or improving the performance of individuals and groups in organisational settings.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s3",
+            "preferredLabel": "resolve conflicts",
+            "description": "Take ownership of the handling of all complaints and disputes showing empathy and understanding to achieve resolution.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s4",
+            "preferredLabel": "perform loan appraisal",
+            "description": "Assess the creditworthiness of loan applicants by analysing their financial situation, collateral and repayment capacity.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s5",
+            "preferredLabel": "liaise with local authorities",
+            "description": "Maintain the liaison and exchange of information with regional or local authorities.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      },
+      {
+        "UUID": "x2",
+        "timeline": {
+          "start": "2012",
+          "end": "2013"
+        },
+        "experience_title": "Cooperative coordinator 3",
+        "company": "Umoja Savings & Credit Cooperative Society Limited",
+        "location": "Eldoret, Uasin Gishu County",
+        "work_type": "FORMAL_SECTOR_WAGED_EMPLOYMENT",
+        "summary": "Coordinated the daily operations of a community-based savings and credit cooperative, including record keeping, member onboarding, loan appraisal and repayment follow-up. Introduced a simple spreadsheet-based bookkeeping system that reduced reconciliation errors and improved transparency for members.\nTrained twelve volunteers on customer service, anti-fraud procedures and conflict resolution, and represented the cooperative at district-level stakeholder meetings with microfinance institutions, non-governmental organisations and local government officials.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "s0",
+            "preferredLabel": "manage financial resources",
+            "description": "Control and manage budgets and financial resources providing capable stewardship in financial administration.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s1",
+            "preferredLabel": "keep records of finances",
+            "description": "Keep track of and finalise all formal documents representing the financial transactions of a business or project.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s2",
+            "preferredLabel": "train employees",
+            "description": "Lead and guide employees through a process in which they are taught the necessary skills for the perspective job. Organise activities aimed at introducing the work and systems or improving the performance of individuals and groups in organisational settings.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s3",
+            "preferredLabel": "resolve conflicts",
+            "description": "Take ownership of the handling of all complaints and disputes showing empathy and understanding to achieve resolution.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s4",
+            "preferredLabel": "perform loan appraisal",
+            "description": "Assess the creditworthiness of loan applicants by analysing their financial situation, collateral and repayment capacity.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s5",
+            "preferredLabel": "liaise with local authorities",
+            "description": "Maintain the liaison and exchange of information with regional or local authorities.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s6",
+            "preferredLabel": "apply anti-fraud procedures",
+            "description": "Recognise suspicious transactions and follow the procedures that prevent and report fraud.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s7",
+            "preferredLabel": "use spreadsheets software",
+            "description": "Use software tools to create and edit tabular data to carry out mathematical calculations, organise data and information, create diagrams based on data and to retrieve them.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      },
+      {
+        "UUID": "x3",
+        "timeline": {
+          "start": "2013",
+          "end": "2014"
+        },
+        "experience_title": "Cooperative coordinator 4",
+        "company": "Umoja Savings & Credit Cooperative Society Limited",
+        "location": "Eldoret, Uasin Gishu County",
+        "work_type": "FORMAL_SECTOR_WAGED_EMPLOYMENT",
+        "summary": "Documented everything at https://example.org/a/very/long/path/that/cannot/be/hyphenated/anywhere/at/all/because/it/is/one/word/and/keeps/going and more.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "s0",
+            "preferredLabel": "manage financial resources",
+            "description": "Control and manage budgets and financial resources providing capable stewardship in financial administration.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s1",
+            "preferredLabel": "keep records of finances",
+            "description": "Keep track of and finalise all formal documents representing the financial transactions of a business or project.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s2",
+            "preferredLabel": "train employees",
+            "description": "Lead and guide employees through a process in which they are taught the necessary skills for the perspective job. Organise activities aimed at introducing the work and systems or improving the performance of individuals and groups in organisational settings.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s3",
+            "preferredLabel": "resolve conflicts",
+            "description": "Take ownership of the handling of all complaints and disputes showing empathy and understanding to achieve resolution.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s4",
+            "preferredLabel": "perform loan appraisal",
+            "description": "Assess the creditworthiness of loan applicants by analysing their financial situation, collateral and repayment capacity.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      },
+      {
+        "UUID": "x4",
+        "timeline": {
+          "start": "2014",
+          "end": "2015"
+        },
+        "experience_title": "Cooperative coordinator 5",
+        "company": "Umoja Savings & Credit Cooperative Society Limited",
+        "location": "Eldoret, Uasin Gishu County",
+        "work_type": "UNSEEN_UNPAID",
+        "summary": "Coordinated the daily operations of a community-based savings and credit cooperative, including record keeping, member onboarding, loan appraisal and repayment follow-up. Introduced a simple spreadsheet-based bookkeeping system that reduced reconciliation errors and improved transparency for members.\nTrained twelve volunteers on customer service, anti-fraud procedures and conflict resolution, and represented the cooperative at district-level stakeholder meetings with microfinance institutions, non-governmental organisations and local government officials.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "s1",
+            "preferredLabel": "keep records of finances",
+            "description": "Keep track of and finalise all formal documents representing the financial transactions of a business or project.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s2",
+            "preferredLabel": "train employees",
+            "description": "Lead and guide employees through a process in which they are taught the necessary skills for the perspective job. Organise activities aimed at introducing the work and systems or improving the performance of individuals and groups in organisational settings.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s3",
+            "preferredLabel": "resolve conflicts",
+            "description": "Take ownership of the handling of all complaints and disputes showing empathy and understanding to achieve resolution.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s4",
+            "preferredLabel": "perform loan appraisal",
+            "description": "Assess the creditworthiness of loan applicants by analysing their financial situation, collateral and repayment capacity.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s5",
+            "preferredLabel": "liaise with local authorities",
+            "description": "Maintain the liaison and exchange of information with regional or local authorities.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      },
+      {
+        "UUID": "x5",
+        "timeline": {
+          "start": "2015",
+          "end": "2016"
+        },
+        "experience_title": "Cooperative coordinator 6",
+        "company": "Umoja Savings & Credit Cooperative Society Limited",
+        "location": "Eldoret, Uasin Gishu County",
+        "work_type": "UNSEEN_UNPAID",
+        "summary": "Short summary.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "s2",
+            "preferredLabel": "train employees",
+            "description": "Lead and guide employees through a process in which they are taught the necessary skills for the perspective job. Organise activities aimed at introducing the work and systems or improving the performance of individuals and groups in organisational settings.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s3",
+            "preferredLabel": "resolve conflicts",
+            "description": "Take ownership of the handling of all complaints and disputes showing empathy and understanding to achieve resolution.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s4",
+            "preferredLabel": "perform loan appraisal",
+            "description": "Assess the creditworthiness of loan applicants by analysing their financial situation, collateral and repayment capacity.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s5",
+            "preferredLabel": "liaise with local authorities",
+            "description": "Maintain the liaison and exchange of information with regional or local authorities.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s6",
+            "preferredLabel": "apply anti-fraud procedures",
+            "description": "Recognise suspicious transactions and follow the procedures that prevent and report fraud.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      },
+      {
+        "UUID": "x6",
+        "timeline": {
+          "start": "2016",
+          "end": "2017"
+        },
+        "experience_title": "Cooperative coordinator 7",
+        "company": "Umoja Savings & Credit Cooperative Society Limited",
+        "location": "Eldoret, Uasin Gishu County",
+        "work_type": null,
+        "summary": "Coordinated the daily operations of a community-based savings and credit cooperative, including record keeping, member onboarding, loan appraisal and repayment follow-up. Introduced a simple spreadsheet-based bookkeeping system that reduced reconciliation errors and improved transparency for members.\nTrained twelve volunteers on customer service, anti-fraud procedures and conflict resolution, and represented the cooperative at district-level stakeholder meetings with microfinance institutions, non-governmental organisations and local government officials.",
+        "exploration_phase": "PROCESSED",
+        "remaining_skills": [],
+        "top_skills": [
+          {
+            "UUID": "s0",
+            "preferredLabel": "manage financial resources",
+            "description": "Control and manage budgets and financial resources providing capable stewardship in financial administration.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s1",
+            "preferredLabel": "keep records of finances",
+            "description": "Keep track of and finalise all formal documents representing the financial transactions of a business or project.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s2",
+            "preferredLabel": "train employees",
+            "description": "Lead and guide employees through a process in which they are taught the necessary skills for the perspective job. Organise activities aimed at introducing the work and systems or improving the performance of individuals and groups in organisational settings.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s3",
+            "preferredLabel": "resolve conflicts",
+            "description": "Take ownership of the handling of all complaints and disputes showing empathy and understanding to achieve resolution.",
+            "altLabels": [],
+            "orderIndex": 0
+          },
+          {
+            "UUID": "s4",
+            "preferredLabel": "perform loan appraisal",
+            "description": "Assess the creditworthiness of loan applicants by analysing their financial situation, collateral and repayment capacity.",
+            "altLabels": [],
+            "orderIndex": 0
+          }
+        ]
+      }
+    ]
+  }
+}

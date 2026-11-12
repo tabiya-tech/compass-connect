@@ -91,6 +91,14 @@ class BackendServiceConfig:
     plain_personal_data_fields: Optional[str]
     extra_allowed_origins: Optional[str]
 
+    # Telegram bot (optional): Telegram is off when the token is not set.
+    telegram_bot_token: Optional[str]
+    """ The token of the Telegram bot, from @BotFather. Should be a secret. """
+    telegram_webhook_secret: Optional[str]
+    """ Telegram sends it with every update, to authenticate the webhook. Should be a secret. """
+    telegram_webhook_url: Optional[str]
+    """ The public URL of the webhook, {backend_url}/api/channels/telegram/webhook by default. """
+
 
 """
 # Set up GCP API Gateway.
@@ -560,6 +568,15 @@ def _deploy_cloud_run_service(
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="PLAIN_PERSONAL_DATA_FIELDS",
                             value=backend_service_cfg.plain_personal_data_fields or "{}"),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="BACKEND_TELEGRAM_BOT_TOKEN",
+                            value=backend_service_cfg.telegram_bot_token or ""),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="BACKEND_TELEGRAM_WEBHOOK_SECRET",
+                            value=backend_service_cfg.telegram_webhook_secret or ""),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="BACKEND_TELEGRAM_WEBHOOK_URL",
+                            value=backend_service_cfg.telegram_webhook_url or ""),
                         # Add more environment variables here
                     ],
                 )

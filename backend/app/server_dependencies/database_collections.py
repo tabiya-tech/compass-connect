@@ -29,3 +29,4 @@ class Collections:
     USER_INSTITUTION_ASSIGNMENT: str = "user_institution_assignment"
     EXTERNAL_USERS: str = "external_users"
     CHANNEL_PENDING_BWS_ANSWERS: str = "channel_pending_bws_answers"
+    CHANNEL_RECEIVED_UPDATES: str = "channel_received_updates"

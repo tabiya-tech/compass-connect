@@ -207,6 +207,15 @@ class CompassDBProvider:
             await application_db.get_collection(Collections.CHANNEL_PENDING_BWS_ANSWERS).create_index([
                 ("session_id", 1)
             ], unique=True)
+            # The updates a chat bot received, to handle an update the channel sends again only once
+            await application_db.get_collection(Collections.CHANNEL_RECEIVED_UPDATES).create_index([
+                ("channel", 1),
+                ("update_id", 1)
+            ], unique=True)
+            # A channel sends an update again within minutes, so a day is enough
+            await application_db.get_collection(Collections.CHANNEL_RECEIVED_UPDATES).create_index([
+                ("received_at", 1)
+            ], expireAfterSeconds=24 * 60 * 60)
 
             # Create the user invitations indexes
             await application_db.get_collection(Collections.USER_INVITATIONS).create_index([
