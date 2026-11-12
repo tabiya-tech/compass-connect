@@ -1,5 +1,10 @@
 import contextvars
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # imported for the type hints only: both modules import this one
+    from app.channels.observability import ChannelOperation
+    from app.channels.types import Channel
 
 # Define a context variable to store the session_id, which will be used to correlate log messages
 # every conversation with a user will have a unique session_id
@@ -53,3 +58,10 @@ llm_call_duration_ms_ctx_var = contextvars.ContextVar(
 user_profile_context_var = contextvars.ContextVar[Optional[str]](
     "user_profile_context", default=None
 )
+
+# The channel the current work comes from, e.g. Channel.TELEGRAM.
+# None for the web app. Set by the channels service and the chat bots, and used to tag metric events and Sentry events.
+channel_ctx_var = contextvars.ContextVar[Optional["Channel"]]("channel", default=None)
+
+# What a channel is doing, e.g. ChannelOperation.CONVERSATION_MESSAGE.
+channel_operation_ctx_var = contextvars.ContextVar[Optional["ChannelOperation"]]("channel_operation", default=None)

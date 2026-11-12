@@ -15,6 +15,9 @@ class EventType(Enum):
     EXPERIENCE_ENTITY_CHANGED = 100009
     SECTOR_ENGAGEMENT = 100010
     JOB_MATCHES_GENERATED = 100011
+    BOT_USER_ACCOUNT_CREATED = 100012
+    BOT_CONVERSATION_INITIALIZED = 100013
+    BOT_INITIALIZED = 100014
 
     # Frontend events
     # As a convention, all events created on the frontend should start with 20000

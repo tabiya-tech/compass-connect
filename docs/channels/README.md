@@ -14,7 +14,13 @@ Compass Connect exposes the full API specification at `<BACKEND_URL>/docs` (tag 
 > `backend/app/i18n/locales/*/messages.json` are in English in every language. The conversation itself comes from
 > Compass in the language of the user.
 
+The Compass backend also runs a Telegram bot of its own, on a webhook. See [deployment.md](deployment.md) to turn
+the channels and the bots on, and [operations.md](operations.md) for the Sentry tags, the alerts and the metrics.
+
 ## Before you start
+
+The channels are off by default: the operator enables them for the instance (`BACKEND_ENABLE_CHANNELS`, see
+[deployment.md](deployment.md)). While they are off, every `/api/channels/**` route answers `404`.
 
 Ask the operator of the Compass instance for:
 

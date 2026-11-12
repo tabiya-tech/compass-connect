@@ -25,25 +25,24 @@ def parse_telegram_config(*,
                           bot_token: Optional[str],
                           webhook_secret: Optional[str],
                           webhook_url: Optional[str],
-                          backend_url: Optional[str]) -> Optional[TelegramConfig]:
+                          backend_url: Optional[str]) -> TelegramConfig:
     """
-    Build the Telegram settings from the environment variables:
-    - BACKEND_TELEGRAM_BOT_TOKEN: the token of the bot. Telegram is off when it is not set.
-    - BACKEND_TELEGRAM_WEBHOOK_SECRET: required with the token. 1 to 256 characters: letters, digits, _ and -.
+    Build the settings of the Telegram bot, when BACKEND_ENABLE_TELEGRAM_BOT is true, from the environment variables:
+    - BACKEND_TELEGRAM_BOT_TOKEN: required, the token of the bot.
+    - BACKEND_TELEGRAM_WEBHOOK_SECRET: required, 1 to 256 characters: letters, digits, _ and -.
     - BACKEND_TELEGRAM_WEBHOOK_URL: optional, {backend_url}/api/channels/telegram/webhook by default. Locally, the URL
       of an HTTPS tunnel to the backend.
 
-    :return: the settings, or None when Telegram is off
     :raises ValueError: if the settings are not valid
     """
     bot_token = (bot_token or "").strip()
     if not bot_token:
-        return None
+        raise ValueError("BACKEND_TELEGRAM_BOT_TOKEN must be set when BACKEND_ENABLE_TELEGRAM_BOT is true")
 
     webhook_secret = (webhook_secret or "").strip()
     if not _WEBHOOK_SECRET_PATTERN.fullmatch(webhook_secret):
-        raise ValueError("BACKEND_TELEGRAM_WEBHOOK_SECRET must be set with BACKEND_TELEGRAM_BOT_TOKEN: 1 to 256 "
-                         "characters, letters, digits, _ and -")
+        raise ValueError("BACKEND_TELEGRAM_WEBHOOK_SECRET must be set when BACKEND_ENABLE_TELEGRAM_BOT is true: 1 to "
+                         "256 characters, letters, digits, _ and -")
 
     webhook_url = (webhook_url or "").strip()
     if not webhook_url:

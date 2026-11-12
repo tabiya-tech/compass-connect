@@ -5,12 +5,16 @@ Compass user, found by their channel and their id on the channel.
 
 import asyncio
 import logging
+import time
 import uuid
 import weakref
 from abc import ABC, abstractmethod
 
 from app.agent.welcome_agent import WelcomeAgent
 from app.channels.bws_renderer import BwsRenderer, is_letter
+from app.channels.config import SLOW_TURN_THRESHOLD_SECONDS
+from app.channels.observability import ChannelOperation, capture_gateway_error, report_turn_duration, \
+    set_channel_context
 from app.channels.renderer import ConversationRenderer, TextRenderer
 from app.channels.repository import IChannelStateRepository, PendingBwsAnswer
 from app.channels.types import Channel, IncomingMessage, OutgoingMessage
@@ -21,6 +25,8 @@ from app.conversations.service import ConversationAlreadyConcludedError, IConver
 from app.conversations.types import ConversationMessageType
 from app.i18n.translation_service import t
 from app.i18n.types import Locale
+from app.metrics.services.service import IMetricsService
+from app.metrics.types import BotConversationInitializedEvent, BotUserAccountCreatedEvent
 from app.observability.treatment_group import set_treatment_group
 from app.users.generate_session_id import generate_new_session_id
 from app.users.plain_personal_data.service import IPlainPersonalDataService, format_plain_personal_data_for_prompt
@@ -121,13 +127,17 @@ class ChannelGatewayService(IChannelGatewayService):
                  conversation_service: IConversationService,
                  plain_personal_data_service: IPlainPersonalDataService,
                  channel_state_repository: IChannelStateRepository,
-                 default_language: str):
+                 metrics_service: IMetricsService,
+                 default_language: str,
+                 slow_turn_threshold_seconds: float = SLOW_TURN_THRESHOLD_SECONDS):
         self._user_preferences = user_preferences_repository
         self._user_preferences_service = user_preferences_service
         self._conversation_service = conversation_service
         self._plain_personal_data_service = plain_personal_data_service
         self._channel_state = channel_state_repository
+        self._metrics_service = metrics_service
         self._default_language = default_language
+        self._slow_turn_threshold_seconds = slow_turn_threshold_seconds
         self._bws_renderer = BwsRenderer()
         self._renderer = ConversationRenderer({ConversationMessageType.TEXT: TextRenderer(),
                                                ConversationMessageType.BWS_TASK: self._bws_renderer})
@@ -135,18 +145,37 @@ class ChannelGatewayService(IChannelGatewayService):
         self._logger = logging.getLogger(self.__class__.__name__)
 
     async def initialize_conversation(self, channel: Channel, channel_user_id: str) -> list[OutgoingMessage]:
-        user_id, preferences = await self._get_or_create_user(channel, channel_user_id)
-        preferences = await self._set_context(user_id, preferences)
+        set_channel_context(channel, ChannelOperation.INITIALIZE_CONVERSATION)
+        try:
+            user_id, preferences, is_new_user = await self._get_or_create_user(channel, channel_user_id)
+            preferences = await self._set_context(user_id, preferences)
+        except Exception as e:
+            capture_gateway_error(e)
+            raise
 
         # TODO: let the user accept the terms in the chat instead of accepting them for the user.
         if preferences.accepted_tc is None:
             await self._user_preferences.update_user_preference(
                 user_id, UserPreferencesRepositoryUpdateRequest(accepted_tc=get_now()))
 
+        await self._metrics_service.record_event(BotConversationInitializedEvent(
+            user_id=user_id, channel=channel, is_new_user=is_new_user, client_id=preferences.client_id))
+
         # the same first message as the web app's conversation, in the language of the user
         return [OutgoingMessage(text=WelcomeAgent.get_first_encounter_message(user_language_ctx_var.get().value))]
 
     async def handle_sent_message(self, message: IncomingMessage) -> list[OutgoingMessage]:
+        operation = ChannelOperation.COMMAND if message.command else ChannelOperation.CONVERSATION_MESSAGE
+        set_channel_context(message.channel, operation)
+        started_at = time.monotonic()
+        try:
+            return await self._handle_sent_message(message)
+        finally:
+            if operation == ChannelOperation.CONVERSATION_MESSAGE:
+                report_turn_duration(channel=message.channel, duration_seconds=time.monotonic() - started_at,
+                                     threshold_seconds=self._slow_turn_threshold_seconds)
+
+    async def _handle_sent_message(self, message: IncomingMessage) -> list[OutgoingMessage]:
         found = await self._user_preferences.get_user_preference_by_channel_user_id(message.channel,
                                                                                     message.channel_user_id)
         if found is None:
@@ -168,6 +197,7 @@ class ChannelGatewayService(IChannelGatewayService):
                 self._logger.info("The user %s sent a message on a concluded conversation", user_id)
                 return [OutgoingMessage(text=t("messages", "channels.conversationConcluded"))]
             except Exception as e:  # pylint: disable=broad-except
+                capture_gateway_error(e)
                 self._logger.exception("Failed to handle the message of the user %s: %s", user_id, e)
                 return [OutgoingMessage(text=t("messages", "channels.unexpectedError"))]
 
@@ -259,10 +289,14 @@ class ChannelGatewayService(IChannelGatewayService):
             cls._user_locks[user_id] = lock
         return lock
 
-    async def _get_or_create_user(self, channel: Channel, channel_user_id: str) -> tuple[str, UserPreferences]:
+    async def _get_or_create_user(self, channel: Channel,
+                                  channel_user_id: str) -> tuple[str, UserPreferences, bool]:
+        """
+        :return: the Compass user id, their preferences, and whether the user was created now
+        """
         found = await self._user_preferences.get_user_preference_by_channel_user_id(channel, channel_user_id)
         if found is not None:
-            return found
+            return *found, False
 
         user_id = generate_channel_user_id()
         try:
@@ -276,14 +310,17 @@ class ChannelGatewayService(IChannelGatewayService):
                 channel=channel,
                 channel_user_id=channel_user_id,
             )
-            self._logger.info("Created the user %s for a %s user", user_id, channel.value)
-            return user_id, preferences
         except UserPreferenceRepositoryError:
             # a concurrent request for the same channel user created it first
             found = await self._user_preferences.get_user_preference_by_channel_user_id(channel, channel_user_id)
             if found is None:
                 raise
-            return found
+            return *found, False
+
+        self._logger.info("Created the user %s for a %s user", user_id, channel.value)
+        await self._metrics_service.record_event(BotUserAccountCreatedEvent(
+            user_id=user_id, channel=channel, client_id=preferences.client_id))
+        return user_id, preferences, True
 
     async def _set_context(self, user_id: str, preferences: UserPreferences) -> UserPreferences:
         """

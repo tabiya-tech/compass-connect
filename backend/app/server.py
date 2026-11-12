@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.admin.registrations import add_admin_registrations_routes
 from app.admin.routes import get_admin_routes
 from app.channels.bots.registry import build_channel_bots
-from app.channels.bots.telegram.config import parse_telegram_config
+from app.channels.config import parse_channels_config
 from app.channels.routes import add_channels_routes
 from app.conversations.routes import add_conversation_routes
 from app.countries import Country, get_country_from_string
@@ -26,6 +26,7 @@ from app.career_explorer.routes import add_career_explorer_routes
 from app.career_explorer.config import parse_career_explorer_config
 from app.integration.routes import add_integration_routes
 from app.metrics.routes.routes import add_metrics_routes
+from app.metrics.services.get_metrics_service import get_metrics_service
 from app.analytics.routes import add_analytics_routes
 from app.teveta.routes import add_teveta_routes
 from app.sentry_init import init_sentry, set_sentry_contexts
@@ -44,6 +45,7 @@ from app.errors.handlers import register_exception_handlers
 from contextlib import asynccontextmanager
 
 from app.users.routes import add_users_routes
+from app.users.get_user_preferences_repository import get_user_preferences_repository
 from app.conversations.poc import add_poc_routes
 from app.app_config import ApplicationConfig, LLMProvider, set_application_config, get_application_config, \
     DEFAULT_HANDOFF_LINK_TTL_MINUTES
@@ -312,10 +314,13 @@ application_config = ApplicationConfig(
     classifier_api_key=os.getenv("CLASSIFIER_API_KEY") or None,
     classifier_api_version=os.getenv("CLASSIFIER_API_VERSION") or ClassifierApiVersion.V2,
     llm_reranker_url=os.getenv("LLM_RERANKER_URL") or None,
-    telegram_config=parse_telegram_config(bot_token=os.getenv("BACKEND_TELEGRAM_BOT_TOKEN"),
-                                          webhook_secret=os.getenv("BACKEND_TELEGRAM_WEBHOOK_SECRET"),
-                                          webhook_url=os.getenv("BACKEND_TELEGRAM_WEBHOOK_URL"),
+    channels_config=parse_channels_config(enable_channels=os.getenv("BACKEND_ENABLE_CHANNELS"),
+                                          enable_telegram_bot=os.getenv("BACKEND_ENABLE_TELEGRAM_BOT"),
+                                          telegram_bot_token=os.getenv("BACKEND_TELEGRAM_BOT_TOKEN"),
+                                          telegram_webhook_secret=os.getenv("BACKEND_TELEGRAM_WEBHOOK_SECRET"),
+                                          telegram_webhook_url=os.getenv("BACKEND_TELEGRAM_WEBHOOK_URL"),
                                           backend_url=backend_url),
+
 )
 
 set_application_config(application_config)
@@ -397,8 +402,11 @@ async def lifespan(_app: FastAPI):
     await feature_loader.init(application_db)
 
     # Start the chat bots once the databases are ready: they register their webhooks in the background.
-    for channel_bot in channel_bots:
-        await channel_bot.start()
+    if channel_bots:
+        channels_metrics_service = await get_metrics_service(
+            metrics_db, app_cfg, await get_user_preferences_repository(application_db))
+        for channel_bot in channel_bots:
+            await channel_bot.start(channels_metrics_service)
 
     logger.info("Application started successfully.")
     # noinspection PyUnresolvedReferences
@@ -579,11 +587,15 @@ app.include_router(search_router)
 add_integration_routes(app)
 
 ############################################
-# Add channels routes (chat bots: Telegram, WhatsApp)
+# Add channels routes (chat bots: Telegram, WhatsApp), when the deployment enables them (BACKEND_ENABLE_CHANNELS).
+# Off, the routes are not registered, so they are not in the OpenAPI spec the API gateway is built from either.
 ############################################
-add_channels_routes(app)
-for _channel_bot in channel_bots:
-    app.include_router(_channel_bot.router())
+if application_config.channels_config.enabled:
+    add_channels_routes(app)
+    for _channel_bot in channel_bots:
+        app.include_router(_channel_bot.router())
+logger.info("Channels: %s, bots: %s", "enabled" if application_config.channels_config.enabled else "disabled",
+            [channel.value for channel in application_config.channels_config.enabled_bots])
 
 ############################################
 # Add metrics routes

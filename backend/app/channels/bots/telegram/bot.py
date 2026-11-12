@@ -4,6 +4,7 @@ import json
 from http import HTTPStatus
 from typing import Optional
 
+import sentry_sdk
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from telegram import Bot, InputFile, Update
@@ -14,11 +15,14 @@ from app.channels.bots.bot import ChannelBot, DocumentDownloader, download_docum
 from app.channels.bots.tasks import BackgroundTasks
 from app.channels.bots.telegram.config import WEBHOOK_PATH, TelegramConfig
 from app.channels.bots.telegram.mapping import COMMANDS, build_reply_markup, to_incoming_event
+from app.channels.observability import ChannelOperation, capture_gateway_error, set_channel_context
 from app.channels.repository import ChannelStateRepository, IChannelStateRepository
 from app.channels.routes import get_channel_gateway_service
 from app.channels.service import IChannelGatewayService
 from app.channels.types import Channel
 from app.i18n.types import Locale
+from app.metrics.services.service import IMetricsService
+from app.metrics.types import BotInitializedEvent, BotRegistrationStatus
 from app.server_dependencies.db_dependencies import CompassDBProvider
 
 MAX_TEXT_LENGTH = 4096
@@ -114,6 +118,7 @@ class TelegramBot(ChannelBot):
 
         :raises Exception: if the update cannot be recorded, so that Telegram sends it again later
         """
+        set_channel_context(self.channel, ChannelOperation.WEBHOOK)
         try:
             update = Update.de_json(json.loads(body), self._bot)
         except Exception as e:  # pylint: disable=broad-except
@@ -133,9 +138,16 @@ class TelegramBot(ChannelBot):
         if event is not None:
             await self.handle(event, service)
 
-    async def start(self) -> None:
+    async def start(self, metrics_service: IMetricsService) -> None:
         # Register in the background: the backend must not wait for Telegram to start, nor fail if it is unreachable.
-        self._background_tasks.run(self._register(), name="telegram-register")
+        self._background_tasks.run(self._initialize(metrics_service), name="telegram-register")
+
+    async def _initialize(self, metrics_service: IMetricsService) -> None:
+        with sentry_sdk.isolation_scope():
+            set_channel_context(self.channel, ChannelOperation.BOT_REGISTRATION)
+            status = await self._register()
+            await metrics_service.record_event(BotInitializedEvent(channel=self.channel,
+                                                                   registration_status=status))
 
     async def stop(self) -> None:
         await self._background_tasks.wait(SHUTDOWN_TIMEOUT_SECONDS)
@@ -144,25 +156,37 @@ class TelegramBot(ChannelBot):
         except TelegramError as e:
             self._logger.warning("Could not shut down the Telegram bot: %r", e)
 
-    async def _register(self) -> None:
+    async def _register(self) -> BotRegistrationStatus:
         """
         Register the webhook and the command menu with Telegram, if they changed.
+
+        Setting the webhook also stops any getUpdates polling of the token: Telegram sends the updates of a bot to one
+        place only, so this deployment must be the only one that runs with the token (see docs/channels).
         """
+        status = BotRegistrationStatus.UNCHANGED
         try:
             await self._bot.initialize()
 
             webhook_info = await self._bot.get_webhook_info()
             if webhook_info.url != self.registered_webhook_url:
+                if webhook_info.url:
+                    # another deployment (or an older secret) had the webhook: it no longer gets the updates
+                    self._logger.warning("Replaced the Telegram webhook of another URL: %s", webhook_info.url)
                 await self._bot.set_webhook(url=self.registered_webhook_url,
                                             secret_token=self._config.webhook_secret,
                                             allowed_updates=ALLOWED_UPDATES)
                 self._logger.info("Registered the Telegram webhook %s", self._config.webhook_url)
+                status = BotRegistrationStatus.REGISTERED
 
             if list(await self._bot.get_my_commands()) != COMMANDS:
                 await self._bot.set_my_commands(COMMANDS)
                 self._logger.info("Registered the Telegram command menu")
+                status = BotRegistrationStatus.REGISTERED
+            return status
         except TelegramError as e:
+            capture_gateway_error(e)
             self._logger.error("Could not register the Telegram bot: %r", e)
+            return BotRegistrationStatus.FAILED
 
     async def send_text(self, user_id: str, text: str, choices: Optional[list[str]]) -> None:
         # plain text, no parse mode: the texts of Compass are not escaped for Telegram markup

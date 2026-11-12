@@ -9,16 +9,18 @@ import pytest
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.agent.welcome_agent import WelcomeAgent
+from app.channels.observability import ChannelOperation
 from app.channels.repository import ChannelStateRepository
 from app.channels.service import ChannelGatewayService, ChannelUserNotFoundError, get_channel_client_id
 from app.channels.types import Channel, IncomingMessage
+from app.context_vars import channel_ctx_var, channel_operation_ctx_var
 from app.conversations.constants import MAX_MESSAGE_LENGTH
 from app.conversations.service import ConversationAlreadyConcludedError, IConversationService
 from app.i18n.translation_service import t
 from app.conversations.types import ConversationMessage, ConversationMessageSender, ConversationMessageType, \
     ConversationPhaseResponse, ConversationResponse, CurrentConversationPhaseResponse, QuickReplyOption
 from app.metrics.services.service import IMetricsService
-from app.metrics.types import UserAccountCreatedEvent
+from app.metrics.types import BotConversationInitializedEvent, BotUserAccountCreatedEvent, UserAccountCreatedEvent
 from app.server_dependencies.database_collections import Collections
 from app.users.preferences_service import UserPreferencesService
 from app.users.plain_personal_data.service import IPlainPersonalDataService
@@ -57,6 +59,7 @@ async def setup(in_memory_application_database: Awaitable[AsyncIOMotorDatabase],
         conversation_service=conversation_service,
         plain_personal_data_service=plain_personal_data_service,
         channel_state_repository=ChannelStateRepository(db),
+        metrics_service=metrics_service,
         default_language=_DEFAULT_LANGUAGE,
     )
     return _Setup(service, db, user_preferences, metrics_service, conversation_service)
@@ -124,9 +127,13 @@ class TestInitializeConversation:
         assert actual_preferences.language == _DEFAULT_LANGUAGE
         assert actual_preferences.client_id == get_channel_client_id(Channel.TELEGRAM)
         assert len(actual_preferences.sessions) == 1
-        # AND the account creation is recorded
-        actual_event = s.metrics_service.record_event.await_args.args[0]
-        assert isinstance(actual_event, UserAccountCreatedEvent)
+        # AND the account creation is recorded, as an account and as a bot account, on the telegram channel
+        actual_events = [call.args[0] for call in s.metrics_service.record_event.await_args_list]
+        assert [type(event) for event in actual_events] == [UserAccountCreatedEvent, BotUserAccountCreatedEvent,
+                                                            BotConversationInitializedEvent]
+        assert all(event.channel == Channel.TELEGRAM.value for event in actual_events)
+        # AND the initialization is recorded for a new user
+        assert actual_events[2].is_new_user is True
 
     async def test_returns_only_the_welcome_message(self, setup: Awaitable[_Setup]):
         s = await setup
@@ -160,6 +167,13 @@ class TestInitializeConversation:
         assert actual_preferences.accepted_tc == given_preferences.accepted_tc
         # AND no other user is created
         assert await _count_users(s.db, given_channel_user_id) == 1
+        # AND the second initialization is recorded for a returning user, with no new account
+        actual_events = [call.args[0] for call in s.metrics_service.record_event.await_args_list]
+        assert sum(isinstance(event, BotUserAccountCreatedEvent) for event in actual_events) == 1
+        assert isinstance(actual_events[-1], BotConversationInitializedEvent)
+        assert actual_events[-1].user_id == given_user_id
+        assert actual_events[-1].channel == Channel.TELEGRAM.value
+        assert actual_events[-1].is_new_user is False
 
     async def test_concurrent_calls_create_one_user(self, setup: Awaitable[_Setup]):
         s = await setup
@@ -503,8 +517,9 @@ class TestTurnErrors:
         # THEN the user is told the conversation ended, and what to do
         assert [m.text for m in actual_messages] == [_text("conversationConcluded")]
 
-    async def test_an_unexpected_error_is_a_friendly_reply(self, setup: Awaitable[_Setup]):
+    async def test_an_unexpected_error_is_a_friendly_reply(self, setup: Awaitable[_Setup], mocker):
         s = await setup
+        given_capture_exception = mocker.patch("app.channels.observability.sentry_sdk.capture_exception")
         # GIVEN a Telegram user whose conversation started
         await _initialize(s)
         _started(s)
@@ -516,6 +531,8 @@ class TestTurnErrors:
 
         # THEN the user is told something went wrong
         assert [m.text for m in actual_messages] == [_text("unexpectedError")]
+        # AND the error is reported to Sentry as a gateway error
+        given_capture_exception.assert_called_once_with(s.conversation_service.send.side_effect)
 
     async def test_unknown_channel_user_raises_not_found(self, setup: Awaitable[_Setup]):
         s = await setup
@@ -547,3 +564,61 @@ async def test_channel_user_id_is_not_logged(setup: Awaitable[_Setup], caplog: p
 
     # THEN the Telegram user id is in none of the logs
     assert given_channel_user_id not in caplog.text
+
+
+@pytest.mark.asyncio
+class TestObservability:
+    @pytest.mark.parametrize("given_message, expected_operation", [
+        pytest.param(_message("100200300", text="Hi"), ChannelOperation.CONVERSATION_MESSAGE, id="a text"),
+        pytest.param(_message("100200300", command="/help"), ChannelOperation.COMMAND, id="a command"),
+    ])
+    async def test_tags_the_work_with_the_channel_and_the_operation(self, setup: Awaitable[_Setup],
+                                                                    given_message: IncomingMessage,
+                                                                    expected_operation: ChannelOperation):
+        s = await setup
+        # GIVEN a Telegram user whose conversation started
+        await _initialize(s)
+        _started(s)
+
+        # WHEN the user sends a message
+        await s.service.handle_sent_message(given_message)
+
+        # THEN the work is tagged with the channel and the operation, for the metrics and Sentry
+        assert channel_ctx_var.get() == Channel.TELEGRAM
+        assert channel_operation_ctx_var.get() == expected_operation
+
+    async def test_reports_a_slow_turn(self, setup: Awaitable[_Setup], mocker):
+        s = await setup
+        given_capture_message = mocker.patch("app.channels.observability.sentry_sdk.capture_message")
+        # GIVEN turns slower than 10ms are slow
+        s.service._slow_turn_threshold_seconds = 0.01
+        # AND a Telegram user whose conversation started
+        await _initialize(s)
+        _started(s)
+
+        # AND a turn that takes longer
+        async def slow_send(*_args, **_kwargs):
+            await asyncio.sleep(0.05)
+            return _response(_compass_message("Compass reply"))
+
+        s.conversation_service.send.side_effect = slow_send
+
+        # WHEN the user sends a text
+        await s.service.handle_sent_message(_message("100200300", text="Hi"))
+
+        # THEN a slow turn is reported to Sentry
+        given_capture_message.assert_called_once_with("Slow telegram turn", level="warning")
+
+    async def test_does_not_report_a_fast_turn_or_a_command(self, setup: Awaitable[_Setup], mocker):
+        s = await setup
+        given_capture_message = mocker.patch("app.channels.observability.sentry_sdk.capture_message")
+        # GIVEN a Telegram user whose conversation started
+        await _initialize(s)
+        _started(s)
+
+        # WHEN the user sends a text answered at once, and a command
+        await s.service.handle_sent_message(_message("100200300", text="Hi"))
+        await s.service.handle_sent_message(_message("100200300", command="/help"))
+
+        # THEN no slow turn is reported
+        given_capture_message.assert_not_called()

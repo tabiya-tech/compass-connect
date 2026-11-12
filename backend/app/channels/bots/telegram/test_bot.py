@@ -20,6 +20,8 @@ from app.channels.routes import get_channel_gateway_service
 from app.channels.service import ChannelUserNotFoundError, IChannelGatewayService
 from app.channels.types import Channel, IncomingMessage, OutgoingMessage
 from app.i18n.types import Locale
+from app.metrics.services.service import IMetricsService
+from app.metrics.types import BotInitializedEvent, BotRegistrationStatus
 
 SECRET = "the-secret"  # nosec B105 # a test value
 CONFIG = TelegramConfig(bot_token="123:abc", webhook_secret=SECRET,  # nosec B106 # a test value
@@ -47,6 +49,19 @@ def background_tasks() -> BackgroundTasks:
 def bot(telegram_api: AsyncMock, background_tasks: BackgroundTasks) -> TelegramBot:
     return TelegramBot(config=CONFIG, default_locale=Locale.EN_US, bot=telegram_api,
                        background_tasks=background_tasks, typing_interval_seconds=0.01)
+
+
+@pytest.fixture
+def metrics_service(setup_application_config) -> AsyncMock:
+    # the metric events read the application config
+    return AsyncMock(spec=IMetricsService)
+
+
+def _assert_bot_initialized(metrics_service: AsyncMock, expected_status: BotRegistrationStatus):
+    actual_event = metrics_service.record_event.await_args.args[0]
+    assert isinstance(actual_event, BotInitializedEvent)
+    assert actual_event.channel == Channel.TELEGRAM.value
+    assert actual_event.registration_status == expected_status
 
 
 @pytest.fixture
@@ -178,7 +193,7 @@ class TestWebhook:
 class TestRegistration:
     @pytest.mark.asyncio
     async def test_registers_the_webhook_and_the_commands_when_they_changed(self, bot, telegram_api,
-                                                                           background_tasks):
+                                                                           background_tasks, metrics_service):
         # GIVEN Telegram has another webhook and no commands
         telegram_api.get_webhook_info.return_value = WebhookInfo(url="https://old.test/hook",
                                                                  has_custom_certificate=False,
@@ -186,7 +201,7 @@ class TestRegistration:
         telegram_api.get_my_commands.return_value = ()
 
         # WHEN the bot starts
-        await bot.start()
+        await bot.start(metrics_service)
         await background_tasks.wait(1)
 
         # THEN the webhook is registered with the secret, for messages and taps only
@@ -195,9 +210,12 @@ class TestRegistration:
         assert bot.registered_webhook_url.startswith(CONFIG.webhook_url + "?v=")
         # AND the command menu is registered
         telegram_api.set_my_commands.assert_awaited_once_with(COMMANDS)
+        # AND the initialization of the bot is recorded
+        _assert_bot_initialized(metrics_service, BotRegistrationStatus.REGISTERED)
 
     @pytest.mark.asyncio
-    async def test_does_not_register_again_what_did_not_change(self, bot, telegram_api, background_tasks):
+    async def test_does_not_register_again_what_did_not_change(self, bot, telegram_api, background_tasks,
+                                                              metrics_service):
         # GIVEN Telegram already has the webhook and the commands
         telegram_api.get_webhook_info.return_value = WebhookInfo(url=bot.registered_webhook_url,
                                                                  has_custom_certificate=False,
@@ -205,12 +223,14 @@ class TestRegistration:
         telegram_api.get_my_commands.return_value = tuple(COMMANDS)
 
         # WHEN the bot starts
-        await bot.start()
+        await bot.start(metrics_service)
         await background_tasks.wait(1)
 
         # THEN nothing is registered again
         telegram_api.set_webhook.assert_not_called()
         telegram_api.set_my_commands.assert_not_called()
+        # AND the initialization of the bot is recorded
+        _assert_bot_initialized(metrics_service, BotRegistrationStatus.UNCHANGED)
 
     def test_changing_the_secret_changes_the_registered_url(self, telegram_api):
         # GIVEN two bots with the same webhook and different secrets
@@ -225,16 +245,19 @@ class TestRegistration:
         assert "one" not in _bot("one").registered_webhook_url.split("?v=")[1]
 
     @pytest.mark.asyncio
-    async def test_a_telegram_failure_does_not_fail_the_startup(self, bot, telegram_api, background_tasks):
+    async def test_a_telegram_failure_does_not_fail_the_startup(self, bot, telegram_api, background_tasks,
+                                                                 metrics_service):
         # GIVEN Telegram cannot be reached
         telegram_api.initialize.side_effect = NetworkError("unreachable")
 
         # WHEN the bot starts
-        await bot.start()
+        await bot.start(metrics_service)
         await background_tasks.wait(1)
 
         # THEN it does not fail, and nothing is registered
         telegram_api.set_webhook.assert_not_called()
+        # AND the failed initialization of the bot is recorded
+        _assert_bot_initialized(metrics_service, BotRegistrationStatus.FAILED)
 
     @pytest.mark.asyncio
     async def test_stop_waits_for_the_turns_and_shuts_down(self, bot, telegram_api, background_tasks):

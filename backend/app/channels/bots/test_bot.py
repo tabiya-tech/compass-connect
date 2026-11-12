@@ -3,6 +3,7 @@ from typing import Optional
 from unittest.mock import AsyncMock
 
 import pytest
+import sentry_sdk
 from fastapi import APIRouter
 
 from app.channels.bots.bot import ChannelBot
@@ -44,7 +45,7 @@ class FakeChannelBot(ChannelBot):
     def router(self) -> APIRouter:
         return APIRouter()
 
-    async def start(self) -> None:
+    async def start(self, metrics_service) -> None:
         pass
 
     async def stop(self) -> None:
@@ -164,7 +165,8 @@ class TestHandle:
         assert bot.sent == [("text", USER_ID, "Report", []), _text("channels.documentUnavailable")]
 
     @pytest.mark.asyncio
-    async def test_tells_the_user_when_the_service_fails(self, bot: FakeChannelBot, service: AsyncMock):
+    async def test_tells_the_user_when_the_service_fails(self, bot: FakeChannelBot, service: AsyncMock, mocker):
+        given_capture_exception = mocker.patch("app.channels.observability.sentry_sdk.capture_exception")
         # GIVEN the service fails
         service.handle_sent_message.side_effect = RuntimeError("database down")
 
@@ -173,6 +175,31 @@ class TestHandle:
 
         # THEN the user is told something went wrong
         assert bot.sent == [_text("channels.unexpectedError")]
+        # AND the error is reported to Sentry as a gateway error
+        given_capture_exception.assert_called_once_with(service.handle_sent_message.side_effect)
+
+    @pytest.mark.asyncio
+    async def test_tags_the_sentry_events_of_the_turn_with_the_channel(self, bot: FakeChannelBot,
+                                                                      service: AsyncMock):
+        # GIVEN the service records the Sentry tags of the turn
+        actual_tags = {}
+
+        async def reply(_message):
+            actual_tags.update(sentry_sdk.get_isolation_scope()._tags)
+            return [OutgoingMessage(text="Done")]
+
+        service.handle_sent_message.side_effect = reply
+
+        # WHEN the user sends a message, from a caller with its own Sentry scope
+        with sentry_sdk.isolation_scope() as given_caller_scope:
+            given_caller_tags = dict(given_caller_scope._tags)
+            await bot.handle(IncomingEvent(kind=EventKind.TEXT, user_id=USER_ID, text="Hi"), service)
+
+        # THEN the turn is tagged with the bot and the operation
+        assert {key: actual_tags.get(key) for key in ("channel", "channel_kind", "channel_operation")} == \
+               {"channel": "telegram", "channel_kind": "bot", "channel_operation": "conversation_message"}
+        # AND the tags do not stay on the scope of the caller
+        assert given_caller_scope._tags == given_caller_tags
 
     @pytest.mark.asyncio
     async def test_rejects_a_text_that_is_too_long(self, bot: FakeChannelBot, service: AsyncMock):
