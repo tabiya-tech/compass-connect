@@ -24,8 +24,8 @@ WhatsApp bots can connect through the [channels API](docs/channels/README.md).
 
 ## Related Repositories
 
-Compass Connect is the main repository of the platform. It works with the components below, which Tabiya develops
-in separate repositories. The code in all of them is open source under the MIT License.
+Compass Connect brings together several of Tabiya's open-source tools. Each tool is developed in its own repository.
+Most of them can also be used without Compass Connect. The code in all of them is open source under the MIT License.
 
 | Repository | What it is | How Compass Connect uses it |
 |---|---|---|
