@@ -5,9 +5,9 @@ FastAPI application serving the Compass Connect career guidance API with AI-powe
 ## Prerequisites
 
 - [Python 3.11+](https://www.python.org/downloads/)
-- [Poetry 1.8.x](https://python-poetry.org/docs/#installation): install it system-wide
-  (e.g. `pipx install poetry==1.8.5`), not inside the project virtual environment.
-  CI uses 1.8.5; the commands below do not work with Poetry 2.x.
+- [Poetry 2.x](https://python-poetry.org/docs/#installation): install it system-wide
+  (e.g. `pipx install poetry==2.5.1`), not inside the project virtual environment.
+  CI uses 2.5.1, the version that generates `poetry.lock`.
 - [Google Cloud SDK (gcloud)](https://cloud.google.com/sdk/docs/install)
 - MongoDB Atlas instance with ESCO taxonomy data
 
@@ -29,8 +29,8 @@ source venv-backend/bin/activate
 With `venv-backend` still activated, run:
 
 ```bash
-poetry lock --no-update
-poetry install --sync
+poetry lock
+poetry sync
 ```
 
 Poetry detects the activated virtual environment and installs the dependencies into `venv-backend`, not system-wide.
