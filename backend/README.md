@@ -4,7 +4,7 @@ FastAPI application serving the Compass Connect career guidance API with AI-powe
 
 ## Prerequisites
 
-- [Python 3.11+](https://www.python.org/downloads/)
+- [Python 3.14](https://www.python.org/downloads/) (CI and the Docker image use 3.14.10)
 - [Poetry 2.x](https://python-poetry.org/docs/#installation): install it system-wide
   (e.g. `pipx install poetry==2.5.1`), not inside the project virtual environment.
   CI uses 2.5.1, the version that generates `poetry.lock`.
