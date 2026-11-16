@@ -1,11 +1,33 @@
 <h1 align="center">
-<img src="https://raw.githubusercontent.com/tabiya-tech/compass-connect/refs/heads/main/frontend-new/public/compass-connect-logo-light.svg#gh-dark-mode-only" alt="logo" width=400/>
-<img src="https://raw.githubusercontent.com/tabiya-tech/compass-connect/refs/heads/main/frontend-new/public/compass-connect-logo-dark.svg#gh-light-mode-only" alt="logo" width=400/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="frontend-new/public/compass-connect-logo-light.svg"/>
+    <img src="frontend-new/public/compass-connect-logo-dark.svg" alt="Compass Connect" width="400"/>
+  </picture>
 </h1>
 
 **Compass Connect** is an open-source career guidance platform for jobseekers. It is built on
-[Compass](https://github.com/tabiya-tech/compass), Tabiya's conversational tool for skills discovery, and adds career exploration, career
-readiness modules, job matching, and an admin portal for the organizations that run it.
+[Compass](https://github.com/tabiya-tech/compass), Tabiya's conversational tool for skills discovery, and adds career
+exploration, career readiness modules, job matching, and an admin portal for the organizations that run it.
+
+Ministries, training institutions, and NGOs that support jobseekers can run Compass Connect under their own name and
+adapt it to their labor market.
+
+## Contents
+
+- [Features](#features)
+- [Components](#components)
+- [Related Repositories](#related-repositories)
+- [Getting Started](#getting-started)
+- [Customization](#customization)
+- [Data Protection](#data-protection)
+- [Documentation](#documentation)
+- [Contribution Guidelines](#contribution-guidelines)
+- [License](#license)
+- [Funders and Partners](#funders-and-partners)
+
+## Features
+
+### For Jobseekers
 
 A deployment offers jobseekers the modules below. Operators can hide the modules they do not use (see
 [Modules](docs/customization/modules.md)).
@@ -18,9 +40,31 @@ A deployment offers jobseekers the modules below. Operators can hide the modules
 | Knowledge Hub | Reads sector profiles, salary benchmarks, and qualification pathways. |
 | Job Matching | Sees job openings matched to their skills. |
 
-Administrators and instructors manage users and view analytics in the [admin portal](admin-frontend). Other platforms
-can send their users into Compass Connect through the [integration API](docs/integration/README.md). Telegram and
-WhatsApp bots can connect through the [channels API](docs/channels/README.md).
+The skills report can be downloaded as a PDF or a Word document.
+
+### For the Organizations That Run It
+
+| Feature | What it does |
+|---|---|
+| Admin portal | Administrators and instructors manage users and view analytics in the [admin portal](admin-frontend). An instructor sees one institution. An administrator sees all of them. See [Admin & Instructor Registration](admin-registration.md). |
+| Configuration | Modules, interface texts, branding, languages, sign-in, and the skills report are set in one `.env` file, with no code changes. See the [Customization Guide](docs/customization/README.md). |
+| Integration API | A job portal or a training provider can send its users into Compass Connect and fetch their results. See the [integration guide](docs/integration/README.md). |
+| Channels API | Telegram and WhatsApp bots can connect to Compass Connect. See the [channels guide](docs/channels/README.md). |
+| Analytics | The backend provides analytics endpoints (`/analytics/*`). The [Compass Analytics](https://github.com/tabiya-tech/compass-analytics) dashboard reads them. |
+
+## Components
+
+- **[Frontend](frontend-new)** and **[admin frontend](admin-frontend)**: React and TypeScript applications.
+- **[Backend](backend)**: a Python server built with FastAPI. It runs the AI agents and the APIs.
+- **Database**: MongoDB for conversations, users, and metrics, with vector search for occupations and skills.
+- **Language model**: Gemini on Vertex AI by default. The Anthropic Claude API and local models through Ollama can be
+  selected with `LLM_PROVIDER`.
+- **Other cloud services**: Vertex AI for embeddings, Google Cloud Data Loss Prevention, and Firebase for user login.
+  Embeddings work only with Vertex AI today.
+- **[Infrastructure as code](iac)**: Pulumi programs for a deployment on Google Cloud.
+
+The architecture of the skills conversation is documented in the
+[Compass repository](https://github.com/tabiya-tech/compass#architecture-overview).
 
 ## Related Repositories
 
@@ -34,160 +78,137 @@ Most of them can also be used without Compass Connect. The code in all of them i
 | [matching-engine](https://github.com/tabiya-tech/matching-engine) | The Tabiya Matching Engine, which ranks occupations and job openings against a jobseeker's skills and preferences | Optional. The Job Matching module calls the engine's API (`MATCHING_SERVICE_URL`). |
 | [tabiya-livelihoods-classifier](https://github.com/tabiya-tech/tabiya-livelihoods-classifier) | The Livelihoods Classifier, which extracts occupations and skills from text and links them to taxonomy entries | Optional. The conversation can link skills through the classifier's API (`BACKEND_SKILL_LINKER=classifier`). The default is an LLM pipeline. |
 | [compass-analytics](https://github.com/tabiya-tech/compass-analytics) | The analytics dashboard for partners and funders | Optional. The dashboard reads the analytics endpoints of a Compass Connect deployment (`/analytics/*`) with an API key. |
-| [docs](https://github.com/tabiya-tech/docs) | The source of [docs.tabiya.org](https://docs.tabiya.org) | Documentation of Tabiya's approach and products. |
 
-## Table of Contents
+## Getting Started
 
-- **[Getting Started](docs/getting-started/README.md)**: Run Compass Connect on your own machine, with Docker or step by step.
+You need [Docker](https://docs.docker.com/engine/install/) with Compose v2, Git, a Google Cloud project with Vertex AI
+and Cloud Data Loss Prevention enabled, and a Firebase project for user login.
 
-- **[Backend](backend)**: Explore the Backend directory for detailed insights about the backend project.
+```bash
+git clone https://github.com/tabiya-tech/compass-connect.git
+cd compass-connect
+cp .env.example .env    # fill the REQUIRED section
+docker compose up -d --build
+```
 
-- **[Frontend](frontend-new)**: Explore the Frontend directory for detailed insights about the frontend project.
+Then open <http://localhost:3000>. The first start downloads a taxonomy from the Open Taxonomy Platform and builds
+the search index. In the default `partial` mode this takes about 7 minutes and an estimated 10 to 40 US cents of Vertex
+AI usage.
 
-- **[Infrastructure As Code (IaC)](iac)**: Explore the Infrastructure as code(IAC) directory for detailed insights about
-  the infrastructure-as-code components.
+The [getting-started guide](docs/getting-started/README.md) explains every step, including a setup without Docker.
+For a deployment on Google Cloud, follow the [deployment procedure](deployment-procedure.md) and the
+[deployment checklist](deployment-checklist.md).
 
-- **[Sensitive Data Protection](sensitive-data-protection.md)**: Explore the sensitive data protection functionality for detailed insights about how we are safeguarding sensitive personal data.
+## Customization
 
-- **[Admin Frontend](admin-frontend)**: Explore the admin portal for managing users and viewing analytics.
+| What | For example | Guide |
+|---|---|---|
+| Modules | Offer only the skills conversation; hide Job Matching | [modules.md](docs/customization/modules.md) |
+| Interface texts | Reword the home page introduction; name your own partners | [texts.md](docs/customization/texts.md) |
+| Branding | Name, country, logos, colors, fonts, legal documents | [branding.md](docs/customization/branding.md) |
+| Languages | Languages of the interface and of the conversation | [languages.md](docs/customization/languages.md) |
+| Sign-in and registration | Login-only access; the personal data form | [sign-in.md](docs/customization/sign-in.md) |
+| Skills report | Logos, formats, which details it shows | [skills-report.md](docs/customization/skills-report.md) |
+| Web analytics | Google Analytics 4 through Google Tag Manager | [analytics.md](docs/customization/analytics.md) |
 
-- **[Admin & Instructor Registration](admin-registration.md)**: How super admins, cross-institution admins, and instructors are registered, approved, and bootstrapped per environment.
+The interface is translated into `en-GB`, `en-US`, `es-ES`, `es-AR`, `sw-KE`, `ny-ZM`, and `pt-MZ`. To add a language,
+follow [add-a-new-language.md](add-a-new-language.md).
 
-- **[Customization Guide](docs/customization/README.md)**: Explore the customization options for detailed insights about how partners can configure branding, themes, and feature availability.
+Some adaptations to a country's labor market are not settings: the taxonomy, the sectors, the training curricula, and
+the job sources. See [Adapting to Your National Context](docs/customization/national-context.md).
 
-- **[Integration API](docs/integration/README.md)**: How an existing platform sends its users into Compass Connect and fetches their results.
+## Data Protection
 
-- **[Channels API](docs/channels/README.md)**: How Telegram and WhatsApp bots connect to Compass Connect.
+- The personal data that users enter after registration is encrypted in the browser with an RSA public key. Decrypting
+  it requires the private key, which the operator keeps. See [Sensitive Data Protection](sensitive-data-protection.md).
+- Operators choose which personal data fields the form asks for, and supply their own legal documents.
+- The backend can replace personal details in a user's message, such as names and phone numbers, with placeholders
+  through Google Cloud Data Loss Prevention.
 
+Each operator is responsible for complying with the data protection laws of the country where it runs Compass Connect.
 
-## Architecture Overview
-The images below show a high level overview of the solution architecture of Compass Connect.
+## Documentation
 
-![Compass Connect Architecture Overview](https://lucid.app/publicSegments/view/a1c21a2d-162b-4eae-b70a-f57b44181aa1/image.png)
-
-![Compass Connect Cloud Architecture](https://lucid.app/publicSegments/view/fb45c622-0edb-4257-84a3-6fc4996692f3/image.png)
-
-![Compass Connect Backend Architecture](https://lucid.app/publicSegments/view/3e5323ab-786b-4d46-bb73-dd716cdd9ee0/image.png)
-
-![Compass Connect AI Architecture](https://lucid.app/publicSegments/view/db45dc1c-b89e-4ae4-bd32-347092693844/image.png)
-
-## Why Contribute?
-
-- **Make an Impact:** Your contributions will directly improve the user experience and functionality of Compass Connect, helping job-seekers explore and discover their skills more effectively.
-- **Help Achieve Our Goals:** By contributing, you are supporting Compass Connect’s mission to populate digital skill wallets and guide job-seekers in understanding their skills and interests based on their lived experiences.
-
-## Ways to Contribute
-
-1. **Reporting Issues:** If you encounter bugs or have suggestions, open an issue on GitHub. Your feedback is valuable.
-2. **Code Contributions:** Help enhance the codebase by submitting pull requests.
-3. **Write or Improve Tests:** We aim for 100% code coverage. You can help achieve this goal by writing or improving tests.
-4. **Documentation:** Improve project documentation by submitting pull requests. Clear documentation is crucial for new contributors.
-5. **Add a New Language**: Help make Compass Connect accessible to more users by adding support for a new language. Follow the guidelines in [add-a-new-language.md](./add-a-new-language.md).
-6. **Support:** Give the project a star on GitHub—your support encourages us to keep improving!
+| Topic | Where |
+|---|---|
+| Run it locally, with Docker or step by step | [docs/getting-started](docs/getting-started/README.md) |
+| Customize a deployment | [docs/customization](docs/customization/README.md) |
+| Connect an existing platform | [docs/integration](docs/integration/README.md) |
+| Connect a chat bot | [docs/channels](docs/channels/README.md) |
+| Backend | [backend](backend) |
+| Frontend | [frontend-new](frontend-new) |
+| Admin frontend | [admin-frontend](admin-frontend) |
+| Infrastructure as code | [iac](iac) |
+| Deploy to Google Cloud | [deployment-procedure.md](deployment-procedure.md), [deployment-checklist.md](deployment-checklist.md) |
+| Sensitive data protection | [sensitive-data-protection.md](sensitive-data-protection.md) |
+| Admin and instructor registration | [admin-registration.md](admin-registration.md) |
+| Invitation codes for jobseekers | [invitations.md](invitations.md) |
+| Add a language | [add-a-new-language.md](add-a-new-language.md) |
 
 ## Contribution Guidelines
 
-🎉 Thank you for considering contributing to Tabiya Compass Connect! 🎉
+Contributions are welcome: bug reports and suggestions as GitHub issues, and code, tests, documentation, and
+translations as pull requests.
 
-### Code Formatting
+### Set Up
 
-### Frontend
-We follow the **[Prettier](https://prettier.io/)** code formatting guidelines to make sure the code is properly formatted in a uniform way.
+The scripts need a bash-compatible terminal (Linux, macOS, or Cygwin). They do not work in Windows cmd or PowerShell.
 
-You can find the configuration in the **[.prettierrc.json](frontend-new/.prettierrc.json)** file.
+1. Fork the repository, clone it, and create a branch for your changes.
+2. Set up the subproject you work on. For example, for `backend/` follow [backend/README.md](backend/README.md).
+3. Before you open a pull request, run the checks:
 
-> **Note:**  
-> For IntelliJ IDEA, if you make changes to the Prettier config, you may need to restart the IDE before formatting code using the IDE’s formatting function.
+    ```bash
+    ./run-before-merge.sh
+    ```
 
-### Backend
-We follow the **[PEP 8 Style Guide](https://peps.python.org/pep-0008/)** to ensure the backend Python code is properly formatted in a consistent way.
+    The script checks formatting, lints, builds, and tests every subproject. A common cause of errors is an
+    incomplete step 2.
 
-We use **pylint** (with `pylint-pydantic`) as our linting tool.
+4. Commit with [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) messages, push to your fork,
+   and open a pull request to `main`.
 
-You can find the configuration in the **[.pylintrc](backend/.pylintrc)** file.
+### Code Style
 
-> **Note:**  
-> For IntelliJ IDEA / PyCharm, if you make changes to the linting configuration, you may need to restart the IDE before formatting or linting code using the IDE’s built-in tools.
+- **Frontend**: [Prettier](https://prettier.io/), configured in
+  [frontend-new/.prettierrc.json](frontend-new/.prettierrc.json).
+- **Backend**: the [PEP 8 Style Guide](https://peps.python.org/pep-0008/), checked with pylint and `pylint-pydantic`,
+  configured in [backend/.pylintrc](backend/.pylintrc).
 
-### Conventional Commits
+In IntelliJ IDEA or PyCharm, restart the IDE after you change either configuration.
 
-Please follow the **[Conventional Commits](https://www.conventionalcommits.org/)** format for commit messages.
+### Tests
 
-### Guidelines for Readable BDD Testing
+We aim for 100 percent code coverage. See the
+[Guidelines for Readable BDD Testing](testing-guidelines.md) and the
+[Snapshot Testing Guidelines](snapshot-testing-guidelines.md).
 
-To contribute to our 100% code coverage goal, refer to our "Guidelines for Readable BDD Testing" in the **[testing-guidelines.md](testing-guidelines.md)**
-
-### Guidelines for Snapshot Testing
-To ensure component stability, refer to our "Snapshot Testing Guidelines" in the **[snapshot-testing-guidelines.md](snapshot-testing-guidelines.md)**
-
-### Golden Tests & Evaluation Metrics
-
-Golden tests are end-to-end conversation tests that validate the agent's behavior against curated test cases representing different user personas and scenarios.
-
-**Run the golden test suite** (from `backend/`):
+Golden tests are end-to-end conversation tests. They check the agents' behavior against curated cases that represent
+different user personas and scenarios. Run them from `backend/`:
 
 ```bash
+# The whole golden test suite
 poetry run pytest -m "golden_test" evaluation_tests/test_golden_set.py
-```
 
-**Run specific golden tests**:
-
-```bash
+# Specific golden tests
 poetry run pytest -m "golden_test" evaluation_tests/test_golden_set.py \
   -k "golden_simple_formal_employment or golden_volunteer_student"
-```
 
-**Generate a baseline metrics report** (for regression tracking):
-
-```bash
+# A baseline metrics report, for regression tracking
 poetry run python evaluation_tests/generate_baseline_report.py
-```
 
-**Run golden transcript replay and check thresholds** (CI gating):
-
-```bash
-# Replay transcripts and collect metrics
+# Replay golden transcripts and collect metrics (CI gating)
 poetry run python evaluation_tests/golden_transcript_runner.py \
   --transcripts-dir evaluation_tests/golden_transcripts \
   --output-dir evaluation_tests/golden_transcripts/output
 
-# Validate against thresholds
+# Validate the metrics against the thresholds
 poetry run python evaluation_tests/check_metrics_thresholds.py \
   --transcripts-dir evaluation_tests/golden_transcripts \
   --metrics-dir evaluation_tests/golden_transcripts/output
 ```
 
-Test outputs are saved to `backend/evaluation_tests/test_output/` with timestamped folders for each run.
-
-## Getting Started
-
-Want to run Compass Connect on your own machine first? Follow the [self-hosting guide](docs/getting-started/README.md).
-
-To work with this repository you should have a system with a bash compatible terminal (linux, macOS, cygwin) as most of the scripts are written for bash and will not work on windows cmd or powershell.
-
-1. Fork the repository and clone it to your local environment.
-
-2. Create a new branch for your changes.
-
-3. Set up each individual subproject. e.g. if you are working on `backend/` follow instructions in `backend/README.md`
-
-4. After making your changes, ensure the code is clean, properly formatted and passes all tests.
-
-    You can use the provided script, `run-before-merge.sh`, for assistance. This script performs checking of the code formatting, linting, building, and testing on the subprojects of the repository. To run it, use the following command:
-      
-    ```bash
-    ./run-before-merge.sh
-    ```
-      
-    If you get any errors, fix them before proceeding. A common source of errors is not fully completing step `3` from above.
-
-5. Commit them and push to your fork.
-
-6. Use descriptive commit messages following [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
-
-7. Open a pull request to our main branch.
-
-Happy contributing! 🚀
+Test outputs are saved to `backend/evaluation_tests/test_output/`, in one timestamped folder per run.
 
 ## License
 
@@ -197,5 +218,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 <img src="frontend-new/public/logo_Google.org_Support_FullColor_cmyk%20coated_stacked.png" alt="Google.org Logo" width=200/>
 
 This project is tested with BrowserStack.
-
-
