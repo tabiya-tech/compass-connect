@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Awaitable, Callable, Optional
 
@@ -20,7 +21,7 @@ async def call_with_timeout(
     """
     kwargs = kwargs or {}
 
-    if asyncio.iscoroutinefunction(func):
+    if inspect.iscoroutinefunction(func):
         return await asyncio.wait_for(func(*args, **kwargs), timeout=timeout_seconds)
 
     loop = asyncio.get_running_loop()
