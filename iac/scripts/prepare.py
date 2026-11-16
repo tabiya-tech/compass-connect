@@ -22,7 +22,7 @@ from frontend.prepare_frontend import download_frontend_bundle
 from admin_frontend.prepare_admin_frontend import download_admin_frontend_bundle
 
 from environment.env_types import EnvironmentTypes
-from _types import IaCModules, Environment, StackConfigs
+from _iac_types import IaCModules, Environment, StackConfigs
 from scripts.formatters import construct_artifacts_version
 from lib import get_pulumi_stack_outputs, MAIN_SECRET_VERSION, construct_artifacts_dir, \
     download_generic_artifacts_file, get_file_as_string, Version

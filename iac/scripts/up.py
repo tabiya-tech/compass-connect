@@ -18,7 +18,7 @@ iac_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, iac_dir)
 
 from environment.env_types import EnvironmentTypes
-from _types import IaCModules, Environment
+from _iac_types import IaCModules, Environment
 from frontend.prepare_frontend import prepare_frontend
 from admin_frontend.prepare_admin_frontend import prepare_admin_frontend
 from lib import load_dot_realm_env, getenv, get_pulumi_stack_outputs, Version, clear_dot_env
