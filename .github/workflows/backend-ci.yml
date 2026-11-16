@@ -32,7 +32,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.8.5
+          version: 2.5.1
 
       - name: Load cached Poetry cache
         uses: actions/cache@v4
@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          poetry lock --no-update --no-interaction
+          poetry lock --no-interaction
           poetry install --no-interaction
         working-directory: backend
 
