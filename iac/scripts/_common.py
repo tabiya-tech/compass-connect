@@ -18,7 +18,7 @@ iac_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # so that we can import the iac/lib module when we run pulumi from withing the iac/scripts directory.
 sys.path.insert(0, iac_dir)
 
-from _types import IaCModules, StackConfigs, Environment, DeploymentType, Secret
+from _iac_types import IaCModules, StackConfigs, Environment, DeploymentType, Secret
 from environment.env_types import EnvironmentTypes
 from lib import MAIN_SECRET_VERSION, get_pulumi_stack_outputs, STACK_CONFIG_SECRET_PREFIX, \
     ENV_VARS_SECRET_PREFIX, Version

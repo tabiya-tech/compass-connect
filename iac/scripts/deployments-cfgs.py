@@ -12,7 +12,7 @@ import requests
 from google.cloud.secretmanager import SecretManagerServiceClient
 
 from _common import get_environments_in_realm
-from _types import Environment, IaCModules
+from _iac_types import Environment, IaCModules
 from lib import save_content_in_file
 
 iac_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))

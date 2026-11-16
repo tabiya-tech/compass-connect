@@ -11,7 +11,7 @@ iac_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 # so that we can import the iac/lib module when we run pulumi from withing the iac/scripts directory.
 sys.path.insert(0, iac_dir)
 
-from _types import IaCModules
+from _iac_types import IaCModules
 from lib import get_stack_name_from
 from _common import add_select_environment_arguments, run_pulumi_destroy
 
