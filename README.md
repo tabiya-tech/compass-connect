@@ -107,7 +107,7 @@ For a deployment on Google Cloud, follow the [deployment procedure](deployment-p
 | Interface texts | Reword the home page introduction; name your own partners | [texts.md](docs/customization/texts.md) |
 | Branding | Name, country, logos, colors, fonts, legal documents | [branding.md](docs/customization/branding.md) |
 | Languages | Languages of the interface and of the conversation | [languages.md](docs/customization/languages.md) |
-| Sign-in and registration | Login-only access; the personal data form | [sign-in.md](docs/customization/sign-in.md) |
+| Sign-in and registration | Login-only access; no Google sign-in | [sign-in.md](docs/customization/sign-in.md) |
 | Skills report | Logos, formats, which details it shows | [skills-report.md](docs/customization/skills-report.md) |
 | Web analytics | Google Analytics 4 through Google Tag Manager | [analytics.md](docs/customization/analytics.md) |
 
@@ -119,9 +119,7 @@ the job sources. See [Adapting to Your National Context](docs/customization/nati
 
 ## Data Protection
 
-- The personal data that users enter after registration is encrypted in the browser with an RSA public key. Decrypting
-  it requires the private key, which the operator keeps. See [Sensitive Data Protection](sensitive-data-protection.md).
-- Operators choose which personal data fields the form asks for, and supply their own legal documents.
+- Operators supply their own legal documents.
 - The backend can replace personal details in a user's message, such as names and phone numbers, with placeholders
   through Google Cloud Data Loss Prevention.
 
