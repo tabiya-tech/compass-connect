@@ -194,7 +194,7 @@ Example Output:
         if country == Country.HONDURAS:
             return (
                 "For Honduran context, recognize local companies and roles:\n"
-                "- Tigo, Claro = Telecoms; BAC Credomatic, Banco Atlántida, Ficohsa = Finance\n"
+                "- Tigo, Claro = Telecoms; BAC, Banco Atlántida, Ficohsa = Finance\n"
                 "- La Colonia, Diunsa, pulpería (corner shop) roles = Retail\n"
                 "- Operario(a) de maquila (garment factory worker) = Manufacturing\n"
                 "- Agente de call center = Customer service / Business process outsourcing\n"
