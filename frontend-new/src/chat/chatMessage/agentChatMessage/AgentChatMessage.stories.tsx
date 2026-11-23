@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { ReactionKind } from "src/chat/reaction/reaction.types";
 import { getBackendUrl } from "src/envService";
 import UserPreferencesStateService from "src/userPreferences/UserPreferencesStateService";
+import { ReadAloudContext } from "src/textToSpeech/ReadAloudContext";
 
 const mockData = (status: number, deleteStatus: number, delay: number = 0) => [
   {
@@ -161,4 +162,20 @@ export const WithQuickReplyButtons: Story = {
     quick_reply_options: [{ label: "Technical skills" }, { label: "Soft skills" }, { label: "Both" }],
     onQuickReplyClick: (label: string) => console.log("Quick reply clicked:", label),
   },
+};
+
+export const WithReadAloud: Story = {
+  args: {
+    message_id: nanoid(),
+    sent_at: new Date().toISOString(),
+    message: "Great! **Cooking** and *cleaning* are useful skills. Tell me more about your work at the restaurant.",
+    reaction: null,
+  },
+  decorators: [
+    (Story) => (
+      <ReadAloudContext.Provider value={{ state: { status: "idle" }, play: () => {}, stop: () => {} }}>
+        <Story />
+      </ReadAloudContext.Provider>
+    ),
+  ],
 };
