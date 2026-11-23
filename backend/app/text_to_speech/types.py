@@ -15,6 +15,9 @@ MAX_STYLE_BYTES = 1024
 """ The longest speaking style, in bytes of UTF-8. Kept short, to leave the rest of the input limit to the text. """
 
 MAX_TEXT_BYTES_LIMIT = MAX_INPUT_TOKENS - MAX_STYLE_BYTES
+
+MIN_TEXT_BYTES = 4
+""" The shortest text limit: the longest UTF-8 character, so a part of a split text always fits. """
 """ The longest text read in one request, in bytes of UTF-8: what the longest style leaves of the input limit. """
 
 TextToSpeechModel = Literal["gemini-3.8-flash-tts", "gemini-3.8-flash-lite-tts"]
@@ -66,7 +69,7 @@ class TextToSpeechConfig(BaseModel):
     model: TextToSpeechModel = "gemini-3.8-flash-tts"
     """ The Gemini TTS model. """
 
-    max_text_bytes: Annotated[int, Field(gt=0, le=MAX_TEXT_BYTES_LIMIT)] = MAX_TEXT_BYTES_LIMIT
+    max_text_bytes: Annotated[int, Field(ge=MIN_TEXT_BYTES, le=MAX_TEXT_BYTES_LIMIT)] = MAX_TEXT_BYTES_LIMIT
     """
     The longest text read in one request, in bytes of UTF-8 (a Ge'ez character, as in Amharic, takes 3). The frontend
     splits longer messages into parts that fit.

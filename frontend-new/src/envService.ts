@@ -292,7 +292,10 @@ const SPEECH_DISABLED: SpeechEnvConfig = {
   textToSpeech: { enabled: false, locales: [], maxTextBytes: DEFAULT_MAX_TEXT_BYTES },
 };
 
-const parseSpeechFeature = (value: unknown, limitKey: string, defaultLimit: number) => {
+/** The shortest text limit: the longest UTF-8 character, so a part of a split text always fits. */
+export const MIN_MAX_TEXT_BYTES = 4;
+
+const parseSpeechFeature = (value: unknown, limitKey: string, defaultLimit: number, minLimit = 1) => {
   const feature = isPlainObject(value) ? value : {};
   const limit = feature[limitKey];
   const locales = Array.isArray(feature.locales)
@@ -302,7 +305,7 @@ const parseSpeechFeature = (value: unknown, limitKey: string, defaultLimit: numb
   return {
     enabled,
     locales: enabled ? locales : [],
-    limit: typeof limit === "number" && Number.isInteger(limit) && limit > 0 ? limit : defaultLimit,
+    limit: typeof limit === "number" && Number.isInteger(limit) && limit >= minLimit ? limit : defaultLimit,
   };
 };
 
@@ -325,7 +328,12 @@ export const getSpeechConfig = (): SpeechEnvConfig => {
       return SPEECH_DISABLED;
     }
     const speechToText = parseSpeechFeature(parsed.speechToText, "maxRecordingSeconds", DEFAULT_MAX_RECORDING_SECONDS);
-    const textToSpeech = parseSpeechFeature(parsed.textToSpeech, "maxTextBytes", DEFAULT_MAX_TEXT_BYTES);
+    const textToSpeech = parseSpeechFeature(
+      parsed.textToSpeech,
+      "maxTextBytes",
+      DEFAULT_MAX_TEXT_BYTES,
+      MIN_MAX_TEXT_BYTES
+    );
     return {
       speechToText: {
         enabled: speechToText.enabled,

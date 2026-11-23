@@ -5,7 +5,8 @@ from pydantic import ValidationError
 
 from app.i18n.types import Locale
 from app.text_to_speech.config import parse_text_to_speech_config
-from app.text_to_speech.types import MAX_INPUT_TOKENS, MAX_STYLE_BYTES, MAX_TEXT_BYTES_LIMIT, TextToSpeechConfig
+from app.text_to_speech.types import (MAX_INPUT_TOKENS, MAX_STYLE_BYTES, MAX_TEXT_BYTES_LIMIT, MIN_TEXT_BYTES,
+                                      TextToSpeechConfig)
 
 _GIVEN_STYLE = "warm, clear and friendly, at a moderate pace"
 
@@ -174,14 +175,14 @@ class TestTextToSpeechConfig:
         (_given_enabled_config(model="gemini-2.0-tts"), "model"),
         (_given_enabled_config(model="gemini-2.5-flash-tts"), "model"),
         (_given_enabled_config(audioEncoding="MP3"), "audioEncoding"),
-        (_given_enabled_config(maxTextBytes=0), "maxTextBytes"),
+        (_given_enabled_config(maxTextBytes=MIN_TEXT_BYTES - 1), "maxTextBytes"),
         (_given_enabled_config(maxTextBytes=MAX_TEXT_BYTES_LIMIT + 1), "maxTextBytes"),
         (_given_enabled_config(rateLimitPerMinute=-1), "rateLimitPerMinute"),
         (_given_enabled_config(maxTextLenght=100), "maxTextLenght"),
     ], ids=["enabled without locales", "enabled without an enabled locale", "unknown locale",
             "missing voice", "missing style", "blank voice", "empty style",
             "style over its limit in bytes", "unsupported model", "a model before Gemini 3.8", "the removed encoding",
-            "no text length", "text longer than the input limit", "negative rate limit", "unknown key"])
+            "text shorter than a UTF-8 character", "text longer than the input limit", "negative rate limit", "unknown key"])
     def test_rejects_invalid_settings(self, given_config, expected_error):
         # GIVEN invalid settings
         # WHEN the settings are validated

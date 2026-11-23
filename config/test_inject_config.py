@@ -221,6 +221,16 @@ class SpeechConfigTest(unittest.TestCase):
         # THEN expect no speech config to be written, so both features stay off
         self.assertNotIn("FRONTEND_SPEECH_CONFIG", self.env_js.read_text())
 
+    def test_writes_the_speech_config_when_the_namespaces_are_an_iterator(self):
+        # GIVEN the speech namespace, as an iterator that can only be read once
+        given_namespaces = iter(["speech"])
+
+        # WHEN the speech config is injected into the frontend env.js
+        inject_config.update_frontend_env({"speech": _SPEECH}, self.env_js, namespaces=given_namespaces)
+
+        # THEN expect the speech config to be written
+        self.assertIn("FRONTEND_SPEECH_CONFIG", self.env_js.read_text())
+
     def test_skips_the_speech_config_when_its_namespace_is_not_selected(self):
         # WHEN the speech config is injected for the branding namespace only
         inject_config.update_frontend_env({"speech": _SPEECH, "branding": {"appName": "Compass"}}, self.env_js,

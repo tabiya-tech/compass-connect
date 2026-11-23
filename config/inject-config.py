@@ -343,8 +343,10 @@ def update_frontend_env(config: Dict[str, Any], env_js_path: Path, namespaces: O
 
     content = env_js_path.read_text()
 
-    updates = {**build_env_updates(config, FRONTEND_ENV_MAP, namespaces),
-               **build_derived_env_updates(config, FRONTEND_DERIVED_ENV_MAP, namespaces)}
+    # a list, as both builders read the namespaces, and an iterator can only be read once
+    selected_namespaces = list(namespaces) if namespaces is not None else None
+    updates = {**build_env_updates(config, FRONTEND_ENV_MAP, selected_namespaces),
+               **build_derived_env_updates(config, FRONTEND_DERIVED_ENV_MAP, selected_namespaces)}
     if not updates:
         return
 
