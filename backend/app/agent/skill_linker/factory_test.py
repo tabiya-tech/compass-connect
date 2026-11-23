@@ -58,6 +58,36 @@ class TestGetSkillLinker:
         assert isinstance(actual_linker._adapter, expected_adapter_class)
 
 
+    @pytest.mark.parametrize("number_of_clusters, number_of_top_skills_to_pick_per_cluster, expected_top_skills", [
+        (5, 1, 5),
+        (5, 2, 10),
+        (3, 3, 9),
+    ])
+    def test_classifier_returns_as_many_top_skills_as_the_pipeline(self,
+                                                                  setup_application_config: ApplicationConfig,
+                                                                  number_of_clusters: int,
+                                                                  number_of_top_skills_to_pick_per_cluster: int,
+                                                                  expected_top_skills: int):
+        # GIVEN an application config with the classifier skill linker
+        given_config = setup_application_config.model_copy(update={
+            "skill_linker": SkillLinkerType.CLASSIFIER,
+            "classifier_api_url": "https://classifier.test",
+            "classifier_api_key": "key",
+        })
+        # AND an experience pipeline config with the given clusters and top skills per cluster
+        given_pipeline_config = ExperiencePipelineConfig(
+            number_of_clusters=number_of_clusters,
+            number_of_top_skills_to_pick_per_cluster=number_of_top_skills_to_pick_per_cluster)
+
+        # WHEN the skill linker is created
+        actual_linker = get_skill_linker(application_config=given_config,
+                                         search_services=MagicMock(),
+                                         experience_pipeline_config=given_pipeline_config)
+
+        # THEN the classifier linker returns as many top skills as the pipeline would
+        assert isinstance(actual_linker, ClassifierSkillLinker)
+        assert actual_linker._config.number_of_top_skills == expected_top_skills
+
     @pytest.mark.parametrize("llm_reranker_url, expect_reranker", [
         (None, False),
         ("https://reranker.test", True),
