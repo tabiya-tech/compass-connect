@@ -37,6 +37,7 @@ import {
   getSpeechConfig,
   DEFAULT_MAX_RECORDING_SECONDS,
   DEFAULT_MAX_TEXT_BYTES,
+  MIN_MAX_TEXT_BYTES,
 } from "./envService";
 import { getRandomString } from "./_test_utilities/specialCharacters";
 
@@ -457,6 +458,30 @@ describe("FRONTEND_SPEECH_CONFIG Getter (getSpeechConfig) tests", () => {
     // THEN expect the default limits
     expect(actualConfig.speechToText.maxRecordingSeconds).toBe(DEFAULT_MAX_RECORDING_SECONDS);
     expect(actualConfig.textToSpeech.maxTextBytes).toBe(DEFAULT_MAX_TEXT_BYTES);
+  });
+
+  test("should use the default text limit when it is shorter than the longest UTF-8 character", () => {
+    // GIVEN read aloud is on with a text limit one byte shorter than the minimum
+    givenConfig(
+      btoa(
+        JSON.stringify({
+          textToSpeech: { enabled: true, locales: ["en-US"], maxTextBytes: MIN_MAX_TEXT_BYTES - 1 },
+        })
+      )
+    );
+    // WHEN getSpeechConfig is called
+    // THEN expect the default text limit
+    expect(getSpeechConfig().textToSpeech.maxTextBytes).toBe(DEFAULT_MAX_TEXT_BYTES);
+  });
+
+  test("should keep a text limit of exactly the minimum", () => {
+    // GIVEN read aloud is on with the minimum text limit
+    givenConfig(
+      btoa(JSON.stringify({ textToSpeech: { enabled: true, locales: ["en-US"], maxTextBytes: MIN_MAX_TEXT_BYTES } }))
+    );
+    // WHEN getSpeechConfig is called
+    // THEN expect that limit
+    expect(getSpeechConfig().textToSpeech.maxTextBytes).toBe(MIN_MAX_TEXT_BYTES);
   });
 
   test.each([
