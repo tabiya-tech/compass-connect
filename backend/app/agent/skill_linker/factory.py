@@ -1,6 +1,6 @@
 import logging
 
-from app.agent.skill_linker.classifier import ClassifierClient
+from app.agent.skill_linker.classifier import ClassifierClient, ClassifierSkillLinkerConfig
 from app.agent.skill_linker.classifier.linker import ClassifierSkillLinker
 from app.agent.skill_linker.llm_pipeline import ExperiencePipelineConfig, PipelineSkillLinker
 from app.agent.skill_linker.config import SkillLinkerType
@@ -19,13 +19,19 @@ def get_skill_linker(*,
     """
     Create the skill linker selected by the application configuration
     (BACKEND_SKILL_LINKER, and CLASSIFIER_API_VERSION and LLM_RERANKER_URL for the classifier).
+
+    Both linkers return the same number of top skills, the one set by BACKEND_EXPERIENCE_PIPELINE_CONFIG
+    (number_of_clusters * number_of_top_skills_to_pick_per_cluster).
     """
     if application_config.skill_linker == SkillLinkerType.CLASSIFIER:
+        number_of_top_skills = (experience_pipeline_config.number_of_clusters
+                                * experience_pipeline_config.number_of_top_skills_to_pick_per_cluster)
         return ClassifierSkillLinker(
             version=application_config.classifier_api_version,
             client=ClassifierClient(base_url=application_config.classifier_api_url,
                                     api_key=application_config.classifier_api_key),
             skill_search_service=search_services.skill_search_service,
+            config=ClassifierSkillLinkerConfig(number_of_top_skills=number_of_top_skills),
             reranker=_get_skill_reranker(application_config.llm_reranker_url)
         )
 
