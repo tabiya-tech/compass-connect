@@ -287,6 +287,33 @@
     "handoffReturn": {
       "message": "Concluído! Volte a {{site}} para continuar.",
       "backTo": "Voltar a {{site}}"
+    },
+    "readAloud": {
+      "readAloudAriaLabel": "Ler em voz alta",
+      "stopReadingAriaLabel": "Parar de ler",
+      "loadingAriaLabel": "A preparar o áudio, toque para cancelar",
+      "errors": {
+        "network": "Parece que está sem ligação. Verifique a sua ligação e tente novamente.",
+        "rateLimited": "Foram lidas demasiadas mensagens em pouco tempo. Aguarde um momento e tente novamente.",
+        "unavailable": "Não foi possível ler esta mensagem em voz alta. Tente novamente mais tarde.",
+        "autoplayBlocked": "O seu navegador bloqueou o áudio. Toque novamente no altifalante para o reproduzir.",
+        "unknown": "Ocorreu um erro ao ler esta mensagem em voz alta."
+      }
+    },
+    "voiceInput": {
+      "startRecordingAriaLabel": "Dite a sua mensagem",
+      "stopRecordingAriaLabel": "Parar a gravação",
+      "recording": "A gravar",
+      "transcribing": "A transcrever…",
+      "errors": {
+        "permissionDenied": "O acesso ao microfone está bloqueado. Permita-o nas definições do navegador para ditar a sua mensagem.",
+        "noMicrophone": "Não foi encontrado nenhum microfone. Ligue um ou escreva a sua mensagem.",
+        "noSpeech": "Não conseguimos ouvir nada. Tente novamente, um pouco mais perto do microfone.",
+        "rateLimited": "Demasiadas gravações em pouco tempo. Aguarde um momento e tente novamente.",
+        "unavailable": "Não foi possível transcrever a sua gravação. Tente novamente ou escreva a sua mensagem.",
+        "network": "Parece que está sem ligação. Verifique a sua ligação e tente novamente.",
+        "unknown": "Ocorreu um erro com a gravação. Tente novamente ou escreva a sua mensagem."
+      }
     }
   },
   "auth": {

@@ -287,6 +287,33 @@
     "handoffReturn": {
       "message": "All done! Head back to {{site}} to continue.",
       "backTo": "Back to {{site}}"
+    },
+    "readAloud": {
+      "readAloudAriaLabel": "Read aloud",
+      "stopReadingAriaLabel": "Stop reading",
+      "loadingAriaLabel": "Preparing the audio, tap to cancel",
+      "errors": {
+        "network": "You seem to be offline. Check your connection and try again.",
+        "rateLimited": "Too many messages were read aloud in a short time. Please wait a moment and try again.",
+        "unavailable": "This message could not be read aloud. Please try again later.",
+        "autoplayBlocked": "Your browser blocked the audio. Tap the speaker again to play it.",
+        "unknown": "Something went wrong while reading this message aloud."
+      }
+    },
+    "voiceInput": {
+      "startRecordingAriaLabel": "Speak your message",
+      "stopRecordingAriaLabel": "Stop recording",
+      "recording": "Recording",
+      "transcribing": "Transcribing…",
+      "errors": {
+        "permissionDenied": "Microphone access is blocked. Allow it in your browser settings to speak your message.",
+        "noMicrophone": "No microphone was found. Connect one, or type your message.",
+        "noSpeech": "We could not hear anything. Please try again, a little closer to the microphone.",
+        "rateLimited": "Too many recordings in a short time. Please wait a moment and try again.",
+        "unavailable": "Your recording could not be transcribed. Please try again, or type your message.",
+        "network": "You seem to be offline. Check your connection and try again.",
+        "unknown": "Something went wrong with the recording. Please try again, or type your message."
+      }
     }
   },
   "auth": {

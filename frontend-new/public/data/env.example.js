@@ -85,6 +85,15 @@ window.tabiyaConfig = {
   // CV Upload feature flag (optional, defaults to false if not set)
   GLOBAL_ENABLE_CV_UPLOAD: btoa("true"),
 
+  // Voice input and read aloud (optional, both off if not set). Generated from the speech section of the config by
+  // inject-config.py: the switches, the enabled locales and the limits the frontend applies.
+  FRONTEND_SPEECH_CONFIG: btoa(
+    JSON.stringify({
+      speechToText: { enabled: false, locales: [], maxRecordingSeconds: 60 },
+      textToSpeech: { enabled: false, locales: [], maxTextBytes: 7168 },
+    })
+  ),
+
   // Hides the program-skills section in 3 places: home dashboard sidebar, build your profile
   // chat sidebar, and (as "Education Skills") the profile page. Shown by default; "true" to hide.
   FRONTEND_HIDE_PROGRAM_SKILLS: btoa("false"),

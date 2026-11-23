@@ -65,6 +65,10 @@ export type ExtendedRequestInit = RequestInit & {
   // If the customFetch should retry the request on didn't fetch errors.
   retryOnFailedToFetch?: boolean;
 
+  // If the customFetch should retry the request on the default retriable status codes (RETRY_STATUS_CODES).
+  // Defaults to true. Set to false when the caller handles them itself, e.g. to tell the user right away.
+  retryOnDefaultStatusCodes?: boolean;
+
   compressRequestBody?: boolean;
 };
 
@@ -255,6 +259,7 @@ export const customFetch = async (apiUrl: string, init: ExtendedRequestInit = de
     expectedStatusCode,
     retriableStatusCodes = [],
     retryOnFailedToFetch = false,
+    retryOnDefaultStatusCodes = true,
     compressRequestBody = true,
     ...options
   } = init;
@@ -406,7 +411,10 @@ export const customFetch = async (apiUrl: string, init: ExtendedRequestInit = de
     }
 
     // Combine the default retriable status codes with the ones provided by the caller.
-    const combinedRetriableStatusCodes = [...RETRY_STATUS_CODES, ...retriableStatusCodes];
+    const combinedRetriableStatusCodes = [
+      ...(retryOnDefaultStatusCodes ? RETRY_STATUS_CODES : []),
+      ...retriableStatusCodes,
+    ];
 
     // If the expectedStatusCodes includes the response status.
     // Validate the content type if the expectedContentType is provided.

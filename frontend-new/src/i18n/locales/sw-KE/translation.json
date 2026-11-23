@@ -287,6 +287,33 @@
     "handoffReturn": {
       "message": "Umemaliza! Rudi kwenye {{site}} ili kuendelea.",
       "backTo": "Rudi kwenye {{site}}"
+    },
+    "readAloud": {
+      "readAloudAriaLabel": "Soma kwa sauti",
+      "stopReadingAriaLabel": "Acha kusoma",
+      "loadingAriaLabel": "Inaandaa sauti, gusa ili kughairi",
+      "errors": {
+        "network": "Inaonekana huna mtandao. Angalia muunganisho wako na ujaribu tena.",
+        "rateLimited": "Ujumbe mwingi umesomwa kwa muda mfupi. Tafadhali subiri kidogo na ujaribu tena.",
+        "unavailable": "Ujumbe huu haukuweza kusomwa kwa sauti. Tafadhali jaribu tena baadaye.",
+        "autoplayBlocked": "Kivinjari chako kimezuia sauti. Gusa spika tena ili kuicheza.",
+        "unknown": "Hitilafu imetokea wakati wa kusoma ujumbe huu kwa sauti."
+      }
+    },
+    "voiceInput": {
+      "startRecordingAriaLabel": "Sema ujumbe wako",
+      "stopRecordingAriaLabel": "Acha kurekodi",
+      "recording": "Inarekodi",
+      "transcribing": "Inaandika…",
+      "errors": {
+        "permissionDenied": "Ruhusa ya maikrofoni imezuiwa. Iruhusu katika mipangilio ya kivinjari chako ili useme ujumbe wako.",
+        "noMicrophone": "Hakuna maikrofoni iliyopatikana. Unganisha moja, au andika ujumbe wako.",
+        "noSpeech": "Hatukusikia chochote. Tafadhali jaribu tena, karibu kidogo na maikrofoni.",
+        "rateLimited": "Rekodi nyingi kwa muda mfupi. Tafadhali subiri kidogo na ujaribu tena.",
+        "unavailable": "Rekodi yako haikuweza kuandikwa. Tafadhali jaribu tena, au andika ujumbe wako.",
+        "network": "Inaonekana huna mtandao. Angalia muunganisho wako na ujaribu tena.",
+        "unknown": "Hitilafu imetokea na rekodi. Tafadhali jaribu tena, au andika ujumbe wako."
+      }
     }
   },
   "auth": {

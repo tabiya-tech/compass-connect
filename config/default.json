@@ -83,6 +83,29 @@
   "cv": {
     "enabled": true
   },
+  "speech": {
+    "speechToText": {
+      "enabled": false,
+      "model": "chirp_3",
+      "maxRecordingSeconds": 60,
+      "maxAudioBytes": 10485760,
+      "rateLimitPerMinute": 10,
+      "locales": ["en-US"]
+    },
+    "textToSpeech": {
+      "enabled": false,
+      "model": "gemini-3.8-flash-tts",
+      "maxTextBytes": 7168,
+      "rateLimitPerMinute": 20,
+      "locales": {
+        "en-US": {
+          "enabled": true,
+          "voice": "Kore",
+          "style": "warm, clear and friendly, at a moderate pace"
+        }
+      }
+    }
+  },
   "modules": {
     "disabled": [],
     "hideProgramSkills": false

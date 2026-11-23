@@ -8,6 +8,8 @@ from app.career_explorer.config import CareerExplorerConfig
 from app.channels.config import ChannelsConfig
 from app.countries import Country
 from app.i18n.language_config import LanguageConfig
+from app.speech_to_text.types import SpeechToTextConfig
+from app.text_to_speech.types import TextToSpeechConfig
 from app.users.cv.constants import DEFAULT_MAX_UPLOADS_PER_USER, DEFAULT_RATE_LIMIT_PER_MINUTE
 from app.version.types import Version
 from common_libs.observability.config import TracingConfig
@@ -206,6 +208,18 @@ class ApplicationConfig(BaseModel):
     """
     The channels of this deployment: the /api/channels/** routes and the chat bots. Off by default.
     Loaded from BACKEND_ENABLE_CHANNELS, BACKEND_ENABLE_TELEGRAM_BOT and BACKEND_TELEGRAM_*, see `parse_channels_config`.
+    """
+
+    speech_to_text_config: SpeechToTextConfig = Field(default_factory=SpeechToTextConfig)
+    """
+    Voice input: the /speech-to-text/** routes, Chirp 3 and the locales it is offered in. Off by default.
+    Loaded from BACKEND_SPEECH_TO_TEXT_CONFIG, see `parse_speech_to_text_config`.
+    """
+
+    text_to_speech_config: TextToSpeechConfig = Field(default_factory=TextToSpeechConfig)
+    """
+    Read aloud: the /text-to-speech/** routes, Gemini TTS and the voice of each locale it is offered in. Off by default.
+    Loaded from BACKEND_TEXT_TO_SPEECH_CONFIG, see `parse_text_to_speech_config`.
     """
 
     @model_validator(mode='after')
