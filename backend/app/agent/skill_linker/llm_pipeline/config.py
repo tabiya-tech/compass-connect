@@ -1,12 +1,12 @@
 from logging import Logger
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.app_config import ApplicationConfig
 
 
 class ExperiencePipelineConfig(BaseModel):
-    number_of_clusters: int = 5
+    number_of_clusters: int = Field(default=5, gt=0)
     """
     Default is 5
     
@@ -14,7 +14,7 @@ class ExperiencePipelineConfig(BaseModel):
     Each cluster of responsibilities will contribute to N top skills (where N = number_of_top_skills_to_pick_per_cluster).
     """
 
-    number_of_top_skills_to_pick_per_cluster: int = 1
+    number_of_top_skills_to_pick_per_cluster: int = Field(default=1, gt=0)
     """
     Default is 1
     The number of top skills to pick for each cluster among the top skills candidates of the cluster.
