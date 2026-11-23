@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from abc import ABC, abstractmethod
 
@@ -60,9 +61,10 @@ class TextToSpeechService(ITextToSpeechService):
         if not wav:
             raise EmptySynthesisError(f"Text-to-speech returned no audio for the locale {locale.value}")
 
-        # Gemini TTS returns WAV, the route and the frontend take MP3
+        # Gemini TTS returns WAV, the route and the frontend take MP3. The encoding takes CPU time, so it runs in a worker
+        # thread, not on the event loop
         try:
-            audio = wav_to_mp3(wav)
+            audio = await asyncio.to_thread(wav_to_mp3, wav)
         except AudioConversionError as e:
             raise TextToSpeechServiceError(f"Text-to-speech returned audio that cannot be read, for the locale "
                                            f"{locale.value}") from e

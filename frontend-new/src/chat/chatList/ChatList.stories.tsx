@@ -1,4 +1,4 @@
-import React, { ReactElement } from "react";
+import React, { ReactElement, useEffect, useRef } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import ChatList from "./ChatList";
 import { ConversationMessageSender } from "src/chat/ChatService/ChatService.types";
@@ -169,40 +169,75 @@ export const WithReadAloud: Story = {
     ],
   },
   decorators: [
-    (Story) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).tabiyaConfig = {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ...(window as any).tabiyaConfig,
-        [EnvVariables.FRONTEND_SPEECH_CONFIG]: window.btoa(
-          JSON.stringify({ textToSpeech: { enabled: true, locales: SupportedLocales } })
-        ),
-      };
-      TextToSpeechService.getInstance().synthesize = async () => {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        // 2 seconds of silence, as a WAV file
-        const sampleRate = 8000;
-        const samples = sampleRate * 2;
-        const buffer = new ArrayBuffer(44 + samples);
-        const view = new DataView(buffer);
-        const writeText = (offset: number, text: string) =>
-          text.split("").forEach((character, index) => view.setUint8(offset + index, character.charCodeAt(0)));
-        writeText(0, "RIFF");
-        view.setUint32(4, 36 + samples, true);
-        writeText(8, "WAVEfmt ");
-        view.setUint32(16, 16, true);
-        view.setUint16(20, 1, true);
-        view.setUint16(22, 1, true);
-        view.setUint32(24, sampleRate, true);
-        view.setUint32(28, sampleRate, true);
-        view.setUint16(32, 1, true);
-        view.setUint16(34, 8, true);
-        writeText(36, "data");
-        view.setUint32(40, samples, true);
-        new Uint8Array(buffer, 44).fill(128);
-        return new Blob([buffer], { type: "audio/wav" });
-      };
-      return <Story />;
-    },
+    (Story) => (
+      <ReadAloudStoryEnvironment>
+        <Story />
+      </ReadAloudStoryEnvironment>
+    ),
   ],
+};
+
+/** 2 seconds of silence, as a WAV file. */
+const silentWav = (): Blob => {
+  const sampleRate = 8000;
+  const samples = sampleRate * 2;
+  const buffer = new ArrayBuffer(44 + samples);
+  const view = new DataView(buffer);
+  const writeText = (offset: number, text: string) =>
+    text.split("").forEach((character, index) => view.setUint8(offset + index, character.charCodeAt(0)));
+  writeText(0, "RIFF");
+  view.setUint32(4, 36 + samples, true);
+  writeText(8, "WAVEfmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate, true);
+  view.setUint16(32, 1, true);
+  view.setUint16(34, 8, true);
+  writeText(36, "data");
+  view.setUint32(40, samples, true);
+  new Uint8Array(buffer, 44).fill(128);
+  return new Blob([buffer], { type: "audio/wav" });
+};
+
+/**
+ * Turns read aloud on, with a fake audio, for the stories inside it only: the overrides are applied before the story
+ * renders and restored when it unmounts, so the other stories keep the original config and service.
+ */
+const ReadAloudStoryEnvironment: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const restoreRef = useRef<(() => void) | null>(null);
+  const apply = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const windowWithConfig = window as any;
+    const originalConfig = windowWithConfig.tabiyaConfig;
+    const service = TextToSpeechService.getInstance();
+    const originalSynthesize = service.synthesize;
+    windowWithConfig.tabiyaConfig = {
+      ...originalConfig,
+      [EnvVariables.FRONTEND_SPEECH_CONFIG]: window.btoa(
+        JSON.stringify({ textToSpeech: { enabled: true, locales: SupportedLocales } })
+      ),
+    };
+    service.synthesize = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return silentWav();
+    };
+    return () => {
+      windowWithConfig.tabiyaConfig = originalConfig;
+      service.synthesize = originalSynthesize;
+    };
+  };
+  // applied during the first render, as the config is read while the story renders
+  if (!restoreRef.current) restoreRef.current = apply();
+  useEffect(() => {
+    // applied again if the effect is run twice, as in strict mode
+    if (!restoreRef.current) restoreRef.current = apply();
+    return () => {
+      restoreRef.current?.();
+      restoreRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return <>{children}</>;
 };

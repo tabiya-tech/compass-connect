@@ -62,7 +62,9 @@ const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({ messageId, message })
       sx={{ color: isPlaying ? theme.palette.primary.main : theme.palette.text.secondary }}
     >
       {isLoading ? (
+        // hidden from assistive technologies: the label of the button says that the audio is loading
         <CircularProgress
+          aria-hidden
           data-testid={DATA_TEST_ID.LOADING_ICON}
           size={iconSize}
           sx={{ color: theme.palette.text.secondary }}
