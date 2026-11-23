@@ -198,7 +198,8 @@ const RecordingWaveform: React.FC<RecordingWaveformProps> = (props) => {
           data-testid={DATA_TEST_ID.RECORDING_TRANSCRIBING}
           sx={{ display: "flex", alignItems: "center", gap: theme.fixedSpacing(theme.tabiyaSpacing.xs) }}
         >
-          <CircularProgress size={16} sx={{ color: theme.palette.text.secondary }} />
+          {/* hidden from assistive technologies: the status above says that the recording is being transcribed */}
+          <CircularProgress aria-hidden size={16} sx={{ color: theme.palette.text.secondary }} />
           <Typography variant="body2">{t("chat.voiceInput.transcribing")}</Typography>
         </Box>
       )}

@@ -3,7 +3,8 @@ import logging
 from http import HTTPStatus
 
 import google.auth
-from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
+from starlette.datastructures import UploadFile
 
 from app.app_config import get_application_config
 from app.constants.errors import HTTPErrorResponse
@@ -62,15 +63,55 @@ def _normalize_mime_type(content_type: str | None) -> str:
 
 
 def _check_content_length(request: Request, max_audio_bytes: int) -> None:
-    """ Refuses an oversized upload from its Content-Length header, before reading the body. """
+    """
+    Refuses an upload without a Content-Length, or with one over the limit, before the body is read: a body is only
+    read when its size is known and acceptable. Browsers always send a Content-Length with a FormData.
+    """
     try:
         content_length = int(request.headers.get("content-length", ""))
-    except ValueError:
-        return
+    except ValueError as e:
+        raise HTTPException(status_code=HTTPStatus.LENGTH_REQUIRED, detail="The request has no Content-Length") from e
     if content_length > max_audio_bytes + MAX_MULTIPART_OVERHEAD_BYTES:
         logger.warning("Audio upload refused from its header {content_length=%s, max_audio_bytes=%s}",
                        content_length, max_audio_bytes)
         raise HTTPException(status_code=HTTPStatus.REQUEST_ENTITY_TOO_LARGE, detail="The recording is too large")
+
+
+async def _read_upload(request: Request, max_audio_bytes: int) -> tuple[UploadFile, Locale]:
+    """
+    Parses the multipart body: the recording and the locale. Called after the request is authenticated, its size checked
+    and the user rate limited, so the body of a request that is refused is never read.
+    """
+    form = await request.form(max_files=1, max_fields=1)
+    audio = form.get("audio")
+    if not isinstance(audio, UploadFile):
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="The recording is missing")
+    try:
+        locale = Locale(form.get("locale"))
+    except ValueError as e:
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY,
+                            detail="The locale is missing or not supported") from e
+    return audio, locale
+
+
+_TRANSCRIBE_REQUEST_BODY = {
+    "required": True,
+    "content": {
+        "multipart/form-data": {
+            "schema": {
+                "type": "object",
+                "required": ["audio", "locale"],
+                "properties": {
+                    "audio": {"type": "string", "format": "binary",
+                              "description": "The recording, e.g. audio/webm or audio/mp4."},
+                    "locale": {"type": "string", "enum": [locale.value for locale in Locale],
+                               "description": "The locale the user speaks in, e.g. en-US."},
+                },
+            }
+        }
+    },
+}
+""" The body of POST /speech-to-text/transcribe, parsed by the route itself (see `_read_upload`). """
 
 
 def add_speech_to_text_routes(app: FastAPI, authentication: Authentication, config: SpeechToTextConfig) -> None:
@@ -88,6 +129,7 @@ def add_speech_to_text_routes(app: FastAPI, authentication: Authentication, conf
         response_model=TranscriptionResponse,
         responses={
             HTTPStatus.BAD_REQUEST: {"model": HTTPErrorResponse},
+            HTTPStatus.LENGTH_REQUIRED: {"model": HTTPErrorResponse},
             HTTPStatus.REQUEST_ENTITY_TOO_LARGE: {"model": HTTPErrorResponse},
             HTTPStatus.UNSUPPORTED_MEDIA_TYPE: {"model": HTTPErrorResponse},
             HTTPStatus.UNPROCESSABLE_ENTITY: {"model": HTTPErrorResponse},
@@ -97,17 +139,27 @@ def add_speech_to_text_routes(app: FastAPI, authentication: Authentication, conf
         },
         name="transcribe a recording",
         description="Transcribes a recording of the user, made in the browser, in the language of its locale.",
+        openapi_extra={"requestBody": _TRANSCRIBE_REQUEST_BODY},
     )
     async def _transcribe(
             request: Request,
-            audio: UploadFile = File(description="The recording, e.g. audio/webm or audio/mp4."),
-            locale: Locale = Form(description="The locale the user speaks in, e.g. en-US."),
             user_info: UserInfo = Depends(authentication.get_user_info()),
             speech_config: SpeechToTextConfig = Depends(get_speech_to_text_config),
             rate_limiter: ClientRateLimiter = Depends(get_speech_to_text_rate_limiter),
             service: ISpeechToTextService = Depends(get_speech_to_text_service),
     ) -> TranscriptionResponse:
+        # the multipart body is not declared as parameters: FastAPI would read it before authenticating the request.
+        # It is read last, once the request is known to be authenticated, of an acceptable size and not rate limited.
         _check_content_length(request, speech_config.max_audio_bytes)
+
+        retry_after = rate_limiter.acquire(user_info.user_id)
+        if retry_after is not None:
+            logger.warning("Speech-to-text rate limit reached {user_id=%s}", user_info.user_id)
+            raise HTTPException(status_code=HTTPStatus.TOO_MANY_REQUESTS,
+                                detail="Too many requests, please try again later.",
+                                headers={"Retry-After": str(retry_after)})
+
+        audio, locale = await _read_upload(request, speech_config.max_audio_bytes)
 
         mime_type = _normalize_mime_type(audio.content_type)
         if not is_allowed_audio_mime_type(mime_type):
@@ -118,13 +170,6 @@ def add_speech_to_text_routes(app: FastAPI, authentication: Authentication, conf
             raise HTTPException(status_code=HTTPStatus.REQUEST_ENTITY_TOO_LARGE, detail="The recording is too large")
         if not content:
             raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="The recording is empty")
-
-        retry_after = rate_limiter.acquire(user_info.user_id)
-        if retry_after is not None:
-            logger.warning("Speech-to-text rate limit reached {user_id=%s}", user_info.user_id)
-            raise HTTPException(status_code=HTTPStatus.TOO_MANY_REQUESTS,
-                                detail="Too many requests, please try again later.",
-                                headers={"Retry-After": str(retry_after)})
 
         logger.info("Transcribing audio {user_id=%s, locale='%s', audio_bytes=%s, mime_type='%s'}",
                     user_info.user_id, locale.value, len(content), mime_type)

@@ -5,7 +5,7 @@ from google.api_core.exceptions import DeadlineExceeded, InvalidArgument, Permis
 from google.cloud.speech_v2 import SpeechClient
 from google.cloud.speech_v2.types import cloud_speech
 
-from app.speech_to_text.adapter import CHIRP_LOCATION, ChirpSpeechToTextAdapter
+from app.speech_to_text.adapter import CHIRP_LOCATION, RECOGNIZE_TIMEOUT_SECONDS, ChirpSpeechToTextAdapter
 from app.speech_to_text.errors import SpeechToTextAdapterError
 from app.speech_to_text.types import AudioUpload
 
@@ -64,6 +64,8 @@ class TestChirpSpeechToTextAdapter:
         assert actual_request.config.features.enable_automatic_punctuation is True
         # AND the audio of the recording
         assert actual_request.content == _GIVEN_AUDIO.content
+        # AND a finite deadline, so a stalled request does not hold its worker thread
+        assert given_client.recognize.call_args.kwargs["timeout"] == RECOGNIZE_TIMEOUT_SECONDS
 
     def test_uses_the_regional_endpoint_where_chirp_3_runs(self):
         # WHEN the adapter is built without a client

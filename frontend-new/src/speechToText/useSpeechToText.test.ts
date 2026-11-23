@@ -16,6 +16,7 @@ import {
   FakeAnalyserNode,
   FakeAudioContext,
   FakeMediaRecorder,
+  FakeMediaStream,
   installMediaRecorderMock,
   MediaRecorderMock,
   uninstallMediaRecorderMock,
@@ -292,6 +293,107 @@ describe("useSpeechToText", () => {
     expect((transcribeSpy.mock.calls[0][2] as AbortSignal).aborted).toBe(true);
     expect(onTranscript).not.toHaveBeenCalled();
     expect(result.current.state).toEqual({ status: "idle" });
+  });
+
+  test("should drop a microphone request that is pending when the recording is cancelled", async () => {
+    // GIVEN the browser is still asking for the microphone
+    let resolveMicrophone: (stream: FakeMediaStream) => void = () => {};
+    media.getUserMedia.mockImplementationOnce(() => new Promise((resolve) => (resolveMicrophone = resolve)));
+    const { result, onError } = renderVoiceInput();
+    act(() => result.current.start());
+
+    // WHEN the recording is cancelled
+    act(() => result.current.cancel());
+    // AND the microphone is granted afterwards
+    const givenStream = new FakeMediaStream();
+    await act(async () => resolveMicrophone(givenStream));
+
+    // THEN expect no recording to start
+    expect(FakeMediaRecorder.instances).toHaveLength(0);
+    expect(result.current.state).toEqual({ status: "idle" });
+    // AND the granted microphone to be released at once
+    expect(givenStream.tracks[0].stop).toHaveBeenCalled();
+    // AND no error
+    expect(onError).not.toHaveBeenCalled();
+  });
+
+  test("should ignore a microphone refusal that arrives after the recording is cancelled", async () => {
+    // GIVEN the browser is still asking for the microphone
+    let rejectMicrophone: (error: DOMException) => void = () => {};
+    media.getUserMedia.mockImplementationOnce(() => new Promise((_resolve, reject) => (rejectMicrophone = reject)));
+    const { result, onError } = renderVoiceInput();
+    act(() => result.current.start());
+
+    // WHEN the recording is cancelled
+    act(() => result.current.cancel());
+    // AND the microphone is refused afterwards
+    await act(async () => rejectMicrophone(new DOMException("denied", "NotAllowedError")));
+
+    // THEN expect no error
+    expect(onError).not.toHaveBeenCalled();
+    expect(result.current.state).toEqual({ status: "idle" });
+  });
+
+  test("should release the microphone when the recorder cannot be created", async () => {
+    // GIVEN the browser cannot create a recorder for the microphone
+    const givenError = new DOMException("not supported", "NotSupportedError");
+    const originalMediaRecorder = window.MediaRecorder;
+    Object.defineProperty(window, "MediaRecorder", {
+      configurable: true,
+      writable: true,
+      value: Object.assign(
+        jest.fn(() => {
+          throw givenError;
+        }),
+        { isTypeSupported: () => true }
+      ),
+    });
+    const { result, onError } = renderVoiceInput();
+
+    // WHEN the user starts recording
+    act(() => result.current.start());
+
+    // THEN expect an error
+    await waitFor(() => expect(onError).toHaveBeenCalledWith("unknown"));
+    // AND the microphone to have been released
+    expect(media.streams[0].tracks[0].stop).toHaveBeenCalled();
+    Object.defineProperty(window, "MediaRecorder", {
+      configurable: true,
+      writable: true,
+      value: originalMediaRecorder,
+    });
+  });
+
+  test("should release the microphone and the audio levels when the recorder cannot start, and let the user try again", async () => {
+    // GIVEN the first recorder fails to start
+    let givenFailedStarts = 0;
+    class FailingOnceMediaRecorder extends FakeMediaRecorder {
+      start = jest.fn(() => {
+        if (givenFailedStarts++ === 0) throw new DOMException("not supported", "NotSupportedError");
+        this.state = "recording";
+      });
+    }
+    Object.defineProperty(window, "MediaRecorder", {
+      configurable: true,
+      writable: true,
+      value: FailingOnceMediaRecorder,
+    });
+    const { result, onError } = renderVoiceInput();
+
+    // WHEN the user starts recording
+    act(() => result.current.start());
+
+    // THEN expect an error
+    await waitFor(() => expect(onError).toHaveBeenCalledWith("unknown"));
+    // AND the microphone and the audio levels to have been released
+    expect(media.streams[0].tracks[0].stop).toHaveBeenCalled();
+    expect(FakeAudioContext.instances[0].closed).toBe(true);
+
+    // AND WHEN the user tries again
+    await startRecording(result);
+
+    // THEN expect a recording
+    expect(result.current.state.status).toBe("recording");
   });
 
   test("should release the microphone and the audio context on unmount", async () => {

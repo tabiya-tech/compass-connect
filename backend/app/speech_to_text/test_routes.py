@@ -215,6 +215,58 @@ class TestTranscribeRoute:
         assert actual_response.status_code == HTTPStatus.UNAUTHORIZED
         assert fake_service.calls == []
 
+    @pytest.mark.parametrize("given_auth, given_headers, given_rate_limit_per_minute, expected_status", [
+        (UnauthenticatedMockAuth(), None, 100, HTTPStatus.UNAUTHORIZED),
+        (MockAuth(), {"content-length": str(_GIVEN_MAX_AUDIO_BYTES + MAX_MULTIPART_OVERHEAD_BYTES + 1)}, 100,
+         HTTPStatus.REQUEST_ENTITY_TOO_LARGE),
+        (MockAuth(), None, 1, HTTPStatus.TOO_MANY_REQUESTS),
+    ], ids=["unauthenticated", "too large", "rate limited"])
+    def test_does_not_read_the_body_of_a_refused_request(self, fake_service, given_auth, given_headers,
+                                                         given_rate_limit_per_minute, expected_status):
+        # GIVEN a request that is refused
+        given_client = _given_client(config=_given_config(rate_limit_per_minute=given_rate_limit_per_minute),
+                                     service=fake_service, auth=given_auth)
+        if given_rate_limit_per_minute == 1:
+            # the user has used their one recording of the minute
+            _transcribe(given_client)
+
+        # WHEN a recording is uploaded
+        with patch("starlette.requests.Request.form", side_effect=AssertionError("the body was read")) as mocked_form:
+            actual_response = _transcribe(given_client, headers=given_headers)
+
+        # THEN expect the request to be refused
+        assert actual_response.status_code == expected_status
+        # AND its body never to have been parsed
+        mocked_form.assert_not_called()
+
+    def test_rejects_a_request_without_a_content_length(self, client, fake_service):
+        # GIVEN a multipart body sent in chunks, without a Content-Length
+        given_boundary = "boundary"
+        given_body = (f"--{given_boundary}\r\nContent-Disposition: form-data; name=\"locale\"\r\n\r\n"
+                      f"{_GIVEN_LOCALE.value}\r\n--{given_boundary}--\r\n").encode()
+
+        def given_chunks():
+            yield given_body
+
+        # WHEN it is sent
+        actual_response = client.post("/speech-to-text/transcribe", content=given_chunks(),
+                                      headers={"content-type": f"multipart/form-data; boundary={given_boundary}"})
+
+        # THEN expect LENGTH REQUIRED
+        assert actual_response.status_code == HTTPStatus.LENGTH_REQUIRED
+        assert fake_service.calls == []
+
+    def test_documents_the_multipart_body_in_the_openapi_spec(self, client):
+        # WHEN the OpenAPI spec is read
+        actual_spec = client.get("/openapi.json").json()
+
+        # THEN expect the multipart body of the route, with the recording and the locale
+        actual_body = actual_spec["paths"]["/speech-to-text/transcribe"]["post"]["requestBody"]
+        actual_schema = actual_body["content"]["multipart/form-data"]["schema"]
+        assert set(actual_schema["required"]) == {"audio", "locale"}
+        assert actual_schema["properties"]["audio"]["format"] == "binary"
+        assert _GIVEN_LOCALE.value in actual_schema["properties"]["locale"]["enum"]
+
     def test_adds_no_route_when_voice_input_is_off(self, fake_service):
         # GIVEN voice input is off
         given_client = _given_client(config=_given_config(enabled=False), service=fake_service)

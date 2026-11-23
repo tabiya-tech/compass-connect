@@ -13,6 +13,13 @@ from app.speech_to_text.types import AudioUpload, SpeechToTextModel
 CHIRP_LOCATION = "us"
 """ The multi-region Chirp 3 runs in, so where the audio is processed (Chirp 3 runs in "us" and "eu" only). """
 
+RECOGNIZE_TIMEOUT_SECONDS = 30.0
+"""
+The deadline of one recognition request. The client sets none, so a stalled request would hold its worker thread.
+A minute of audio is recognized in a few seconds; a request past the deadline fails with DeadlineExceeded (504),
+which the service retries.
+"""
+
 
 class ISpeechToTextAdapter(ABC):
     """
@@ -58,7 +65,8 @@ class ChirpSpeechToTextAdapter(ISpeechToTextAdapter):
             content=audio.content,
         )
         try:
-            response = await asyncio.to_thread(self._client.recognize, request=request)
+            response = await asyncio.to_thread(self._client.recognize, request=request,
+                                               timeout=RECOGNIZE_TIMEOUT_SECONDS)
         except GoogleAPIError as e:
             status_code = getattr(e, "code", None)
             raise SpeechToTextAdapterError(

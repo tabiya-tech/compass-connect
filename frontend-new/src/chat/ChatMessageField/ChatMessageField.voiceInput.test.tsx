@@ -187,6 +187,27 @@ describe("ChatMessageField voice input", () => {
     expect(givenFieldProps.handleSend).toHaveBeenCalledWith(`${givenTranscript}${givenEdit}`);
   });
 
+  test("should focus the field once the transcript is in it, so the user can review it", async () => {
+    // GIVEN the field
+    render(<ChatMessageField {...givenProps()} />);
+    // AND whether the field is visible each time it is focused (a browser ignores focusing a hidden one)
+    const actualFocusVisibility: boolean[] = [];
+    const focusSpy = jest.spyOn(HTMLTextAreaElement.prototype, "focus").mockImplementation(function (
+      this: HTMLTextAreaElement
+    ) {
+      actualFocusVisibility.push(this.style.display !== "none");
+    });
+
+    // WHEN the user records and stops
+    await recordAndStop();
+
+    // THEN expect the transcript in the field
+    await waitFor(() => expect(field()).toHaveValue(givenTranscript));
+    // AND the field to have been focused while visible, not while still hidden behind the level graph
+    expect(actualFocusVisibility).toEqual([true]);
+    focusSpy.mockRestore();
+  });
+
   test("should show the transcribing state while the recording is transcribed", async () => {
     // GIVEN the transcription takes a while
     transcribeSpy.mockImplementation(() => new Promise(() => {}));
