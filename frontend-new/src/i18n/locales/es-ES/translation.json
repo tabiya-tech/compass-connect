@@ -287,6 +287,33 @@
     "handoffReturn": {
       "message": "¡Listo! Vuelve a {{site}} para continuar.",
       "backTo": "Volver a {{site}}"
+    },
+    "readAloud": {
+      "readAloudAriaLabel": "Leer en voz alta",
+      "stopReadingAriaLabel": "Dejar de leer",
+      "loadingAriaLabel": "Preparando el audio, toca para cancelar",
+      "errors": {
+        "network": "Parece que no tienes conexión. Revisa tu conexión e inténtalo de nuevo.",
+        "rateLimited": "Se leyeron demasiados mensajes en poco tiempo. Espera un momento e inténtalo de nuevo.",
+        "unavailable": "No se pudo leer este mensaje en voz alta. Inténtalo de nuevo más tarde.",
+        "autoplayBlocked": "Tu navegador bloqueó el audio. Toca el altavoz de nuevo para reproducirlo.",
+        "unknown": "Algo salió mal al leer este mensaje en voz alta."
+      }
+    },
+    "voiceInput": {
+      "startRecordingAriaLabel": "Dicta tu mensaje",
+      "stopRecordingAriaLabel": "Detener la grabación",
+      "recording": "Grabando",
+      "transcribing": "Transcribiendo…",
+      "errors": {
+        "permissionDenied": "El acceso al micrófono está bloqueado. Permítelo en la configuración del navegador para dictar tu mensaje.",
+        "noMicrophone": "No se encontró ningún micrófono. Conecta uno o escribe tu mensaje.",
+        "noSpeech": "No pudimos oír nada. Inténtalo de nuevo, un poco más cerca del micrófono.",
+        "rateLimited": "Demasiadas grabaciones en poco tiempo. Espera un momento e inténtalo de nuevo.",
+        "unavailable": "No se pudo transcribir tu grabación. Inténtalo de nuevo o escribe tu mensaje.",
+        "network": "Parece que no tienes conexión. Revisa tu conexión e inténtalo de nuevo.",
+        "unknown": "Algo salió mal con la grabación. Inténtalo de nuevo o escribe tu mensaje."
+      }
     }
   },
   "auth": {

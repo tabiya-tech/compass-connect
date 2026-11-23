@@ -287,6 +287,33 @@
     "handoffReturn": {
       "message": "Mwamaliza! Bwererani ku {{site}} kuti mupitirize.",
       "backTo": "Bwererani ku {{site}}"
+    },
+    "readAloud": {
+      "readAloudAriaLabel": "Werengani mokweza",
+      "stopReadingAriaLabel": "Lekani kuwerenga",
+      "loadingAriaLabel": "Tikukonza mawu, dinani kuti muleke",
+      "errors": {
+        "network": "Zikuoneka kuti mulibe intaneti. Onani kulumikizana kwanu ndipo yesaninso.",
+        "rateLimited": "Mauthenga ambiri awerengedwa mokweza mu nthawi yochepa. Chonde dikirani pang'ono ndipo yesaninso.",
+        "unavailable": "Uthengawu sunathe kuwerengedwa mokweza. Chonde yesaninso pambuyo pake.",
+        "autoplayBlocked": "Msakatuli wanu waletsa mawu. Dinaninso sipika kuti muwamvere.",
+        "unknown": "Pachitika vuto powerenga uthengawu mokweza."
+      }
+    },
+    "voiceInput": {
+      "startRecordingAriaLabel": "Nenani uthenga wanu",
+      "stopRecordingAriaLabel": "Lekani kujambula",
+      "recording": "Tikujambula",
+      "transcribing": "Tikulemba…",
+      "errors": {
+        "permissionDenied": "Maikolofoni yaletsedwa. Ilolezeni mu zokonda za msakatuli wanu kuti munene uthenga wanu.",
+        "noMicrophone": "Palibe maikolofoni yomwe yapezeka. Lumikizani imodzi, kapena lembani uthenga wanu.",
+        "noSpeech": "Sitinamve kanthu. Chonde yesaninso, pafupi pang'ono ndi maikolofoni.",
+        "rateLimited": "Mwajambula kwambiri mu nthawi yochepa. Chonde dikirani pang'ono ndipo yesaninso.",
+        "unavailable": "Zomwe mwajambula sizinathe kulembedwa. Chonde yesaninso, kapena lembani uthenga wanu.",
+        "network": "Zikuoneka kuti mulibe intaneti. Onani kulumikizana kwanu ndipo yesaninso.",
+        "unknown": "Pachitika vuto pojambula. Chonde yesaninso, kapena lembani uthenga wanu."
+      }
     }
   },
   "auth": {

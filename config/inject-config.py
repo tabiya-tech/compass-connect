@@ -3,7 +3,7 @@ import argparse
 import sys
 import re
 from pathlib import Path
-from typing import Dict, Any, Optional, Iterable, Tuple
+from typing import Dict, Any, Optional, Iterable, Tuple, Callable
 
 
 DEFAULT_BACKEND_ENV_PATH = '../backend/.env'
@@ -21,6 +21,10 @@ BACKEND_ENV_MAP: Dict[str, str] = {
 
     # CV Upload
     "GLOBAL_ENABLE_CV_UPLOAD": "cv.enabled",
+
+    # Voice input and read aloud
+    "BACKEND_SPEECH_TO_TEXT_CONFIG": "speech.speechToText",
+    "BACKEND_TEXT_TO_SPEECH_CONFIG": "speech.textToSpeech",
 
     # Add more backend env vars here
 }
@@ -72,6 +76,48 @@ FRONTEND_ENV_MAP: Dict[str, str] = {
     "FRONTEND_GTM_ENABLED": "analytics.enabled",
 }
 
+
+
+def _enabled_locales(feature: Dict[str, Any]) -> list[str]:
+    """The locales of an enabled feature: a list of locales (speech-to-text), or the enabled keys of an object of
+    settings per locale (text-to-speech)."""
+    if not feature.get('enabled'):
+        return []
+    locales = feature.get('locales') or []
+    if isinstance(locales, dict):
+        return sorted(locale for locale, settings in locales.items() if isinstance(settings, dict) and settings.get('enabled'))
+    return sorted(locale for locale in locales if isinstance(locale, str))
+
+
+def frontend_speech_config(config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """The part of the `speech` section the frontend needs: the switches, the enabled locales and the limits it applies.
+    The rest (voices, prompts, regions, models) stays in the backend."""
+    speech = config.get('speech')
+    if not isinstance(speech, dict):
+        return None
+    speech_to_text = speech.get('speechToText') or {}
+    text_to_speech = speech.get('textToSpeech') or {}
+    return {
+        'speechToText': {
+            'enabled': bool(speech_to_text.get('enabled')),
+            'locales': _enabled_locales(speech_to_text),
+            **({'maxRecordingSeconds': speech_to_text['maxRecordingSeconds']}
+               if 'maxRecordingSeconds' in speech_to_text else {}),
+        },
+        'textToSpeech': {
+            'enabled': bool(text_to_speech.get('enabled')),
+            'locales': _enabled_locales(text_to_speech),
+            **({'maxTextBytes': text_to_speech['maxTextBytes']} if 'maxTextBytes' in text_to_speech else {}),
+        },
+    }
+
+
+# Frontend env.js keys computed from the config rather than copied from one path: (namespace, function of the config).
+# A function returning None leaves the key as it is.
+FRONTEND_DERIVED_ENV_MAP: Dict[str, Tuple[str, Callable[[Dict[str, Any]], Any]]] = {
+    "FRONTEND_SPEECH_CONFIG": ("speech", frontend_speech_config),
+}
+
 FRONTEND_JSON_FIELDS = {
     'FRONTEND_THEME_CSS_VARIABLES',
     'FRONTEND_SEO',
@@ -82,6 +128,7 @@ FRONTEND_JSON_FIELDS = {
     'FRONTEND_PARTNER_LOGOS',
     'FRONTEND_DISABLED_MODULES',
     'FRONTEND_LOCALE_TEXT_OVERRIDES',
+    'FRONTEND_SPEECH_CONFIG',
     # Add more JSON.stringify fields here
 }
 
@@ -90,6 +137,7 @@ FRONTEND_JSON_FIELDS = {
 # bundled wording. Fields missing from the config keep their value either way.
 FRONTEND_REPLACED_JSON_FIELDS = {
     'FRONTEND_LOCALE_TEXT_OVERRIDES',
+    'FRONTEND_SPEECH_CONFIG',
 }
 
 
@@ -150,6 +198,22 @@ def build_env_updates(config: Dict[str, Any], mapping: Dict[str, str], namespace
         if selected is not None and top not in selected:
             continue
         value = get_by_dotted_path(config, dotted_path)
+        if value is None:
+            continue
+        updates[env_key] = value
+    return updates
+
+
+def build_derived_env_updates(config: Dict[str, Any], mapping: Dict[str, Tuple[str, Callable[[Dict[str, Any]], Any]]],
+                              namespaces: Optional[Iterable[str]] = None) -> Dict[str, Any]:
+    """Build the env var updates that are computed from the config, for the selected namespaces."""
+    selected = set(namespaces) if namespaces else None
+
+    updates: Dict[str, Any] = {}
+    for env_key, (namespace, derive) in mapping.items():
+        if selected is not None and namespace not in selected:
+            continue
+        value = derive(config)
         if value is None:
             continue
         updates[env_key] = value
@@ -279,7 +343,8 @@ def update_frontend_env(config: Dict[str, Any], env_js_path: Path, namespaces: O
 
     content = env_js_path.read_text()
 
-    updates = build_env_updates(config, FRONTEND_ENV_MAP, namespaces)
+    updates = {**build_env_updates(config, FRONTEND_ENV_MAP, namespaces),
+               **build_derived_env_updates(config, FRONTEND_DERIVED_ENV_MAP, namespaces)}
     if not updates:
         return
 

@@ -44,6 +44,7 @@ export enum EnvVariables {
   FRONTEND_ILLUSTRATIONS = "FRONTEND_ILLUSTRATIONS",
   FRONTEND_HIDE_PROGRAM_SKILLS = "FRONTEND_HIDE_PROGRAM_SKILLS",
   GLOBAL_COUNTRY_NAME = "GLOBAL_COUNTRY_NAME",
+  FRONTEND_SPEECH_CONFIG = "FRONTEND_SPEECH_CONFIG",
 }
 
 export const requiredEnvVariables = [
@@ -255,6 +256,87 @@ export const getLocaleTextOverrides = (): Record<string, Record<string, unknown>
   } catch (e) {
     console.error(new EnvError("Error parsing FRONTEND_LOCALE_TEXT_OVERRIDES JSON", e));
     return {};
+  }
+};
+
+/** Voice input as the deployment configures it. */
+export interface SpeechToTextEnvConfig {
+  /** Whether voice input is on for the deployment. */
+  enabled: boolean;
+  /** The locales voice input is offered in. Empty when it is off. */
+  locales: string[];
+  /** The longest recording, in seconds. The recording stops when it is reached. */
+  maxRecordingSeconds: number;
+}
+
+/** Read aloud as the deployment configures it. */
+export interface TextToSpeechEnvConfig {
+  /** Whether read aloud is on for the deployment. */
+  enabled: boolean;
+  /** The locales read aloud is offered in. Empty when it is off. */
+  locales: string[];
+  /** The longest text read in one request, in bytes of UTF-8. Longer messages are read in parts. */
+  maxTextBytes: number;
+}
+
+export interface SpeechEnvConfig {
+  speechToText: SpeechToTextEnvConfig;
+  textToSpeech: TextToSpeechEnvConfig;
+}
+
+export const DEFAULT_MAX_RECORDING_SECONDS = 60;
+export const DEFAULT_MAX_TEXT_BYTES = 4000;
+
+const SPEECH_DISABLED: SpeechEnvConfig = {
+  speechToText: { enabled: false, locales: [], maxRecordingSeconds: DEFAULT_MAX_RECORDING_SECONDS },
+  textToSpeech: { enabled: false, locales: [], maxTextBytes: DEFAULT_MAX_TEXT_BYTES },
+};
+
+const parseSpeechFeature = (value: unknown, limitKey: string, defaultLimit: number) => {
+  const feature = isPlainObject(value) ? value : {};
+  const limit = feature[limitKey];
+  const locales = Array.isArray(feature.locales)
+    ? feature.locales.filter((locale): locale is string => typeof locale === "string")
+    : [];
+  const enabled = feature.enabled === true && locales.length > 0;
+  return {
+    enabled,
+    locales: enabled ? locales : [],
+    limit: typeof limit === "number" && Number.isInteger(limit) && limit > 0 ? limit : defaultLimit,
+  };
+};
+
+/**
+ * Returns the voice input and read aloud settings configured via `FRONTEND_SPEECH_CONFIG` as a JSON object.
+ *
+ * Both features are off when the variable is unset, is not a JSON object, or cannot be parsed (an `EnvError` is
+ * logged in the latter two cases). A feature without any locale is off. Locales that are not strings are dropped, and a
+ * missing or invalid limit is replaced by its default.
+ */
+export const getSpeechConfig = (): SpeechEnvConfig => {
+  const jsonString = getEnv(EnvVariables.FRONTEND_SPEECH_CONFIG);
+  if (!jsonString) {
+    return SPEECH_DISABLED;
+  }
+  try {
+    const parsed = JSON.parse(jsonString);
+    if (!isPlainObject(parsed)) {
+      console.error(new EnvError("FRONTEND_SPEECH_CONFIG must be a JSON object"));
+      return SPEECH_DISABLED;
+    }
+    const speechToText = parseSpeechFeature(parsed.speechToText, "maxRecordingSeconds", DEFAULT_MAX_RECORDING_SECONDS);
+    const textToSpeech = parseSpeechFeature(parsed.textToSpeech, "maxTextBytes", DEFAULT_MAX_TEXT_BYTES);
+    return {
+      speechToText: {
+        enabled: speechToText.enabled,
+        locales: speechToText.locales,
+        maxRecordingSeconds: speechToText.limit,
+      },
+      textToSpeech: { enabled: textToSpeech.enabled, locales: textToSpeech.locales, maxTextBytes: textToSpeech.limit },
+    };
+  } catch (e) {
+    console.error(new EnvError("Error parsing FRONTEND_SPEECH_CONFIG JSON", e));
+    return SPEECH_DISABLED;
   }
 };
 

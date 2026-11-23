@@ -14,6 +14,8 @@ from app.admin.routes import get_admin_routes
 from app.channels.bots.registry import build_channel_bots
 from app.channels.config import parse_channels_config
 from app.channels.routes import add_channels_routes
+from app.speech_to_text.config import parse_speech_to_text_config, SPEECH_TO_TEXT_CONFIG_ENV_VAR
+from app.text_to_speech.config import parse_text_to_speech_config, TEXT_TO_SPEECH_CONFIG_ENV_VAR
 from app.conversations.routes import add_conversation_routes
 from app.countries import Country, get_country_from_string
 from app.invitations import add_user_invitations_routes
@@ -320,7 +322,8 @@ application_config = ApplicationConfig(
                                           telegram_webhook_secret=os.getenv("BACKEND_TELEGRAM_WEBHOOK_SECRET"),
                                           telegram_webhook_url=os.getenv("BACKEND_TELEGRAM_WEBHOOK_URL"),
                                           backend_url=backend_url),
-
+    speech_to_text_config=parse_speech_to_text_config(os.getenv(SPEECH_TO_TEXT_CONFIG_ENV_VAR)),
+    text_to_speech_config=parse_text_to_speech_config(os.getenv(TEXT_TO_SPEECH_CONFIG_ENV_VAR)),
 )
 
 set_application_config(application_config)
@@ -333,6 +336,12 @@ if application_config.skill_linker == SkillLinkerType.CLASSIFIER:
                 "enabled" if application_config.llm_reranker_url else "disabled")
 else:
     logger.info("Skill linker: %s", application_config.skill_linker.value)
+logger.info("Speech-to-text: %s, locales: %s",
+            "enabled" if application_config.speech_to_text_config.enabled else "disabled",
+            sorted(locale.value for locale in application_config.speech_to_text_config.enabled_locales))
+logger.info("Text-to-speech: %s, locales: %s",
+            "enabled" if application_config.text_to_speech_config.enabled else "disabled",
+            sorted(locale.value for locale in application_config.text_to_speech_config.enabled_locales))
 logger.info("LLM provider: %s, models: %s", application_config.llm_provider,
             {tier.value: resolve_model_name(tier=tier, provider=application_config.llm_provider) for tier in ModelTier})
 

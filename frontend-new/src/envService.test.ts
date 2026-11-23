@@ -34,6 +34,9 @@ import {
   getLocaleTextOverrides,
   getCountryName,
   getProgramSkillsVisibility,
+  getSpeechConfig,
+  DEFAULT_MAX_RECORDING_SECONDS,
+  DEFAULT_MAX_TEXT_BYTES,
 } from "./envService";
 import { getRandomString } from "./_test_utilities/specialCharacters";
 
@@ -351,6 +354,122 @@ describe("FRONTEND_LOCALE_TEXT_OVERRIDES Getter (getLocaleTextOverrides) tests",
       // WHEN getLocaleTextOverrides is called
       // THEN expect it to return an empty object
       expect(getLocaleTextOverrides()).toEqual({});
+      // AND an error to have been logged
+      expect(console.error).toHaveBeenCalledWith(expectedError);
+    }
+  );
+});
+
+describe("FRONTEND_SPEECH_CONFIG Getter (getSpeechConfig) tests", () => {
+  const givenConfig = (value: string | undefined) =>
+    Object.defineProperty(window, "tabiyaConfig", {
+      value: value === undefined ? {} : { FRONTEND_SPEECH_CONFIG: value },
+      writable: true,
+    });
+  const expectedBothOff = {
+    speechToText: { enabled: false, locales: [], maxRecordingSeconds: DEFAULT_MAX_RECORDING_SECONDS },
+    textToSpeech: { enabled: false, locales: [], maxTextBytes: DEFAULT_MAX_TEXT_BYTES },
+  };
+
+  test.each([
+    ["not set", undefined],
+    ["empty", ""],
+  ])("should turn both features off when the FRONTEND_SPEECH_CONFIG is %s", (_d, givenValue) => {
+    // GIVEN the FRONTEND_SPEECH_CONFIG environment variable is not set
+    givenConfig(givenValue === undefined ? undefined : btoa(givenValue));
+    // AND no error has been logged so far
+    (console.error as jest.Mock).mockClear();
+    // WHEN getSpeechConfig is called
+    // THEN expect both features to be off
+    expect(getSpeechConfig()).toEqual(expectedBothOff);
+    // AND no error to have been logged
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  test("should return the configured features, locales and limits", () => {
+    // GIVEN voice input is on in two locales and read aloud is on in one
+    const givenSpeechConfig = {
+      speechToText: { enabled: true, locales: ["en-US", "sw-KE"], maxRecordingSeconds: 30 },
+      textToSpeech: { enabled: true, locales: ["en-US"], maxTextBytes: 2000 },
+    };
+    givenConfig(btoa(JSON.stringify(givenSpeechConfig)));
+    // WHEN getSpeechConfig is called
+    // THEN expect the configured features, locales and limits
+    expect(getSpeechConfig()).toEqual(givenSpeechConfig);
+  });
+
+  test("should turn one feature on without the other", () => {
+    // GIVEN only read aloud is configured, without a text length
+    const givenTextToSpeech = { enabled: true, locales: ["en-GB"] };
+    givenConfig(btoa(JSON.stringify({ textToSpeech: givenTextToSpeech })));
+    // WHEN getSpeechConfig is called
+    const actualConfig = getSpeechConfig();
+    // THEN expect voice input to be off
+    expect(actualConfig.speechToText).toEqual(expectedBothOff.speechToText);
+    // AND read aloud to be on, with the default text length
+    expect(actualConfig.textToSpeech).toEqual({ ...givenTextToSpeech, maxTextBytes: DEFAULT_MAX_TEXT_BYTES });
+  });
+
+  test("should turn a feature off when it has no locale, and drop locales that are not strings", () => {
+    // GIVEN voice input is on without a valid locale, and read aloud has one locale that is not a string
+    const givenValidLocale = "en-US";
+    givenConfig(
+      btoa(
+        JSON.stringify({
+          speechToText: { enabled: true, locales: [42] },
+          textToSpeech: { enabled: true, locales: [givenValidLocale, null] },
+        })
+      )
+    );
+    // WHEN getSpeechConfig is called
+    const actualConfig = getSpeechConfig();
+    // THEN expect voice input to be off
+    expect(actualConfig.speechToText.enabled).toBe(false);
+    // AND read aloud to keep only the valid locale
+    expect(actualConfig.textToSpeech.locales).toEqual([givenValidLocale]);
+  });
+
+  test("should offer no locale when a feature is off", () => {
+    // GIVEN voice input is off, but lists a locale
+    givenConfig(btoa(JSON.stringify({ speechToText: { enabled: false, locales: ["en-US"] } })));
+    // WHEN getSpeechConfig is called
+    // THEN expect no locale to be offered
+    expect(getSpeechConfig().speechToText).toEqual(expectedBothOff.speechToText);
+  });
+
+  test.each([
+    ["zero", 0],
+    ["negative", -5],
+    ["not a whole number", 1.5],
+    ["a string", "30"],
+  ])("should use the default limits when they are %s", (_d, givenLimit) => {
+    // GIVEN both features are on with invalid limits
+    givenConfig(
+      btoa(
+        JSON.stringify({
+          speechToText: { enabled: true, locales: ["en-US"], maxRecordingSeconds: givenLimit },
+          textToSpeech: { enabled: true, locales: ["en-US"], maxTextBytes: givenLimit },
+        })
+      )
+    );
+    // WHEN getSpeechConfig is called
+    const actualConfig = getSpeechConfig();
+    // THEN expect the default limits
+    expect(actualConfig.speechToText.maxRecordingSeconds).toBe(DEFAULT_MAX_RECORDING_SECONDS);
+    expect(actualConfig.textToSpeech.maxTextBytes).toBe(DEFAULT_MAX_TEXT_BYTES);
+  });
+
+  test.each([
+    ["not valid JSON", "not-json", new EnvError("Error parsing FRONTEND_SPEECH_CONFIG JSON", expect.any(Error))],
+    ["a JSON array", JSON.stringify([]), new EnvError("FRONTEND_SPEECH_CONFIG must be a JSON object")],
+  ])(
+    "should turn both features off and log an error when the FRONTEND_SPEECH_CONFIG is %s",
+    (_d, givenValue, expectedError) => {
+      // GIVEN the FRONTEND_SPEECH_CONFIG environment variable is invalid
+      givenConfig(btoa(givenValue));
+      // WHEN getSpeechConfig is called
+      // THEN expect both features to be off
+      expect(getSpeechConfig()).toEqual(expectedBothOff);
       // AND an error to have been logged
       expect(console.error).toHaveBeenCalledWith(expectedError);
     }

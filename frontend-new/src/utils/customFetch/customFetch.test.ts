@@ -457,6 +457,36 @@ describe("Api Service tests", () => {
         expect(sleepSpy).toHaveBeenNthCalledWith(3, 4000); // Second retry backoff
       }
     );
+
+    test.each(RETRY_STATUS_CODES)(
+      "should not retry %s when the caller has turned off the default retries",
+      async (statusCode) => {
+        // GIVEN the server responds with a status code that is retried by default
+        const mockFetch = jest
+          .spyOn(global, "fetch")
+          .mockResolvedValue(
+            new Response("Error", { status: statusCode, headers: { "Content-Type": "application/json;charset=UTF-8" } })
+          );
+        const sleepSpy = jest.spyOn(UtilsModule, "sleep").mockImplementation(() => Promise.resolve());
+
+        // WHEN customFetch is called with the default retries turned off
+        const fetchPromise = customFetch("givenAPIUrl", {
+          expectedStatusCode: StatusCodes.OK,
+          serviceName: "Some service",
+          serviceFunction: "Some function",
+          method: "POST",
+          failureMessage: "fetchWithAuth failed",
+          authRequired: false,
+          retryOnDefaultStatusCodes: false,
+        });
+
+        // THEN expect it to reject with the status code of the response
+        await expect(fetchPromise).rejects.toMatchObject({ statusCode });
+        // AND the request to have been sent once, without waiting
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(sleepSpy).not.toHaveBeenCalled();
+      }
+    );
   });
 
   test("should retry on fail to fetch if the caller has requested it", async () => {

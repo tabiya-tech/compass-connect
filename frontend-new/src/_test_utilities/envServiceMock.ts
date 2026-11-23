@@ -12,6 +12,10 @@ jest.mock("src/envService", () => ({
   getDisabledModules: jest.fn(() => []),
   getLocaleTextOverrides: jest.fn(() => ({})),
   getCvUploadEnabled: jest.fn(() => "true"),
+  getSpeechConfig: jest.fn(() => ({
+    speechToText: { enabled: false, locales: [], maxRecordingSeconds: 60 },
+    textToSpeech: { enabled: false, locales: [], maxTextBytes: 4000 },
+  })),
   getNewSessionEnabled: jest.fn(() => false),
   getSocialAuthDisabled: jest.fn(() => "false"),
   getSupportedLocales: jest.fn(() => JSON.stringify(["en-US"])),
