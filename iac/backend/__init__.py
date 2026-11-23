@@ -13,4 +13,6 @@ REQUIRED_SERVICES = [
     "run.googleapis.com",
     # GCP Cloud Storage (for CV uploads bucket)
     "storage.googleapis.com",
+    # Speech-to-Text (Chirp 3), for voice input. Enabled even when voice input is off, so turning it on is a config change.
+    "speech.googleapis.com",
 ]

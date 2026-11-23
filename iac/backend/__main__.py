@@ -140,6 +140,10 @@ def main():
         telegram_bot_token=getenv("BACKEND_TELEGRAM_BOT_TOKEN", True, False),
         telegram_webhook_secret=getenv("BACKEND_TELEGRAM_WEBHOOK_SECRET", True, False),
         telegram_webhook_url=getenv("BACKEND_TELEGRAM_WEBHOOK_URL", False, False),
+
+        # Voice input and read aloud (optional, off by default)
+        speech_to_text_config=getenv("BACKEND_SPEECH_TO_TEXT_CONFIG", False, False),
+        text_to_speech_config=getenv("BACKEND_TEXT_TO_SPEECH_CONFIG", False, False),
     )
 
     # version of the artifacts to deploy

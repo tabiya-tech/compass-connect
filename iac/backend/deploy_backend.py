@@ -104,6 +104,12 @@ class BackendServiceConfig:
     telegram_webhook_url: Optional[str]
     """ The public URL of the webhook, {backend_url}/api/channels/telegram/webhook by default. """
 
+    # Voice input and read aloud (optional): off unless their JSON config enables them, see config/default.json.
+    speech_to_text_config: Optional[str]
+    """ BACKEND_SPEECH_TO_TEXT_CONFIG: the JSON of speech.speechToText. """
+    text_to_speech_config: Optional[str]
+    """ BACKEND_TEXT_TO_SPEECH_CONFIG: the JSON of speech.textToSpeech. """
+
 
 """
 # Set up GCP API Gateway.
@@ -375,6 +381,16 @@ def _deploy_cloud_run_service(
         opts=pulumi.ResourceOptions(depends_on=dependencies + [service_account], provider=basic_config.provider),
     )
 
+    # Voice input calls Speech-to-Text (Chirp 3). Granted even when voice input is off, so turning it on is a config
+    # change. Read aloud (Gemini 3.8 TTS) runs on Vertex AI: the roles/aiplatform.user binding above covers it.
+    speech_client_iam_member = gcp.projects.IAMMember(
+        get_resource_name(resource="backend-sa", resource_type="speech-client-binding"),
+        member=service_account.email.apply(lambda email: f"serviceAccount:{email}"),
+        role="roles/speech.client",
+        project=basic_config.project,
+        opts=pulumi.ResourceOptions(depends_on=dependencies + [service_account], provider=basic_config.provider),
+    )
+
     # Deploy cloud run service
     service = gcp.cloudrunv2.Service(
         get_resource_name(resource="cloudrun", resource_type="service"),
@@ -591,6 +607,12 @@ def _deploy_cloud_run_service(
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="BACKEND_TELEGRAM_WEBHOOK_URL",
                             value=backend_service_cfg.telegram_webhook_url or ""),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="BACKEND_SPEECH_TO_TEXT_CONFIG",
+                            value=backend_service_cfg.speech_to_text_config or ""),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="BACKEND_TEXT_TO_SPEECH_CONFIG",
+                            value=backend_service_cfg.text_to_speech_config or ""),
                         # Add more environment variables here
                     ],
                 )
@@ -608,7 +630,8 @@ def _deploy_cloud_run_service(
             )
         ),
         opts=pulumi.ResourceOptions(
-            depends_on=dependencies + nat_dependencies + [iam_member, firebase_auth_iam_member, firestore_iam_member],
+            depends_on=dependencies + nat_dependencies + [iam_member, firebase_auth_iam_member, firestore_iam_member,
+                                                          speech_client_iam_member],
             provider=basic_config.provider,
         ),
     )
