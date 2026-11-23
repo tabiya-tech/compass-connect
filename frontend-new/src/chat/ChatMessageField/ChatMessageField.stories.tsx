@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import ChatMessageField, { ChatMessageFieldProps } from "./ChatMessageField";
 import { action } from "@storybook/addon-actions";
@@ -116,20 +116,51 @@ export const WithVoiceInput: Story = {
     currentPhase: ConversationPhase.INTRO,
   },
   decorators: [
-    (Story) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).tabiyaConfig = {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ...(window as any).tabiyaConfig,
-        [EnvVariables.FRONTEND_SPEECH_CONFIG]: window.btoa(
-          JSON.stringify({ speechToText: { enabled: true, locales: SupportedLocales, maxRecordingSeconds: 15 } })
-        ),
-      };
-      SpeechToTextService.getInstance().transcribe = async (_recording, locale) => {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        return { text: "I worked as a carpenter for three years", locale };
-      };
-      return <Story />;
-    },
+    (Story) => (
+      <VoiceInputStoryEnvironment>
+        <Story />
+      </VoiceInputStoryEnvironment>
+    ),
   ],
+};
+
+/**
+ * Turns voice input on, with a fixed transcript, for the stories inside it only: the overrides are applied before the
+ * story renders and restored when it unmounts, so the other stories keep the original config and service.
+ */
+const VoiceInputStoryEnvironment: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const restoreRef = useRef<(() => void) | null>(null);
+  const apply = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const windowWithConfig = window as any;
+    const originalConfig = windowWithConfig.tabiyaConfig;
+    const service = SpeechToTextService.getInstance();
+    const originalTranscribe = service.transcribe;
+    windowWithConfig.tabiyaConfig = {
+      ...originalConfig,
+      [EnvVariables.FRONTEND_SPEECH_CONFIG]: window.btoa(
+        JSON.stringify({ speechToText: { enabled: true, locales: SupportedLocales, maxRecordingSeconds: 15 } })
+      ),
+    };
+    service.transcribe = async (_recording, locale) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      return { text: "I worked as a carpenter for three years", locale };
+    };
+    return () => {
+      windowWithConfig.tabiyaConfig = originalConfig;
+      service.transcribe = originalTranscribe;
+    };
+  };
+  // applied during the first render, as the config is read while the story renders
+  if (!restoreRef.current) restoreRef.current = apply();
+  useEffect(() => {
+    // applied again if the effect is run twice, as in strict mode
+    if (!restoreRef.current) restoreRef.current = apply();
+    return () => {
+      restoreRef.current?.();
+      restoreRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return <>{children}</>;
 };

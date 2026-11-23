@@ -104,6 +104,8 @@ export const useSpeechToText = ({
   const [levels, setLevels] = useState<number[]>([]);
   const recordingRef = useRef<Recording | null>(null);
   const startingRef = useRef(false);
+  /** Identifies the latest request for the microphone: a request that is no longer the latest one is dropped. */
+  const acquisitionRef = useRef(0);
   const transcriptionRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(true);
   const callbacksRef = useRef({ onTranscript, onError });
@@ -174,17 +176,28 @@ export const useSpeechToText = ({
   const start = useCallback(() => {
     if (startingRef.current || recordingRef.current || transcriptionRef.current) return;
     startingRef.current = true;
+    const acquisition = ++acquisitionRef.current;
+    const isCurrent = () => acquisition === acquisitionRef.current && mountedRef.current;
 
     navigator.mediaDevices
       .getUserMedia({ audio: true })
       .then((stream) => {
-        startingRef.current = false;
-        if (!mountedRef.current) {
+        if (!isCurrent()) {
+          // cancelled, or unmounted, while the browser was asking for the microphone
           stream.getTracks().forEach((track) => track.stop());
           return;
         }
+        startingRef.current = false;
         const mimeType = bestSupportedMimeType();
-        const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+        let recorder: MediaRecorder;
+        try {
+          recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+        } catch (e) {
+          stream.getTracks().forEach((track) => track.stop());
+          console.warn("The microphone cannot be recorded", e);
+          fail(toSpeechToTextErrorKind(e));
+          return;
+        }
         const recording: Recording = { stream, recorder, chunks: [], cancelled: false };
         recordingRef.current = recording;
 
@@ -221,11 +234,21 @@ export const useSpeechToText = ({
           }
         }
 
-        recorder.start();
+        try {
+          recorder.start();
+        } catch (e) {
+          // e.g. NotSupportedError: release the microphone and the level graph acquired so far
+          recording.cancelled = true;
+          release(recording);
+          console.warn("The microphone cannot be recorded", e);
+          fail(toSpeechToTextErrorKind(e));
+          return;
+        }
         recording.autoStopTimer = setTimeout(() => stop(), maxRecordingSeconds * 1000);
         setState({ status: "recording", startedAt: Date.now() });
       })
       .catch((e: unknown) => {
+        if (!isCurrent()) return;
         startingRef.current = false;
         console.warn("The microphone cannot be used", e);
         fail(toSpeechToTextErrorKind(e));
@@ -233,6 +256,9 @@ export const useSpeechToText = ({
   }, [fail, maxRecordingSeconds, release, sampleLevels, stop, transcribe]);
 
   const cancel = useCallback(() => {
+    // a request for the microphone still pending is dropped when it resolves
+    acquisitionRef.current++;
+    startingRef.current = false;
     transcriptionRef.current?.abort();
     transcriptionRef.current = null;
     const recording = recordingRef.current;

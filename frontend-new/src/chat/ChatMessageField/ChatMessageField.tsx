@@ -172,6 +172,7 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
     speechToTextConfig.enabled && speechToTextConfig.locales.includes(locale) && isVoiceInputSupported();
   const messageRef = useRef(message);
   messageRef.current = message;
+  const focusAfterTranscriptRef = useRef(false);
 
   const appendTranscript = (transcript: string) => {
     const invalidChars = transcript.match(DISALLOWED_CHARACTERS) ?? [];
@@ -186,7 +187,8 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
     } else {
       setErrorMessage("");
     }
-    inputRef.current?.focus();
+    // focused once the field is shown again, see below: it is still hidden behind the level graph here
+    focusAfterTranscriptRef.current = true;
   };
 
   const voiceInput = useSpeechToText({
@@ -198,6 +200,14 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
   const voiceInputState = voiceInput.state;
   const isVoiceInputBusy = voiceInputState.status === "recording" || voiceInputState.status === "transcribing";
   const { cancel: cancelVoiceInput } = voiceInput;
+
+  // the user reviews the transcript in the field, so it gets the focus as soon as it is shown again
+  useEffect(() => {
+    if (!isVoiceInputBusy && focusAfterTranscriptRef.current) {
+      focusAfterTranscriptRef.current = false;
+      inputRef.current?.focus();
+    }
+  }, [isVoiceInputBusy]);
 
   // switching the locale drops the recording, so it is never transcribed in another language
   useEffect(() => cancelVoiceInput, [locale, cancelVoiceInput]);
