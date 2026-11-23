@@ -2,6 +2,7 @@ import logging
 
 from app.agent.skill_linker.classifier import ClassifierClient, ClassifierSkillLinkerConfig
 from app.agent.skill_linker.classifier.linker import ClassifierSkillLinker
+from app.agent.skill_linker.classifier.overview_generator import ExperienceOverviewGenerator
 from app.agent.skill_linker.llm_pipeline import ExperiencePipelineConfig, PipelineSkillLinker
 from app.agent.skill_linker.config import SkillLinkerType
 from app.agent.skill_linker.linker import ISkillLinker
@@ -31,8 +32,10 @@ def get_skill_linker(*,
             client=ClassifierClient(base_url=application_config.classifier_api_url,
                                     api_key=application_config.classifier_api_key),
             skill_search_service=search_services.skill_search_service,
+            occupation_skill_search_service=search_services.occupation_skill_search_service,
             config=ClassifierSkillLinkerConfig(number_of_top_skills=number_of_top_skills),
-            reranker=_get_skill_reranker(application_config.llm_reranker_url)
+            reranker=_get_skill_reranker(application_config.llm_reranker_url),
+            overview_generator=ExperienceOverviewGenerator(),
         )
 
     return PipelineSkillLinker(config=experience_pipeline_config, search_services=search_services)

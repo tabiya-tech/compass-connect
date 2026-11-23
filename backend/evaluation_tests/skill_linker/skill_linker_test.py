@@ -8,6 +8,7 @@ import pytest
 from app.agent.experience.work_type import WorkType
 from app.agent.skill_linker.classifier import ClassifierApiVersion, ClassifierClient, ClassifierSkillLinkerConfig
 from app.agent.skill_linker.classifier.linker import ClassifierSkillLinker
+from app.agent.skill_linker.classifier.overview_generator import ExperienceOverviewGenerator
 from app.agent.skill_linker.llm_pipeline import ExperiencePipelineConfig, PipelineSkillLinker
 from app.agent.skill_linker.linker import ISkillLinker
 from app.agent.skill_linker.config import SkillLinkerType
@@ -360,8 +361,10 @@ def _get_skill_linker(skill_linker_variant: _SkillLinkerVariant,
         version=skill_linker_variant.classifier_api_version,
         client=ClassifierClient(base_url=classifier_api_url, api_key=classifier_api_key),
         skill_search_service=search_services.skill_search_service,
+        occupation_skill_search_service=search_services.occupation_skill_search_service,
         config=classifier_config,
-        reranker=reranker
+        reranker=reranker,
+        overview_generator=ExperienceOverviewGenerator(),
     )
 
 

@@ -1,7 +1,7 @@
 from typing import Optional, cast
 
 from app.agent.skill_linker.classifier.adapters.adapter import EXTRACT_ENTITIES, ClassifierMatches, \
-    IClassifierAdapter, to_description, to_title_candidates
+    IClassifierAdapter, OccupationMatch, to_description, to_occupation_matches, to_title_candidates
 from app.agent.skill_linker.classifier.config import ClassifierSkillLinkerConfig
 from app.agent.skill_linker.classifier.client import ClassifierClient, ClassifierV2Response
 from app.agent.skill_linker.classifier.skill_ranking import SkillCandidate
@@ -20,22 +20,30 @@ class ClassifierAdapterV2(IClassifierAdapter):
         self._client = client
         self._config = config
 
-    async def classify(self, *, experience_title: str, responsibilities: list[str]) -> ClassifierMatches:
+    async def classify(self, *,
+                       experience_title: str,
+                       responsibilities: list[str],
+                       overview: Optional[str] = None) -> ClassifierMatches:
         response: ClassifierV2Response = await self._client.classify_v2(
             title=experience_title,
-            description=to_description(responsibilities),
+            description=to_description(responsibilities, overview=overview),
             extract_entities=EXTRACT_ENTITIES,
             top_k=self._config.top_k_per_entity,
             min_similarity=self._config.min_similarity
         )
 
         skill_candidates: list[SkillCandidate] = []
-        occupation_matches: list[tuple[float, str]] = []
+        occupation_matches: list[OccupationMatch] = []
         for entity in response.entities:
             matches = sorted(entity.matches, key=lambda m: m.similarity_score, reverse=True)
             if entity.entity_type == "occupation":
                 if matches:
-                    occupation_matches.append((matches[0].similarity_score, matches[0].entity.preferred_label))
+                    best = matches[0]
+                    occupation_matches.append(OccupationMatch(
+                        label=best.entity.preferred_label,
+                        esco_code=best.entity.esco_code,
+                        score=best.similarity_score,
+                    ))
                 continue
             if entity.entity_type != "skill":
                 continue
@@ -56,8 +64,11 @@ class ClassifierAdapterV2(IClassifierAdapter):
                 )
                 skill_candidates.append(SkillCandidate(skill=skill, is_best_match=index == 0))
 
-        return ClassifierMatches(skill_candidates=skill_candidates,
-                                 title_candidates=to_title_candidates(occupation_matches))
+        return ClassifierMatches(
+            skill_candidates=skill_candidates,
+            title_candidates=to_title_candidates([(m.score, m.label) for m in occupation_matches]),
+            occupation_matches=to_occupation_matches(occupation_matches),
+        )
 
 
 def _to_skill_type(skill_type: Optional[str]) -> SkillTypeLiteral:

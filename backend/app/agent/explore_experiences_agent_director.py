@@ -405,7 +405,10 @@ class ExploreExperiencesAgentDirector(Agent):
             # In the future, we may want to change this so that each experience has its own country of interest,
             # for example, if the user has worked in multiple countries.
             country_of_interest=country_of_user,
-            responsibilities=current_experience.responsibilities.responsibilities
+            responsibilities=current_experience.responsibilities.responsibilities,
+            location=current_experience.location,
+            timeline=current_experience.timeline,
+            questions_and_answers=current_experience.questions_and_answers,
         )
         current_experience.top_skills = linker_result.top_skills
         current_experience.remaining_skills = linker_result.remaining_skills

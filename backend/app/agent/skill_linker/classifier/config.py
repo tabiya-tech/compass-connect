@@ -18,9 +18,15 @@ class ClassifierSkillLinkerConfig(BaseModel):
     Matches with a similarity score lower than this are dropped by the classifier.
     """
 
-    max_rerank_candidates: int = Field(default=30, ge=1, le=200)
+    max_rerank_candidates: int = Field(default=50, ge=1, le=200)
     """
     The number of best scoring candidates sent to the LLM reranker, when one is configured.
+    """
+
+    max_occupations_to_expand: int = Field(default=3, ge=0, le=10)
+    """
+    The number of top classifier-matched occupations whose associated taxonomy skills are added to the
+    candidate pool when an OccupationSkillSearchService is available.
     """
 
     model_config = ConfigDict(extra="forbid")
