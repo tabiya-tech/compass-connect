@@ -25,6 +25,9 @@ import ErrorChatMessage, {
   ErrorChatMessageProps,
 } from "src/chat/chatMessage/errorChatMessage/ErrorChatMessage";
 import UserPreferencesStateService from "src/userPreferences/UserPreferencesStateService";
+import { EnvVariables } from "src/envService";
+import { SupportedLocales } from "src/i18n/constants";
+import TextToSpeechService from "src/textToSpeech/TextToSpeechService";
 
 // Helper function to create a message with its component
 const createMessage = (
@@ -147,4 +150,59 @@ export const LongConversation: Story = {
       )
     ),
   },
+};
+
+/**
+ * Read aloud on, in every locale: each AI message has the read aloud button beside it, also when two messages
+ * from Compass follow each other. The audio is a short silence, so the button goes through loading and playing.
+ */
+export const WithReadAloud: Story = {
+  args: {
+    messages: [
+      createMessage("Hi, I'm Compass.", ConversationMessageSender.COMPASS, AGENT_CHAT_MESSAGE_TYPE),
+      createMessage(
+        "Let's start with your **work experience**. Tell me about:\n- the jobs you have had\n- the work you did for your family or community",
+        ConversationMessageSender.COMPASS,
+        AGENT_CHAT_MESSAGE_TYPE
+      ),
+      createMessage("I worked as a carpenter for three years", ConversationMessageSender.USER, USER_CHAT_MESSAGE_TYPE),
+    ],
+  },
+  decorators: [
+    (Story) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).tabiyaConfig = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...(window as any).tabiyaConfig,
+        [EnvVariables.FRONTEND_SPEECH_CONFIG]: window.btoa(
+          JSON.stringify({ textToSpeech: { enabled: true, locales: SupportedLocales } })
+        ),
+      };
+      TextToSpeechService.getInstance().synthesize = async () => {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // 2 seconds of silence, as a WAV file
+        const sampleRate = 8000;
+        const samples = sampleRate * 2;
+        const buffer = new ArrayBuffer(44 + samples);
+        const view = new DataView(buffer);
+        const writeText = (offset: number, text: string) =>
+          text.split("").forEach((character, index) => view.setUint8(offset + index, character.charCodeAt(0)));
+        writeText(0, "RIFF");
+        view.setUint32(4, 36 + samples, true);
+        writeText(8, "WAVEfmt ");
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate, true);
+        view.setUint16(32, 1, true);
+        view.setUint16(34, 8, true);
+        writeText(36, "data");
+        view.setUint32(40, samples, true);
+        new Uint8Array(buffer, 44).fill(128);
+        return new Blob([buffer], { type: "audio/wav" });
+      };
+      return <Story />;
+    },
+  ],
 };

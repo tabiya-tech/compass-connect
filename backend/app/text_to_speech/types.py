@@ -102,3 +102,53 @@ class TextToSpeechConfig(BaseModel):
             return None
         settings = self.locales.get(locale)
         return settings if settings is not None and settings.enabled else None
+
+
+SynthesisText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+""" The plain text to read aloud, trimmed. Markdown is stripped by the frontend before it is sent. """
+
+
+class SynthesizeRequest(BaseModel):
+    """
+    The body of POST /text-to-speech/synthesize.
+    The text is checked by the route (empty, too long) rather than here, so that it answers 400, not 422.
+    """
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    text: str = Field(description="The plain text to read aloud.")
+    """ The plain text to read aloud. """
+
+    locale: Locale = Field(description="The locale of the text, e.g. en-US.")
+    """ The locale of the text. It selects the language and the voice. """
+
+
+class VoiceSettings(BaseModel):
+    """
+    How a text is spoken, resolved by the service from the settings of a locale.
+    """
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    language_code: str
+    """ The language Gemini TTS speaks, as a BCP-47 code, e.g. "en-US". """
+
+    voice: VoiceName
+    """ The voice that reads the text. """
+
+    style: SpeakingStyle
+    """ The speaking style. """
+
+
+class SynthesizedAudio(BaseModel):
+    """
+    The audio of a text read aloud.
+    """
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    content: bytes
+    """ The encoded audio. Never empty: no audio is an EmptySynthesisError. """
+
+    media_type: Literal["audio/mpeg"]
+    """ The media type of the content. """
+
+    locale: Locale
+    """ The locale the text was read in. """

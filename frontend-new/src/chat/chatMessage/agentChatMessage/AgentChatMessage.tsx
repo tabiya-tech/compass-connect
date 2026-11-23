@@ -1,14 +1,17 @@
 import React from "react";
-import { Box, styled } from "@mui/material";
+import { Box, styled, useTheme } from "@mui/material";
 import { ConversationMessageSender, MessageReaction, QuickReplyOption } from "src/chat/ChatService/ChatService.types";
 import ChatBubble from "src/chat/chatMessage/components/chatBubble/ChatBubble";
 import BrandLogo from "src/chat/chatMessage/components/brandLogo/BrandLogo";
+import ReadAloudButton from "src/chat/chatMessage/components/readAloudButton/ReadAloudButton";
+import { useReadAloud } from "src/textToSpeech/ReadAloudContext";
 
 const uniqueId = "2fbaf2ef-9eab-485a-bd28-b4a164e18b06";
 
 export const DATA_TEST_ID = {
   CHAT_MESSAGE_CONTAINER: `chat-message-container-${uniqueId}`,
   CHAT_MESSAGE_BRAND_LOGO: `chat-message-brand-logo-${uniqueId}`,
+  CHAT_MESSAGE_READ_ALOUD: `chat-message-read-aloud-${uniqueId}`,
 };
 
 export const MessageContainer = styled(Box)<{ origin: ConversationMessageSender }>(({ theme, origin }) => ({
@@ -30,7 +33,10 @@ export interface AgentChatMessageProps {
   onQuickReplyClick?: (label: string) => void;
 }
 
-const AgentChatMessage: React.FC<AgentChatMessageProps> = ({ message }) => {
+const AgentChatMessage: React.FC<AgentChatMessageProps> = ({ message_id, message }) => {
+  // without read aloud, the message is exactly the one of a chat without it
+  const readAloudAvailable = useReadAloud() !== null;
+  const theme = useTheme();
   return (
     <MessageContainer origin={ConversationMessageSender.COMPASS} data-testid={DATA_TEST_ID.CHAT_MESSAGE_CONTAINER}>
       <Box data-testid={DATA_TEST_ID.CHAT_MESSAGE_BRAND_LOGO}>
@@ -50,6 +56,15 @@ const AgentChatMessage: React.FC<AgentChatMessageProps> = ({ message }) => {
           <ChatBubble message={message} sender={ConversationMessageSender.COMPASS} />
         </Box>
       </Box>
+      {readAloudAvailable && (
+        // beside the bubble, at the height of its first line, so it adds no height to the message
+        <Box
+          data-testid={DATA_TEST_ID.CHAT_MESSAGE_READ_ALOUD}
+          sx={{ flexShrink: 0, alignSelf: "flex-start", marginTop: theme.fixedSpacing(theme.tabiyaSpacing.xs) }}
+        >
+          <ReadAloudButton messageId={message_id} message={message} />
+        </Box>
+      )}
     </MessageContainer>
   );
 };

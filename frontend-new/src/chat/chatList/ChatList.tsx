@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { IChatMessage } from "src/chat/Chat.types";
 import { Box, List, ListItem, useTheme } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
+import { ReadAloudProvider } from "src/textToSpeech/ReadAloudContext";
 
 const uniqueId = "0397ee51-f637-4453-9e2f-5cc8900c9554";
 export const DATA_TEST_ID = {
@@ -46,37 +47,39 @@ const ChatList: React.FC<ChatListProps> = ({ messages }) => {
   }, []);
 
   return (
-    <Box data-testid={DATA_TEST_ID.CHAT_LIST_CONTAINER} tabIndex={0}>
-      <List
-        sx={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          padding: 0,
-          margin: 0,
-          gap: theme.fixedSpacing(theme.tabiyaSpacing.md),
-        }}
-      >
-        <AnimatePresence initial={false}>
-          {messages.map((message) => (
-            <ListItem
-              key={message.message_id}
-              component={motion.li}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              variants={messageVariants}
-              disablePadding={true}
-              transition={{ duration: 0.3 }}
-              sx={{ width: "100%", paddingY: theme.tabiyaSpacing.xs, paddingX: 0 }}
-            >
-              {message.component(message.payload)}
-            </ListItem>
-          ))}
-        </AnimatePresence>
-      </List>
-      <div ref={messagesEndRef} />
-    </Box>
+    <ReadAloudProvider>
+      <Box data-testid={DATA_TEST_ID.CHAT_LIST_CONTAINER} tabIndex={0}>
+        <List
+          sx={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            padding: 0,
+            margin: 0,
+            gap: theme.fixedSpacing(theme.tabiyaSpacing.md),
+          }}
+        >
+          <AnimatePresence initial={false}>
+            {messages.map((message) => (
+              <ListItem
+                key={message.message_id}
+                component={motion.li}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={messageVariants}
+                disablePadding={true}
+                transition={{ duration: 0.3 }}
+                sx={{ width: "100%", paddingY: theme.tabiyaSpacing.xs, paddingX: 0 }}
+              >
+                {message.component(message.payload)}
+              </ListItem>
+            ))}
+          </AnimatePresence>
+        </List>
+        <div ref={messagesEndRef} />
+      </Box>
+    </ReadAloudProvider>
   );
 };
 
