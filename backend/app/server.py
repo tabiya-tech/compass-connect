@@ -15,6 +15,7 @@ from app.channels.bots.registry import build_channel_bots
 from app.channels.config import parse_channels_config
 from app.channels.routes import add_channels_routes
 from app.speech_to_text.config import parse_speech_to_text_config, SPEECH_TO_TEXT_CONFIG_ENV_VAR
+from app.speech_to_text.routes import add_speech_to_text_routes
 from app.text_to_speech.config import parse_text_to_speech_config, TEXT_TO_SPEECH_CONFIG_ENV_VAR
 from app.text_to_speech.routes import add_text_to_speech_routes
 from app.conversations.routes import add_conversation_routes
@@ -606,6 +607,11 @@ if application_config.channels_config.enabled:
         app.include_router(_channel_bot.router())
 logger.info("Channels: %s, bots: %s", "enabled" if application_config.channels_config.enabled else "disabled",
             [channel.value for channel in application_config.channels_config.enabled_bots])
+
+############################################
+# Add the voice input routes, when the deployment enables voice input (BACKEND_SPEECH_TO_TEXT_CONFIG).
+############################################
+add_speech_to_text_routes(app, auth, application_config.speech_to_text_config)
 
 ############################################
 # Add the read aloud routes, when the deployment enables read aloud (BACKEND_TEXT_TO_SPEECH_CONFIG).

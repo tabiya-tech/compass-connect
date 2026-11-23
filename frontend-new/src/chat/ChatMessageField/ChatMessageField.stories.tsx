@@ -4,6 +4,9 @@ import ChatMessageField, { ChatMessageFieldProps } from "./ChatMessageField";
 import { action } from "@storybook/addon-actions";
 import { IsOnlineContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import { ConversationPhase } from "src/chat/chatProgressbar/types";
+import { EnvVariables } from "src/envService";
+import { SupportedLocales } from "src/i18n/constants";
+import SpeechToTextService from "src/speechToText/SpeechToTextService";
 
 const meta: Meta<typeof ChatMessageField> = {
   title: "Chat/ChatMessageField",
@@ -103,4 +106,30 @@ export const CharacterLimitExceeded: Story = {
     currentPhase: ConversationPhase.COLLECT_EXPERIENCES,
     prefillMessage: "a".repeat(1002), // Over 1000 character limit - shows error and disabled send button
   },
+};
+
+/** Voice input on, in every locale. Recording uses the real microphone; the transcript is a fixed text. */
+export const WithVoiceInput: Story = {
+  render: (args) => <ChatMessageFieldWrapper {...args} />,
+  args: {
+    handleSend: action("Message sent"),
+    currentPhase: ConversationPhase.INTRO,
+  },
+  decorators: [
+    (Story) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).tabiyaConfig = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...(window as any).tabiyaConfig,
+        [EnvVariables.FRONTEND_SPEECH_CONFIG]: window.btoa(
+          JSON.stringify({ speechToText: { enabled: true, locales: SupportedLocales, maxRecordingSeconds: 15 } })
+        ),
+      };
+      SpeechToTextService.getInstance().transcribe = async (_recording, locale) => {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        return { text: "I worked as a carpenter for three years", locale };
+      };
+      return <Story />;
+    },
+  ],
 };
