@@ -167,6 +167,7 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
     hide_program_skills: Optional[str] = getenv("FRONTEND_HIDE_PROGRAM_SKILLS", False, False)
     disabled_modules: Optional[str] = getenv("FRONTEND_DISABLED_MODULES", False, False)
     locale_text_overrides: Optional[str] = getenv("FRONTEND_LOCALE_TEXT_OVERRIDES", False, False)
+    speech_config: Optional[str] = getenv("FRONTEND_SPEECH_CONFIG", False, False)
 
     # branding
     global_product_name: Optional[str] = getenv("GLOBAL_PRODUCT_NAME", False, False)
@@ -231,6 +232,7 @@ def _construct_env_js_content(*, artifacts_dir: str, stack_name: str):
         "FRONTEND_FEATURES": base64_encode(features),
         "FRONTEND_DISABLED_MODULES": base64_encode(disabled_modules or ""),
         "FRONTEND_LOCALE_TEXT_OVERRIDES": base64_encode(locale_text_overrides or ""),
+        "FRONTEND_SPEECH_CONFIG": base64_encode(speech_config or ""),
         "FRONTEND_SUPPORTED_LOCALES": base64_encode(supported_locales),
         "FRONTEND_DEFAULT_LOCALE": base64_encode(default_locale),
         "GLOBAL_PRODUCT_NAME": base64_encode(global_product_name),
