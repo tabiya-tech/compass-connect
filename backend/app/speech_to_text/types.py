@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated, Literal, TypeGuard, get_args
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic.alias_generators import to_camel
@@ -59,3 +59,64 @@ class SpeechToTextConfig(BaseModel):
     def is_locale_enabled(self, locale: Locale) -> bool:
         """ Whether voice input is offered in the locale. """
         return locale in self.enabled_locales
+
+AudioMimeType = Literal[
+    "audio/webm",  # Chrome, Firefox and Edge record Opus in WebM
+    "video/webm",  # some browsers label an audio-only WebM recording as video
+    "audio/ogg",
+    "audio/mp4",  # Safari records AAC in MP4
+    "video/mp4",
+    "audio/x-m4a",
+    "audio/aac",
+    "audio/mpeg",
+    "audio/wav",
+    "audio/flac",
+]
+""" The media types of the recordings accepted, without their parameters. Chirp 3 detects their encoding itself. """
+
+ALLOWED_AUDIO_MIME_TYPES: frozenset[str] = frozenset(get_args(AudioMimeType))
+""" The values of AudioMimeType, to check a media type received. """
+
+
+def is_allowed_audio_mime_type(mime_type: str) -> TypeGuard[AudioMimeType]:
+    """ Whether a media type, without its parameters, is one of the recordings accepted. """
+    return mime_type in ALLOWED_AUDIO_MIME_TYPES
+
+
+class AudioUpload(BaseModel):
+    """
+    A recording to transcribe, as the browser uploaded it.
+    """
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    content: bytes = Field(min_length=1)
+    """ The encoded audio. """
+
+    mime_type: AudioMimeType
+    """ The media type of the recording, without its parameters, e.g. "audio/webm". """
+
+
+class Transcription(BaseModel):
+    """
+    The text of a recording.
+    """
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    text: str
+    """ The transcript, trimmed. Never empty: an empty result is an EmptyTranscriptionError. """
+
+    locale: Locale
+    """ The locale the recording was transcribed in. """
+
+
+class TranscriptionResponse(BaseModel):
+    """
+    The response of POST /speech-to-text/transcribe.
+    """
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    text: str = Field(description="The transcript of the recording.")
+    """ The transcript of the recording. """
+
+    locale: Locale = Field(description="The locale the recording was transcribed in.")
+    """ The locale the recording was transcribed in. """

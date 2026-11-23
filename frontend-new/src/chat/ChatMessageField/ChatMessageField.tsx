@@ -3,6 +3,8 @@ import { Box, IconButton, InputAdornment, styled, TextField, Typography, useThem
 import AddIcon from "@mui/icons-material/Add";
 import ArrowUpwardSharpIcon from "@mui/icons-material/ArrowUpwardSharp";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
+import MicNoneOutlinedIcon from "@mui/icons-material/MicNoneOutlined";
+import StopRoundedIcon from "@mui/icons-material/StopRounded";
 import { AnimatePresence, motion } from "framer-motion";
 import { CV_UPLOAD_ERROR_I18N_KEYS, getCvUploadErrorMessageFromHttpStatus } from "../CVUploadErrorHandling";
 import ContextMenu from "src/theme/ContextMenu/ContextMenu";
@@ -10,7 +12,7 @@ import { MenuItemConfig } from "src/theme/ContextMenu/menuItemConfig.types";
 import { IsOnlineContext } from "src/app/isOnlineProvider/IsOnlineProvider";
 import { ConversationPhase } from "src/chat/chatProgressbar/types";
 import AnimatedDotBadge from "src/theme/AnimatedDotBadge/AnimatedDotBadge";
-import { getCvUploadEnabled } from "src/envService";
+import { getCvUploadEnabled, getSpeechConfig } from "src/envService";
 import CVService from "src/CV/CVService/CVService";
 import { CVListItem } from "src/CV/CVService/CVService.types";
 import authenticationStateService from "src/auth/services/AuthenticationState.service";
@@ -21,6 +23,9 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import UploadedCVsMenu from "src/CV/uploadedCVsMenu/UploadedCVsMenu";
 import { useTranslation } from "react-i18next";
 import { TranslationKey } from "src/react-i18next";
+import { isVoiceInputSupported, useSpeechToText } from "src/speechToText/useSpeechToText";
+import { SpeechToTextErrorKind } from "src/speechToText/speechToText.types";
+import RecordingWaveform from "src/chat/ChatMessageField/recordingWaveform/RecordingWaveform";
 
 export interface ChatMessageFieldProps {
   handleSend: (message: string) => void;
@@ -53,6 +58,9 @@ export const DATA_TEST_ID = {
   CHAT_MESSAGE_FIELD_PLUS_BUTTON: `chat-message-field-plus-button-${uniqueId}`,
   CHAT_MESSAGE_FIELD_PLUS_ICON: `chat-message-field-plus-icon-${uniqueId}`,
   CHAT_MESSAGE_FIELD_HIDDEN_FILE_INPUT: `chat-message-field-hidden-file-input-${uniqueId}`,
+  CHAT_MESSAGE_FIELD_MIC_BUTTON: `chat-message-field-mic-button-${uniqueId}`,
+  CHAT_MESSAGE_FIELD_MIC_ICON: `chat-message-field-mic-icon-${uniqueId}`,
+  CHAT_MESSAGE_FIELD_STOP_RECORDING_ICON: `chat-message-field-stop-recording-icon-${uniqueId}`,
 };
 
 export const MENU_ITEM_ID = {
@@ -92,6 +100,16 @@ export const CHARACTER_LIMIT_ERROR_MESSAGES = {
   UPLOAD_TIMEOUT: "common.upload.errors.timeout",
 } as const;
 
+export const VOICE_INPUT_ERROR_MESSAGES: Record<SpeechToTextErrorKind, TranslationKey> = {
+  permissionDenied: "chat.voiceInput.errors.permissionDenied",
+  noMicrophone: "chat.voiceInput.errors.noMicrophone",
+  noSpeech: "chat.voiceInput.errors.noSpeech",
+  rateLimited: "chat.voiceInput.errors.rateLimited",
+  unavailable: "chat.voiceInput.errors.unavailable",
+  network: "chat.voiceInput.errors.network",
+  unknown: "chat.voiceInput.errors.unknown",
+};
+
 // Define the max file size in bytes 3 MB
 export const MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024;
 export const MAX_FILE_SIZE_MB = MAX_FILE_SIZE_BYTES / (1024 * 1024);
@@ -126,7 +144,7 @@ const StyledTextField = styled(TextField, {
 });
 
 const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const theme = useTheme();
@@ -146,6 +164,43 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
 
   const isCvUploadEnabled = getCvUploadEnabled().toLowerCase() === "true";
   const showCvUpload = props.showCvUpload !== false;
+
+  // Voice input: the user records, then the transcript is added to the field, to review and send as typed text
+  const locale = i18n.language;
+  const speechToTextConfig = getSpeechConfig().speechToText;
+  const isVoiceInputAvailable =
+    speechToTextConfig.enabled && speechToTextConfig.locales.includes(locale) && isVoiceInputSupported();
+  const messageRef = useRef(message);
+  messageRef.current = message;
+
+  const appendTranscript = (transcript: string) => {
+    const invalidChars = transcript.match(DISALLOWED_CHARACTERS) ?? [];
+    const filteredTranscript = transcript.replace(DISALLOWED_CHARACTERS, "").trim();
+    const currentMessage = messageRef.current;
+    const newMessage = currentMessage.trim() ? `${currentMessage.trimEnd()} ${filteredTranscript}` : filteredTranscript;
+    setMessage(newMessage);
+    if (newMessage.trim().length > CHAT_MESSAGE_MAX_LENGTH) {
+      setErrorMessage(t(CHARACTER_LIMIT_ERROR_MESSAGES.MESSAGE_LIMIT, { max: CHAT_MESSAGE_MAX_LENGTH }));
+    } else if (invalidChars.length > 0) {
+      setErrorMessage(t(CHARACTER_LIMIT_ERROR_MESSAGES.INVALID_SPECIAL_CHARACTERS, { chars: invalidChars.join(",") }));
+    } else {
+      setErrorMessage("");
+    }
+    inputRef.current?.focus();
+  };
+
+  const voiceInput = useSpeechToText({
+    locale,
+    maxRecordingSeconds: speechToTextConfig.maxRecordingSeconds,
+    onTranscript: appendTranscript,
+    onError: (error) => setErrorMessage(t(VOICE_INPUT_ERROR_MESSAGES[error])),
+  });
+  const voiceInputState = voiceInput.state;
+  const isVoiceInputBusy = voiceInputState.status === "recording" || voiceInputState.status === "transcribing";
+  const { cancel: cancelVoiceInput } = voiceInput;
+
+  // switching the locale drops the recording, so it is never transcribed in another language
+  useEffect(() => cancelVoiceInput, [locale, cancelVoiceInput]);
 
   // Show the dot badge whenever in COLLECT_EXPERIENCES and not yet seen
   useEffect(() => {
@@ -497,15 +552,40 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
       props.isInputDisabled ||
       props.isUploadingCv ||
       !isOnline ||
+      isVoiceInputBusy ||
       message.trim().length === 0 ||
       message.trim().length > CHAT_MESSAGE_MAX_LENGTH // Only disable the send button when over the limit
     );
-  }, [props.isChatFinished, props.aiIsTyping, props.isInputDisabled, props.isUploadingCv, isOnline, message]);
+  }, [
+    props.isChatFinished,
+    props.aiIsTyping,
+    props.isInputDisabled,
+    props.isUploadingCv,
+    isOnline,
+    isVoiceInputBusy,
+    message,
+  ]);
 
   // Check if the input field should be disabled
   const inputIsDisabled = useCallback(() => {
     return props.isChatFinished || props.aiIsTyping || props.isInputDisabled || props.isUploadingCv || !isOnline;
   }, [props.isChatFinished, props.aiIsTyping, props.isInputDisabled, props.isUploadingCv, isOnline]);
+
+  // the recording is dropped when the field gets disabled (e.g. offline), as typing would be
+  const isDisabled = inputIsDisabled();
+  useEffect(() => {
+    if (isDisabled) cancelVoiceInput();
+  }, [isDisabled, cancelVoiceInput]);
+
+  const handleMicClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    if (voiceInputState.status === "recording") {
+      voiceInput.stop();
+    } else {
+      setErrorMessage("");
+      voiceInput.start();
+    }
+  };
 
   const contextMenuItems: MenuItemConfig[] =
     menuView === "main"
@@ -589,7 +669,20 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
           helperText={displayErrorMessage}
           fillColor={props.fillColor}
           InputProps={{
-            startAdornment: (
+            ...(isVoiceInputBusy && { readOnly: true }),
+            startAdornment: isVoiceInputBusy ? (
+              <InputAdornment position="start" sx={{ flex: 1, height: "auto", maxHeight: "none" }}>
+                {voiceInputState.status === "recording" ? (
+                  <RecordingWaveform
+                    status="recording"
+                    startedAt={voiceInputState.startedAt}
+                    levels={voiceInput.levels}
+                  />
+                ) : (
+                  <RecordingWaveform status="transcribing" />
+                )}
+              </InputAdornment>
+            ) : (
               <InputAdornment position="start">
                 <AnimatePresence initial={false}>
                   {message.trim().length === 0 && !inputIsDisabled() && isCvUploadEnabled && showCvUpload && (
@@ -621,6 +714,38 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
             ),
             endAdornment: (
               <InputAdornment position="end">
+                {isVoiceInputAvailable && (
+                  <IconButton
+                    data-testid={DATA_TEST_ID.CHAT_MESSAGE_FIELD_MIC_BUTTON}
+                    onClick={handleMicClick}
+                    onKeyDown={(event) => event.stopPropagation()}
+                    disabled={isDisabled || voiceInputState.status === "transcribing"}
+                    aria-label={
+                      voiceInputState.status === "recording"
+                        ? t("chat.voiceInput.stopRecordingAriaLabel")
+                        : t("chat.voiceInput.startRecordingAriaLabel")
+                    }
+                    title={
+                      voiceInputState.status === "recording"
+                        ? t("chat.voiceInput.stopRecordingAriaLabel")
+                        : t("chat.voiceInput.startRecordingAriaLabel")
+                    }
+                    aria-pressed={voiceInputState.status === "recording"}
+                    sx={{ marginRight: theme.fixedSpacing(theme.tabiyaSpacing.xs) }}
+                  >
+                    {voiceInputState.status === "recording" ? (
+                      <StopRoundedIcon
+                        data-testid={DATA_TEST_ID.CHAT_MESSAGE_FIELD_STOP_RECORDING_ICON}
+                        sx={{ color: theme.palette.error.main }}
+                      />
+                    ) : (
+                      <MicNoneOutlinedIcon
+                        data-testid={DATA_TEST_ID.CHAT_MESSAGE_FIELD_MIC_ICON}
+                        sx={{ color: props.fillColor || theme.palette.secondary.dark }}
+                      />
+                    )}
+                  </IconButton>
+                )}
                 <IconButton
                   data-testid={DATA_TEST_ID.CHAT_MESSAGE_FIELD_SEND_BUTTON}
                   onClick={handleButtonClick}
@@ -653,6 +778,8 @@ const ChatMessageField: React.FC<ChatMessageFieldProps> = (props) => {
             inputProps: {
               maxLength: CHAT_MESSAGE_MAX_LENGTH * 1.1, // Add 10% extra space for the text that can be entered in the input field
               "data-testid": DATA_TEST_ID.CHAT_MESSAGE_FIELD,
+              // the text typed before recording is kept, hidden behind the level graph
+              ...(isVoiceInputBusy && { style: { display: "none" } }),
             },
           }}
         />
