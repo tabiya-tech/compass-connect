@@ -1,0 +1,98 @@
+name: Dependabot Jira ticket
+
+# Creates a Jira ticket for Dependabot security fixes and major version
+# updates, and links it on the PR.
+# Requires Dependabot secrets (Settings > Secrets and variables > Dependabot):
+#   JIRA_USER_EMAIL, JIRA_API_TOKEN, and ALERTS_TOKEN (a token with read access
+#   to Dependabot alerts, used to detect security fixes).
+# Workflows that Dependabot triggers can only read Dependabot secrets.
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  JIRA_BASE_URL: https://tabiya-tech.atlassian.net
+  JIRA_PROJECT_KEY: CORE
+
+jobs:
+  create-jira-ticket:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          alert-lookup: true
+          # Needs read access to Dependabot alerts (GITHUB_TOKEN has none)
+          github-token: ${{ secrets.ALERTS_TOKEN }}
+
+      - name: Create Jira ticket and comment on the PR
+        if: >-
+          steps.meta.outputs.ghsa-id != '' ||
+          steps.meta.outputs.update-type == 'version-update:semver-major'
+        env:
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPS: ${{ steps.meta.outputs.dependency-names }}
+          NEW_VERSION: ${{ steps.meta.outputs.new-version }}
+          GHSA_ID: ${{ steps.meta.outputs.ghsa-id }}
+          CVSS: ${{ steps.meta.outputs.cvss }}
+          REPO: ${{ github.repository }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          # Stable label that identifies this PR on its Jira issue, so a re-run
+          # of this job reuses the issue instead of creating a duplicate.
+          PR_LABEL: dependabot-pr-${{ github.event.repository.name }}-${{ github.event.pull_request.number }}
+        run: |
+          # Reuse the issue if an earlier run of this job already created it.
+          SEARCH=$(curl -sS -G -u "$JIRA_USER_EMAIL:$JIRA_API_TOKEN" \
+            "$JIRA_BASE_URL/rest/api/3/search/jql" \
+            --data-urlencode "jql=project = $JIRA_PROJECT_KEY AND labels = \"$PR_LABEL\"" \
+            --data-urlencode "fields=summary" \
+            --data-urlencode "maxResults=1")
+          if ! echo "$SEARCH" | jq -e '.issues' > /dev/null; then
+            echo "Jira search error: $SEARCH"; exit 1
+          fi
+          KEY=$(echo "$SEARCH" | jq -r '.issues[0].key // empty')
+
+          if [ -n "$KEY" ]; then
+            echo "Reusing existing Jira issue $KEY"
+          else
+            if [ -n "$GHSA_ID" ]; then
+              TYPE="security"
+              SUMMARY="[Security] $REPO: update $DEPS ($GHSA_ID, CVSS $CVSS)"
+            else
+              TYPE="major-update"
+              SUMMARY="[Major] $REPO: update $DEPS to $NEW_VERSION"
+            fi
+            BODY=$(jq -n \
+              --arg project "$JIRA_PROJECT_KEY" \
+              --arg summary "$SUMMARY" \
+              --arg desc "Dependabot opened $PR_URL. Review the changelog, fix breaking changes and merge." \
+              --arg type "$TYPE" \
+              --arg pr_label "$PR_LABEL" \
+              '{fields: {project: {key: $project}, summary: $summary,
+                description: $desc, issuetype: {name: "Task"},
+                labels: ["dependabot", $type, $pr_label]}}')
+            RESPONSE=$(curl -sS -u "$JIRA_USER_EMAIL:$JIRA_API_TOKEN" \
+              -H "Content-Type: application/json" \
+              -X POST "$JIRA_BASE_URL/rest/api/2/issue" -d "$BODY")
+            KEY=$(echo "$RESPONSE" | jq -r '.key // empty')
+            if [ -z "$KEY" ]; then
+              echo "Jira error: $RESPONSE"; exit 1
+            fi
+          fi
+
+          # Comment once, so a re-run after a successful comment adds nothing.
+          TICKET_URL="$JIRA_BASE_URL/browse/$KEY"
+          if gh pr view "$PR_URL" --json comments -q '.comments[].body' | grep -qF "$TICKET_URL"; then
+            echo "PR already links $TICKET_URL"
+          else
+            gh pr comment "$PR_URL" --body "Jira ticket: $TICKET_URL"
+          fi
