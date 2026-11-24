@@ -1,0 +1,54 @@
+name: Dependabot auto-merge
+
+# Approves and enables auto-merge on Dependabot patch and minor updates
+# (including grouped ones). GitHub merges the PR once required checks pass.
+# Requires "Allow auto-merge" in the repository settings and required CI checks
+# on main. If main requires an approval, also turn on
+# "Allow GitHub Actions to create and approve pull requests".
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Approve and enable auto-merge for patch and minor updates
+        # To start with development dependencies only, add:
+        # && steps.meta.outputs.dependency-type == 'direct:development'
+        if: >-
+          steps.meta.outputs.update-type == 'version-update:semver-patch' ||
+          steps.meta.outputs.update-type == 'version-update:semver-minor'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NODE_ID: ${{ github.event.pull_request.node_id }}
+          # The commit the metadata step classified. Approval and auto-merge
+          # are bound to it so a later push (e.g. to a major update) is not
+          # approved or merged by this run.
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          CURRENT_SHA=$(gh pr view "$PR_URL" --json headRefOid -q .headRefOid)
+          if [ "$CURRENT_SHA" != "$HEAD_SHA" ]; then
+            echo "PR head moved from $HEAD_SHA to $CURRENT_SHA; the run for the new head decides."
+            exit 0
+          fi
+          # Approve the classified commit (gh pr review cannot target a commit).
+          gh api graphql \
+            -f query='mutation($pr: ID!, $sha: GitObjectID!) {
+              addPullRequestReview(input: {pullRequestId: $pr, commitOID: $sha, event: APPROVE}) {
+                pullRequestReview { id }
+              }
+            }' \
+            -f pr="$PR_NODE_ID" -f sha="$HEAD_SHA"
+          gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"

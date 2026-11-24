@@ -1,12 +1,91 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for more information:
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-# https://containers.dev/guide/dependabot
+# Dependabot version updates for Compass Connect.
+# Weekly runs, minor and patch updates grouped into one PR per ecosystem,
+# and a 7-day cooldown on new releases. Security updates are not delayed by
+# the cooldown and are not grouped, so each one gets its own PR and Jira ticket.
+# https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 
 version: 2
 updates:
- - package-ecosystem: "devcontainers"
-   directory: "/"
-   schedule:
-     interval: weekly
+  # Frontends (yarn, handled by the npm ecosystem)
+  - package-ecosystem: "npm"
+    directories:
+      - "/frontend-new"
+      - "/admin-frontend"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "18:00"
+      timezone: "UTC"
+    cooldown:
+      default-days: 7
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+
+  # Backend (Poetry) and infrastructure (requirements.txt)
+  - package-ecosystem: "pip"
+    directories:
+      - "/backend"
+      - "/iac"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "18:00"
+      timezone: "UTC"
+    cooldown:
+      default-days: 7
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+
+  # Base images
+  - package-ecosystem: "docker"
+    directories:
+      - "/backend"
+      - "/frontend-new"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "18:00"
+      timezone: "UTC"
+    cooldown:
+      default-days: 7
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "18:00"
+      timezone: "UTC"
+    cooldown:
+      default-days: 7
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "18:00"
+      timezone: "UTC"
+    cooldown:
+      default-days: 7
+    groups:
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
