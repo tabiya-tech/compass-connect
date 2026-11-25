@@ -5,12 +5,8 @@ import { TranscriptionResponse } from "src/speechToText/speechToText.types";
 
 const FILE_EXTENSIONS: Record<string, string> = {
   "audio/webm": "webm",
-  "video/webm": "webm",
-  "audio/ogg": "ogg",
   "audio/mp4": "mp4",
-  "video/mp4": "mp4",
-  "audio/mpeg": "mp3",
-  "audio/wav": "wav",
+  "audio/ogg": "ogg",
 };
 
 /** The media type of a recording without its parameters, e.g. "audio/webm;codecs=opus" -> "audio/webm". */

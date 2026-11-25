@@ -28,6 +28,7 @@ describe("SpeechToTextService", () => {
   test.each([
     ["audio/webm;codecs=opus", "recording.webm"],
     ["audio/mp4", "recording.mp4"],
+    ["audio/ogg;codecs=opus", "recording.ogg"],
     ["", "recording.webm"],
   ])("should upload a %s recording with its locale, and return the transcript", async (givenType, expectedFilename) => {
     // GIVEN the backend answers with a transcript
