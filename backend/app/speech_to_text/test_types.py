@@ -29,6 +29,8 @@ class TestIsAllowedAudioMimeType:
         *[(mime_type, True) for mime_type in sorted(ALLOWED_AUDIO_MIME_TYPES)],
         ("text/plain", False),
         ("audio/webm;codecs=opus", False),
+        ("audio/flac", False),
+        ("audio/wav", False),
     ])
     def test_tells_whether_a_media_type_is_accepted(self, given_mime_type, expected_allowed):
         # WHEN a media type is checked

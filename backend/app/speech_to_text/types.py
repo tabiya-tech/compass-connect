@@ -62,17 +62,13 @@ class SpeechToTextConfig(BaseModel):
 
 AudioMimeType = Literal[
     "audio/webm",  # Chrome, Firefox and Edge record Opus in WebM
-    "video/webm",  # some browsers label an audio-only WebM recording as video
-    "audio/ogg",
     "audio/mp4",  # Safari records AAC in MP4
-    "video/mp4",
-    "audio/x-m4a",
-    "audio/aac",
-    "audio/mpeg",
-    "audio/wav",
-    "audio/flac",
+    "audio/ogg",  # Opus in Ogg, for a browser that records neither of the above
 ]
-""" The media types of the recordings accepted, without their parameters. Chirp 3 detects their encoding itself. """
+"""
+The media types of the recordings accepted, without their parameters: the compressed formats the browser records in
+(see PREFERRED_MIME_TYPES in the frontend's useSpeechToText). Chirp 3 detects their encoding itself.
+"""
 
 ALLOWED_AUDIO_MIME_TYPES: frozenset[str] = frozenset(get_args(AudioMimeType))
 """ The values of AudioMimeType, to check a media type received. """
