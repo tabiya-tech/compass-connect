@@ -111,6 +111,9 @@ def main():
         cv_max_uploads_per_user=getenv("BACKEND_CV_MAX_UPLOADS_PER_USER", False, False),
         cv_rate_limit_per_minute=getenv("BACKEND_CV_RATE_LIMIT_PER_MINUTE", False, False),
 
+        skill_explorer_min_questions_before_finishing=getenv("BACKEND_SKILL_EXPLORER_MIN_QUESTIONS_BEFORE_FINISHING",
+                                                             False, False),
+
         # Branding
         global_product_name=getenv("GLOBAL_PRODUCT_NAME", False, False),
         enable_cv_upload=getenv("GLOBAL_ENABLE_CV_UPLOAD", False, False),

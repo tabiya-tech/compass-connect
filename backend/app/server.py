@@ -48,7 +48,7 @@ from app.users.routes import add_users_routes
 from app.users.get_user_preferences_repository import get_user_preferences_repository
 from app.conversations.poc import add_poc_routes
 from app.app_config import ApplicationConfig, LLMProvider, set_application_config, get_application_config, \
-    DEFAULT_HANDOFF_LINK_TTL_MINUTES
+    DEFAULT_HANDOFF_LINK_TTL_MINUTES, DEFAULT_SKILL_EXPLORER_MIN_QUESTIONS_BEFORE_FINISHING
 from app.version.utils import load_version_info
 from app.agent.config import ModelTier
 from app.agent.skill_linker.classifier import ClassifierApiVersion
@@ -299,6 +299,8 @@ application_config = ApplicationConfig(
     inline_phase_transition=os.getenv("COMPASS_INLINE_PHASE_TRANSITION", "").lower() in ("1", "true"),
     career_explorer_config=parse_career_explorer_config(os.getenv("CAREER_EXPLORER_CONFIG")),
     handoff_link_ttl_minutes=os.getenv("BACKEND_HANDOFF_LINK_TTL_MINUTES") or DEFAULT_HANDOFF_LINK_TTL_MINUTES,
+    skill_explorer_min_questions_before_finishing=os.getenv("BACKEND_SKILL_EXPLORER_MIN_QUESTIONS_BEFORE_FINISHING")
+                                                  or DEFAULT_SKILL_EXPLORER_MIN_QUESTIONS_BEFORE_FINISHING,
     integration_return_url_origins=[o.strip() for o in os.getenv("BACKEND_INTEGRATION_RETURN_URL_ORIGINS", "").split(",")
                                     if o.strip()],
     admin_firebase_tenant_id=os.getenv("ADMIN_FIREBASE_TENANT_ID", ""),

@@ -225,6 +225,9 @@ GLOBAL_DISABLE_REGISTRATION_CODE=False
 BACKEND_CV_STORAGE_BUCKET=<GCS_BUCKET_NAME>
 BACKEND_CV_MAX_UPLOADS_PER_USER=<INTEGER>
 BACKEND_CV_RATE_LIMIT_PER_MINUTE=<INTEGER>
+
+# Minimum number of questions to ask about an experience before ending its exploration (optional, default 2)
+BACKEND_SKILL_EXPLORER_MIN_QUESTIONS_BEFORE_FINISHING=<INTEGER>
 ```
 
 > ATTENTION: The .env file should be kept secure and not shared with others as it contains sensitive information.
@@ -609,6 +612,7 @@ For more details, see [app/agent/preference_elicitation_agent/README.md](app/age
 - `BACKEND_CV_STORAGE_BUCKET` - GCS bucket for CV storage
 - `BACKEND_CV_MAX_UPLOADS_PER_USER` - Upload limit per user
 - `BACKEND_CV_RATE_LIMIT_PER_MINUTE` - Rate limiting for CV uploads
+- `BACKEND_SKILL_EXPLORER_MIN_QUESTIONS_BEFORE_FINISHING` - Minimum number of questions to ask about an experience before ending its exploration (default `2`)
 - `BACKEND_ENABLE_TRACING` - Enable LLM tracing (`True`/`False`, default `False`)
 - `BACKEND_LANGFUSE_HOST` - Langfuse ingestion host (default `https://cloud.langfuse.com`)
 - `BACKEND_LANGFUSE_PUBLIC_KEY` / `BACKEND_LANGFUSE_SECRET_KEY` - Langfuse project keys

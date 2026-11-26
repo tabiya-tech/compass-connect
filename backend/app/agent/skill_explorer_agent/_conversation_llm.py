@@ -12,12 +12,16 @@ from app.conversation_memory.conversation_memory_types import ConversationContex
 from app.countries import Country
 from app.i18n.translation_service import t
 from app.agent.persona_detector import PersonaType, get_persona_prompt_section
+from app.app_config import get_application_config
 from common_libs.llm.factory import get_llm
 from common_libs.llm.models_utils import LLMConfig, LLMResponse, get_config_variation, LLMInput
 from common_libs.retry import Retry
 
 # centralize use for skill_explorer_agent and conversation_llm_test
 _FINAL_MESSAGE_KEY = "exploreSkills.finalMessage"
+
+class _EndedTooEarlyError(ValueError):
+    """The LLM ended the conversation before the configured minimum number of questions were asked."""
 
 
 class _ConversationLLM:
@@ -37,7 +41,12 @@ class _ConversationLLM:
                       work_type: WorkType,
                       logger: logging.Logger) -> AgentOutput:
 
+        # Set when an attempt ended the conversation too early, so that the next attempt tells the LLM not to end it.
+        # Varying the temperature alone is not enough, the LLM keeps ending the conversation.
+        ended_too_early = False
+
         async def _callback(attempt: int, max_retries: int) -> tuple[AgentOutput, float, BaseException | None]:
+            nonlocal ended_too_early
             # Call the LLM to get the next message for the user.
             # Add some temperature and top_p variation to prompt the LLM to return different results on each retry.
             # Exponentially increase the temperature and top_p to avoid the LLM returning the same result every time.
@@ -47,7 +56,7 @@ class _ConversationLLM:
             logger.debug("Calling _ConversationLLM with temperature: %s, top_p: %s",
                          temperature_config["temperature"],
                          temperature_config["top_p"])
-            return await _ConversationLLM._internal_execute(
+            output, penalty, error = await _ConversationLLM._internal_execute(
                 temperature_config=temperature_config,
                 experiences_explored=experiences_explored,
                 first_time_for_experience=first_time_for_experience,
@@ -60,8 +69,12 @@ class _ConversationLLM:
                 rich_response=rich_response,
                 experience_title=experience_title,
                 work_type=work_type,
+                ended_too_early=ended_too_early,
                 logger=logger
             )
+            if isinstance(error, _EndedTooEarlyError):
+                ended_too_early = True
+            return output, penalty, error
 
         result, _result_penalty, _error = await Retry[AgentOutput].call_with_penalty(callback=_callback, logger=logger)
         return result
@@ -80,6 +93,7 @@ class _ConversationLLM:
                                 rich_response: bool,
                                 experience_title,
                                 work_type: WorkType,
+                                ended_too_early: bool,
                                 logger: logging.Logger) -> tuple[AgentOutput, float, BaseException | None]:
         """
         The main conversation logic for the skill explorer agent.
@@ -134,8 +148,15 @@ class _ConversationLLM:
                 config=LLMConfig(
                     generation_config=temperature_config
                 ))
+            model_response_instructions = None
+            if ended_too_early:
+                # Placed after the user input, as the LLM overlooks it in the system instructions
+                model_response_instructions = (
+                    f"Only {len(question_asked_until_now)} question(s) have been asked so far, "
+                    "which is not enough to end the exploration. "
+                    "Do NOT say <END_OF_CONVERSATION>. Ask me the next question in the TURN FLOW instead.")
             llm_input = ConversationHistoryFormatter.format_for_agent_generative_prompt(
-                model_response_instructions=None,
+                model_response_instructions=model_response_instructions,
                 context=context, user_input=msg)
             llm_response = await llm.generate_content(llm_input=llm_input)
 
@@ -165,6 +186,18 @@ class _ConversationLLM:
                 logger.info("The response contains '<END_OF_CONVERSATION>' and additional text: %s", llm_response.text)
             llm_response.text = t("messages", _FINAL_MESSAGE_KEY)
             finished = True
+
+            min_questions_before_finishing = get_application_config().skill_explorer_min_questions_before_finishing
+            if len(question_asked_until_now) < min_questions_before_finishing:
+                # Ending this early leaves the experience without enough detail, ask the LLM again
+                return AgentOutput(
+                    message_for_user=llm_response.text,
+                    finished=finished,
+                    agent_type=AgentType.EXPLORE_SKILLS_AGENT,
+                    agent_response_time_in_sec=round(llm_end_time - llm_start_time, 2),
+                    llm_stats=[llm_stats]), 100, _EndedTooEarlyError(
+                    f"LLM ended the conversation after {len(question_asked_until_now)} question(s), "
+                    f"at least {min_questions_before_finishing} are required")
 
         return AgentOutput(
             message_for_user=llm_response.text,
