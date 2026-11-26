@@ -246,6 +246,106 @@ async def test_skills_explorer_agent_first_message(test_case, caplog: pytest.Log
         assert_log_error_warnings(caplog=caplog, expect_errors_in_logs=False, expect_warnings_in_logs=False)
 
 
+class _TestCaseBriefFirstAnswer(_TestCaseConversation):
+    # The GIVEN
+    question_asked_until_now: list[str]
+    """The questions the skill explorer has asked so far for this experience."""
+
+    user_answer: str
+    """The user's brief answer to the last question asked."""
+
+
+brief_first_answer_test_cases = [
+    _TestCaseBriefFirstAnswer(
+        # CORE-903: the user already described their tasks while the experiences were being collected,
+        # then gives a one-sentence answer to the typical day question,
+        # and the model ended the exploration instead of asking a follow-up question.
+        country_of_user=Country.ZAMBIA,
+        name="kitchen_volunteer_brief_typical_day",
+        summary="",
+        turns=[("I volunteer at my church kitchen.",
+                "That sounds meaningful! What do you do there?"),
+               ("I chop vegetables for the soup, wash the pots and dishes after, and put everything back in its place. "
+                "We give food and drinks to people who come.",
+                "Thanks! When did you start volunteering at the church kitchen, and do you still do it?"),
+               ("Since 2023, I still go every Saturday.",
+                "Great. Is there any other experience you'd like to share?"),
+               ("No, that's the only one.",
+                dedent("""\
+                    Let's recap the information we have collected so far:
+                    • Chopping Vegetables and Washing Pots (Volunteer/Unpaid), 2023 - Present, My Church
+                    Is there anything you would like to add or change?  If you think any of the experiences are the same, you can ask me to delete one.
+                    """)),
+               ("I am ready to dive into my experiences, don't greet me, let's get into it immediately",
+                "Now, let us explore your experience as Chopping Vegetables and Washing Pots.\n\n"
+                "I will ask you some questions about this work. Please try to be as descriptive as possible in your answers. "
+                "The more you talk about your experience, the more accurate the results will be.\n\n"
+                "Can you describe a typical day as Chopping Vegetables and Washing Pots?"),
+               ],
+        experiences_explored=[],
+        experience_title="Chopping Vegetables and Washing Pots",
+        work_type=WorkType.UNSEEN_UNPAID,
+        question_asked_until_now=[
+            "Now, let us explore your experience as Chopping Vegetables and Washing Pots.\n\n"
+            "I will ask you some questions about this work. Please try to be as descriptive as possible in your answers. "
+            "The more you talk about your experience, the more accurate the results will be.\n\n"
+            "Can you describe a typical day as Chopping Vegetables and Washing Pots?"
+        ],
+        user_answer="Sometimes I served the soup to people in the line.",
+    ),
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.evaluation_test("gemini-3.5-flash-lite/")
+@pytest.mark.repeat(3)
+@pytest.mark.parametrize('test_case', get_test_cases_to_run(brief_first_answer_test_cases),
+                         ids=[case.name for case in get_test_cases_to_run(brief_first_answer_test_cases)])
+async def test_skills_explorer_agent_does_not_end_after_brief_first_answer(test_case: _TestCaseBriefFirstAnswer,
+                                                                          caplog: pytest.LogCaptureFixture):
+    logger = logging.getLogger()
+
+    with caplog.at_level(logging.INFO):
+        guard_caplog(logger=logger, caplog=caplog)
+        get_i18n_manager().set_locale(test_case.locale)
+
+        conversation_manager = ConversationMemoryManager(UNSUMMARIZED_WINDOW_SIZE, TO_BE_SUMMARIZED_WINDOW_SIZE)
+        conversation_manager.set_state(state=ConversationMemoryManagerState(session_id=get_random_session_id()))
+        context = await conversation_manager.get_conversation_context()
+        # GIVEN the previous conversation context, ending with the typical day question
+        for turn in test_case.turns:
+            _add_turn_to_context(turn[0], turn[1], context)
+        # AND the context summary
+        context.summary = test_case.summary
+
+        # WHEN the conversation LLM is executed with the user's brief answer to the typical day question
+        llm = _ConversationLLM()
+        out = await llm.execute(
+            country_of_user=test_case.country_of_user,
+            experiences_explored=test_case.experiences_explored,
+            first_time_for_experience=False,
+            question_asked_until_now=test_case.question_asked_until_now,
+            user_input=AgentInput(message=test_case.user_answer),
+            persona_type=PersonaType.INFORMAL,
+            context=context,
+            experience_index=len(test_case.experiences_explored),
+            rich_response=False,
+            experience_title=test_case.experience_title,
+            work_type=test_case.work_type,
+            logger=logger
+        )
+        logger.info(out)
+
+        # THEN expect that the conversation has not ended
+        assert out.finished is False
+        # AND the model asks a follow-up question instead of the final message
+        assert out.message_for_user != t("messages", _FINAL_MESSAGE_KEY)
+
+        # AND no error messages in the logs
+        # (warnings are expected when an attempt that ended the conversation too early is retried)
+        assert_log_error_warnings(caplog=caplog, expect_errors_in_logs=False, expect_warnings_in_logs=True)
+
+
 def _add_turn_to_context(user_input: str, agent_output: str, context: ConversationContext):
     turn: ConversationTurn = ConversationTurn(
         index=len(context.history.turns),

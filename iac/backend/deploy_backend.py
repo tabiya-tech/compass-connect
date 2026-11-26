@@ -76,6 +76,7 @@ class BackendServiceConfig:
     experience_pipeline_config: Optional[str]
     cv_max_uploads_per_user: Optional[str]
     cv_rate_limit_per_minute: Optional[str]
+    skill_explorer_min_questions_before_finishing: Optional[str]
     enable_cv_upload: Optional[str]
     language_config: str
     admin_tenant_id: str
@@ -534,6 +535,9 @@ def _deploy_cloud_run_service(
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="BACKEND_CV_RATE_LIMIT_PER_MINUTE",
                             value=backend_service_cfg.cv_rate_limit_per_minute),
+                        gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
+                            name="BACKEND_SKILL_EXPLORER_MIN_QUESTIONS_BEFORE_FINISHING",
+                            value=backend_service_cfg.skill_explorer_min_questions_before_finishing),
                         gcp.cloudrunv2.ServiceTemplateContainerEnvArgs(
                             name="BACKEND_LANGUAGE_CONFIG",
                             value=backend_service_cfg.language_config),

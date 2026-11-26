@@ -15,6 +15,10 @@ from features.types import FeatureSetupConfig
 
 DEFAULT_HANDOFF_LINK_TTL_MINUTES = 24 * 60
 
+# The first question (the typical day) is not enough: the model tends to end the exploration after a brief answer to it,
+# when the user already shared some details while the experiences were being collected (CORE-903).
+DEFAULT_SKILL_EXPLORER_MIN_QUESTIONS_BEFORE_FINISHING = 2
+
 _APPLICATION_NOT_CONFIGURED_ERROR_MESSAGE = "Application configuration is not setup."
 
 LLMProvider = Literal["gemini", "anthropic", "ollama"]
@@ -128,6 +132,14 @@ class ApplicationConfig(BaseModel):
     """
     How long a hand-off link from the integration API can be used, in minutes. Links are re-usable until they expire.
     Loaded from the BACKEND_HANDOFF_LINK_TTL_MINUTES environment variable.
+    """
+
+    skill_explorer_min_questions_before_finishing: int = Field(
+        default=DEFAULT_SKILL_EXPLORER_MIN_QUESTIONS_BEFORE_FINISHING, gt=0)
+    """
+    The minimum number of questions the skill explorer asks about an experience before it can end the exploration.
+    1 lets the exploration end after the first question.
+    Loaded from the BACKEND_SKILL_EXPLORER_MIN_QUESTIONS_BEFORE_FINISHING environment variable.
     """
 
     integration_return_url_origins: list[str] = Field(default_factory=list)
