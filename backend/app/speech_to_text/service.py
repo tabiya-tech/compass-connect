@@ -42,8 +42,7 @@ class SpeechToTextService(ISpeechToTextService):
     async def transcribe(self, *, audio: AudioUpload, locale: Locale) -> Transcription:
         if not self._config.is_locale_enabled(locale):
             raise LocaleNotEnabledError(locale)
-        # the locale is the BCP-47 code of the language spoken
-        language_code = locale.value
+        language_code = self._config.language_code(locale)
 
         async def _recognize() -> str:
             return await self._adapter.recognize(audio=audio, language_code=language_code)

@@ -59,6 +59,7 @@ class TestParseTextToSpeechConfig:
         assert actual_config.rate_limit_per_minute == given_config["rateLimitPerMinute"]
         # AND only the enabled locale to be offered
         assert actual_config.enabled_locales == frozenset({Locale.EN_US})
+        assert actual_config.fallback_locales == {}
         # AND the enabled locale to resolve to its voice settings
         actual_locale = actual_config.locale_settings(Locale.EN_US)
         given_locale = given_config["locales"][Locale.EN_US.value]
@@ -160,8 +161,38 @@ class TestTextToSpeechConfig:
         assert actual_config.locales[Locale.EN_US].voice == given_voice
         assert actual_config.locales[Locale.EN_US].style == given_style
 
+    def test_a_locale_is_spoken_in_its_own_language_without_a_fallback(self):
+        # GIVEN a locale without a fallback locale
+        given_locale = Locale.EN_US
+        given_config = TextToSpeechConfig.model_validate(
+            _given_enabled_config(locales={given_locale.value: _given_locale()}))
+
+        # WHEN the language of the locale is resolved
+        actual_language_code = given_config.language_code(given_locale)
+
+        # THEN expect the code of the locale
+        assert actual_language_code == given_locale.value
+
+    def test_a_locale_with_a_fallback_is_spoken_in_the_language_of_its_fallback(self):
+        # GIVEN a locale that falls back to another locale
+        given_locale = Locale.ES_AR
+        given_fallback = Locale.ES_ES
+        given_config = TextToSpeechConfig.model_validate(_given_enabled_config(
+            locales={given_locale.value: _given_locale()}, fallbackLocales={given_locale.value: given_fallback.value}))
+
+        # WHEN the language of the locale is resolved
+        actual_language_code = given_config.language_code(given_locale)
+
+        # THEN expect the code of the fallback
+        assert actual_language_code == given_fallback.value
+        # AND read aloud to be offered in the locale, not in its fallback
+        assert given_config.enabled_locales == frozenset({given_locale})
+
     @pytest.mark.parametrize("given_config, expected_error", [
         (_given_enabled_config(locales={}), "none of its locales is enabled"),
+        (_given_enabled_config(fallbackLocales={"es-AR": "es-ES"}), "es-AR, which is not one of the locales"),
+        (_given_enabled_config(fallbackLocales={"en-US": "en-US"}), "en-US falling back to itself"),
+        (_given_enabled_config(fallbackLocales={"en-US": "xx-YY"}), "fallbackLocales"),
         (_given_enabled_config(locales={"en-US": _given_locale(enabled=False)}), "none of its locales is enabled"),
         (_given_enabled_config(locales={"ny-ZM": _given_locale()}), "locales.ny-ZM"),
         (_given_enabled_config(locales={"en-US": {"enabled": True, "style": _GIVEN_STYLE}}),
@@ -179,7 +210,8 @@ class TestTextToSpeechConfig:
         (_given_enabled_config(maxTextBytes=MAX_TEXT_BYTES_LIMIT + 1), "maxTextBytes"),
         (_given_enabled_config(rateLimitPerMinute=-1), "rateLimitPerMinute"),
         (_given_enabled_config(maxTextLenght=100), "maxTextLenght"),
-    ], ids=["enabled without locales", "enabled without an enabled locale", "unknown locale",
+    ], ids=["enabled without locales", "fallback for a locale not configured", "fallback to itself",
+            "unknown fallback", "enabled without an enabled locale", "unknown locale",
             "missing voice", "missing style", "blank voice", "empty style",
             "style over its limit in bytes", "unsupported model", "a model before Gemini 3.8", "the removed encoding",
             "text shorter than a UTF-8 character", "text longer than the input limit", "negative rate limit", "unknown key"])

@@ -47,7 +47,10 @@ class TextToSpeechLocaleConfig(BaseModel):
     model_config = _CONFIG_MODEL_CONFIG
 
     enabled: bool = False
-    """ Whether read aloud is offered in this locale. Gemini TTS speaks its language: the locale is the BCP-47 code. """
+    """
+    Whether read aloud is offered in this locale. Gemini TTS speaks its language: the locale is the BCP-47 code, unless
+    it has a fallback locale.
+    """
 
     voice: VoiceName
     """ The voice that reads the messages of this locale. """
@@ -81,10 +84,25 @@ class TextToSpeechConfig(BaseModel):
     locales: dict[Locale, TextToSpeechLocaleConfig] = Field(default_factory=dict)
     """ The settings per locale. A locale that is missing, or not enabled, has no read aloud. """
 
+    fallback_locales: dict[Locale, Locale] = Field(default_factory=dict)
+    """
+    The locale whose language Gemini TTS speaks, for a locale it does not support, e.g. {"es-AR": "es-ES"}.
+    The voice and the style stay those of the locale: only the language sent to Gemini TTS changes.
+    """
+
     @model_validator(mode="after")
     def _an_enabled_feature_has_an_enabled_locale(self) -> "TextToSpeechConfig":
         if self.enabled and not any(settings.enabled for settings in self.locales.values()):
             raise ValueError("text-to-speech is enabled, but none of its locales is enabled")
+        return self
+
+    @model_validator(mode="after")
+    def _a_fallback_is_for_a_configured_locale_and_another_one(self) -> "TextToSpeechConfig":
+        for locale, fallback in self.fallback_locales.items():
+            if locale not in self.locales:
+                raise ValueError(f"fallbackLocales has {locale.value}, which is not one of the locales")
+            if fallback == locale:
+                raise ValueError(f"fallbackLocales has {locale.value} falling back to itself")
         return self
 
     @property
@@ -102,6 +120,10 @@ class TextToSpeechConfig(BaseModel):
             return None
         settings = self.locales.get(locale)
         return settings if settings is not None and settings.enabled else None
+
+    def language_code(self, locale: Locale) -> str:
+        """ The language Gemini TTS speaks in the locale, as a BCP-47 code: that of its fallback locale, if any. """
+        return self.fallback_locales.get(locale, locale).value
 
 
 SynthesisText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]

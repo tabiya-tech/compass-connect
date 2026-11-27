@@ -42,13 +42,28 @@ class SpeechToTextConfig(BaseModel):
     locales: frozenset[Locale] = frozenset()
     """
     The locales voice input is offered in. Chirp 3 transcribes each in its own language: the locale is the BCP-47
-    language code, e.g. "sw-KE".
+    language code, e.g. "sw-KE", unless it has a fallback locale.
+    """
+
+    fallback_locales: dict[Locale, Locale] = Field(default_factory=dict)
+    """
+    The locale whose language Chirp 3 hears, for a locale it does not support, e.g. {"es-AR": "es-ES"}.
+    The locale stays the one of the user: only the language sent to Chirp 3 changes.
     """
 
     @model_validator(mode="after")
     def _an_enabled_feature_has_a_locale(self) -> "SpeechToTextConfig":
         if self.enabled and not self.locales:
             raise ValueError("speech-to-text is enabled, but has no locale")
+        return self
+
+    @model_validator(mode="after")
+    def _a_fallback_is_for_an_offered_locale_and_another_one(self) -> "SpeechToTextConfig":
+        for locale, fallback in self.fallback_locales.items():
+            if locale not in self.locales:
+                raise ValueError(f"fallbackLocales has {locale.value}, which is not one of the locales")
+            if fallback == locale:
+                raise ValueError(f"fallbackLocales has {locale.value} falling back to itself")
         return self
 
     @property
@@ -59,6 +74,10 @@ class SpeechToTextConfig(BaseModel):
     def is_locale_enabled(self, locale: Locale) -> bool:
         """ Whether voice input is offered in the locale. """
         return locale in self.enabled_locales
+
+    def language_code(self, locale: Locale) -> str:
+        """ The language Chirp 3 hears in the locale, as a BCP-47 code: that of its fallback locale, if it has one. """
+        return self.fallback_locales.get(locale, locale).value
 
 AudioMimeType = Literal[
     "audio/webm",  # Chrome, Firefox and Edge record Opus in WebM
