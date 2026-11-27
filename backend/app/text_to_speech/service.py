@@ -45,8 +45,8 @@ class TextToSpeechService(ITextToSpeechService):
         locale_settings = self._config.locale_settings(locale)
         if locale_settings is None:
             raise LocaleNotEnabledError(locale)
-        # the locale is the BCP-47 code of the language spoken
-        voice = VoiceSettings(language_code=locale.value, voice=locale_settings.voice, style=locale_settings.style)
+        voice = VoiceSettings(language_code=self._config.language_code(locale), voice=locale_settings.voice,
+                              style=locale_settings.style)
 
         async def _synthesize() -> bytes:
             return await self._adapter.synthesize(text=text, voice=voice)

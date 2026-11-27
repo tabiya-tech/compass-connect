@@ -71,6 +71,31 @@ class TestTextToSpeechService:
         assert given_adapter.calls == [(_GIVEN_TEXT, _GIVEN_VOICE)]
 
     @pytest.mark.asyncio
+    async def test_reads_the_text_in_the_language_of_the_fallback_of_its_locale_and_its_own_voice(self):
+        # GIVEN a locale that falls back to another locale, with its own voice and style
+        given_locale = Locale.ES_AR
+        given_fallback = Locale.ES_ES
+        given_voice = "Puck"
+        given_style = "cheerful"
+        given_config = TextToSpeechConfig.model_validate({
+            "enabled": True,
+            "locales": {given_locale.value: {"enabled": True, "voice": given_voice, "style": given_style}},
+            "fallbackLocales": {given_locale.value: given_fallback.value},
+        })
+        # AND an adapter that returns WAV audio
+        given_adapter = _FakeAdapter(_GIVEN_WAV)
+        given_service = TextToSpeechService(config=given_config, adapter=given_adapter, retry_config=_NO_WAIT_RETRY)
+
+        # WHEN a text in the locale is synthesized
+        actual_audio = await given_service.synthesize(text=_GIVEN_TEXT, locale=given_locale)
+
+        # THEN expect the audio, for the locale of the user
+        assert actual_audio.locale == given_locale
+        # AND the adapter to have been asked for the language of the fallback, in the voice and style of the locale
+        expected_voice = VoiceSettings(language_code=given_fallback.value, voice=given_voice, style=given_style)
+        assert given_adapter.calls == [(_GIVEN_TEXT, expected_voice)]
+
+    @pytest.mark.asyncio
     @pytest.mark.parametrize("given_locale", [_GIVEN_DISABLED_LOCALE, _GIVEN_UNCONFIGURED_LOCALE],
                              ids=["disabled", "not configured"])
     async def test_rejects_a_locale_without_read_aloud_without_calling_the_adapter(self, given_locale):

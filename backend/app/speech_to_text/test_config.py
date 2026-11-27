@@ -49,6 +49,7 @@ class TestParseSpeechToTextConfig:
         assert actual_config.rate_limit_per_minute == given_config["rateLimitPerMinute"]
         # AND the configured locales to be offered
         expected_locales = frozenset(Locale(locale) for locale in given_config["locales"])
+        assert actual_config.fallback_locales == {}
         assert actual_config.enabled_locales == expected_locales
         assert all(actual_config.is_locale_enabled(locale) for locale in expected_locales)
         # AND a locale that is not configured not to be offered
@@ -99,8 +100,38 @@ class TestSpeechToTextConfig:
         assert actual_config.enabled_locales == frozenset()
         assert not any(actual_config.is_locale_enabled(Locale(locale)) for locale in given_config["locales"])
 
+    def test_a_locale_is_heard_in_its_own_language_without_a_fallback(self):
+        # GIVEN a locale without a fallback locale
+        given_locale = Locale.EN_US
+        given_config = SpeechToTextConfig.model_validate(_given_enabled_config(locales=[given_locale.value]))
+
+        # WHEN the language of the locale is resolved
+        actual_language_code = given_config.language_code(given_locale)
+
+        # THEN expect the code of the locale
+        assert actual_language_code == given_locale.value
+
+    def test_a_locale_with_a_fallback_is_heard_in_the_language_of_its_fallback(self):
+        # GIVEN a locale that falls back to another locale
+        given_locale = Locale.ES_AR
+        given_fallback = Locale.ES_ES
+        given_config = SpeechToTextConfig.model_validate(_given_enabled_config(
+            locales=[given_locale.value], fallbackLocales={given_locale.value: given_fallback.value}))
+
+        # WHEN the language of the locale is resolved
+        actual_language_code = given_config.language_code(given_locale)
+
+        # THEN expect the code of the fallback
+        assert actual_language_code == given_fallback.value
+        # AND voice input to be offered in the locale, not in its fallback
+        assert given_config.is_locale_enabled(given_locale) is True
+        assert given_config.is_locale_enabled(given_fallback) is False
+
     @pytest.mark.parametrize("given_config, expected_error", [
         (_given_enabled_config(locales=[]), "has no locale"),
+        (_given_enabled_config(fallbackLocales={"es-AR": "es-ES"}), "es-AR, which is not one of the locales"),
+        (_given_enabled_config(fallbackLocales={"en-US": "en-US"}), "en-US falling back to itself"),
+        (_given_enabled_config(fallbackLocales={"en-US": "xx-YY"}), "fallbackLocales"),
         (_given_enabled_config(locales=["xx-YY"]), "locales"),
         (_given_enabled_config(locales={"en-US": {"enabled": True}}), "locales"),
         (_given_enabled_config(model="chirp_2"), "model"),
@@ -110,7 +141,8 @@ class TestSpeechToTextConfig:
         (_given_enabled_config(maxAudioBytes=10 * 1024 * 1024 + 1), "maxAudioBytes"),
         (_given_enabled_config(rateLimitPerMinute=0), "rateLimitPerMinute"),
         (_given_enabled_config(maxRecordingSecond=30), "maxRecordingSecond"),
-    ], ids=["enabled without locales", "unknown locale", "settings per locale", "unsupported model",
+    ], ids=["enabled without locales", "fallback for a locale not offered", "fallback to itself", "unknown fallback",
+            "unknown locale", "settings per locale", "unsupported model",
             "no recording time", "recording longer than a minute", "no audio size", "audio larger than 10 MB",
             "no rate limit", "unknown key"])
     def test_rejects_invalid_settings(self, given_config, expected_error):

@@ -55,6 +55,29 @@ class TestSpeechToTextService:
         assert given_adapter.calls == [(_GIVEN_AUDIO, _GIVEN_LOCALE.value)]
 
     @pytest.mark.asyncio
+    async def test_transcribes_in_the_language_of_the_fallback_of_the_locale(self):
+        # GIVEN a locale that falls back to another locale
+        given_locale = Locale.ES_AR
+        given_fallback = Locale.ES_ES
+        given_config = SpeechToTextConfig.model_validate({
+            "enabled": True,
+            "locales": [given_locale.value],
+            "fallbackLocales": {given_locale.value: given_fallback.value},
+        })
+        # AND an adapter that recognizes speech
+        given_adapter = _FakeAdapter(_GIVEN_TRANSCRIPT)
+        given_service = SpeechToTextService(config=given_config, adapter=given_adapter, retry_config=_NO_WAIT_RETRY)
+
+        # WHEN a recording in the locale is transcribed
+        actual_transcription = await given_service.transcribe(audio=_GIVEN_AUDIO, locale=given_locale)
+
+        # THEN expect the transcript, in the locale of the user
+        assert actual_transcription.text == _GIVEN_TRANSCRIPT
+        assert actual_transcription.locale == given_locale
+        # AND the adapter to have been asked for the language of the fallback
+        assert given_adapter.calls == [(_GIVEN_AUDIO, given_fallback.value)]
+
+    @pytest.mark.asyncio
     @pytest.mark.parametrize("given_locale, given_enabled", [
         (_GIVEN_UNCONFIGURED_LOCALE, True),
         (_GIVEN_LOCALE, False),
