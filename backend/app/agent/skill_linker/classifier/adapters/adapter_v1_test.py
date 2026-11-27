@@ -65,8 +65,11 @@ class TestClassify:
         #     with the scores of the classifier, dropping the unresolvable label
         assert [(c.skill.UUID, c.skill.score, c.is_best_match) for c in actual_matches.skill_candidates] == [
             ("bake", 0.9, True), ("sell", 0.6, True)]
-        # AND the occupations are returned as title candidates
+        # AND the occupations are returned as title candidates and occupation matches
         assert actual_matches.title_candidates == ["baker"]
+        assert [(m.label, m.esco_code, m.score) for m in actual_matches.occupation_matches] == [
+            ("baker", "7512.1", 0.9)
+        ]
 
     @pytest.mark.asyncio
     async def test_resolves_each_distinct_label_once(self):
@@ -100,3 +103,24 @@ class TestClassify:
         # THEN the labelled match is resolved with its score, and the match without a label is ignored
         assert [(c.skill.UUID, c.skill.score, c.is_best_match) for c in actual_matches.skill_candidates] == [
             ("bake", 0.8, True)]
+
+    @pytest.mark.asyncio
+    async def test_includes_overview_in_description_when_provided(self):
+        # GIVEN a v1 adapter
+        adapter, given_client, _ = _given_adapter([], {})
+
+        # WHEN an experience is classified with an overview
+        await adapter.classify(
+            experience_title="Baker",
+            responsibilities=["I bake bread", "I sell pastries"],
+            overview="Worked at a busy neighborhood bakery preparing daily breads and serving customers.",
+        )
+
+        # THEN the overview precedes the responsibilities in the classifier description
+        actual_call = given_client.classify_v1.await_args.kwargs
+        assert actual_call["description"] == (
+            "Worked at a busy neighborhood bakery preparing daily breads and serving customers.\n\n"
+            "Responsibilities:\n"
+            "- I bake bread\n"
+            "- I sell pastries"
+        )

@@ -1,5 +1,6 @@
 from typing import Optional
 
+from app.agent.experience.timeline import Timeline
 from app.agent.experience.work_type import WorkType
 from app.agent.skill_linker.linker import ISkillLinker, SkillLinkerResponse
 from app.countries import Country
@@ -21,7 +22,10 @@ class PipelineSkillLinker(ISkillLinker):
                       responsibilities: list[str],
                       company_name: Optional[str],
                       country_of_interest: Country,
-                      work_type: WorkType) -> SkillLinkerResponse:
+                      work_type: WorkType,
+                      location: Optional[str] = None,
+                      timeline: Optional[Timeline] = None,
+                      questions_and_answers: Optional[list[tuple[str, str]]] = None) -> SkillLinkerResponse:
         pipeline_result = await self._pipeline.execute(
             experience_title=experience_title,
             responsibilities=responsibilities,

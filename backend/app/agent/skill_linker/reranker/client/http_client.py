@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Optional
 
@@ -43,6 +44,13 @@ class LlmRerankerClient:
             "candidates": [candidate.model_dump() for candidate in candidates],
             "max_skills": max_skills,
         }
+        if self._logger.isEnabledFor(logging.INFO):
+            self._logger.info(
+                "Sending input to LLM reranker: experience=%s, candidates=%s, max_skills=%d",
+                json.dumps(payload["experience"], ensure_ascii=False),
+                json.dumps([candidate.label for candidate in candidates], ensure_ascii=False),
+                max_skills,
+            )
         try:
             token = await self._token_provider.get_token()
             async with httpx.AsyncClient() as client:

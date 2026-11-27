@@ -64,6 +64,11 @@ class ClassifierClient:
                 "min_similarity": min_similarity,
             },
         }
+        if self._logger.isEnabledFor(logging.INFO):
+            self._logger.info(
+                "Sending input to classifier (%s): title=%r, description=\n%s",
+                version.value, title, description
+            )
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(

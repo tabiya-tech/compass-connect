@@ -24,11 +24,11 @@ def _skill_match(uuid: str, label: str, score: float, skill_type: str = "skill/c
     }
 
 
-def _occupation_match(uuid: str, label: str, score: float) -> dict:
+def _occupation_match(uuid: str, label: str, score: float, esco_code: str = "1234") -> dict:
     return {
         "entity_type": "occupation",
         "similarity_score": score,
-        "entity": {"uuid": uuid, "preferred_label": label, "esco_code": "1234"},
+        "entity": {"uuid": uuid, "preferred_label": label, "esco_code": esco_code},
     }
 
 
@@ -108,10 +108,10 @@ class TestClassify:
     async def test_occupations_are_title_candidates(self):
         # GIVEN occupation entities, one of them matched twice
         adapter, _ = _given_adapter([
-            _entity("occupation", "Baker", [_occupation_match("baker", "baker", 0.7)]),
-            _entity("occupation", "Pastry chef", [_occupation_match("cook", "cook", 0.5),
-                                                   _occupation_match("pastry", "pastry chef", 0.9)]),
-            _entity("occupation", "Bread maker", [_occupation_match("baker", "baker", 0.6)]),
+            _entity("occupation", "Baker", [_occupation_match("baker", "baker", 0.7, "7512.1")]),
+            _entity("occupation", "Pastry chef", [_occupation_match("cook", "cook", 0.5, "5120.1"),
+                                                   _occupation_match("pastry", "pastry chef", 0.9, "7512.2")]),
+            _entity("occupation", "Bread maker", [_occupation_match("baker", "baker", 0.6, "7512.1")]),
             _entity("occupation", "Unknown", []),
         ])
 
@@ -120,5 +120,30 @@ class TestClassify:
 
         # THEN the best match of each occupation is a title candidate, sorted by score and deduplicated
         assert actual_matches.title_candidates == ["pastry chef", "baker"]
+        assert [(m.label, m.esco_code, m.score) for m in actual_matches.occupation_matches] == [
+            ("pastry chef", "7512.2", 0.9),
+            ("baker", "7512.1", 0.7),
+        ]
         # AND the occupations are not skill candidates
         assert actual_matches.skill_candidates == []
+
+    @pytest.mark.asyncio
+    async def test_includes_overview_in_description_when_provided(self):
+        # GIVEN a v2 adapter
+        adapter, given_client = _given_adapter([])
+
+        # WHEN an experience is classified with an overview
+        await adapter.classify(
+            experience_title="Baker",
+            responsibilities=["I bake bread", "I sell pastries"],
+            overview="Worked at a busy neighborhood bakery preparing daily breads and serving customers.",
+        )
+
+        # THEN the overview precedes the responsibilities in the classifier description
+        actual_call = given_client.classify_v2.await_args.kwargs
+        assert actual_call["description"] == (
+            "Worked at a busy neighborhood bakery preparing daily breads and serving customers.\n\n"
+            "Responsibilities:\n"
+            "- I bake bread\n"
+            "- I sell pastries"
+        )

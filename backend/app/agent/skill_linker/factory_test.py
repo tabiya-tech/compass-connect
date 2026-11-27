@@ -5,6 +5,7 @@ import pytest
 from app.agent.skill_linker.classifier import ClassifierApiVersion
 from app.agent.skill_linker.classifier.adapters import ClassifierAdapterV1, ClassifierAdapterV2
 from app.agent.skill_linker.classifier.linker import ClassifierSkillLinker
+from app.agent.skill_linker.classifier.overview_generator import ExperienceOverviewGenerator
 from app.agent.skill_linker.factory import get_skill_linker
 from app.agent.skill_linker.llm_pipeline import ExperiencePipelineConfig, PipelineSkillLinker
 from app.agent.skill_linker.config import SkillLinkerType
@@ -128,6 +129,25 @@ class TestGetSkillLinker:
         # THEN they share the ID token provider, so the token is cached across requests
         actual_token_providers = [linker._reranker._client._token_provider for linker in actual_linkers]
         assert actual_token_providers[0] is actual_token_providers[1]
+
+    def test_classifier_has_experience_overview_generator(self, setup_application_config: ApplicationConfig):
+        # GIVEN an application config with the classifier skill linker
+        given_config = setup_application_config.model_copy(update={
+            "skill_linker": SkillLinkerType.CLASSIFIER,
+            "classifier_api_url": "https://classifier.test",
+            "classifier_api_key": "key",
+        })
+
+        # WHEN the skill linker is created
+        given_search_services = MagicMock()
+        actual_linker = get_skill_linker(application_config=given_config,
+                                         search_services=given_search_services,
+                                         experience_pipeline_config=ExperiencePipelineConfig())
+
+        # THEN it is configured with an ExperienceOverviewGenerator and the occupation skill search service
+        assert isinstance(actual_linker, ClassifierSkillLinker)
+        assert isinstance(actual_linker._overview_generator, ExperienceOverviewGenerator)
+        assert actual_linker._occupation_skill_search_service is given_search_services.occupation_skill_search_service
 
 
 class TestApplicationConfig:
