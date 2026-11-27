@@ -168,6 +168,5 @@ _GLOSSARY = {
         Cobrador(a) - Fare collector on a bus or "rapidito" (minibus)
         Baleadas - Popular Honduran street food; "baleadera" is a woman who makes and sells them
         Décimo tercer mes / Décimo cuarto mes - Mandatory extra month's salary paid in December / June
-        INFOP - National vocational training institute (Instituto Nacional de Formación Profesional)
         """),
 }
